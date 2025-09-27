@@ -22,7 +22,7 @@ A comprehensive web application providing professional electrical calculations f
 
 ## Live Demo
 
-Visit the live application: [Your Netlify URL]
+Visit the live application: (https://sprightly-melba-ff3436.netlify.app/)
 
 ## Technology Stack
 
