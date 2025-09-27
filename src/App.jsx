@@ -6,6 +6,7 @@ import BoxFillCalculator from './BoxFillCalculator.jsx';
 import ConduitFillCalculator from './ConduitFillCalculator.jsx';
 import WireSizeCalculator from './WireSizeCalculator.jsx';
 import AmpacityLookupCalculator from './AmpacityLookupCalculator.jsx';
+import MotorCalculations from './MotorCalculations.jsx';
 import './App.css';
 
 function App() {
@@ -33,8 +34,6 @@ function App() {
         );
       case 'ohms-law':
         return <OhmsLawCalculator onBack={() => setActiveCalculator(null)} />;
-      default:
-        return <CalculatorMenu onSelectCalculator={setActiveCalculator} />;
       case 'box-fill':
         return <BoxFillCalculator onBack={() => setActiveCalculator(null)} />;
       case 'conduit-fill':
@@ -43,6 +42,15 @@ function App() {
         return <WireSizeCalculator onBack={() => setActiveCalculator(null)} />;
       case 'ampacity':
         return <AmpacityLookupCalculator onBack={() => setActiveCalculator(null)} />;
+      case 'motor-calculations':
+        return (
+          <div>
+            <BackToMenu />
+            <MotorCalculations />
+          </div>
+        );
+      default:
+        return <CalculatorMenu onSelectCalculator={setActiveCalculator} />;
     }
   };
 

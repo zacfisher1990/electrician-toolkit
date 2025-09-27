@@ -7,38 +7,34 @@ function CalculatorMenu({ onSelectCalculator }) {
     { id: 'box-fill', name: 'Box Fill', icon: '📦' },
     { id: 'conduit-fill', name: 'Conduit Fill', icon: '🔧' },
     { id: 'wire-size', name: 'Wire Size', icon: '🔗' },
-    { id: 'ampacity', name: 'Ampacity Lookup', icon: '⚠️' }
+    { id: 'ampacity', name: 'Ampacity Lookup', icon: '⚠️' },
+    { id: 'motor-calculations', name: 'Motor Calculations', icon: '⚙️' }
   ];
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h2>Select a Calculator</h2>
+    <div className="calculator-menu">
+      <h2>Electrician Toolkit</h2>
+      <p style={{ color: '#6b7280', marginBottom: '25px' }}>
+        Professional electrical calculations for the field
+      </p>
+      
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
         gap: '15px',
         marginTop: '20px'
       }}>
         {calculators.map(calc => (
-          <button
+          <div
             key={calc.id}
+            className="menu-item"
             onClick={() => onSelectCalculator(calc.id)}
-            style={{
-              padding: '20px',
-              fontSize: '16px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}
           >
-            <span style={{ fontSize: '24px' }}>{calc.icon}</span>
-            {calc.name}
-          </button>
+            <div style={{ fontSize: '32px', marginBottom: '10px' }}>
+              {calc.icon}
+            </div>
+            <h3>{calc.name}</h3>
+          </div>
         ))}
       </div>
     </div>
