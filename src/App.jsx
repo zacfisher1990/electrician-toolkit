@@ -64,13 +64,13 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Electrician's Toolkit</h1>
-        {renderCalculator()}
-      </header>
-    </div>
-  );
+  <div className="App">
+    <header className="App-header">
+      {!activeCalculator && <h1>Electrician's Toolkit</h1>}
+      {renderCalculator()}
+    </header>
+  </div>
+);
 }
 
 export default App;
