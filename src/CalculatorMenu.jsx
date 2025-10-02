@@ -8,7 +8,8 @@ function CalculatorMenu({ onSelectCalculator }) {
     { id: 'conduit-fill', name: 'Conduit Fill', icon: '🔧' },
     { id: 'wire-size', name: 'Wire Size', icon: '🔗' },
     { id: 'ampacity', name: 'Ampacity Lookup', icon: '⚠️' },
-    { id: 'motor-calculations', name: 'Motor Calculations', icon: '⚙️' }
+    { id: 'motor-calculations', name: 'Motor Calculations', icon: '⚙️' },
+    { id: 'load-calculations', name: 'Load Calculations', icon: '📊' }
   ];
 
   return (

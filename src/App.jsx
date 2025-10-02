@@ -7,6 +7,7 @@ import ConduitFillCalculator from './ConduitFillCalculator.jsx';
 import WireSizeCalculator from './WireSizeCalculator.jsx';
 import AmpacityLookupCalculator from './AmpacityLookupCalculator.jsx';
 import MotorCalculations from './MotorCalculations.jsx';
+import LoadCalculations from './LoadCalculations.jsx';
 import './App.css';
 
 function App() {
@@ -43,11 +44,19 @@ function App() {
       case 'ampacity':
         return <AmpacityLookupCalculator onBack={() => setActiveCalculator(null)} />;
       case 'motor-calculations':
+        
         return (
           <div>
             <BackToMenu />
             <MotorCalculations />
           </div>
+        );
+        case 'load-calculations':
+          return (
+           <div>
+             <BackToMenu />
+             <LoadCalculations />
+            </div>
         );
       default:
         return <CalculatorMenu onSelectCalculator={setActiveCalculator} />;
