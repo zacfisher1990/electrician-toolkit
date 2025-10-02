@@ -8,7 +8,6 @@ function CalculatorMenu({ onSelectCalculator }) {
     { id: 'ohms-law', name: "Ohm's Law", icon: '🔌', keywords: 'ohms law voltage current resistance power series parallel circuit' },
     { id: 'box-fill', name: 'Box Fill', icon: '📦', keywords: 'box fill junction cubic inch volume 314' },
     { id: 'conduit-fill', name: 'Conduit Fill', icon: '🔧', keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
-    { id: 'wire-size', name: 'Wire Size', icon: '🔗', keywords: 'wire size conductor awg ampacity' },
     { id: 'ampacity', name: 'Ampacity Lookup', icon: '⚠️', keywords: 'ampacity current rating 310 temperature' },
     { id: 'motor-calculations', name: 'Motor Calculations', icon: '⚙️', keywords: 'motor flc protection starter 430' },
     { id: 'load-calculations', name: 'Load Calculations', icon: '📊', keywords: 'load calculation service size residential commercial demand' }
