@@ -4,7 +4,6 @@ function AmpacityLookupCalculator({ onBack }) {
   const [wireSize, setWireSize] = useState('12');
   const [wireType, setWireType] = useState('copper');
   const [tempRating, setTempRating] = useState('75C');
-  const [installationType, setInstallationType] = useState('raceway');
 
   const ampacityData = {
     copper: {
@@ -37,28 +36,6 @@ function AmpacityLookupCalculator({ onBack }) {
     }
   };
 
-  const deratingFactors = {
-    temperature: {
-      '86-95F': 0.82,
-      '96-104F': 0.71,
-      '105-113F': 0.58,
-      '114-122F': 0.41,
-      '123-131F': 0.00
-    },
-    bundling: {
-      '4-6': 0.80,
-      '7-9': 0.70,
-      '10-20': 0.50,
-      '21-30': 0.45,
-      '31-40': 0.40,
-      '41+': 0.35
-    }
-  };
-
-  const getCurrentAmpacity = () => {
-    return ampacityData[wireType][tempRating][wireSize] || 0;
-  };
-
   const getCommonApplications = (ampacity) => {
     if (ampacity <= 15) return "Lighting circuits, small appliances";
     if (ampacity <= 20) return "General outlets, lighting";
@@ -70,27 +47,40 @@ function AmpacityLookupCalculator({ onBack }) {
     return "Service entrances, industrial applications";
   };
 
+  const getOCPDLimit = (size, material) => {
+    // NEC 240.4(D) overcurrent protection limits
+    const limits = {
+      copper: { '14': 15, '12': 20, '10': 30 },
+      aluminum: { '12': 15, '10': 25 }
+    };
+    return limits[material]?.[size] || null;
+  };
+
+  const getCurrentAmpacity = () => {
+    return ampacityData[wireType][tempRating][wireSize] || 0;
+  };
+
   const currentAmpacity = getCurrentAmpacity();
+  const ocpdLimit = getOCPDLimit(wireSize, wireType);
 
   return (
-    <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <button onClick={onBack} style={{ padding: '10px 20px' }}>
+    <div className="calculator-container">
+      {onBack && (
+        <button onClick={onBack} style={{ marginBottom: '20px' }}>
           ← Back to Menu
         </button>
-      </div>
+      )}
       
       <h2>Ampacity Lookup</h2>
-      <p style={{ fontSize: '14px', color: '#666' }}>
+      <p className="small">
         Wire ampacity ratings per NEC Table 310.16
       </p>
       
-      <div style={{ marginBottom: '10px' }}>
-        <label>Wire Size: </label>
+      <div style={{ marginBottom: '15px' }}>
+        <label>Wire Size:</label>
         <select 
           value={wireSize} 
           onChange={(e) => setWireSize(e.target.value)}
-          style={{ width: '100%', padding: '5px' }}
         >
           <option value="14">14 AWG</option>
           <option value="12">12 AWG</option>
@@ -108,12 +98,11 @@ function AmpacityLookupCalculator({ onBack }) {
         </select>
       </div>
       
-      <div style={{ marginBottom: '10px' }}>
-        <label>Wire Material: </label>
+      <div style={{ marginBottom: '15px' }}>
+        <label>Wire Material:</label>
         <select 
           value={wireType} 
           onChange={(e) => setWireType(e.target.value)}
-          style={{ width: '100%', padding: '5px' }}
         >
           <option value="copper">Copper</option>
           <option value="aluminum">Aluminum</option>
@@ -121,11 +110,10 @@ function AmpacityLookupCalculator({ onBack }) {
       </div>
       
       <div style={{ marginBottom: '20px' }}>
-        <label>Temperature Rating: </label>
+        <label>Temperature Rating:</label>
         <select 
           value={tempRating} 
           onChange={(e) => setTempRating(e.target.value)}
-          style={{ width: '100%', padding: '5px' }}
         >
           <option value="60C">60°C (140°F) - TW, UF</option>
           <option value="75C">75°C (167°F) - THWN, XHHW</option>
@@ -133,43 +121,105 @@ function AmpacityLookupCalculator({ onBack }) {
         </select>
       </div>
       
-      <div style={{ 
-        backgroundColor: '#f0f0f0', 
-        padding: '15px', 
-        borderRadius: '5px'
-      }}>
-        <h3>Results:</h3>
-        <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#007bff', marginBottom: '10px' }}>
+      <div className="result">
+        <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#1e3a8a' }}>Results:</h3>
+        
+        <div style={{ 
+          fontSize: '24px', 
+          fontWeight: 'bold', 
+          color: '#1e3a8a',
+          marginBottom: '15px',
+          padding: '15px',
+          backgroundColor: '#eff6ff',
+          borderRadius: '8px',
+          border: '2px solid #3b82f6'
+        }}>
           {currentAmpacity} Amperes
         </div>
-        <div style={{ marginBottom: '10px' }}>
+        
+        <div style={{ color: '#374151', marginBottom: '10px' }}>
           <strong>Wire:</strong> {wireSize} AWG {wireType}
         </div>
-        <div style={{ marginBottom: '10px' }}>
-          <strong>Rating:</strong> {tempRating} ({tempRating === '60C' ? '140°F' : tempRating === '75C' ? '167°F' : '194°F'})
-        </div>
-        <div style={{ marginBottom: '15px' }}>
-          <strong>Common Uses:</strong><br />
-          {getCommonApplications(currentAmpacity)}
+        
+        <div style={{ color: '#374151', marginBottom: '10px' }}>
+          <strong>Temperature Rating:</strong> {tempRating} ({tempRating === '60C' ? '140°F' : tempRating === '75C' ? '167°F' : '194°F'})
         </div>
         
-        <div style={{ fontSize: '12px', color: '#666', marginTop: '15px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
-          <strong>Derating Required When:</strong><br />
-          • Ambient temp > 86°F (multiply by factor)<br />
-          • More than 3 current-carrying conductors<br />
-          • Continuous loads (multiply by 0.8)<br />
+        {ocpdLimit && (
+          <div style={{ 
+            color: '#374151', 
+            marginBottom: '15px',
+            padding: '10px',
+            backgroundColor: '#fef3c7',
+            borderRadius: '6px',
+            border: '1px solid #fbbf24'
+          }}>
+            <strong>⚠️ NEC 240.4(D) Limit:</strong> {ocpdLimit}A max overcurrent protection
+          </div>
+        )}
+        
+        <div style={{ 
+          color: '#374151',
+          marginBottom: '15px',
+          paddingTop: '15px',
+          borderTop: '1px solid #e5e7eb'
+        }}>
+          <strong>Common Applications:</strong>
+          <div style={{ marginTop: '5px', color: '#6b7280' }}>
+            {getCommonApplications(currentAmpacity)}
+          </div>
+        </div>
+        
+        <div style={{ 
+          fontSize: '13px', 
+          color: '#374151',
+          backgroundColor: '#f8fafc',
+          padding: '12px',
+          borderRadius: '6px',
+          marginTop: '15px'
+        }}>
+          <strong>Derating Required When:</strong>
+          <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+            <li>Ambient temperature exceeds 86°F (30°C)</li>
+            <li>More than 3 current-carrying conductors in raceway</li>
+            <li>Continuous loads (multiply ampacity by 0.8 or 80%)</li>
+          </ul>
         </div>
       </div>
       
       <div style={{ 
-        backgroundColor: '#e8f4ff', 
-        padding: '10px', 
-        borderRadius: '5px',
-        marginTop: '15px',
-        fontSize: '12px'
+        backgroundColor: '#eff6ff', 
+        padding: '15px', 
+        borderRadius: '8px',
+        marginTop: '20px',
+        fontSize: '13px',
+        color: '#374151'
       }}>
-        <strong>Quick Reference:</strong><br />
-        12 AWG: 20A (outlets) | 10 AWG: 30A (dryer) | 8 AWG: 40A (range)
+        <strong>Quick Reference (75°C Copper):</strong>
+        <div style={{ marginTop: '8px', display: 'grid', gap: '5px' }}>
+          <div>14 AWG: 20A (15A max OCPD) - Lighting circuits</div>
+          <div>12 AWG: 25A (20A max OCPD) - General receptacles</div>
+          <div>10 AWG: 35A (30A max OCPD) - Dryers, small AC units</div>
+          <div>8 AWG: 50A - Electric ranges, heat pumps</div>
+          <div>6 AWG: 65A - Large appliances, sub-panels</div>
+        </div>
+      </div>
+
+      <div style={{ 
+        marginTop: '20px', 
+        padding: '15px', 
+        backgroundColor: '#f8fafc',
+        borderRadius: '8px',
+        fontSize: '13px',
+        color: '#374151'
+      }}>
+        <strong>NEC References:</strong>
+        <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+          <li>Table 310.16 - Allowable ampacities of insulated conductors</li>
+          <li>240.4(D) - Small conductor overcurrent protection limits</li>
+          <li>310.15(B) - Adjustment factors for ambient temperature and bundling</li>
+          <li>210.19(A) - Continuous loads require 125% conductor capacity</li>
+        </ul>
       </div>
     </div>
   );
