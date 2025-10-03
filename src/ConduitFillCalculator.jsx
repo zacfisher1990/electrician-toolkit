@@ -206,49 +206,52 @@ function ConduitFillCalculator({ onBack }) {
         </label>
         {conductors.map((conductor, index) => (
           <div key={index} style={{ 
-            display: 'flex', 
-            gap: '10px', 
-            marginBottom: '10px',
-            alignItems: 'center',
             backgroundColor: '#f8fafc',
             padding: '10px',
-            borderRadius: '6px'
+            borderRadius: '6px',
+            marginBottom: '10px'
           }}>
-            <div style={{ flex: '1' }}>
-              <select 
-                value={conductor.size} 
-                onChange={(e) => updateConductor(index, 'size', e.target.value)}
-                style={{ width: '100%' }}
-              >
-                <option value="14">14 AWG</option>
-                <option value="12">12 AWG</option>
-                <option value="10">10 AWG</option>
-                <option value="8">8 AWG</option>
-                <option value="6">6 AWG</option>
-                <option value="4">4 AWG</option>
-                <option value="3">3 AWG</option>
-                <option value="2">2 AWG</option>
-                <option value="1">1 AWG</option>
-                <option value="1/0">1/0 AWG</option>
-                <option value="2/0">2/0 AWG</option>
-                <option value="3/0">3/0 AWG</option>
-                <option value="4/0">4/0 AWG</option>
-                <option value="250">250 kcmil</option>
-                <option value="300">300 kcmil</option>
-                <option value="350">350 kcmil</option>
-                <option value="400">400 kcmil</option>
-                <option value="500">500 kcmil</option>
-              </select>
-            </div>
-            <div style={{ flex: '1' }}>
-              <input 
-                type="number" 
-                value={conductor.count} 
-                onChange={(e) => updateConductor(index, 'count', e.target.value)}
-                placeholder="Qty"
-                min="0"
-                style={{ width: '100%' }}
-              />
+            <div style={{ 
+              display: 'flex', 
+              gap: '10px',
+              marginBottom: conductors.length > 1 ? '8px' : '0'
+            }}>
+              <div style={{ flex: '1' }}>
+                <select 
+                  value={conductor.size} 
+                  onChange={(e) => updateConductor(index, 'size', e.target.value)}
+                  style={{ width: '100%' }}
+                >
+                  <option value="14">14 AWG</option>
+                  <option value="12">12 AWG</option>
+                  <option value="10">10 AWG</option>
+                  <option value="8">8 AWG</option>
+                  <option value="6">6 AWG</option>
+                  <option value="4">4 AWG</option>
+                  <option value="3">3 AWG</option>
+                  <option value="2">2 AWG</option>
+                  <option value="1">1 AWG</option>
+                  <option value="1/0">1/0 AWG</option>
+                  <option value="2/0">2/0 AWG</option>
+                  <option value="3/0">3/0 AWG</option>
+                  <option value="4/0">4/0 AWG</option>
+                  <option value="250">250 kcmil</option>
+                  <option value="300">300 kcmil</option>
+                  <option value="350">350 kcmil</option>
+                  <option value="400">400 kcmil</option>
+                  <option value="500">500 kcmil</option>
+                </select>
+              </div>
+              <div style={{ flex: '1' }}>
+                <input 
+                  type="number" 
+                  value={conductor.count} 
+                  onChange={(e) => updateConductor(index, 'count', e.target.value)}
+                  placeholder="Qty"
+                  min="0"
+                  style={{ width: '100%' }}
+                />
+              </div>
             </div>
             {conductors.length > 1 && (
               <button 
@@ -259,8 +262,8 @@ function ConduitFillCalculator({ onBack }) {
                   border: 'none', 
                   borderRadius: '4px',
                   padding: '8px 12px',
-                  fontSize: '12px',
-                  minWidth: '70px'
+                  fontSize: '14px',
+                  width: '100%'
                 }}
               >
                 Remove
