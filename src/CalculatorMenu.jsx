@@ -10,7 +10,8 @@ function CalculatorMenu({ onSelectCalculator }) {
     { id: 'conduit-fill', name: 'Conduit Fill', icon: '🔧', keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
     { id: 'ampacity', name: 'Ampacity Lookup', icon: '⚠️', keywords: 'ampacity current rating 310 temperature' },
     { id: 'motor-calculations', name: 'Motor Calculations', icon: '⚙️', keywords: 'motor flc protection starter 430' },
-    { id: 'load-calculations', name: 'Load Calculations', icon: '📊', keywords: 'load calculation service size residential commercial demand' }
+    { id: 'load-calculations', name: 'Load Calculations', icon: '📊', keywords: 'load calculation service size residential commercial demand' },
+    { id: 'transformer-sizing', name: 'Transformer Sizing', icon: '🔌', keywords: 'transformer kva sizing current primary secondary 450' }
   ];
 
   // Filter calculators based on search term
