@@ -378,6 +378,7 @@ function ConduitFillCalculator({ onBack }) {
           <li>1 conductor: 53% maximum fill</li>
           <li>2 conductors: 31% maximum fill</li>
           <li>3+ conductors: 40% maximum fill</li>
+          <li><strong>Nipples (under 24"):</strong> 60% maximum fill per NEC 314.16(B)(4)</li>
         </ul>
         <div style={{ fontSize: '12px', fontStyle: 'italic', marginTop: '10px' }}>
           Note: Equipment grounding conductors and bonding conductors count as conductors for fill calculations.
