@@ -206,7 +206,8 @@ function LoadCalculations() {
               backgroundColor: '#f8fafc', 
               padding: '12px', 
               borderRadius: '6px',
-              marginBottom: '10px'
+              marginBottom: '10px',
+              color: '#374151'
             }}>
               <strong>Connected Loads:</strong>
               <div>General Lighting: {results.generalLighting.toLocaleString()} VA</div>
@@ -221,7 +222,8 @@ function LoadCalculations() {
               backgroundColor: '#f8fafc', 
               padding: '12px', 
               borderRadius: '6px',
-              marginBottom: '10px'
+              marginBottom: '10px',
+              color: '#374151'
             }}>
               <strong>Demand Loads:</strong>
               <div>Lighting (with demand factors): {results.demandLighting.toFixed(0)} VA</div>
@@ -237,7 +239,8 @@ function LoadCalculations() {
               border: '2px solid #10b981',
               padding: '15px',
               borderRadius: '8px',
-              fontSize: '16px'
+              fontSize: '16px',
+              color: '#065f46'
             }}>
               <div><strong>Total Demand Load: {results.totalDemandKW.toFixed(2)} kW</strong></div>
               <div><strong>Total Amperage: {results.totalAmperage.toFixed(1)} A</strong></div>
@@ -258,7 +261,8 @@ function LoadCalculations() {
           padding: '15px', 
           backgroundColor: '#f8fafc',
           borderRadius: '8px',
-          fontSize: '13px'
+          fontSize: '13px',
+          color: '#374151'
         }}>
           <strong>NEC References:</strong>
           <div>220.12 - General Lighting (3 VA/sq ft)</div>
@@ -442,7 +446,8 @@ function LoadCalculations() {
               backgroundColor: '#f8fafc', 
               padding: '12px', 
               borderRadius: '6px',
-              marginBottom: '10px'
+              marginBottom: '10px',
+              color: '#374151'
             }}>
               <strong>Connected Loads:</strong>
               <div>Lighting: {results.lightingKW.toFixed(2)} kW ({results.lightingVA.toFixed(0)} VA)</div>
@@ -460,7 +465,8 @@ function LoadCalculations() {
               border: '2px solid #10b981',
               padding: '15px',
               borderRadius: '8px',
-              fontSize: '16px'
+              fontSize: '16px',
+              color: '#065f46'
             }}>
               <div><strong>Demand Load: {results.demandLoadKW.toFixed(2)} kW</strong></div>
               <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '5px' }}>
@@ -486,7 +492,8 @@ function LoadCalculations() {
           padding: '15px', 
           backgroundColor: '#f8fafc',
           borderRadius: '8px',
-          fontSize: '13px'
+          fontSize: '13px',
+          color: '#374151'
         }}>
           <strong>NEC References:</strong>
           <div>220.12 - General Lighting Loads by Occupancy</div>
