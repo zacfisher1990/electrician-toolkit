@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Package, Plus, Trash2, ArrowLeft } from 'lucide-react';
 
 function BoxFillCalculator({ onBack }) {
   const [boxType, setBoxType] = useState('4x1.5-square');
@@ -48,7 +49,6 @@ function BoxFillCalculator({ onBack }) {
     '3.5x2.125-masonry': { capacity: 21.0, name: '3-1/2" x 2-1/8" Masonry Box' }
   };
 
-  // NEC 314.16(B) - Volume allowances per conductor
   const wireAllowances = {
     '14': 2.0,
     '12': 2.25,
@@ -80,7 +80,6 @@ function BoxFillCalculator({ onBack }) {
   const calculateFill = () => {
     let totalFill = 0;
     
-    // Calculate conductor fill
     const conductorDetails = conductors.map(conductor => {
       const count = parseInt(conductor.count) || 0;
       const wireAllowance = wireAllowances[conductor.size];
@@ -96,7 +95,6 @@ function BoxFillCalculator({ onBack }) {
       };
     });
     
-    // Device fill - use largest conductor size for calculating device volume
     const largestWireSize = conductors.reduce((largest, conductor) => {
       const count = parseInt(conductor.count) || 0;
       if (count > 0) {
@@ -113,12 +111,10 @@ function BoxFillCalculator({ onBack }) {
     const deviceFill = (outlets + switches) * 2 * deviceWireAllowance;
     totalFill += deviceFill;
     
-    // Cable clamps (NEC 314.16(B)(2))
     const clamps = parseInt(devices.clamps) || 0;
     const clampFill = clamps > 0 ? deviceWireAllowance : 0;
     totalFill += clampFill;
     
-    // All ground wires count as 1 wire equivalent (NEC 314.16(B)(5))
     const groundFill = devices.groundWires ? deviceWireAllowance : 0;
     totalFill += groundFill;
     
@@ -139,295 +135,331 @@ function BoxFillCalculator({ onBack }) {
   const isOverfilled = results.totalFill > boxCapacity;
 
   return (
-    <div className="calculator-container">
+    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
       {onBack && (
-        <button onClick={onBack} style={{ marginBottom: '20px' }}>
-          ← Back to Menu
+        <button
+          onClick={onBack}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.75rem 1.5rem',
+            marginBottom: '1rem',
+            background: '#374151',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.5rem',
+            fontSize: '1rem',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          <ArrowLeft size={20} />
+          Back to Menu
         </button>
       )}
-      
-      <h2>Box Fill Calculator</h2>
-      <p className="small">
-        Calculate cubic inch fill for electrical boxes (NEC 314.16)
-      </p>
-      
-      <div style={{ marginBottom: '15px' }}>
-        <label>Box Type:</label>
-        <select 
-          value={boxType} 
-          onChange={(e) => setBoxType(e.target.value)}
-        >
-          <optgroup label="Device Boxes (Single Gang)">
-            <option value="3x2x1.5">{boxCapacities['3x2x1.5'].name} - {boxCapacities['3x2x1.5'].capacity} cu.in.</option>
-            <option value="3x2x2">{boxCapacities['3x2x2'].name} - {boxCapacities['3x2x2'].capacity} cu.in.</option>
-            <option value="3x2x2.25">{boxCapacities['3x2x2.25'].name} - {boxCapacities['3x2x2.25'].capacity} cu.in.</option>
-            <option value="3x2x2.5">{boxCapacities['3x2x2.5'].name} - {boxCapacities['3x2x2.5'].capacity} cu.in.</option>
-            <option value="3x2x2.75">{boxCapacities['3x2x2.75'].name} - {boxCapacities['3x2x2.75'].capacity} cu.in.</option>
-            <option value="3x2x3.5">{boxCapacities['3x2x3.5'].name} - {boxCapacities['3x2x3.5'].capacity} cu.in.</option>
-          </optgroup>
-          <optgroup label="Device Boxes (Multi-Gang)">
-            <option value="3x2x2-2gang">{boxCapacities['3x2x2-2gang'].name} - {boxCapacities['3x2x2-2gang'].capacity} cu.in.</option>
-            <option value="3x2x2.25-2gang">{boxCapacities['3x2x2.25-2gang'].name} - {boxCapacities['3x2x2.25-2gang'].capacity} cu.in.</option>
-            <option value="3x2x2.5-2gang">{boxCapacities['3x2x2.5-2gang'].name} - {boxCapacities['3x2x2.5-2gang'].capacity} cu.in.</option>
-            <option value="3x2x3.5-2gang">{boxCapacities['3x2x3.5-2gang'].name} - {boxCapacities['3x2x3.5-2gang'].capacity} cu.in.</option>
-            <option value="3x2x3.5-3gang">{boxCapacities['3x2x3.5-3gang'].name} - {boxCapacities['3x2x3.5-3gang'].capacity} cu.in.</option>
-          </optgroup>
-          <optgroup label="Square Boxes">
-            <option value="4x1.25-square">{boxCapacities['4x1.25-square'].name} - {boxCapacities['4x1.25-square'].capacity} cu.in.</option>
-            <option value="4x1.5-square">{boxCapacities['4x1.5-square'].name} - {boxCapacities['4x1.5-square'].capacity} cu.in.</option>
-            <option value="4x2.125-square">{boxCapacities['4x2.125-square'].name} - {boxCapacities['4x2.125-square'].capacity} cu.in.</option>
-            <option value="4-11/16x1.5-square">{boxCapacities['4-11/16x1.5-square'].name} - {boxCapacities['4-11/16x1.5-square'].capacity} cu.in.</option>
-            <option value="4-11/16x2.125-square">{boxCapacities['4-11/16x2.125-square'].name} - {boxCapacities['4-11/16x2.125-square'].capacity} cu.in.</option>
-          </optgroup>
-          <optgroup label="Round/Octagon Boxes">
-            <option value="4x1.25-round">{boxCapacities['4x1.25-round'].name} - {boxCapacities['4x1.25-round'].capacity} cu.in.</option>
-            <option value="4x1.5-round">{boxCapacities['4x1.5-round'].name} - {boxCapacities['4x1.5-round'].capacity} cu.in.</option>
-            <option value="4x2.125-round">{boxCapacities['4x2.125-round'].name} - {boxCapacities['4x2.125-round'].capacity} cu.in.</option>
-            <option value="4x1.25-octagon">{boxCapacities['4x1.25-octagon'].name} - {boxCapacities['4x1.25-octagon'].capacity} cu.in.</option>
-            <option value="4x1.5-octagon">{boxCapacities['4x1.5-octagon'].name} - {boxCapacities['4x1.5-octagon'].capacity} cu.in.</option>
-            <option value="4x2.125-octagon">{boxCapacities['4x2.125-octagon'].name} - {boxCapacities['4x2.125-octagon'].capacity} cu.in.</option>
-          </optgroup>
-          <optgroup label="Masonry Boxes">
-            <option value="3.5x1.5-masonry">{boxCapacities['3.5x1.5-masonry'].name} - {boxCapacities['3.5x1.5-masonry'].capacity} cu.in.</option>
-            <option value="3.5x2.125-masonry">{boxCapacities['3.5x2.125-masonry'].name} - {boxCapacities['3.5x2.125-masonry'].capacity} cu.in.</option>
-          </optgroup>
-        </select>
+
+      <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Package size={32} />
+          <div>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Box Fill Calculator</h1>
+            <p style={{ fontSize: '0.875rem', margin: 0 }}>Calculate cubic inch fill for electrical boxes (NEC 314.16)</p>
+          </div>
+        </div>
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '10px' }}>
-          <strong>Conductors:</strong>
-        </label>
-        {conductors.map((conductor, index) => (
-          <div key={index} style={{ 
-            backgroundColor: '#f8fafc',
-            padding: '10px',
-            borderRadius: '6px',
-            marginBottom: '10px'
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              gap: '10px', 
-              marginBottom: conductors.length > 1 ? '8px' : '0'
+      <div style={{ background: 'white', padding: '1.5rem' }}>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            Box Type
+          </label>
+          <select 
+            value={boxType} 
+            onChange={(e) => setBoxType(e.target.value)}
+            style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+          >
+            <optgroup label="Device Boxes (Single Gang)">
+              {Object.entries(boxCapacities).filter(([key]) => key.startsWith('3x2x') && !key.includes('gang')).map(([key, val]) => (
+                <option key={key} value={key}>{val.name} - {val.capacity} cu.in.</option>
+              ))}
+            </optgroup>
+            <optgroup label="Device Boxes (Multi-Gang)">
+              {Object.entries(boxCapacities).filter(([key]) => key.includes('gang')).map(([key, val]) => (
+                <option key={key} value={key}>{val.name} - {val.capacity} cu.in.</option>
+              ))}
+            </optgroup>
+            <optgroup label="Square Boxes">
+              {Object.entries(boxCapacities).filter(([key]) => key.includes('square')).map(([key, val]) => (
+                <option key={key} value={key}>{val.name} - {val.capacity} cu.in.</option>
+              ))}
+            </optgroup>
+            <optgroup label="Round/Octagon Boxes">
+              {Object.entries(boxCapacities).filter(([key]) => key.includes('round') || key.includes('octagon')).map(([key, val]) => (
+                <option key={key} value={key}>{val.name} - {val.capacity} cu.in.</option>
+              ))}
+            </optgroup>
+            <optgroup label="Masonry Boxes">
+              {Object.entries(boxCapacities).filter(([key]) => key.includes('masonry')).map(([key, val]) => (
+                <option key={key} value={key}>{val.name} - {val.capacity} cu.in.</option>
+              ))}
+            </optgroup>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '700', color: '#374151', marginBottom: '0.75rem' }}>
+            Conductors
+          </label>
+          {conductors.map((conductor, index) => (
+            <div key={index} style={{ 
+              background: '#f9fafb',
+              padding: '1rem',
+              borderRadius: '0.5rem',
+              marginBottom: '0.75rem',
+              border: '1px solid #e5e7eb'
             }}>
-              <div style={{ flex: '1' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: conductors.length > 1 ? '0.75rem' : 0 }}>
                 <select 
                   value={conductor.size} 
                   onChange={(e) => updateConductor(index, 'size', e.target.value)}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
                 >
-                  <option value="14">14 AWG</option>
-                  <option value="12">12 AWG</option>
-                  <option value="10">10 AWG</option>
-                  <option value="8">8 AWG</option>
-                  <option value="6">6 AWG</option>
-                  <option value="4">4 AWG</option>
-                  <option value="3">3 AWG</option>
-                  <option value="2">2 AWG</option>
-                  <option value="1">1 AWG</option>
+                  {Object.keys(wireAllowances).map(size => (
+                    <option key={size} value={size}>{size} AWG</option>
+                  ))}
                 </select>
-              </div>
-              <div style={{ flex: '1' }}>
                 <input 
                   type="number" 
                   value={conductor.count} 
                   onChange={(e) => updateConductor(index, 'count', e.target.value)}
-                  placeholder="Qty"
+                  placeholder="Quantity"
                   min="0"
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
                 />
               </div>
+              {conductors.length > 1 && (
+                <button 
+                  onClick={() => removeConductor(index)}
+                  style={{ 
+                    width: '100%',
+                    background: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.25rem',
+                    padding: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <Trash2 size={16} />
+                  Remove
+                </button>
+              )}
             </div>
-            {conductors.length > 1 && (
-              <button 
-                onClick={() => removeConductor(index)}
-                style={{ 
-                  backgroundColor: '#ef4444', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '4px',
-                  padding: '8px 12px',
-                  fontSize: '14px',
-                  width: '100%'
-                }}
-              >
-                Remove
-              </button>
-            )}
-          </div>
-        ))}
-        <button 
-          onClick={addConductor}
-          style={{ 
-            backgroundColor: '#10b981', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '6px',
-            padding: '10px 15px',
-            fontSize: '14px',
-            marginTop: '5px'
-          }}
-        >
-          + Add Wire Size
-        </button>
-        <div className="small" style={{ marginTop: '8px' }}>
-          Count all insulated conductors entering, leaving, or passing through the box
+          ))}
+          <button 
+            onClick={addConductor}
+            style={{ 
+              width: '100%',
+              background: '#16a34a',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.25rem',
+              padding: '0.625rem',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <Plus size={16} />
+            Add Wire Size
+          </button>
+          <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem', margin: '0.5rem 0 0 0' }}>
+            Count all insulated conductors entering, leaving, or passing through the box
+          </p>
         </div>
-      </div>
-      
-      <div style={{ marginBottom: '15px' }}>
-        <label>Receptacles/Outlets:</label>
-        <input 
-          type="number" 
-          value={devices.outlets} 
-          onChange={(e) => setDevices({...devices, outlets: e.target.value})}
-          placeholder="0"
-          min="0"
-        />
-        <div className="small">Each device counts as 2 conductors</div>
-      </div>
-      
-      <div style={{ marginBottom: '15px' }}>
-        <label>Switches:</label>
-        <input 
-          type="number" 
-          value={devices.switches} 
-          onChange={(e) => setDevices({...devices, switches: e.target.value})}
-          placeholder="0"
-          min="0"
-        />
-        <div className="small">Each device counts as 2 conductors</div>
-      </div>
-      
-      <div style={{ marginBottom: '15px' }}>
-        <label>Cable Clamps (or fixture studs):</label>
-        <input 
-          type="number" 
-          value={devices.clamps} 
-          onChange={(e) => setDevices({...devices, clamps: e.target.value})}
-          placeholder="0"
-          min="0"
-        />
-        <div className="small">One or more clamps = 1 conductor volume</div>
-      </div>
-      
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <input 
-            type="checkbox" 
-            checked={devices.groundWires} 
-            onChange={(e) => setDevices({...devices, groundWires: e.target.checked})}
-            style={{ width: 'auto', margin: 0 }}
-          />
-          <span>Equipment Grounding Conductors Present</span>
-        </label>
-        <div className="small" style={{ marginLeft: '30px' }}>
-          All grounds combined count as 1 conductor volume
-        </div>
-      </div>
-      
-      <div className={`result ${isOverfilled ? 'error' : ''}`}>
-        <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#1e3a8a' }}>Results:</h3>
-        
-        {results.conductorDetails.length > 0 && results.conductorDetails.some(c => c.count > 0) && (
-          <div style={{ 
-            backgroundColor: '#f8fafc', 
-            padding: '12px', 
-            borderRadius: '6px',
-            marginBottom: '15px'
-          }}>
-            <strong style={{ color: '#374151' }}>Conductor Breakdown:</strong>
-            {results.conductorDetails.map((detail, index) => (
-              detail.count > 0 && (
-                <div key={index} style={{ 
-                  marginTop: '8px',
-                  paddingTop: '8px',
-                  borderTop: index > 0 && results.conductorDetails.slice(0, index).some(c => c.count > 0) ? '1px solid #e5e7eb' : 'none',
-                  color: '#374151'
-                }}>
-                  <div>{detail.count}x {detail.size} AWG</div>
-                  <div style={{ fontSize: '13px', color: '#6b7280' }}>
-                    {detail.allowanceEach} cu.in. each = {detail.subtotal.toFixed(2)} cu.in. total
-                  </div>
-                </div>
-              )
-            ))}
-          </div>
-        )}
 
-        <div style={{ color: '#374151' }}>
-          <strong>Box Capacity:</strong> {boxCapacity} cu.in.
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Receptacles/Outlets
+            </label>
+            <input 
+              type="number" 
+              value={devices.outlets} 
+              onChange={(e) => setDevices({...devices, outlets: e.target.value})}
+              placeholder="0"
+              min="0"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+            <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem', margin: '0.25rem 0 0 0' }}>Each device counts as 2 conductors</p>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Switches
+            </label>
+            <input 
+              type="number" 
+              value={devices.switches} 
+              onChange={(e) => setDevices({...devices, switches: e.target.value})}
+              placeholder="0"
+              min="0"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+            <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem', margin: '0.25rem 0 0 0' }}>Each device counts as 2 conductors</p>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Cable Clamps
+            </label>
+            <input 
+              type="number" 
+              value={devices.clamps} 
+              onChange={(e) => setDevices({...devices, clamps: e.target.value})}
+              placeholder="0"
+              min="0"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+            <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem', margin: '0.25rem 0 0 0' }}>One or more = 1 conductor volume</p>
+          </div>
         </div>
-        {results.deviceFill > 0 && (
-          <div style={{ color: '#374151' }}>
-            <strong>Devices:</strong> {results.deviceFill.toFixed(2)} cu.in.
-          </div>
-        )}
-        {results.clampFill > 0 && (
-          <div style={{ color: '#374151' }}>
-            <strong>Clamps:</strong> {results.clampFill.toFixed(2)} cu.in.
-          </div>
-        )}
-        {results.groundFill > 0 && (
-          <div style={{ color: '#374151' }}>
-            <strong>Grounds:</strong> {results.groundFill.toFixed(2)} cu.in.
-          </div>
-        )}
-        <div style={{ color: '#374151', marginTop: '5px', paddingTop: '5px', borderTop: '1px solid #e5e7eb' }}>
-          <strong>Calculated Fill:</strong> {results.totalFill.toFixed(2)} cu.in.
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+            <input 
+              type="checkbox" 
+              checked={devices.groundWires} 
+              onChange={(e) => setDevices({...devices, groundWires: e.target.checked})}
+              style={{ width: '1.25rem', height: '1.25rem', cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Equipment Grounding Conductors Present</span>
+          </label>
+          <p style={{ fontSize: '0.75rem', color: '#6b7280', marginLeft: '2rem', margin: '0.25rem 0 0 2rem' }}>
+            All grounds combined count as 1 conductor volume
+          </p>
         </div>
+
+        {/* Results Box */}
         <div style={{ 
-          fontWeight: 'bold',
-          fontSize: '18px',
-          marginTop: '10px',
-          color: isOverfilled ? '#dc2626' : '#059669'
+          background: isOverfilled ? '#fef2f2' : '#dcfce7', 
+          border: `2px solid ${isOverfilled ? '#dc2626' : '#16a34a'}`, 
+          padding: '1.5rem', 
+          borderRadius: '0.5rem'
         }}>
-          Fill: {fillPercentage}%
-        </div>
-        
-        {isOverfilled && (
-          <div style={{ 
-            color: '#dc2626', 
-            fontWeight: 'bold', 
-            marginTop: '15px',
-            padding: '10px',
-            backgroundColor: '#fef2f2',
-            borderRadius: '5px',
-            border: '1px solid #fecaca'
-          }}>
-            ⚠️ BOX OVERFILLED - Violates NEC 314.16
-            <div style={{ fontSize: '14px', fontWeight: 'normal', marginTop: '5px' }}>
-              Reduce number of devices or use larger box
+          <h3 style={{ fontWeight: 'bold', color: isOverfilled ? '#991b1b' : '#166534', marginTop: 0, marginBottom: '1rem' }}>
+            Results
+          </h3>
+          
+          {results.conductorDetails.length > 0 && results.conductorDetails.some(c => c.count > 0) && (
+            <div style={{ 
+              background: 'white', 
+              padding: '1rem', 
+              borderRadius: '0.375rem',
+              marginBottom: '1rem'
+            }}>
+              <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>Conductor Breakdown:</strong>
+              {results.conductorDetails.map((detail, index) => (
+                detail.count > 0 && (
+                  <div key={index} style={{ 
+                    marginTop: index > 0 ? '0.5rem' : 0,
+                    paddingTop: index > 0 ? '0.5rem' : 0,
+                    borderTop: index > 0 ? '1px solid #e5e7eb' : 'none',
+                    color: '#374151'
+                  }}>
+                    <div style={{ fontWeight: '600' }}>{detail.count}x {detail.size} AWG</div>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                      {detail.allowanceEach} cu.in. each = {detail.subtotal.toFixed(2)} cu.in. total
+                    </div>
+                  </div>
+                )
+              ))}
             </div>
-          </div>
-        )}
+          )}
 
-        {!isOverfilled && results.totalFill > 0 && (
-          <div style={{ 
-            color: '#059669', 
-            marginTop: '10px',
-            fontSize: '14px'
-          }}>
-            ✓ Box fill is within NEC limits
+          <div style={{ color: isOverfilled ? '#7f1d1d' : '#14532d', marginBottom: '0.5rem' }}>
+            <strong>Box Capacity:</strong> {boxCapacity} cu.in.
           </div>
-        )}
+          {results.deviceFill > 0 && (
+            <div style={{ color: isOverfilled ? '#7f1d1d' : '#14532d', marginBottom: '0.5rem' }}>
+              <strong>Devices:</strong> {results.deviceFill.toFixed(2)} cu.in.
+            </div>
+          )}
+          {results.clampFill > 0 && (
+            <div style={{ color: isOverfilled ? '#7f1d1d' : '#14532d', marginBottom: '0.5rem' }}>
+              <strong>Clamps:</strong> {results.clampFill.toFixed(2)} cu.in.
+            </div>
+          )}
+          {results.groundFill > 0 && (
+            <div style={{ color: isOverfilled ? '#7f1d1d' : '#14532d', marginBottom: '0.5rem' }}>
+              <strong>Grounds:</strong> {results.groundFill.toFixed(2)} cu.in.
+            </div>
+          )}
+          <div style={{ 
+            color: isOverfilled ? '#7f1d1d' : '#14532d', 
+            marginTop: '0.75rem', 
+            paddingTop: '0.75rem', 
+            borderTop: `1px solid ${isOverfilled ? '#fecaca' : '#bbf7d0'}` 
+          }}>
+            <strong>Calculated Fill:</strong> {results.totalFill.toFixed(2)} cu.in.
+          </div>
+          <div style={{ 
+            fontWeight: 'bold',
+            fontSize: '1.5rem',
+            marginTop: '0.75rem',
+            color: isOverfilled ? '#dc2626' : '#16a34a'
+          }}>
+            Fill: {fillPercentage}%
+          </div>
+          
+          {isOverfilled && (
+            <div style={{ 
+              color: '#dc2626', 
+              fontWeight: 'bold', 
+              marginTop: '1rem',
+              padding: '0.75rem',
+              background: '#fee2e2',
+              borderRadius: '0.375rem',
+              border: '1px solid #fecaca'
+            }}>
+              <div style={{ fontSize: '1.125rem' }}>⚠ BOX OVERFILLED - Violates NEC 314.16</div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 'normal', marginTop: '0.5rem' }}>
+                Reduce number of devices or use larger box
+              </div>
+            </div>
+          )}
+
+          {!isOverfilled && results.totalFill > 0 && (
+            <div style={{ 
+              color: '#16a34a', 
+              marginTop: '0.75rem',
+              fontSize: '1rem',
+              fontWeight: '600'
+            }}>
+              ✓ Box fill is within NEC limits
+            </div>
+          )}
+        </div>
       </div>
 
-      <div style={{ 
-        marginTop: '20px', 
-        padding: '15px', 
-        backgroundColor: '#f8fafc',
-        borderRadius: '8px',
-        fontSize: '13px',
-        color: '#374151'
-      }}>
-        <strong>NEC 314.16 - Box Fill Requirements:</strong>
-        <ul style={{ textAlign: 'left', paddingLeft: '20px', margin: '10px 0' }}>
-          <li>Each conductor = volume per Table 314.16(B)</li>
-          <li>Each device (switch/receptacle) = 2 conductor volumes (based on largest conductor)</li>
-          <li>All equipment grounding conductors = 1 conductor volume (based on largest conductor)</li>
-          <li>Each cable clamp or fixture stud = 1 conductor volume (based on largest conductor)</li>
-          <li>Internal cable clamps (one or more) = 1 conductor volume</li>
+      <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.75rem' }}>NEC 314.16 - Box Fill Requirements:</p>
+        <ul style={{ paddingLeft: '1.5rem', margin: 0 }}>
+          <li style={{ marginBottom: '0.25rem' }}>Each conductor = volume per Table 314.16(B)</li>
+          <li style={{ marginBottom: '0.25rem' }}>Each device (switch/receptacle) = 2 conductor volumes</li>
+          <li style={{ marginBottom: '0.25rem' }}>All equipment grounding conductors = 1 conductor volume</li>
+          <li style={{ marginBottom: '0.25rem' }}>Cable clamps (one or more) = 1 conductor volume</li>
         </ul>
       </div>
     </div>
