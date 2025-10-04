@@ -20,6 +20,10 @@ const OhmsLawCalculator = ({ onBack }) => {
     { id: 1, R: '', V: '', I: '', P: '' }
   ]);
 
+  // Total circuit inputs (optional)
+  const [seriesTotals, setSeriesTotals] = useState({ R: '', V: '', I: '', P: '' });
+  const [parallelTotals, setParallelTotals] = useState({ R: '', V: '', I: '', P: '' });
+
   // Basic Ohm's Law calculations
   const calculateBasic = (field) => {
     const V = parseFloat(voltage);
@@ -84,110 +88,166 @@ const OhmsLawCalculator = ({ onBack }) => {
       c.id === id ? { ...c, [field]: value } : c
     ));
   };
+  const validateSeriesTotals = (components, totals) => {
+  const conflicts = [];
+  
+  // Check if total current conflicts with any component current
+  if (totals.I && totals.I !== '') {
+    const totalI = parseFloat(totals.I);
+    components.forEach((comp, idx) => {
+      if (comp.I && comp.I !== '') {
+        const compI = parseFloat(comp.I);
+        if (Math.abs(compI - totalI) > 0.01) {
+          conflicts.push(`Total current (${totalI}A) conflicts with Component ${idx + 1} current (${compI}A)`);
+        }
+      }
+    });
+  }
+  
+  return conflicts;
+};
+
+const validateParallelTotals = (components, totals) => {
+  const conflicts = [];
+  
+  // Check if total voltage conflicts with any component voltage
+  if (totals.V && totals.V !== '') {
+    const totalV = parseFloat(totals.V);
+    components.forEach((comp, idx) => {
+      if (comp.V && comp.V !== '') {
+        const compV = parseFloat(comp.V);
+        if (Math.abs(compV - totalV) > 0.01) {
+          conflicts.push(`Total voltage (${totalV}V) conflicts with Component ${idx + 1} voltage (${compV}V)`);
+        }
+      }
+    });
+  }
+  
+  return conflicts;
+};
 
   const calculateSeries = () => {
-    let components = [...seriesComponents];
-    let changed = true;
-    let iterations = 0;
-    const maxIterations = 50;
+  // Validate totals first
+  const conflicts = validateSeriesTotals(seriesComponents, seriesTotals);
+  if (conflicts.length > 0) {
+    alert('Conflicts detected:\n' + conflicts.join('\n'));
+    return;
+  }
 
-    while (changed && iterations < maxIterations) {
-      changed = false;
-      iterations++;
-      
-      // Find known current (same for all in series)
-      let knownCurrent = null;
+  let components = [...seriesComponents];
+  
+  // Apply total current if provided
+  if (seriesTotals.I && seriesTotals.I !== '') {
+    const totalI = parseFloat(seriesTotals.I);
+    components = components.map(comp => {
+      if (!comp.I || comp.I === '') {
+        return { ...comp, I: totalI.toFixed(3) };
+      }
+      return comp;
+    });
+  }
+
+  let changed = true;
+  let iterations = 0;
+  const maxIterations = 50;
+
+  while (changed && iterations < maxIterations) {
+    changed = false;
+    iterations++;
+    
+    // Find known current (same for all in series)
+    let knownCurrent = null;
+    for (let comp of components) {
+      if (comp.I && !isNaN(parseFloat(comp.I))) {
+        knownCurrent = parseFloat(comp.I);
+        break;
+      }
+    }
+
+    // If no current known, try to derive from any component
+    if (knownCurrent === null) {
       for (let comp of components) {
-        if (comp.I && !isNaN(parseFloat(comp.I))) {
-          knownCurrent = parseFloat(comp.I);
+        const V = parseFloat(comp.V);
+        const R = parseFloat(comp.R);
+        const P = parseFloat(comp.P);
+        
+        if (!isNaN(V) && !isNaN(R) && R !== 0) {
+          knownCurrent = V / R;
+          break;
+        } else if (!isNaN(P) && !isNaN(V) && V !== 0) {
+          knownCurrent = P / V;
+          break;
+        } else if (!isNaN(P) && !isNaN(R) && R !== 0) {
+          knownCurrent = Math.sqrt(P / R);
           break;
         }
       }
+    }
 
-      // If no current known, try to derive from any component
-      if (knownCurrent === null) {
-        for (let comp of components) {
-          const V = parseFloat(comp.V);
-          const R = parseFloat(comp.R);
-          const P = parseFloat(comp.P);
-          
-          if (!isNaN(V) && !isNaN(R) && R !== 0) {
-            knownCurrent = V / R;
-            break;
-          } else if (!isNaN(P) && !isNaN(V) && V !== 0) {
-            knownCurrent = P / V;
-            break;
-          } else if (!isNaN(P) && !isNaN(R) && R !== 0) {
-            knownCurrent = Math.sqrt(P / R);
-            break;
-          }
-        }
-      }
-
-      // Apply known current to all components
-      if (knownCurrent !== null) {
-        components = components.map(comp => {
-          if (!comp.I || comp.I === '') {
-            changed = true;
-            return { ...comp, I: knownCurrent.toFixed(3) };
-          }
-          return comp;
-        });
-      }
-
-      // Calculate missing values for each component
+    // Apply known current to all components
+    if (knownCurrent !== null) {
       components = components.map(comp => {
-        const newComp = { ...comp };
-        const V = parseFloat(comp.V);
-        const I = parseFloat(comp.I);
-        const R = parseFloat(comp.R);
-        const P = parseFloat(comp.P);
-
-        // Calculate R
-        if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
-          newComp.R = (V / I).toFixed(3);
+        if (!comp.I || comp.I === '') {
           changed = true;
-        } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
-          newComp.R = (P / (I * I)).toFixed(3);
-          changed = true;
-        } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
-          newComp.R = (V * V / P).toFixed(3);
-          changed = true;
+          return { ...comp, I: knownCurrent.toFixed(3) };
         }
-
-        // Calculate V
-        const newR = parseFloat(newComp.R);
-        const newI = parseFloat(newComp.I);
-        if ((comp.V === '' || isNaN(V)) && !isNaN(newI) && !isNaN(newR)) {
-          newComp.V = (newI * newR).toFixed(3);
-          changed = true;
-        } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newI) && newI !== 0) {
-          newComp.V = (P / newI).toFixed(3);
-          changed = true;
-        } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newR)) {
-          newComp.V = Math.sqrt(P * newR).toFixed(3);
-          changed = true;
-        }
-
-        // Calculate P
-        const newV = parseFloat(newComp.V);
-        if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
-          newComp.P = (newV * newI).toFixed(3);
-          changed = true;
-        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
-          newComp.P = (newI * newI * newR).toFixed(3);
-          changed = true;
-        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
-          newComp.P = (newV * newV / newR).toFixed(3);
-          changed = true;
-        }
-
-        return newComp;
+        return comp;
       });
     }
 
-    setSeriesComponents(components);
-  };
+    // Calculate missing values for each component
+    components = components.map(comp => {
+      const newComp = { ...comp };
+      const V = parseFloat(comp.V);
+      const I = parseFloat(comp.I);
+      const R = parseFloat(comp.R);
+      const P = parseFloat(comp.P);
+
+      // Calculate R
+      if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
+        newComp.R = (V / I).toFixed(3);
+        changed = true;
+      } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
+        newComp.R = (P / (I * I)).toFixed(3);
+        changed = true;
+      } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
+        newComp.R = (V * V / P).toFixed(3);
+        changed = true;
+      }
+
+      // Calculate V
+      const newR = parseFloat(newComp.R);
+      const newI = parseFloat(newComp.I);
+      if ((comp.V === '' || isNaN(V)) && !isNaN(newI) && !isNaN(newR)) {
+        newComp.V = (newI * newR).toFixed(3);
+        changed = true;
+      } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newI) && newI !== 0) {
+        newComp.V = (P / newI).toFixed(3);
+        changed = true;
+      } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newR)) {
+        newComp.V = Math.sqrt(P * newR).toFixed(3);
+        changed = true;
+      }
+
+      // Calculate P
+      const newV = parseFloat(newComp.V);
+      if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
+        newComp.P = (newV * newI).toFixed(3);
+        changed = true;
+      } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
+        newComp.P = (newI * newI * newR).toFixed(3);
+        changed = true;
+      } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
+        newComp.P = (newV * newV / newR).toFixed(3);
+        changed = true;
+      }
+
+      return newComp;
+    });
+  }
+
+  setSeriesComponents(components);
+};
 
   const clearSeries = () => {
     setSeriesComponents([{ id: 1, R: '', V: '', I: '', P: '' }]);
@@ -212,108 +272,127 @@ const OhmsLawCalculator = ({ onBack }) => {
   };
 
   const calculateParallel = () => {
-    let components = [...parallelComponents];
-    let changed = true;
-    let iterations = 0;
-    const maxIterations = 50;
+  // Validate totals first
+  const conflicts = validateParallelTotals(parallelComponents, parallelTotals);
+  if (conflicts.length > 0) {
+    alert('Conflicts detected:\n' + conflicts.join('\n'));
+    return;
+  }
 
-    while (changed && iterations < maxIterations) {
-      changed = false;
-      iterations++;
-      
-      // Find known voltage (same for all in parallel)
-      let knownVoltage = null;
+  let components = [...parallelComponents];
+  
+  // Apply total voltage if provided
+  if (parallelTotals.V && parallelTotals.V !== '') {
+    const totalV = parseFloat(parallelTotals.V);
+    components = components.map(comp => {
+      if (!comp.V || comp.V === '') {
+        return { ...comp, V: totalV.toFixed(3) };
+      }
+      return comp;
+    });
+  }
+
+  let changed = true;
+  let iterations = 0;
+  const maxIterations = 50;
+
+  while (changed && iterations < maxIterations) {
+    changed = false;
+    iterations++;
+    
+    // Find known voltage (same for all in parallel)
+    let knownVoltage = null;
+    for (let comp of components) {
+      if (comp.V && !isNaN(parseFloat(comp.V))) {
+        knownVoltage = parseFloat(comp.V);
+        break;
+      }
+    }
+
+    // If no voltage known, try to derive from any component
+    if (knownVoltage === null) {
       for (let comp of components) {
-        if (comp.V && !isNaN(parseFloat(comp.V))) {
-          knownVoltage = parseFloat(comp.V);
-          break;
-        }
-      }
-
-      // If no voltage known, try to derive from any component
-      if (knownVoltage === null) {
-        for (let comp of components) {
-          const I = parseFloat(comp.I);
-          const R = parseFloat(comp.R);
-          const P = parseFloat(comp.P);
-          
-          if (!isNaN(I) && !isNaN(R)) {
-            knownVoltage = I * R;
-            break;
-          } else if (!isNaN(P) && !isNaN(I) && I !== 0) {
-            knownVoltage = P / I;
-            break;
-          } else if (!isNaN(P) && !isNaN(R)) {
-            knownVoltage = Math.sqrt(P * R);
-            break;
-          }
-        }
-      }
-
-      // Apply known voltage to all components
-      if (knownVoltage !== null) {
-        components = components.map(comp => {
-          if (!comp.V || comp.V === '') {
-            changed = true;
-            return { ...comp, V: knownVoltage.toFixed(3) };
-          }
-          return comp;
-        });
-      }
-
-      // Calculate missing values for each component
-      components = components.map(comp => {
-        const newComp = { ...comp };
-        const V = parseFloat(comp.V);
         const I = parseFloat(comp.I);
         const R = parseFloat(comp.R);
         const P = parseFloat(comp.P);
-
-        // Calculate R
-        if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
-          newComp.R = (V / I).toFixed(3);
-          changed = true;
-        } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
-          newComp.R = (P / (I * I)).toFixed(3);
-          changed = true;
-        } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
-          newComp.R = (V * V / P).toFixed(3);
-          changed = true;
+        
+        if (!isNaN(I) && !isNaN(R)) {
+          knownVoltage = I * R;
+          break;
+        } else if (!isNaN(P) && !isNaN(I) && I !== 0) {
+          knownVoltage = P / I;
+          break;
+        } else if (!isNaN(P) && !isNaN(R)) {
+          knownVoltage = Math.sqrt(P * R);
+          break;
         }
+      }
+    }
 
-        // Calculate I
-        const newR = parseFloat(newComp.R);
-        const newV = parseFloat(newComp.V);
-        if ((comp.I === '' || isNaN(I)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
-          newComp.I = (newV / newR).toFixed(3);
+    // Apply known voltage to all components
+    if (knownVoltage !== null) {
+      components = components.map(comp => {
+        if (!comp.V || comp.V === '') {
           changed = true;
-        } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newV) && newV !== 0) {
-          newComp.I = (P / newV).toFixed(3);
-          changed = true;
-        } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newR) && newR !== 0) {
-          newComp.I = Math.sqrt(P / newR).toFixed(3);
-          changed = true;
+          return { ...comp, V: knownVoltage.toFixed(3) };
         }
-
-        // Calculate P
-        const newI = parseFloat(newComp.I);
-        if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
-          newComp.P = (newV * newI).toFixed(3);
-          changed = true;
-        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
-          newComp.P = (newI * newI * newR).toFixed(3);
-          changed = true;
-        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
-          newComp.P = (newV * newV / newR).toFixed(3);
-          changed = true;
-        }
-
-        return newComp;
+        return comp;
       });
     }
 
-    setParallelComponents(components);
-  };
+    // Calculate missing values for each component
+    components = components.map(comp => {
+      const newComp = { ...comp };
+      const V = parseFloat(comp.V);
+      const I = parseFloat(comp.I);
+      const R = parseFloat(comp.R);
+      const P = parseFloat(comp.P);
+
+      // Calculate R
+      if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
+        newComp.R = (V / I).toFixed(3);
+        changed = true;
+      } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
+        newComp.R = (P / (I * I)).toFixed(3);
+        changed = true;
+      } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
+        newComp.R = (V * V / P).toFixed(3);
+        changed = true;
+      }
+
+      // Calculate I
+      const newR = parseFloat(newComp.R);
+      const newV = parseFloat(newComp.V);
+      if ((comp.I === '' || isNaN(I)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
+        newComp.I = (newV / newR).toFixed(3);
+        changed = true;
+      } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newV) && newV !== 0) {
+        newComp.I = (P / newV).toFixed(3);
+        changed = true;
+      } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newR) && newR !== 0) {
+        newComp.I = Math.sqrt(P / newR).toFixed(3);
+        changed = true;
+      }
+
+      // Calculate P
+      const newI = parseFloat(newComp.I);
+      if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
+        newComp.P = (newV * newI).toFixed(3);
+        changed = true;
+      } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
+        newComp.P = (newI * newI * newR).toFixed(3);
+        changed = true;
+      } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
+        newComp.P = (newV * newV / newR).toFixed(3);
+        changed = true;
+      }
+
+      return newComp;
+    });
+  }
+
+  setParallelComponents(components);
+};
 
   const clearParallel = () => {
     setParallelComponents([{ id: 1, R: '', V: '', I: '', P: '' }]);
@@ -512,6 +591,53 @@ const OhmsLawCalculator = ({ onBack }) => {
                     Series Circuit: Current is constant across all components
                   </p>
                 </div>
+
+                <div className="bg-gray-50 border-2 border-gray-300 p-4 rounded mb-4">
+  <h3 className="font-bold text-gray-700 mb-3">Circuit Totals (Optional)</h3>
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div>
+      <label className="block text-xs font-semibold text-gray-600 mb-1">Total R (Ω)</label>
+      <input
+        type="number"
+        value={seriesTotals.R}
+        onChange={(e) => setSeriesTotals({...seriesTotals, R: e.target.value})}
+        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+        placeholder="Optional"
+      />
+    </div>
+    <div>
+      <label className="block text-xs font-semibold text-gray-600 mb-1">Total V (V)</label>
+      <input
+        type="number"
+        value={seriesTotals.V}
+        onChange={(e) => setSeriesTotals({...seriesTotals, V: e.target.value})}
+        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+        placeholder="Optional"
+      />
+    </div>
+    <div>
+      <label className="block text-xs font-semibold text-gray-600 mb-1">Total I (A)</label>
+      <input
+        type="number"
+        value={seriesTotals.I}
+        onChange={(e) => setSeriesTotals({...seriesTotals, I: e.target.value})}
+        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+        placeholder="Optional"
+      />
+    </div>
+    <div>
+      <label className="block text-xs font-semibold text-gray-600 mb-1">Total P (W)</label>
+      <input
+        type="number"
+        value={seriesTotals.P}
+        onChange={(e) => setSeriesTotals({...seriesTotals, P: e.target.value})}
+        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+        placeholder="Optional"
+      />
+    </div>
+  </div>
+  <p className="text-xs text-gray-500 mt-2">Enter known total values to help solve the circuit. Series: Current is constant.</p>
+</div>
                 
                 {seriesComponents.map((comp, index) => (
                   <div key={comp.id} className="bg-gray-50 p-4 rounded border-2 border-gray-200">
@@ -622,6 +748,53 @@ const OhmsLawCalculator = ({ onBack }) => {
                     Parallel Circuit: Voltage is constant across all components
                   </p>
                 </div>
+
+                <div className="bg-gray-50 border-2 border-gray-300 p-4 rounded mb-4">
+  <h3 className="font-bold text-gray-700 mb-3">Circuit Totals (Optional)</h3>
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div>
+      <label className="block text-xs font-semibold text-gray-600 mb-1">Total R (Ω)</label>
+      <input
+        type="number"
+        value={parallelTotals.R}
+        onChange={(e) => setParallelTotals({...parallelTotals, R: e.target.value})}
+        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+        placeholder="Optional"
+      />
+    </div>
+    <div>
+      <label className="block text-xs font-semibold text-gray-600 mb-1">Total V (V)</label>
+      <input
+        type="number"
+        value={parallelTotals.V}
+        onChange={(e) => setParallelTotals({...parallelTotals, V: e.target.value})}
+        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+        placeholder="Optional"
+      />
+    </div>
+    <div>
+      <label className="block text-xs font-semibold text-gray-600 mb-1">Total I (A)</label>
+      <input
+        type="number"
+        value={parallelTotals.I}
+        onChange={(e) => setParallelTotals({...parallelTotals, I: e.target.value})}
+        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+        placeholder="Optional"
+      />
+    </div>
+    <div>
+      <label className="block text-xs font-semibold text-gray-600 mb-1">Total P (W)</label>
+      <input
+        type="number"
+        value={parallelTotals.P}
+        onChange={(e) => setParallelTotals({...parallelTotals, P: e.target.value})}
+        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+        placeholder="Optional"
+      />
+    </div>
+  </div>
+  <p className="text-xs text-gray-500 mt-2">Enter known total values to help solve the circuit. Parallel: Voltage is constant.</p>
+</div>
                 
                 {parallelComponents.map((comp, index) => (
                   <div key={comp.id} className="bg-gray-50 p-4 rounded border-2 border-gray-200">
