@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AlertTriangle, ArrowLeft } from 'lucide-react';
 
 function ServiceEntranceSizing({ onBack }) {
   const [activeTab, setActiveTab] = useState('residential');
@@ -22,19 +23,11 @@ function ServiceEntranceSizing({ onBack }) {
       const other = parseFloat(otherLoads) || 0;
       const volts = parseFloat(voltage);
 
-      // General lighting @ 3 VA per sq ft (NEC 220.12)
       const generalLighting = sqft * 3;
-
-      // Small appliance (minimum 2 circuits @ 1500 VA each)
       const smallAppliance = 2 * 1500;
-
-      // Laundry circuit (1500 VA)
       const laundry = 1500;
-
-      // Total general + small appliance + laundry
       const subtotal = generalLighting + smallAppliance + laundry;
 
-      // Apply demand factors (NEC 220.42)
       let demandLighting = 0;
       if (subtotal <= 3000) {
         demandLighting = subtotal;
@@ -42,7 +35,6 @@ function ServiceEntranceSizing({ onBack }) {
         demandLighting = 3000 + ((subtotal - 3000) * 0.35);
       }
 
-      // Range demand (NEC Table 220.55) - simplified
       let rangeDemand = 0;
       if (range > 0) {
         if (range <= 12000) {
@@ -52,29 +44,19 @@ function ServiceEntranceSizing({ onBack }) {
         }
       }
 
-      // Dryer - 5000W or nameplate, whichever is larger
       const dryerDemand = Math.max(dry, 5000);
-
-      // Water heater - 100%
       const whDemand = wh;
-
-      // HVAC - 100% of largest motor/heat load
       const hvacDemand = hvac;
-
-      // Other loads - 100%
       const otherDemand = other;
 
-      // Total demand
       const totalDemand = demandLighting + rangeDemand + dryerDemand + whDemand + hvacDemand + otherDemand;
       const totalAmperage = totalDemand / volts;
 
-      // Recommend service size
       let recommendedService = 100;
       if (totalAmperage > 200) recommendedService = 400;
       else if (totalAmperage > 150) recommendedService = 200;
       else if (totalAmperage > 100) recommendedService = 150;
 
-      // Service conductor size (approximate, 75°C copper)
       const serviceConductorSizes = {
         100: '4 AWG',
         150: '1/0 AWG',
@@ -104,158 +86,187 @@ function ServiceEntranceSizing({ onBack }) {
 
     return (
       <div>
-        <h3>Residential Service Sizing</h3>
-        <p className="small">NEC 220.82 Optional Calculation Method</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Square Footage
+            </label>
+            <input 
+              type="number" 
+              value={squareFootage} 
+              onChange={(e) => setSquareFootage(e.target.value)}
+              placeholder="Living area"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Heated/cooled living space</div>
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Square Footage:</label>
-          <input 
-            type="number" 
-            value={squareFootage} 
-            onChange={(e) => setSquareFootage(e.target.value)}
-            placeholder="Living area"
-          />
-          <div className="small">Heated/cooled living space</div>
-        </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              HVAC/Heat Load (Watts)
+            </label>
+            <input 
+              type="number" 
+              value={hvacLoad} 
+              onChange={(e) => setHvacLoad(e.target.value)}
+              placeholder="Largest heating or cooling load"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>HVAC/Heat Load (Watts):</label>
-          <input 
-            type="number" 
-            value={hvacLoad} 
-            onChange={(e) => setHvacLoad(e.target.value)}
-            placeholder="Largest heating or cooling load"
-          />
-        </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Water Heater (Watts)
+            </label>
+            <input 
+              type="number" 
+              value={waterHeater} 
+              onChange={(e) => setWaterHeater(e.target.value)}
+              placeholder="Water heater nameplate"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Water Heater (Watts):</label>
-          <input 
-            type="number" 
-            value={waterHeater} 
-            onChange={(e) => setWaterHeater(e.target.value)}
-            placeholder="Water heater nameplate"
-          />
-        </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Range/Oven (Watts)
+            </label>
+            <input 
+              type="number" 
+              value={rangeOven} 
+              onChange={(e) => setRangeOven(e.target.value)}
+              placeholder="Electric range rating"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Range/Oven (Watts):</label>
-          <input 
-            type="number" 
-            value={rangeOven} 
-            onChange={(e) => setRangeOven(e.target.value)}
-            placeholder="Electric range rating"
-          />
-        </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Dryer (Watts)
+            </label>
+            <input 
+              type="number" 
+              value={dryer} 
+              onChange={(e) => setDryer(e.target.value)}
+              placeholder="Electric dryer rating"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Minimum 5000W if electric</div>
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Dryer (Watts):</label>
-          <input 
-            type="number" 
-            value={dryer} 
-            onChange={(e) => setDryer(e.target.value)}
-            placeholder="Electric dryer rating"
-          />
-          <div className="small">Minimum 5000W if electric</div>
-        </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Other Loads (Watts)
+            </label>
+            <input 
+              type="number" 
+              value={otherLoads} 
+              onChange={(e) => setOtherLoads(e.target.value)}
+              placeholder="Pool, spa, workshop, etc."
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Other Loads (Watts):</label>
-          <input 
-            type="number" 
-            value={otherLoads} 
-            onChange={(e) => setOtherLoads(e.target.value)}
-            placeholder="Pool, spa, workshop, etc."
-          />
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <label>Service Voltage:</label>
-          <select value={voltage} onChange={(e) => setVoltage(e.target.value)}>
-            <option value="240">240V</option>
-            <option value="208">208V</option>
-          </select>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Service Voltage
+            </label>
+            <select 
+              value={voltage} 
+              onChange={(e) => setVoltage(e.target.value)}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            >
+              <option value="240">240V</option>
+              <option value="208">208V</option>
+            </select>
+          </div>
         </div>
 
         {squareFootage && (
-          <div className="result">
-            <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#1e3a8a' }}>Service Sizing Results:</h3>
+          <div style={{ 
+            background: '#dcfce7', 
+            border: '2px solid #16a34a', 
+            padding: '1.5rem', 
+            borderRadius: '0.5rem'
+          }}>
+            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
+              Service Sizing Results
+            </h3>
             
             <div style={{ 
-              backgroundColor: '#f8fafc', 
-              padding: '12px', 
-              borderRadius: '6px',
-              marginBottom: '15px',
+              background: '#f8fafc', 
+              padding: '1rem', 
+              borderRadius: '0.5rem',
+              marginBottom: '1rem',
               color: '#374151'
             }}>
-              <strong>Connected Loads:</strong>
-              <div>General Lighting: {results.generalLighting.toLocaleString()} VA</div>
-              <div>Small Appliance: {results.smallAppliance.toLocaleString()} VA</div>
-              <div>Laundry: {results.laundry.toLocaleString()} VA</div>
-              <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '5px' }}>
+              <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Connected Loads:</strong>
+              <div style={{ fontSize: '0.875rem' }}>General Lighting: {results.generalLighting.toLocaleString()} VA</div>
+              <div style={{ fontSize: '0.875rem' }}>Small Appliance: {results.smallAppliance.toLocaleString()} VA</div>
+              <div style={{ fontSize: '0.875rem' }}>Laundry: {results.laundry.toLocaleString()} VA</div>
+              <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
                 Subtotal: {results.subtotal.toLocaleString()} VA
               </div>
             </div>
 
             <div style={{ 
-              backgroundColor: '#f8fafc', 
-              padding: '12px', 
-              borderRadius: '6px',
-              marginBottom: '15px',
+              background: '#f8fafc', 
+              padding: '1rem', 
+              borderRadius: '0.5rem',
+              marginBottom: '1rem',
               color: '#374151'
             }}>
-              <strong>Demand Loads (after factors):</strong>
-              <div>Lighting: {results.demandLighting.toFixed(0)} W</div>
-              {rangeOven && <div>Range: {results.rangeDemand.toFixed(0)} W</div>}
-              {dryer && <div>Dryer: {results.dryerDemand.toFixed(0)} W</div>}
-              {waterHeater && <div>Water Heater: {results.whDemand.toFixed(0)} W</div>}
-              {hvacLoad && <div>HVAC: {results.hvacDemand.toFixed(0)} W</div>}
-              {otherLoads && <div>Other: {results.otherDemand.toFixed(0)} W</div>}
+              <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Demand Loads (after factors):</strong>
+              <div style={{ fontSize: '0.875rem' }}>Lighting: {results.demandLighting.toFixed(0)} W</div>
+              {rangeOven && <div style={{ fontSize: '0.875rem' }}>Range: {results.rangeDemand.toFixed(0)} W</div>}
+              {dryer && <div style={{ fontSize: '0.875rem' }}>Dryer: {results.dryerDemand.toFixed(0)} W</div>}
+              {waterHeater && <div style={{ fontSize: '0.875rem' }}>Water Heater: {results.whDemand.toFixed(0)} W</div>}
+              {hvacLoad && <div style={{ fontSize: '0.875rem' }}>HVAC: {results.hvacDemand.toFixed(0)} W</div>}
+              {otherLoads && <div style={{ fontSize: '0.875rem' }}>Other: {results.otherDemand.toFixed(0)} W</div>}
+            </div>
+
+            <div style={{ color: '#14532d', marginBottom: '0.75rem' }}>
+              <strong>Total Demand Load:</strong> {results.totalDemand.toFixed(0)} W
+            </div>
+            
+            <div style={{ color: '#14532d', marginBottom: '1rem' }}>
+              <strong>Calculated Amperage:</strong> {results.totalAmperage.toFixed(1)} A
             </div>
 
             <div style={{ 
-              backgroundColor: '#eff6ff',
-              border: '2px solid #3b82f6',
-              padding: '15px',
-              borderRadius: '8px',
-              color: '#1e3a8a'
+              fontSize: '2rem', 
+              fontWeight: 'bold', 
+              color: '#16a34a',
+              marginBottom: '0.5rem',
+              padding: '1rem',
+              background: 'white',
+              borderRadius: '0.5rem',
+              textAlign: 'center'
             }}>
-              <div style={{ fontSize: '16px', marginBottom: '5px' }}>
-                <strong>Total Demand Load:</strong> {results.totalDemand.toFixed(0)} W
-              </div>
-              <div style={{ fontSize: '16px', marginBottom: '10px' }}>
-                <strong>Calculated Amperage:</strong> {results.totalAmperage.toFixed(1)} A
-              </div>
-              <div style={{ 
-                fontSize: '20px', 
-                fontWeight: 'bold',
-                paddingTop: '10px',
-                borderTop: '1px solid #3b82f6'
-              }}>
-                Recommended Service: {results.recommendedService}A
-              </div>
-              <div style={{ fontSize: '16px', marginTop: '5px' }}>
-                Service Conductors: {results.conductorSize} Copper
-              </div>
+              {results.recommendedService}A Service
+            </div>
+
+            <div style={{ 
+              color: '#14532d',
+              paddingTop: '1rem',
+              borderTop: '1px solid #bbf7d0',
+              textAlign: 'center'
+            }}>
+              <strong>Service Conductors:</strong> {results.conductorSize} Copper
             </div>
           </div>
         )}
 
         <div style={{ 
-          marginTop: '20px', 
-          padding: '15px', 
-          backgroundColor: '#f8fafc',
-          borderRadius: '8px',
-          fontSize: '13px',
-          color: '#374151'
+          background: '#f8fafc',
+          padding: '1rem',
+          borderRadius: '0.5rem',
+          border: '1px solid #e2e8f0',
+          marginTop: '1.5rem'
         }}>
-          <strong>NEC References:</strong>
-          <div>220.12 - General Lighting Loads</div>
-          <div>220.52 - Small Appliance and Laundry Loads</div>
-          <div>220.55 - Electric Range Demand Loads</div>
-          <div>220.82 - Dwelling Unit Optional Calculation</div>
-          <div style={{ marginTop: '10px', fontStyle: 'italic', fontSize: '12px' }}>
-            Note: Service conductors are approximate for 75°C copper. Consult NEC Table 310.15(B)(16) for exact sizing with all derating factors.
+          <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>Important Notes:</strong>
+          <div style={{ color: '#6b7280', fontSize: '0.875rem', fontStyle: 'italic' }}>
+            Service conductors are approximate for 75°C copper. Consult NEC Table 310.15(B)(16) for exact sizing with all derating factors.
           </div>
         </div>
       </div>
@@ -286,7 +297,6 @@ function ServiceEntranceSizing({ onBack }) {
         amperage = (futureLoad * 1000) / (1.732 * volts);
       }
 
-      // Standard service sizes
       const standardSizes = [100, 150, 200, 225, 400, 600, 800, 1000, 1200, 1600, 2000, 2500, 3000, 4000];
       const recommendedService = standardSizes.find(size => size >= amperage) || Math.ceil(amperage / 100) * 100;
 
@@ -303,114 +313,144 @@ function ServiceEntranceSizing({ onBack }) {
 
     return (
       <div>
-        <h3>Commercial Service Sizing</h3>
-        <p className="small">Simplified commercial service calculation</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Total Connected Load (kW)
+            </label>
+            <input 
+              type="number" 
+              value={connectedLoad} 
+              onChange={(e) => setConnectedLoad(e.target.value)}
+              placeholder="Total building load"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Total Connected Load (kW):</label>
-          <input 
-            type="number" 
-            value={connectedLoad} 
-            onChange={(e) => setConnectedLoad(e.target.value)}
-            placeholder="Total building load"
-          />
-        </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Demand Factor (%)
+            </label>
+            <input 
+              type="number" 
+              value={demandFactor} 
+              onChange={(e) => setDemandFactor(e.target.value)}
+              placeholder="Typically 70-90%"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Percentage of connected load at peak demand</div>
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Demand Factor (%):</label>
-          <input 
-            type="number" 
-            value={demandFactor} 
-            onChange={(e) => setDemandFactor(e.target.value)}
-            placeholder="Typically 70-90%"
-          />
-          <div className="small">Percentage of connected load at peak demand</div>
-        </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Future Expansion (%)
+            </label>
+            <input 
+              type="number" 
+              value={futureExpansion} 
+              onChange={(e) => setFutureExpansion(e.target.value)}
+              placeholder="Typically 20-30%"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Spare capacity for future growth</div>
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Future Expansion (%):</label>
-          <input 
-            type="number" 
-            value={futureExpansion} 
-            onChange={(e) => setFutureExpansion(e.target.value)}
-            placeholder="Typically 20-30%"
-          />
-          <div className="small">Spare capacity for future growth</div>
-        </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Service Voltage
+            </label>
+            <select 
+              value={voltage} 
+              onChange={(e) => setVoltage(e.target.value)}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            >
+              <option value="208">208V</option>
+              <option value="240">240V</option>
+              <option value="480">480V</option>
+              <option value="600">600V</option>
+            </select>
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Service Voltage:</label>
-          <select value={voltage} onChange={(e) => setVoltage(e.target.value)}>
-            <option value="208">208V</option>
-            <option value="240">240V</option>
-            <option value="480">480V</option>
-            <option value="600">600V</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <label>System Phase:</label>
-          <select value={phase} onChange={(e) => setPhase(e.target.value)}>
-            <option value="single">Single Phase</option>
-            <option value="three">Three Phase</option>
-          </select>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              System Phase
+            </label>
+            <select 
+              value={phase} 
+              onChange={(e) => setPhase(e.target.value)}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            >
+              <option value="single">Single Phase</option>
+              <option value="three">Three Phase</option>
+            </select>
+          </div>
         </div>
 
         {connectedLoad && (
-          <div className="result">
-            <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#1e3a8a' }}>Service Sizing Results:</h3>
+          <div style={{ 
+            background: '#dcfce7', 
+            border: '2px solid #16a34a', 
+            padding: '1.5rem', 
+            borderRadius: '0.5rem'
+          }}>
+            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
+              Service Sizing Results
+            </h3>
             
             <div style={{ 
-              backgroundColor: '#f8fafc', 
-              padding: '12px', 
-              borderRadius: '6px',
-              marginBottom: '15px',
+              background: '#f8fafc', 
+              padding: '1rem', 
+              borderRadius: '0.5rem',
+              marginBottom: '1rem',
               color: '#374151'
             }}>
-              <div><strong>Connected Load:</strong> {results.connectedLoad.toFixed(1)} kW</div>
-              <div><strong>Demand Load ({demandFactor}%):</strong> {results.demandLoad.toFixed(1)} kW</div>
-              <div><strong>With Future Expansion ({futureExpansion}%):</strong> {results.futureLoad.toFixed(1)} kW</div>
+              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}><strong>Connected Load:</strong> {results.connectedLoad.toFixed(1)} kW</div>
+              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}><strong>Demand Load ({demandFactor}%):</strong> {results.demandLoad.toFixed(1)} kW</div>
+              <div style={{ fontSize: '0.875rem' }}><strong>With Future Expansion ({futureExpansion}%):</strong> {results.futureLoad.toFixed(1)} kW</div>
+            </div>
+
+            <div style={{ color: '#14532d', marginBottom: '0.75rem' }}>
+              <strong>Calculated Amperage:</strong> {results.amperage.toFixed(1)} A
             </div>
 
             <div style={{ 
-              backgroundColor: '#eff6ff',
-              border: '2px solid #3b82f6',
-              padding: '15px',
-              borderRadius: '8px',
-              color: '#1e3a8a'
+              fontSize: '2rem', 
+              fontWeight: 'bold', 
+              color: '#16a34a',
+              marginBottom: '0.5rem',
+              padding: '1rem',
+              background: 'white',
+              borderRadius: '0.5rem',
+              textAlign: 'center'
             }}>
-              <div style={{ fontSize: '16px', marginBottom: '10px' }}>
-                <strong>Calculated Amperage:</strong> {results.amperage.toFixed(1)} A
-              </div>
-              <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '10px' }}>
-                @ {voltage}V {phase === 'single' ? 'Single' : 'Three'} Phase
-              </div>
-              <div style={{ 
-                fontSize: '20px', 
-                fontWeight: 'bold',
-                paddingTop: '10px',
-                borderTop: '1px solid #3b82f6'
-              }}>
-                Recommended Service: {results.recommendedService}A
-              </div>
+              {results.recommendedService}A Service
+            </div>
+
+            <div style={{ 
+              color: '#14532d',
+              paddingTop: '1rem',
+              borderTop: '1px solid #bbf7d0',
+              fontSize: '0.875rem',
+              textAlign: 'center'
+            }}>
+              @ {voltage}V {phase === 'single' ? 'Single' : 'Three'} Phase
             </div>
           </div>
         )}
 
         <div style={{ 
-          marginTop: '20px', 
-          padding: '15px', 
-          backgroundColor: '#f8fafc',
-          borderRadius: '8px',
-          fontSize: '13px',
-          color: '#374151'
+          background: '#f8fafc',
+          padding: '1rem',
+          borderRadius: '0.5rem',
+          border: '1px solid #e2e8f0',
+          marginTop: '1.5rem'
         }}>
-          <strong>Commercial Service Considerations:</strong>
-          <ul style={{ textAlign: 'left', paddingLeft: '20px', margin: '10px 0' }}>
-            <li>Include demand factors per NEC 220.40 and Article 220 Part IV</li>
-            <li>Consider future expansion (typically 20-30% spare capacity)</li>
-            <li>Account for motor loads, HVAC, and large equipment</li>
-            <li>Review utility requirements and available fault current</li>
+          <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>Commercial Service Considerations:</strong>
+          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#6b7280', fontSize: '0.875rem' }}>
+            <li style={{ marginBottom: '0.25rem' }}>Include demand factors per NEC 220.40 and Article 220 Part IV</li>
+            <li style={{ marginBottom: '0.25rem' }}>Consider future expansion (typically 20-30% spare capacity)</li>
+            <li style={{ marginBottom: '0.25rem' }}>Account for motor loads, HVAC, and large equipment</li>
+            <li style={{ marginBottom: '0.25rem' }}>Review utility requirements and available fault current</li>
             <li>Consider separate services for different occupancies</li>
           </ul>
         </div>
@@ -424,68 +464,93 @@ function ServiceEntranceSizing({ onBack }) {
   };
 
   return (
-    <div className="calculator-container">
+    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
       {onBack && (
-        <button onClick={onBack} style={{ marginBottom: '20px' }}>
-          ← Back to Menu
+        <button
+          onClick={onBack}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.75rem 1.5rem',
+            marginBottom: '1rem',
+            background: '#374151',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.5rem',
+            fontSize: '1rem',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          <ArrowLeft size={20} />
+          Back to Menu
         </button>
       )}
 
-      <h2>Service Entrance Sizing</h2>
-      
-      {/* Tab Navigation */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '10px', 
-        marginBottom: '25px',
-        flexWrap: 'wrap'
-      }}>
-        <button 
-          onClick={() => setActiveTab('residential')}
-          style={{
-            padding: '10px 15px',
-            backgroundColor: activeTab === 'residential' ? '#3b82f6' : '#e5e7eb',
-            color: activeTab === 'residential' ? 'white' : '#374151',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          Residential
-        </button>
-        <button 
-          onClick={() => setActiveTab('commercial')}
-          style={{
-            padding: '10px 15px',
-            backgroundColor: activeTab === 'commercial' ? '#3b82f6' : '#e5e7eb',
-            color: activeTab === 'commercial' ? 'white' : '#374151',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          Commercial
-        </button>
+      <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <AlertTriangle size={32} />
+          <div>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Service Entrance Sizing</h1>
+            <p style={{ fontSize: '0.875rem', margin: 0 }}>NEC Article 230 - Services and Service Equipment</p>
+          </div>
+        </div>
       </div>
 
-      {/* Active Tab Content */}
-      {tabComponents[activeTab]}
+      <div style={{ background: 'white', padding: '1.5rem' }}>
+        {/* Tab Navigation */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '0.5rem', 
+          marginBottom: '1.5rem',
+          flexWrap: 'wrap'
+        }}>
+          <button 
+            onClick={() => setActiveTab('residential')}
+            style={{
+              padding: '0.75rem 1.25rem',
+              background: activeTab === 'residential' ? '#3b82f6' : '#e5e7eb',
+              color: activeTab === 'residential' ? 'white' : '#374151',
+              border: 'none',
+              borderRadius: '0.5rem',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              transition: 'all 0.2s'
+            }}
+          >
+            Residential
+          </button>
+          <button 
+            onClick={() => setActiveTab('commercial')}
+            style={{
+              padding: '0.75rem 1.25rem',
+              background: activeTab === 'commercial' ? '#3b82f6' : '#e5e7eb',
+              color: activeTab === 'commercial' ? 'white' : '#374151',
+              border: 'none',
+              borderRadius: '0.5rem',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              transition: 'all 0.2s'
+            }}
+          >
+            Commercial
+          </button>
+        </div>
 
-      <div style={{ 
-        marginTop: '20px', 
-        padding: '15px', 
-        backgroundColor: '#f8fafc',
-        borderRadius: '8px',
-        fontSize: '13px',
-        color: '#374151'
-      }}>
-        <strong>NEC Article 230 - Services:</strong>
-        <ul style={{ textAlign: 'left', paddingLeft: '20px', margin: '10px 0' }}>
-          <li>230.42 - Minimum service conductor size</li>
-          <li>230.79 - Service disconnecting means rating</li>
-          <li>230.90 - Overload protection requirements</li>
+        {/* Active Tab Content */}
+        {tabComponents[activeTab]}
+      </div>
+
+      <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.75rem' }}>NEC References:</p>
+        <ul style={{ paddingLeft: '1.5rem', margin: 0 }}>
+          <li style={{ marginBottom: '0.25rem' }}>220.82 - Dwelling Unit Optional Calculation (Residential)</li>
+          <li style={{ marginBottom: '0.25rem' }}>230.42 - Minimum service conductor size requirements</li>
+          <li style={{ marginBottom: '0.25rem' }}>230.79 - Service disconnecting means rating</li>
+          <li style={{ marginBottom: '0.25rem' }}>230.90 - Overload protection requirements for services</li>
           <li>Always verify calculations with local code and utility requirements</li>
         </ul>
       </div>
