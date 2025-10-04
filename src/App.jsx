@@ -14,26 +14,10 @@ import './App.css';
 function App() {
   const [activeCalculator, setActiveCalculator] = useState(null);
 
-  const BackToMenu = () => {
-    return (
-      <button 
-        onClick={() => setActiveCalculator(null)}
-        style={{ padding: '10px 20px', marginBottom: '20px' }}
-      >
-        ← Back to Menu
-      </button>
-    );
-  };
-
   const renderCalculator = () => {
     switch(activeCalculator) {
       case 'voltage-drop':
-        return (
-          <div>
-            <BackToMenu />
-            <VoltageDropCalculator />
-          </div>
-        );
+        return <VoltageDropCalculator onBack={() => setActiveCalculator(null)} />;
       case 'ohms-law':
         return <OhmsLawCalculator onBack={() => setActiveCalculator(null)} />;
       case 'box-fill':
@@ -43,48 +27,37 @@ function App() {
       case 'ampacity':
         return <AmpacityLookupCalculator onBack={() => setActiveCalculator(null)} />;
       case 'motor-calculations':
-        
-        return (
-          <div>
-            <BackToMenu />
-            <MotorCalculations />
-          </div>
-        );
-        case 'load-calculations':
-          return (
-           <div>
-             <BackToMenu />
-             <LoadCalculations />
-            </div>
-        );
-        case 'transformer-sizing':
-          return (
-            <div>
-              <BackToMenu />
-              <TransformerSizingCalculator />
-            </div>
-        );
-        case 'service-entrance':
-          return <ServiceEntranceSizing onBack={() => setActiveCalculator(null)} />;
-            default:
-           return <CalculatorMenu onSelectCalculator={setActiveCalculator} />;
+        return <MotorCalculations onBack={() => setActiveCalculator(null)} />;
+      case 'load-calculations':
+        return <LoadCalculations onBack={() => setActiveCalculator(null)} />;
+      case 'transformer-sizing':
+        return <TransformerSizingCalculator onBack={() => setActiveCalculator(null)} />;
+      case 'service-entrance':
+        return <ServiceEntranceSizing onBack={() => setActiveCalculator(null)} />;
+      default:
+        return <CalculatorMenu onSelectCalculator={setActiveCalculator} />;
     }
   };
 
   return (
-  <div className="App">
-    {!activeCalculator ? (
-      <header className="App-header">
-        <h1>Electrician's Toolkit</h1>
-        {renderCalculator()}
-      </header>
-    ) : (
-      <div>
-        {renderCalculator()}
-      </div>
-    )}
-  </div>
-);
+    <div className="App">
+      {!activeCalculator ? (
+        <header className="App-header">
+          <h1>Electrician's Toolkit</h1>
+          {renderCalculator()}
+        </header>
+      ) : (
+        // Consistent dark gradient background wrapper for all calculators
+        <div style={{ 
+          minHeight: '100vh', 
+          background: 'linear-gradient(to bottom right, #0f172a, #1e293b)', 
+          padding: '1rem' 
+        }}>
+          {renderCalculator()}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default App;

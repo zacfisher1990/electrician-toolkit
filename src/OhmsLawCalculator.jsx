@@ -1,515 +1,725 @@
 import React, { useState } from 'react';
+import { Zap, Plus, Trash2, Calculator } from 'lucide-react';
 
-function OhmsLawCalculator({ onBack }) {
+const OhmsLawCalculator = () => {
   const [activeTab, setActiveTab] = useState('basic');
+  
+  // Basic calculator state
+  const [voltage, setVoltage] = useState('');
+  const [current, setCurrent] = useState('');
+  const [resistance, setResistance] = useState('');
+  const [power, setPower] = useState('');
+  
+  // Series circuit state
+  const [seriesComponents, setSeriesComponents] = useState([
+    { id: 1, R: '', V: '', I: '', P: '' }
+  ]);
+  
+  // Parallel circuit state
+  const [parallelComponents, setParallelComponents] = useState([
+    { id: 1, R: '', V: '', I: '', P: '' }
+  ]);
 
-  // Basic Ohm's Law Calculator
-  const BasicOhmsLaw = () => {
-    const [voltage, setVoltage] = useState('');
-    const [current, setCurrent] = useState('');
-    const [resistance, setResistance] = useState('');
-    const [power, setPower] = useState('');
+  // Basic Ohm's Law calculations
+  const calculateBasic = (field) => {
+    const V = parseFloat(voltage);
+    const I = parseFloat(current);
+    const R = parseFloat(resistance);
+    const P = parseFloat(power);
 
-    const calculateValues = () => {
-      const V = parseFloat(voltage) || 0;
-      const I = parseFloat(current) || 0;
-      const R = parseFloat(resistance) || 0;
-      const P = parseFloat(power) || 0;
+    if (field !== 'voltage' && !isNaN(I) && !isNaN(R)) {
+      setVoltage((I * R).toFixed(2));
+    } else if (field !== 'voltage' && !isNaN(P) && !isNaN(I) && I !== 0) {
+      setVoltage((P / I).toFixed(2));
+    } else if (field !== 'voltage' && !isNaN(P) && !isNaN(R)) {
+      setVoltage(Math.sqrt(P * R).toFixed(2));
+    }
 
-      let results = { voltage: V, current: I, resistance: R, power: P };
+    if (field !== 'current' && !isNaN(V) && !isNaN(R) && R !== 0) {
+      setCurrent((V / R).toFixed(2));
+    } else if (field !== 'current' && !isNaN(P) && !isNaN(V) && V !== 0) {
+      setCurrent((P / V).toFixed(2));
+    } else if (field !== 'current' && !isNaN(P) && !isNaN(R) && R !== 0) {
+      setCurrent(Math.sqrt(P / R).toFixed(2));
+    }
 
-      // Calculate missing values based on what's provided
-      if (V && I && !R && !P) {
-        results.resistance = V / I;
-        results.power = V * I;
-      } else if (V && R && !I && !P) {
-        results.current = V / R;
-        results.power = (V * V) / R;
-      } else if (I && R && !V && !P) {
-        results.voltage = I * R;
-        results.power = I * I * R;
-      } else if (V && P && !I && !R) {
-        results.current = P / V;
-        results.resistance = (V * V) / P;
-      } else if (I && P && !V && !R) {
-        results.voltage = P / I;
-        results.resistance = P / (I * I);
-      } else if (R && P && !V && !I) {
-        results.voltage = Math.sqrt(P * R);
-        results.current = Math.sqrt(P / R);
-      }
+    if (field !== 'resistance' && !isNaN(V) && !isNaN(I) && I !== 0) {
+      setResistance((V / I).toFixed(2));
+    } else if (field !== 'resistance' && !isNaN(V) && !isNaN(P) && P !== 0) {
+      setResistance((V * V / P).toFixed(2));
+    } else if (field !== 'resistance' && !isNaN(P) && !isNaN(I) && I !== 0) {
+      setResistance((P / (I * I)).toFixed(2));
+    }
 
-      return results;
-    };
-
-    const results = calculateValues();
-
-    const clearAll = () => {
-      setVoltage('');
-      setCurrent('');
-      setResistance('');
-      setPower('');
-    };
-
-    return (
-      <div>
-        <h3>Basic Ohm's Law Calculator</h3>
-        <p className="small">Enter any two values to calculate the rest</p>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label>Voltage (V):</label>
-          <input 
-            type="number" 
-            value={voltage} 
-            onChange={(e) => setVoltage(e.target.value)}
-            placeholder="Volts"
-          />
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label>Current (I):</label>
-          <input 
-            type="number" 
-            value={current} 
-            onChange={(e) => setCurrent(e.target.value)}
-            placeholder="Amps"
-          />
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label>Resistance (R):</label>
-          <input 
-            type="number" 
-            value={resistance} 
-            onChange={(e) => setResistance(e.target.value)}
-            placeholder="Ohms"
-          />
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <label>Power (P):</label>
-          <input 
-            type="number" 
-            value={power} 
-            onChange={(e) => setPower(e.target.value)}
-            placeholder="Watts"
-          />
-        </div>
-
-        <button onClick={clearAll} style={{ marginBottom: '20px', backgroundColor: '#6b7280' }}>
-          Clear All
-        </button>
-
-        <div className="result">
-          <div><strong>Calculated Values:</strong></div>
-          <div>Voltage: {results.voltage.toFixed(2)} V</div>
-          <div>Current: {results.current.toFixed(2)} A</div>
-          <div>Resistance: {results.resistance.toFixed(2)} Ω</div>
-          <div>Power: {results.power.toFixed(2)} W</div>
-        </div>
-
-        <div style={{ 
-          marginTop: '20px', 
-          padding: '15px', 
-          backgroundColor: '#f8fafc',
-          borderRadius: '8px',
-          fontSize: '14px'
-        }}>
-          <strong>Formulas:</strong>
-          <div>V = I × R &nbsp;&nbsp; I = V ÷ R &nbsp;&nbsp; R = V ÷ I</div>
-          <div>P = V × I &nbsp;&nbsp; P = I² × R &nbsp;&nbsp; P = V² ÷ R</div>
-        </div>
-      </div>
-    );
+    if (field !== 'power' && !isNaN(V) && !isNaN(I)) {
+      setPower((V * I).toFixed(2));
+    } else if (field !== 'power' && !isNaN(I) && !isNaN(R)) {
+      setPower((I * I * R).toFixed(2));
+    } else if (field !== 'power' && !isNaN(V) && !isNaN(R) && R !== 0) {
+      setPower((V * V / R).toFixed(2));
+    }
   };
 
-  // Series Circuit Calculator
-  const SeriesCalculator = () => {
-    const [resistors, setResistors] = useState(['']);
-    const [sourceVoltage, setSourceVoltage] = useState('');
-
-    const addResistor = () => {
-      setResistors([...resistors, '']);
-    };
-
-    const removeResistor = (index) => {
-      if (resistors.length > 1) {
-        setResistors(resistors.filter((_, i) => i !== index));
-      }
-    };
-
-    const updateResistor = (index, value) => {
-      const newResistors = [...resistors];
-      newResistors[index] = value;
-      setResistors(newResistors);
-    };
-
-    const calculateSeries = () => {
-      const resistorValues = resistors.map(r => parseFloat(r) || 0).filter(r => r > 0);
-      const voltage = parseFloat(sourceVoltage) || 0;
-
-      if (resistorValues.length === 0) return null;
-
-      const totalResistance = resistorValues.reduce((sum, r) => sum + r, 0);
-      const totalCurrent = voltage > 0 ? voltage / totalResistance : 0;
-      const totalPower = voltage > 0 ? (voltage * voltage) / totalResistance : 0;
-
-      const resistorAnalysis = resistorValues.map((r, index) => ({
-        resistance: r,
-        voltage: totalCurrent * r,
-        power: totalCurrent * totalCurrent * r
-      }));
-
-      return {
-        totalResistance,
-        totalCurrent,
-        totalPower,
-        resistorAnalysis
-      };
-    };
-
-    const results = calculateSeries();
-
-    return (
-      <div>
-        <h3>Series Circuit Calculator</h3>
-        <p className="small">Calculate total resistance and individual component values</p>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label>Source Voltage (optional):</label>
-          <input 
-            type="number" 
-            value={sourceVoltage} 
-            onChange={(e) => setSourceVoltage(e.target.value)}
-            placeholder="Total voltage across circuit"
-          />
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label>Resistors:</label>
-          {resistors.map((resistor, index) => (
-  <div key={index} style={{ 
-    backgroundColor: '#f8fafc',
-    padding: '10px',
-    borderRadius: '6px',
-    marginBottom: '10px'
-  }}>
-    <input 
-      type="number" 
-      value={resistor} 
-      onChange={(e) => updateResistor(index, e.target.value)}
-      placeholder={`R${index + 1} (Ohms)`}
-      style={{ width: '100%', marginBottom: resistors.length > 2 ? '8px' : '0' }}
-    />
-    {resistors.length > 1 && (
-      <button 
-        onClick={() => removeResistor(index)}
-        style={{ 
-          backgroundColor: '#ef4444', 
-          color: 'white', 
-          border: 'none', 
-          borderRadius: '4px',
-          padding: '8px 12px',
-          fontSize: '14px',
-          width: '100%'
-        }}
-      >
-        Remove
-      </button>
-    )}
-  </div>
-))}
-          <button 
-            onClick={addResistor}
-            style={{ 
-              backgroundColor: '#10b981', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              padding: '8px 12px',
-              fontSize: '14px',
-              marginTop: '8px'
-            }}
-          >
-            Add Resistor
-          </button>
-        </div>
-
-        {results && (
-          <div className="result">
-            <div><strong>Series Circuit Results:</strong></div>
-            <div>Total Resistance: {results.totalResistance.toFixed(2)} Ω</div>
-            {sourceVoltage && (
-              <>
-                <div>Total Current: {results.totalCurrent.toFixed(3)} A</div>
-                <div>Total Power: {results.totalPower.toFixed(2)} W</div>
-                
-                <div style={{ marginTop: '15px' }}>
-                  <strong>Individual Resistor Analysis:</strong>
-                  {results.resistorAnalysis.map((resistor, index) => (
-                    <div key={index} style={{ 
-                      marginTop: '10px', 
-                      padding: '10px', 
-                      backgroundColor: '#f3f4f6', 
-                      borderRadius: '4px' 
-                    }}>
-                      <div>R{index + 1}: {resistor.resistance} Ω</div>
-                      <div>Voltage Drop: {resistor.voltage.toFixed(2)} V</div>
-                      <div>Power: {resistor.power.toFixed(2)} W</div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        <div style={{ 
-          marginTop: '20px', 
-          padding: '15px', 
-          backgroundColor: '#f8fafc',
-          borderRadius: '8px',
-          fontSize: '14px'
-        }}>
-          <strong>Series Circuit Rules:</strong>
-          <div>• Current is the same through all components</div>
-          <div>• Total resistance = R₁ + R₂ + R₃ + ...</div>
-          <div>• Voltage divides proportionally across resistors</div>
-        </div>
-      </div>
-    );
+  const clearBasic = () => {
+    setVoltage('');
+    setCurrent('');
+    setResistance('');
+    setPower('');
   };
 
-  // Parallel Circuit Calculator
-  const ParallelCalculator = () => {
-    const [resistors, setResistors] = useState(['']);
-    const [sourceVoltage, setSourceVoltage] = useState('');
-
-    const addResistor = () => {
-      setResistors([...resistors, '']);
-    };
-
-    const removeResistor = (index) => {
-      if (resistors.length > 1) {
-        setResistors(resistors.filter((_, i) => i !== index));
-      }
-    };
-
-    const updateResistor = (index, value) => {
-      const newResistors = [...resistors];
-      newResistors[index] = value;
-      setResistors(newResistors);
-    };
-
-    const calculateParallel = () => {
-      const resistorValues = resistors.map(r => parseFloat(r) || 0).filter(r => r > 0);
-      const voltage = parseFloat(sourceVoltage) || 0;
-
-      if (resistorValues.length === 0) return null;
-
-      // 1/Rtotal = 1/R1 + 1/R2 + 1/R3 + ...
-      const reciprocalSum = resistorValues.reduce((sum, r) => sum + (1 / r), 0);
-      const totalResistance = 1 / reciprocalSum;
-      const totalCurrent = voltage > 0 ? voltage / totalResistance : 0;
-      const totalPower = voltage > 0 ? (voltage * voltage) / totalResistance : 0;
-
-      const resistorAnalysis = resistorValues.map((r, index) => ({
-        resistance: r,
-        current: voltage > 0 ? voltage / r : 0,
-        power: voltage > 0 ? (voltage * voltage) / r : 0
-      }));
-
-      return {
-        totalResistance,
-        totalCurrent,
-        totalPower,
-        resistorAnalysis
-      };
-    };
-
-    const results = calculateParallel();
-
-    return (
-      <div>
-        <h3>Parallel Circuit Calculator</h3>
-        <p className="small">Calculate equivalent resistance and branch currents</p>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label>Source Voltage (optional):</label>
-          <input 
-            type="number" 
-            value={sourceVoltage} 
-            onChange={(e) => setSourceVoltage(e.target.value)}
-            placeholder="Voltage across all branches"
-          />
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label>Resistors:</label>
-          {resistors.map((resistor, index) => (
-  <div key={index} style={{ 
-    backgroundColor: '#f8fafc',
-    padding: '10px',
-    borderRadius: '6px',
-    marginBottom: '10px'
-  }}>
-    <input 
-      type="number" 
-      value={resistor} 
-      onChange={(e) => updateResistor(index, e.target.value)}
-      placeholder={`R${index + 1} (Ohms)`}
-      style={{ width: '100%', marginBottom: resistors.length > 2 ? '8px' : '0' }}
-    />
-    {resistors.length > 1 && (
-      <button 
-        onClick={() => removeResistor(index)}
-        style={{ 
-          backgroundColor: '#ef4444', 
-          color: 'white', 
-          border: 'none', 
-          borderRadius: '4px',
-          padding: '8px 12px',
-          fontSize: '14px',
-          width: '100%'
-        }}
-      >
-        Remove
-      </button>
-    )}
-  </div>
-))}
-          <button 
-            onClick={addResistor}
-            style={{ 
-              backgroundColor: '#10b981', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              padding: '8px 12px',
-              fontSize: '14px',
-              marginTop: '8px'
-            }}
-          >
-            Add Resistor
-          </button>
-        </div>
-
-        {results && (
-          <div className="result">
-            <div><strong>Parallel Circuit Results:</strong></div>
-            <div>Total Resistance: {results.totalResistance.toFixed(2)} Ω</div>
-            {sourceVoltage && (
-              <>
-                <div>Total Current: {results.totalCurrent.toFixed(3)} A</div>
-                <div>Total Power: {results.totalPower.toFixed(2)} W</div>
-                
-                <div style={{ marginTop: '15px' }}>
-                  <strong>Individual Branch Analysis:</strong>
-                  {results.resistorAnalysis.map((resistor, index) => (
-                    <div key={index} style={{ 
-                      marginTop: '10px', 
-                      padding: '10px', 
-                      backgroundColor: '#f3f4f6', 
-                      borderRadius: '4px' 
-                    }}>
-                      <div>R{index + 1}: {resistor.resistance} Ω</div>
-                      <div>Branch Current: {resistor.current.toFixed(3)} A</div>
-                      <div>Power: {resistor.power.toFixed(2)} W</div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        <div style={{ 
-          marginTop: '20px', 
-          padding: '15px', 
-          backgroundColor: '#f8fafc',
-          borderRadius: '8px',
-          fontSize: '14px'
-        }}>
-          <strong>Parallel Circuit Rules:</strong>
-          <div>• Voltage is the same across all branches</div>
-          <div>• 1/R_total = 1/R₁ + 1/R₂ + 1/R₃ + ...</div>
-          <div>• Current divides inversely with resistance</div>
-          <div>• Total current = sum of all branch currents</div>
-        </div>
-      </div>
-    );
+  // Series circuit functions
+  const addSeriesComponent = () => {
+    const newId = Math.max(...seriesComponents.map(c => c.id), 0) + 1;
+    setSeriesComponents([...seriesComponents, { id: newId, R: '', V: '', I: '', P: '' }]);
   };
 
-  const tabComponents = {
-    basic: <BasicOhmsLaw />,
-    series: <SeriesCalculator />,
-    parallel: <ParallelCalculator />
+  const removeSeriesComponent = (id) => {
+    if (seriesComponents.length > 1) {
+      setSeriesComponents(seriesComponents.filter(c => c.id !== id));
+    }
+  };
+
+  const updateSeriesComponent = (id, field, value) => {
+    setSeriesComponents(seriesComponents.map(c => 
+      c.id === id ? { ...c, [field]: value } : c
+    ));
+  };
+
+  const calculateSeries = () => {
+    let components = [...seriesComponents];
+    let changed = true;
+    let iterations = 0;
+    const maxIterations = 50;
+
+    while (changed && iterations < maxIterations) {
+      changed = false;
+      iterations++;
+      
+      // Find known current (same for all in series)
+      let knownCurrent = null;
+      for (let comp of components) {
+        if (comp.I && !isNaN(parseFloat(comp.I))) {
+          knownCurrent = parseFloat(comp.I);
+          break;
+        }
+      }
+
+      // If no current known, try to derive from any component
+      if (knownCurrent === null) {
+        for (let comp of components) {
+          const V = parseFloat(comp.V);
+          const R = parseFloat(comp.R);
+          const P = parseFloat(comp.P);
+          
+          if (!isNaN(V) && !isNaN(R) && R !== 0) {
+            knownCurrent = V / R;
+            break;
+          } else if (!isNaN(P) && !isNaN(V) && V !== 0) {
+            knownCurrent = P / V;
+            break;
+          } else if (!isNaN(P) && !isNaN(R) && R !== 0) {
+            knownCurrent = Math.sqrt(P / R);
+            break;
+          }
+        }
+      }
+
+      // Apply known current to all components
+      if (knownCurrent !== null) {
+        components = components.map(comp => {
+          if (!comp.I || comp.I === '') {
+            changed = true;
+            return { ...comp, I: knownCurrent.toFixed(3) };
+          }
+          return comp;
+        });
+      }
+
+      // Calculate missing values for each component
+      components = components.map(comp => {
+        const newComp = { ...comp };
+        const V = parseFloat(comp.V);
+        const I = parseFloat(comp.I);
+        const R = parseFloat(comp.R);
+        const P = parseFloat(comp.P);
+
+        // Calculate R
+        if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
+          newComp.R = (V / I).toFixed(3);
+          changed = true;
+        } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
+          newComp.R = (P / (I * I)).toFixed(3);
+          changed = true;
+        } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
+          newComp.R = (V * V / P).toFixed(3);
+          changed = true;
+        }
+
+        // Calculate V
+        const newR = parseFloat(newComp.R);
+        const newI = parseFloat(newComp.I);
+        if ((comp.V === '' || isNaN(V)) && !isNaN(newI) && !isNaN(newR)) {
+          newComp.V = (newI * newR).toFixed(3);
+          changed = true;
+        } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newI) && newI !== 0) {
+          newComp.V = (P / newI).toFixed(3);
+          changed = true;
+        } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newR)) {
+          newComp.V = Math.sqrt(P * newR).toFixed(3);
+          changed = true;
+        }
+
+        // Calculate P
+        const newV = parseFloat(newComp.V);
+        if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
+          newComp.P = (newV * newI).toFixed(3);
+          changed = true;
+        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
+          newComp.P = (newI * newI * newR).toFixed(3);
+          changed = true;
+        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
+          newComp.P = (newV * newV / newR).toFixed(3);
+          changed = true;
+        }
+
+        return newComp;
+      });
+    }
+
+    setSeriesComponents(components);
+  };
+
+  const clearSeries = () => {
+    setSeriesComponents([{ id: 1, R: '', V: '', I: '', P: '' }]);
+  };
+
+  // Parallel circuit functions
+  const addParallelComponent = () => {
+    const newId = Math.max(...parallelComponents.map(c => c.id), 0) + 1;
+    setParallelComponents([...parallelComponents, { id: newId, R: '', V: '', I: '', P: '' }]);
+  };
+
+  const removeParallelComponent = (id) => {
+    if (parallelComponents.length > 1) {
+      setParallelComponents(parallelComponents.filter(c => c.id !== id));
+    }
+  };
+
+  const updateParallelComponent = (id, field, value) => {
+    setParallelComponents(parallelComponents.map(c => 
+      c.id === id ? { ...c, [field]: value } : c
+    ));
+  };
+
+  const calculateParallel = () => {
+    let components = [...parallelComponents];
+    let changed = true;
+    let iterations = 0;
+    const maxIterations = 50;
+
+    while (changed && iterations < maxIterations) {
+      changed = false;
+      iterations++;
+      
+      // Find known voltage (same for all in parallel)
+      let knownVoltage = null;
+      for (let comp of components) {
+        if (comp.V && !isNaN(parseFloat(comp.V))) {
+          knownVoltage = parseFloat(comp.V);
+          break;
+        }
+      }
+
+      // If no voltage known, try to derive from any component
+      if (knownVoltage === null) {
+        for (let comp of components) {
+          const I = parseFloat(comp.I);
+          const R = parseFloat(comp.R);
+          const P = parseFloat(comp.P);
+          
+          if (!isNaN(I) && !isNaN(R)) {
+            knownVoltage = I * R;
+            break;
+          } else if (!isNaN(P) && !isNaN(I) && I !== 0) {
+            knownVoltage = P / I;
+            break;
+          } else if (!isNaN(P) && !isNaN(R)) {
+            knownVoltage = Math.sqrt(P * R);
+            break;
+          }
+        }
+      }
+
+      // Apply known voltage to all components
+      if (knownVoltage !== null) {
+        components = components.map(comp => {
+          if (!comp.V || comp.V === '') {
+            changed = true;
+            return { ...comp, V: knownVoltage.toFixed(3) };
+          }
+          return comp;
+        });
+      }
+
+      // Calculate missing values for each component
+      components = components.map(comp => {
+        const newComp = { ...comp };
+        const V = parseFloat(comp.V);
+        const I = parseFloat(comp.I);
+        const R = parseFloat(comp.R);
+        const P = parseFloat(comp.P);
+
+        // Calculate R
+        if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
+          newComp.R = (V / I).toFixed(3);
+          changed = true;
+        } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
+          newComp.R = (P / (I * I)).toFixed(3);
+          changed = true;
+        } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
+          newComp.R = (V * V / P).toFixed(3);
+          changed = true;
+        }
+
+        // Calculate I
+        const newR = parseFloat(newComp.R);
+        const newV = parseFloat(newComp.V);
+        if ((comp.I === '' || isNaN(I)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
+          newComp.I = (newV / newR).toFixed(3);
+          changed = true;
+        } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newV) && newV !== 0) {
+          newComp.I = (P / newV).toFixed(3);
+          changed = true;
+        } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newR) && newR !== 0) {
+          newComp.I = Math.sqrt(P / newR).toFixed(3);
+          changed = true;
+        }
+
+        // Calculate P
+        const newI = parseFloat(newComp.I);
+        if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
+          newComp.P = (newV * newI).toFixed(3);
+          changed = true;
+        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
+          newComp.P = (newI * newI * newR).toFixed(3);
+          changed = true;
+        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
+          newComp.P = (newV * newV / newR).toFixed(3);
+          changed = true;
+        }
+
+        return newComp;
+      });
+    }
+
+    setParallelComponents(components);
+  };
+
+  const clearParallel = () => {
+    setParallelComponents([{ id: 1, R: '', V: '', I: '', P: '' }]);
+  };
+
+  const getTotalsSeries = () => {
+    const totalR = seriesComponents.reduce((sum, c) => {
+      const r = parseFloat(c.R);
+      return sum + (isNaN(r) ? 0 : r);
+    }, 0);
+    
+    const totalV = seriesComponents.reduce((sum, c) => {
+      const v = parseFloat(c.V);
+      return sum + (isNaN(v) ? 0 : v);
+    }, 0);
+    
+    const totalP = seriesComponents.reduce((sum, c) => {
+      const p = parseFloat(c.P);
+      return sum + (isNaN(p) ? 0 : p);
+    }, 0);
+    
+    const firstI = seriesComponents.find(c => !isNaN(parseFloat(c.I)));
+    const totalI = firstI ? parseFloat(firstI.I) : 0;
+    
+    return { totalR, totalV, totalI, totalP };
+  };
+
+  const getTotalsParallel = () => {
+    const totalI = parallelComponents.reduce((sum, c) => {
+      const i = parseFloat(c.I);
+      return sum + (isNaN(i) ? 0 : i);
+    }, 0);
+    
+    const totalP = parallelComponents.reduce((sum, c) => {
+      const p = parseFloat(c.P);
+      return sum + (isNaN(p) ? 0 : p);
+    }, 0);
+    
+    const firstV = parallelComponents.find(c => !isNaN(parseFloat(c.V)));
+    const totalV = firstV ? parseFloat(firstV.V) : 0;
+    
+    const resistances = parallelComponents.map(c => parseFloat(c.R)).filter(r => !isNaN(r) && r > 0);
+    const totalR = resistances.length > 0 
+      ? 1 / resistances.reduce((sum, r) => sum + 1/r, 0)
+      : 0;
+    
+    return { totalR, totalV, totalI, totalP };
   };
 
   return (
-  <div className="calculator-container">
-    {onBack && (
-  <button onClick={onBack} style={{ marginBottom: '20px' }}>
-    ← Back to Menu
-  </button>
-)}
-    <h2>Ohm's Law & Circuit Analysis</h2>
-      
-      {/* Tab Navigation */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '10px', 
-        marginBottom: '25px',
-        flexWrap: 'wrap'
-      }}>
-        <button 
-          onClick={() => setActiveTab('basic')}
-          style={{
-            padding: '10px 15px',
-            backgroundColor: activeTab === 'basic' ? '#3b82f6' : '#e5e7eb',
-            color: activeTab === 'basic' ? 'white' : '#374151',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          Basic Ohm's Law
-        </button>
-        <button 
-          onClick={() => setActiveTab('series')}
-          style={{
-            padding: '10px 15px',
-            backgroundColor: activeTab === 'series' ? '#3b82f6' : '#e5e7eb',
-            color: activeTab === 'series' ? 'white' : '#374151',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          Series Circuits
-        </button>
-        <button 
-          onClick={() => setActiveTab('parallel')}
-          style={{
-            padding: '10px 15px',
-            backgroundColor: activeTab === 'parallel' ? '#3b82f6' : '#e5e7eb',
-            color: activeTab === 'parallel' ? 'white' : '#374151',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          Parallel Circuits
-        </button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-yellow-400 text-black px-6 py-4 rounded-t-lg">
+          <div className="flex items-center gap-3">
+            <Zap className="w-8 h-8" />
+            <div>
+              <h1 className="text-2xl font-bold">Ohm's Law Calculator</h1>
+              <p className="text-sm">Professional Electrical Calculations</p>
+            </div>
+          </div>
+        </div>
 
-      {/* Active Tab Content */}
-      {tabComponents[activeTab]}
+        <div className="bg-white">
+          <div className="flex border-b">
+            <button
+              onClick={() => setActiveTab('basic')}
+              className={`flex-1 px-4 py-3 font-semibold transition-colors ${
+                activeTab === 'basic'
+                  ? 'bg-yellow-400 text-black'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Basic
+            </button>
+            <button
+              onClick={() => setActiveTab('series')}
+              className={`flex-1 px-4 py-3 font-semibold transition-colors ${
+                activeTab === 'series'
+                  ? 'bg-yellow-400 text-black'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Series
+            </button>
+            <button
+              onClick={() => setActiveTab('parallel')}
+              className={`flex-1 px-4 py-3 font-semibold transition-colors ${
+                activeTab === 'parallel'
+                  ? 'bg-yellow-400 text-black'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Parallel
+            </button>
+          </div>
+
+          <div className="p-6">
+            {activeTab === 'basic' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Voltage (V)
+                    </label>
+                    <input
+                      type="number"
+                      value={voltage}
+                      onChange={(e) => {
+                        setVoltage(e.target.value);
+                        setTimeout(() => calculateBasic('voltage'), 0);
+                      }}
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                      placeholder="Enter voltage"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Current (A)
+                    </label>
+                    <input
+                      type="number"
+                      value={current}
+                      onChange={(e) => {
+                        setCurrent(e.target.value);
+                        setTimeout(() => calculateBasic('current'), 0);
+                      }}
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                      placeholder="Enter current"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Resistance (Ω)
+                    </label>
+                    <input
+                      type="number"
+                      value={resistance}
+                      onChange={(e) => {
+                        setResistance(e.target.value);
+                        setTimeout(() => calculateBasic('resistance'), 0);
+                      }}
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                      placeholder="Enter resistance"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Power (W)
+                    </label>
+                    <input
+                      type="number"
+                      value={power}
+                      onChange={(e) => {
+                        setPower(e.target.value);
+                        setTimeout(() => calculateBasic('power'), 0);
+                      }}
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                      placeholder="Enter power"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={clearBasic}
+                  className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 rounded transition-colors"
+                >
+                  Clear All
+                </button>
+              </div>
+            )}
+
+            {activeTab === 'series' && (
+              <div className="space-y-4">
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                  <p className="text-sm text-blue-800 font-semibold">
+                    Series Circuit: Current is constant across all components
+                  </p>
+                </div>
+                
+                {seriesComponents.map((comp, index) => (
+                  <div key={comp.id} className="bg-gray-50 p-4 rounded border-2 border-gray-200">
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="font-bold text-gray-700">Component {index + 1}</h3>
+                      {seriesComponents.length > 1 && (
+                        <button
+                          onClick={() => removeSeriesComponent(comp.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">R (Ω)</label>
+                        <input
+                          type="number"
+                          value={comp.R}
+                          onChange={(e) => updateSeriesComponent(comp.id, 'R', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">V (V)</label>
+                        <input
+                          type="number"
+                          value={comp.V}
+                          onChange={(e) => updateSeriesComponent(comp.id, 'V', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">I (A)</label>
+                        <input
+                          type="number"
+                          value={comp.I}
+                          onChange={(e) => updateSeriesComponent(comp.id, 'I', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">P (W)</label>
+                        <input
+                          type="number"
+                          value={comp.P}
+                          onChange={(e) => updateSeriesComponent(comp.id, 'P', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  onClick={addSeriesComponent}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded transition-colors flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  Add Component
+                </button>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={calculateSeries}
+                    className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Calculator className="w-5 h-5" />
+                    Calculate
+                  </button>
+                  <button
+                    onClick={clearSeries}
+                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded transition-colors"
+                  >
+                    Clear All
+                  </button>
+                </div>
+
+                <div className="bg-green-50 border-2 border-green-500 p-4 rounded">
+                  <h3 className="font-bold text-green-800 mb-2">Circuit Totals</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    <div>
+                      <span className="font-semibold">Total R:</span>
+                      <p className="text-lg font-bold text-green-700">{getTotalsSeries().totalR.toFixed(3)} Ω</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold">Total V:</span>
+                      <p className="text-lg font-bold text-green-700">{getTotalsSeries().totalV.toFixed(3)} V</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold">Current:</span>
+                      <p className="text-lg font-bold text-green-700">{getTotalsSeries().totalI.toFixed(3)} A</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold">Total P:</span>
+                      <p className="text-lg font-bold text-green-700">{getTotalsSeries().totalP.toFixed(3)} W</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'parallel' && (
+              <div className="space-y-4">
+                <div className="bg-purple-50 border-l-4 border-purple-500 p-4 mb-4">
+                  <p className="text-sm text-purple-800 font-semibold">
+                    Parallel Circuit: Voltage is constant across all components
+                  </p>
+                </div>
+                
+                {parallelComponents.map((comp, index) => (
+                  <div key={comp.id} className="bg-gray-50 p-4 rounded border-2 border-gray-200">
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="font-bold text-gray-700">Component {index + 1}</h3>
+                      {parallelComponents.length > 1 && (
+                        <button
+                          onClick={() => removeParallelComponent(comp.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">R (Ω)</label>
+                        <input
+                          type="number"
+                          value={comp.R}
+                          onChange={(e) => updateParallelComponent(comp.id, 'R', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">V (V)</label>
+                        <input
+                          type="number"
+                          value={comp.V}
+                          onChange={(e) => updateParallelComponent(comp.id, 'V', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">I (A)</label>
+                        <input
+                          type="number"
+                          value={comp.I}
+                          onChange={(e) => updateParallelComponent(comp.id, 'I', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">P (W)</label>
+                        <input
+                          type="number"
+                          value={comp.P}
+                          onChange={(e) => updateParallelComponent(comp.id, 'P', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  onClick={addParallelComponent}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded transition-colors flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  Add Component
+                </button>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={calculateParallel}
+                    className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Calculator className="w-5 h-5" />
+                    Calculate
+                  </button>
+                  <button
+                    onClick={clearParallel}
+                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded transition-colors"
+                  >
+                    Clear All
+                  </button>
+                </div>
+
+                <div className="bg-green-50 border-2 border-green-500 p-4 rounded">
+                  <h3 className="font-bold text-green-800 mb-2">Circuit Totals</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    <div>
+                      <span className="font-semibold">Total R:</span>
+                      <p className="text-lg font-bold text-green-700">{getTotalsParallel().totalR.toFixed(3)} Ω</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold">Voltage:</span>
+                      <p className="text-lg font-bold text-green-700">{getTotalsParallel().totalV.toFixed(3)} V</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold">Total I:</span>
+                      <p className="text-lg font-bold text-green-700">{getTotalsParallel().totalI.toFixed(3)} A</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold">Total P:</span>
+                      <p className="text-lg font-bold text-green-700">{getTotalsParallel().totalP.toFixed(3)} W</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-gray-800 text-gray-300 px-6 py-4 rounded-b-lg text-sm">
+          <p className="font-semibold mb-2">Formulas:</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <p>V = I × R</p>
+            <p>P = V × I</p>
+            <p>I = V ÷ R</p>
+            <p>P = I² × R</p>
+            <p>R = V ÷ I</p>
+            <p>P = V² ÷ R</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default OhmsLawCalculator;
