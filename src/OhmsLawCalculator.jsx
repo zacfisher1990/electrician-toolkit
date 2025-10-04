@@ -20,73 +20,72 @@ const OhmsLawCalculator = ({ onBack }) => {
     { id: 1, R: '', V: '', I: '', P: '' }
   ]);
 
-  // Total circuit inputs (optional)
   const [seriesTotals, setSeriesTotals] = useState({ R: '', V: '', I: '', P: '' });
   const [parallelTotals, setParallelTotals] = useState({ R: '', V: '', I: '', P: '' });
   const [basicResults, setBasicResults] = useState({ V: '', I: '', R: '', P: '' });
 
   const calculateBasic = () => {
-  const V = parseFloat(voltage) || 0;
-  const I = parseFloat(current) || 0;
-  const R = parseFloat(resistance) || 0;
-  const P = parseFloat(power) || 0;
+    const V = parseFloat(voltage) || 0;
+    const I = parseFloat(current) || 0;
+    const R = parseFloat(resistance) || 0;
+    const P = parseFloat(power) || 0;
 
-  const results = { V: '', I: '', R: '', P: '' };
+    const results = { V: '', I: '', R: '', P: '' };
 
-  // Calculate Voltage
-  if (!voltage && I && R) {
-    results.V = (I * R).toFixed(2);
-  } else if (!voltage && P && I && I !== 0) {
-    results.V = (P / I).toFixed(2);
-  } else if (!voltage && P && R) {
-    results.V = Math.sqrt(P * R).toFixed(2);
-  } else if (voltage) {
-    results.V = V.toFixed(2);
-  }
+    // Calculate Voltage
+    if (!voltage && I && R) {
+      results.V = (I * R).toFixed(2);
+    } else if (!voltage && P && I && I !== 0) {
+      results.V = (P / I).toFixed(2);
+    } else if (!voltage && P && R) {
+      results.V = Math.sqrt(P * R).toFixed(2);
+    } else if (voltage) {
+      results.V = V.toFixed(2);
+    }
 
-  // Calculate Current
-  if (!current && V && R && R !== 0) {
-    results.I = (V / R).toFixed(2);
-  } else if (!current && P && V && V !== 0) {
-    results.I = (P / V).toFixed(2);
-  } else if (!current && P && R && R !== 0) {
-    results.I = Math.sqrt(P / R).toFixed(2);
-  } else if (current) {
-    results.I = I.toFixed(2);
-  }
+    // Calculate Current
+    if (!current && V && R && R !== 0) {
+      results.I = (V / R).toFixed(2);
+    } else if (!current && P && V && V !== 0) {
+      results.I = (P / V).toFixed(2);
+    } else if (!current && P && R && R !== 0) {
+      results.I = Math.sqrt(P / R).toFixed(2);
+    } else if (current) {
+      results.I = I.toFixed(2);
+    }
 
-  // Calculate Resistance
-  if (!resistance && V && I && I !== 0) {
-    results.R = (V / I).toFixed(2);
-  } else if (!resistance && V && P && P !== 0) {
-    results.R = (V * V / P).toFixed(2);
-  } else if (!resistance && P && I && I !== 0) {
-    results.R = (P / (I * I)).toFixed(2);
-  } else if (resistance) {
-    results.R = R.toFixed(2);
-  }
+    // Calculate Resistance
+    if (!resistance && V && I && I !== 0) {
+      results.R = (V / I).toFixed(2);
+    } else if (!resistance && V && P && P !== 0) {
+      results.R = (V * V / P).toFixed(2);
+    } else if (!resistance && P && I && I !== 0) {
+      results.R = (P / (I * I)).toFixed(2);
+    } else if (resistance) {
+      results.R = R.toFixed(2);
+    }
 
-  // Calculate Power
-  if (!power && V && I) {
-    results.P = (V * I).toFixed(2);
-  } else if (!power && I && R) {
-    results.P = (I * I * R).toFixed(2);
-  } else if (!power && V && R && R !== 0) {
-    results.P = (V * V / R).toFixed(2);
-  } else if (power) {
-    results.P = P.toFixed(2);
-  }
+    // Calculate Power
+    if (!power && V && I) {
+      results.P = (V * I).toFixed(2);
+    } else if (!power && I && R) {
+      results.P = (I * I * R).toFixed(2);
+    } else if (!power && V && R && R !== 0) {
+      results.P = (V * V / R).toFixed(2);
+    } else if (power) {
+      results.P = P.toFixed(2);
+    }
 
-  setBasicResults(results);
-};
+    setBasicResults(results);
+  };
 
   const clearBasic = () => {
-  setVoltage('');
-  setCurrent('');
-  setResistance('');
-  setPower('');
-  setBasicResults({ V: '', I: '', R: '', P: '' });
-};
+    setVoltage('');
+    setCurrent('');
+    setResistance('');
+    setPower('');
+    setBasicResults({ V: '', I: '', R: '', P: '' });
+  };
 
   // Series circuit functions
   const addSeriesComponent = () => {
@@ -105,169 +104,156 @@ const OhmsLawCalculator = ({ onBack }) => {
       c.id === id ? { ...c, [field]: value } : c
     ));
   };
-  const validateSeriesTotals = (components, totals) => {
-  const conflicts = [];
-  
-  // Check if total current conflicts with any component current
-  if (totals.I && totals.I !== '') {
-    const totalI = parseFloat(totals.I);
-    components.forEach((comp, idx) => {
-      if (comp.I && comp.I !== '') {
-        const compI = parseFloat(comp.I);
-        if (Math.abs(compI - totalI) > 0.01) {
-          conflicts.push(`Total current (${totalI}A) conflicts with Component ${idx + 1} current (${compI}A)`);
-        }
-      }
-    });
-  }
-  
-  return conflicts;
-};
 
-const validateParallelTotals = (components, totals) => {
-  const conflicts = [];
-  
-  // Check if total voltage conflicts with any component voltage
-  if (totals.V && totals.V !== '') {
-    const totalV = parseFloat(totals.V);
-    components.forEach((comp, idx) => {
-      if (comp.V && comp.V !== '') {
-        const compV = parseFloat(comp.V);
-        if (Math.abs(compV - totalV) > 0.01) {
-          conflicts.push(`Total voltage (${totalV}V) conflicts with Component ${idx + 1} voltage (${compV}V)`);
+  const validateSeriesTotals = (components, totals) => {
+    const conflicts = [];
+    if (totals.I && totals.I !== '') {
+      const totalI = parseFloat(totals.I);
+      components.forEach((comp, idx) => {
+        if (comp.I && comp.I !== '') {
+          const compI = parseFloat(comp.I);
+          if (Math.abs(compI - totalI) > 0.01) {
+            conflicts.push(`Total current (${totalI}A) conflicts with Component ${idx + 1} current (${compI}A)`);
+          }
         }
-      }
-    });
-  }
-  
-  return conflicts;
-};
+      });
+    }
+    return conflicts;
+  };
+
+  const validateParallelTotals = (components, totals) => {
+    const conflicts = [];
+    if (totals.V && totals.V !== '') {
+      const totalV = parseFloat(totals.V);
+      components.forEach((comp, idx) => {
+        if (comp.V && comp.V !== '') {
+          const compV = parseFloat(comp.V);
+          if (Math.abs(compV - totalV) > 0.01) {
+            conflicts.push(`Total voltage (${totalV}V) conflicts with Component ${idx + 1} voltage (${compV}V)`);
+          }
+        }
+      });
+    }
+    return conflicts;
+  };
 
   const calculateSeries = () => {
-  // Validate totals first
-  const conflicts = validateSeriesTotals(seriesComponents, seriesTotals);
-  if (conflicts.length > 0) {
-    alert('Conflicts detected:\n' + conflicts.join('\n'));
-    return;
-  }
+    const conflicts = validateSeriesTotals(seriesComponents, seriesTotals);
+    if (conflicts.length > 0) {
+      alert('Conflicts detected:\n' + conflicts.join('\n'));
+      return;
+    }
 
-  let components = [...seriesComponents];
-  
-  // Apply total current if provided
-  if (seriesTotals.I && seriesTotals.I !== '') {
-    const totalI = parseFloat(seriesTotals.I);
-    components = components.map(comp => {
-      if (!comp.I || comp.I === '') {
-        return { ...comp, I: totalI.toFixed(3) };
-      }
-      return comp;
-    });
-  }
-
-  let changed = true;
-  let iterations = 0;
-  const maxIterations = 50;
-
-  while (changed && iterations < maxIterations) {
-    changed = false;
-    iterations++;
+    let components = [...seriesComponents];
     
-    // Find known current (same for all in series)
-    let knownCurrent = null;
-    for (let comp of components) {
-      if (comp.I && !isNaN(parseFloat(comp.I))) {
-        knownCurrent = parseFloat(comp.I);
-        break;
-      }
-    }
-
-    // If no current known, try to derive from any component
-    if (knownCurrent === null) {
-      for (let comp of components) {
-        const V = parseFloat(comp.V);
-        const R = parseFloat(comp.R);
-        const P = parseFloat(comp.P);
-        
-        if (!isNaN(V) && !isNaN(R) && R !== 0) {
-          knownCurrent = V / R;
-          break;
-        } else if (!isNaN(P) && !isNaN(V) && V !== 0) {
-          knownCurrent = P / V;
-          break;
-        } else if (!isNaN(P) && !isNaN(R) && R !== 0) {
-          knownCurrent = Math.sqrt(P / R);
-          break;
-        }
-      }
-    }
-
-    // Apply known current to all components
-    if (knownCurrent !== null) {
+    if (seriesTotals.I && seriesTotals.I !== '') {
+      const totalI = parseFloat(seriesTotals.I);
       components = components.map(comp => {
         if (!comp.I || comp.I === '') {
-          changed = true;
-          return { ...comp, I: knownCurrent.toFixed(3) };
+          return { ...comp, I: totalI.toFixed(3) };
         }
         return comp;
       });
     }
 
-    // Calculate missing values for each component
-    components = components.map(comp => {
-      const newComp = { ...comp };
-      const V = parseFloat(comp.V);
-      const I = parseFloat(comp.I);
-      const R = parseFloat(comp.R);
-      const P = parseFloat(comp.P);
+    let changed = true;
+    let iterations = 0;
+    const maxIterations = 50;
 
-      // Calculate R
-      if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
-        newComp.R = (V / I).toFixed(3);
-        changed = true;
-      } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
-        newComp.R = (P / (I * I)).toFixed(3);
-        changed = true;
-      } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
-        newComp.R = (V * V / P).toFixed(3);
-        changed = true;
+    while (changed && iterations < maxIterations) {
+      changed = false;
+      iterations++;
+      
+      let knownCurrent = null;
+      for (let comp of components) {
+        if (comp.I && !isNaN(parseFloat(comp.I))) {
+          knownCurrent = parseFloat(comp.I);
+          break;
+        }
       }
 
-      // Calculate V
-      const newR = parseFloat(newComp.R);
-      const newI = parseFloat(newComp.I);
-      if ((comp.V === '' || isNaN(V)) && !isNaN(newI) && !isNaN(newR)) {
-        newComp.V = (newI * newR).toFixed(3);
-        changed = true;
-      } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newI) && newI !== 0) {
-        newComp.V = (P / newI).toFixed(3);
-        changed = true;
-      } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newR)) {
-        newComp.V = Math.sqrt(P * newR).toFixed(3);
-        changed = true;
+      if (knownCurrent === null) {
+        for (let comp of components) {
+          const V = parseFloat(comp.V);
+          const R = parseFloat(comp.R);
+          const P = parseFloat(comp.P);
+          
+          if (!isNaN(V) && !isNaN(R) && R !== 0) {
+            knownCurrent = V / R;
+            break;
+          } else if (!isNaN(P) && !isNaN(V) && V !== 0) {
+            knownCurrent = P / V;
+            break;
+          } else if (!isNaN(P) && !isNaN(R) && R !== 0) {
+            knownCurrent = Math.sqrt(P / R);
+            break;
+          }
+        }
       }
 
-      // Calculate P
-      const newV = parseFloat(newComp.V);
-      if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
-        newComp.P = (newV * newI).toFixed(3);
-        changed = true;
-      } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
-        newComp.P = (newI * newI * newR).toFixed(3);
-        changed = true;
-      } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
-        newComp.P = (newV * newV / newR).toFixed(3);
-        changed = true;
+      if (knownCurrent !== null) {
+        components = components.map(comp => {
+          if (!comp.I || comp.I === '') {
+            changed = true;
+            return { ...comp, I: knownCurrent.toFixed(3) };
+          }
+          return comp;
+        });
       }
 
-      return newComp;
-    });
-  }
+      components = components.map(comp => {
+        const newComp = { ...comp };
+        const V = parseFloat(comp.V);
+        const I = parseFloat(comp.I);
+        const R = parseFloat(comp.R);
+        const P = parseFloat(comp.P);
 
-  setSeriesComponents(components);
-};
+        if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
+          newComp.R = (V / I).toFixed(3);
+          changed = true;
+        } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
+          newComp.R = (P / (I * I)).toFixed(3);
+          changed = true;
+        } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
+          newComp.R = (V * V / P).toFixed(3);
+          changed = true;
+        }
+
+        const newR = parseFloat(newComp.R);
+        const newI = parseFloat(newComp.I);
+        if ((comp.V === '' || isNaN(V)) && !isNaN(newI) && !isNaN(newR)) {
+          newComp.V = (newI * newR).toFixed(3);
+          changed = true;
+        } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newI) && newI !== 0) {
+          newComp.V = (P / newI).toFixed(3);
+          changed = true;
+        } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newR)) {
+          newComp.V = Math.sqrt(P * newR).toFixed(3);
+          changed = true;
+        }
+
+        const newV = parseFloat(newComp.V);
+        if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
+          newComp.P = (newV * newI).toFixed(3);
+          changed = true;
+        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
+          newComp.P = (newI * newI * newR).toFixed(3);
+          changed = true;
+        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
+          newComp.P = (newV * newV / newR).toFixed(3);
+          changed = true;
+        }
+
+        return newComp;
+      });
+    }
+
+    setSeriesComponents(components);
+  };
 
   const clearSeries = () => {
     setSeriesComponents([{ id: 1, R: '', V: '', I: '', P: '' }]);
+    setSeriesTotals({ R: '', V: '', I: '', P: '' });
   };
 
   // Parallel circuit functions
@@ -289,130 +275,122 @@ const validateParallelTotals = (components, totals) => {
   };
 
   const calculateParallel = () => {
-  // Validate totals first
-  const conflicts = validateParallelTotals(parallelComponents, parallelTotals);
-  if (conflicts.length > 0) {
-    alert('Conflicts detected:\n' + conflicts.join('\n'));
-    return;
-  }
+    const conflicts = validateParallelTotals(parallelComponents, parallelTotals);
+    if (conflicts.length > 0) {
+      alert('Conflicts detected:\n' + conflicts.join('\n'));
+      return;
+    }
 
-  let components = [...parallelComponents];
-  
-  // Apply total voltage if provided
-  if (parallelTotals.V && parallelTotals.V !== '') {
-    const totalV = parseFloat(parallelTotals.V);
-    components = components.map(comp => {
-      if (!comp.V || comp.V === '') {
-        return { ...comp, V: totalV.toFixed(3) };
-      }
-      return comp;
-    });
-  }
-
-  let changed = true;
-  let iterations = 0;
-  const maxIterations = 50;
-
-  while (changed && iterations < maxIterations) {
-    changed = false;
-    iterations++;
+    let components = [...parallelComponents];
     
-    // Find known voltage (same for all in parallel)
-    let knownVoltage = null;
-    for (let comp of components) {
-      if (comp.V && !isNaN(parseFloat(comp.V))) {
-        knownVoltage = parseFloat(comp.V);
-        break;
-      }
-    }
-
-    // If no voltage known, try to derive from any component
-    if (knownVoltage === null) {
-      for (let comp of components) {
-        const I = parseFloat(comp.I);
-        const R = parseFloat(comp.R);
-        const P = parseFloat(comp.P);
-        
-        if (!isNaN(I) && !isNaN(R)) {
-          knownVoltage = I * R;
-          break;
-        } else if (!isNaN(P) && !isNaN(I) && I !== 0) {
-          knownVoltage = P / I;
-          break;
-        } else if (!isNaN(P) && !isNaN(R)) {
-          knownVoltage = Math.sqrt(P * R);
-          break;
-        }
-      }
-    }
-
-    // Apply known voltage to all components
-    if (knownVoltage !== null) {
+    if (parallelTotals.V && parallelTotals.V !== '') {
+      const totalV = parseFloat(parallelTotals.V);
       components = components.map(comp => {
         if (!comp.V || comp.V === '') {
-          changed = true;
-          return { ...comp, V: knownVoltage.toFixed(3) };
+          return { ...comp, V: totalV.toFixed(3) };
         }
         return comp;
       });
     }
 
-    // Calculate missing values for each component
-    components = components.map(comp => {
-      const newComp = { ...comp };
-      const V = parseFloat(comp.V);
-      const I = parseFloat(comp.I);
-      const R = parseFloat(comp.R);
-      const P = parseFloat(comp.P);
+    let changed = true;
+    let iterations = 0;
+    const maxIterations = 50;
 
-      // Calculate R
-      if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
-        newComp.R = (V / I).toFixed(3);
-        changed = true;
-      } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
-        newComp.R = (P / (I * I)).toFixed(3);
-        changed = true;
-      } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
-        newComp.R = (V * V / P).toFixed(3);
-        changed = true;
+    while (changed && iterations < maxIterations) {
+      changed = false;
+      iterations++;
+      
+      let knownVoltage = null;
+      for (let comp of components) {
+        if (comp.V && !isNaN(parseFloat(comp.V))) {
+          knownVoltage = parseFloat(comp.V);
+          break;
+        }
       }
 
-      // Calculate I
-      const newR = parseFloat(newComp.R);
-      const newV = parseFloat(newComp.V);
-      if ((comp.I === '' || isNaN(I)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
-        newComp.I = (newV / newR).toFixed(3);
-        changed = true;
-      } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newV) && newV !== 0) {
-        newComp.I = (P / newV).toFixed(3);
-        changed = true;
-      } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newR) && newR !== 0) {
-        newComp.I = Math.sqrt(P / newR).toFixed(3);
-        changed = true;
+      if (knownVoltage === null) {
+        for (let comp of components) {
+          const I = parseFloat(comp.I);
+          const R = parseFloat(comp.R);
+          const P = parseFloat(comp.P);
+          
+          if (!isNaN(I) && !isNaN(R)) {
+            knownVoltage = I * R;
+            break;
+          } else if (!isNaN(P) && !isNaN(I) && I !== 0) {
+            knownVoltage = P / I;
+            break;
+          } else if (!isNaN(P) && !isNaN(R)) {
+            knownVoltage = Math.sqrt(P * R);
+            break;
+          }
+        }
       }
 
-      // Calculate P
-      const newI = parseFloat(newComp.I);
-      if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
-        newComp.P = (newV * newI).toFixed(3);
-        changed = true;
-      } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
-        newComp.P = (newI * newI * newR).toFixed(3);
-        changed = true;
-      } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
-        newComp.P = (newV * newV / newR).toFixed(3);
-        changed = true;
+      if (knownVoltage !== null) {
+        components = components.map(comp => {
+          if (!comp.V || comp.V === '') {
+            changed = true;
+            return { ...comp, V: knownVoltage.toFixed(3) };
+          }
+          return comp;
+        });
       }
 
-      return newComp;
-    });
-  }
+      components = components.map(comp => {
+        const newComp = { ...comp };
+        const V = parseFloat(comp.V);
+        const I = parseFloat(comp.I);
+        const R = parseFloat(comp.R);
+        const P = parseFloat(comp.P);
 
-  setParallelComponents(components);
-};
+        if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
+          newComp.R = (V / I).toFixed(3);
+          changed = true;
+        } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
+          newComp.R = (P / (I * I)).toFixed(3);
+          changed = true;
+        } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
+          newComp.R = (V * V / P).toFixed(3);
+          changed = true;
+        }
+
+        const newR = parseFloat(newComp.R);
+        const newV = parseFloat(newComp.V);
+        if ((comp.I === '' || isNaN(I)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
+          newComp.I = (newV / newR).toFixed(3);
+          changed = true;
+        } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newV) && newV !== 0) {
+          newComp.I = (P / newV).toFixed(3);
+          changed = true;
+        } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newR) && newR !== 0) {
+          newComp.I = Math.sqrt(P / newR).toFixed(3);
+          changed = true;
+        }
+
+        const newI = parseFloat(newComp.I);
+        if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
+          newComp.P = (newV * newI).toFixed(3);
+          changed = true;
+        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
+          newComp.P = (newI * newI * newR).toFixed(3);
+          changed = true;
+        } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
+          newComp.P = (newV * newV / newR).toFixed(3);
+          changed = true;
+        }
+
+        return newComp;
+      });
+    }
+
+    setParallelComponents(components);
+  };
 
   const clearParallel = () => {
     setParallelComponents([{ id: 1, R: '', V: '', I: '', P: '' }]);
+    setParallelTotals({ R: '', V: '', I: '', P: '' });
   };
 
   const getTotalsSeries = () => {
@@ -460,518 +438,652 @@ const validateParallelTotals = (components, totals) => {
   };
 
   return (
-  <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-    {onBack && (
-      <button
-        onClick={onBack}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          padding: '0.75rem 1.5rem',
-          marginBottom: '1rem',
-          background: '#374151',
-          color: 'white',
-          border: 'none',
-          borderRadius: '0.5rem',
-          fontSize: '1rem',
-          fontWeight: '600',
-          cursor: 'pointer'
-        }}
-      >
-        <ArrowLeft size={20} />
-        Back to Menu
-      </button>
-    )}
-        <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
-  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-    <Zap size={32} />
-    <div>
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Ohm's Law Calculator</h1>
-      <p style={{ fontSize: '0.875rem', margin: 0 }}>Professional Electrical Calculations</p>
-    </div>
-  </div>
-</div>
+    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
+      {onBack && (
+        <button
+          onClick={onBack}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.75rem 1.5rem',
+            marginBottom: '1rem',
+            background: '#374151',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.5rem',
+            fontSize: '1rem',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          <ArrowLeft size={20} />
+          Back to Menu
+        </button>
+      )}
 
-<div style={{ background: 'white' }}>
-          <div className="flex border-b">
-            <button
-              onClick={() => setActiveTab('basic')}
-              className={`flex-1 px-4 py-3 font-semibold transition-colors ${
-                activeTab === 'basic'
-                  ? 'bg-yellow-400 text-black'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Basic
-            </button>
-            <button
-              onClick={() => setActiveTab('series')}
-              className={`flex-1 px-4 py-3 font-semibold transition-colors ${
-                activeTab === 'series'
-                  ? 'bg-yellow-400 text-black'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Series
-            </button>
-            <button
-              onClick={() => setActiveTab('parallel')}
-              className={`flex-1 px-4 py-3 font-semibold transition-colors ${
-                activeTab === 'parallel'
-                  ? 'bg-yellow-400 text-black'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Parallel
-            </button>
-          </div>
-
-          <div className="p-6">
-            {activeTab === 'basic' && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Voltage (V)
-                    </label>
-                    <input
-                      type="number"
-                      value={voltage}
-                      onChange={(e) => setVoltage(e.target.value)}
-                      className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                      placeholder="Enter voltage"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Current (A)
-                    </label>
-                    <input
-                      type="number"
-                      value={current}
-                      onChange={(e) => setCurrent(e.target.value)}
-                      className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                      placeholder="Enter current"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Resistance (Ω)
-                    </label>
-                    <input
-                      type="number"
-                      value={resistance}
-                      onChange={(e) => setResistance(e.target.value)}
-                      className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                      placeholder="Enter resistance"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Power (W)
-                    </label>
-                    <input
-                      type="number"
-                      value={power}
-                      onChange={(e) => setPower(e.target.value)}
-                      className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                      placeholder="Enter power"
-                    />
-                  </div>
-                </div>
-                <button
-                  onClick={calculateBasic}
-                  className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded transition-colors flex items-center justify-center gap-2 mb-3"
-                >
-                  <Calculator className="w-5 h-5" />
-                  Calculate
-                </button>
-                <button
-                  onClick={clearBasic}
-                  className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 rounded transition-colors"
-                >
-                  Clear All
-                </button>
-
-                {/* Results Box */}
-                {(basicResults.V || basicResults.I || basicResults.R || basicResults.P) && (
-                  <div style={{ 
-                    background: '#dcfce7', 
-                    border: '2px solid #16a34a', 
-                    padding: '1rem', 
-                    borderRadius: '0.5rem', 
-                    marginTop: '1rem' 
-                  }}>
-                    <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '0.75rem', textAlign: 'center' }}>
-                      Results
-                    </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', fontSize: '0.875rem' }}>
-                      {basicResults.V && (
-                        <div>
-                          <span style={{ fontWeight: '600', color: '#374151' }}>Voltage:</span>
-                          <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#15803d', margin: '0.25rem 0 0 0' }}>
-                            {basicResults.V} V
-                          </p>
-                        </div>
-                      )}
-                      {basicResults.I && (
-                        <div>
-                          <span style={{ fontWeight: '600', color: '#374151' }}>Current:</span>
-                          <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#15803d', margin: '0.25rem 0 0 0' }}>
-                            {basicResults.I} A
-                          </p>
-                        </div>
-                      )}
-                      {basicResults.R && (
-                        <div>
-                          <span style={{ fontWeight: '600', color: '#374151' }}>Resistance:</span>
-                          <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#15803d', margin: '0.25rem 0 0 0' }}>
-                            {basicResults.R} Ω
-                          </p>
-                        </div>
-                      )}
-                      {basicResults.P && (
-                        <div>
-                          <span style={{ fontWeight: '600', color: '#374151' }}>Power:</span>
-                          <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#15803d', margin: '0.25rem 0 0 0' }}>
-                            {basicResults.P} W
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-                </div>
-            )}
-            {activeTab === 'series' && (
-              <div className="space-y-4">
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
-                  <p className="text-sm text-blue-800 font-semibold">
-                    Series Circuit: Current is constant across all components
-                  </p>
-                </div>
-
-                <div className="bg-gray-50 border-2 border-gray-300 p-4 rounded mb-4">
-  <h3 className="font-bold text-gray-700 mb-3">Circuit Totals (Optional)</h3>
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">Total R (Ω)</label>
-      <input
-        type="number"
-        value={seriesTotals.R}
-        onChange={(e) => setSeriesTotals({...seriesTotals, R: e.target.value})}
-        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-        placeholder="Optional"
-      />
-    </div>
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">Total V (V)</label>
-      <input
-        type="number"
-        value={seriesTotals.V}
-        onChange={(e) => setSeriesTotals({...seriesTotals, V: e.target.value})}
-        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-        placeholder="Optional"
-      />
-    </div>
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">Total I (A)</label>
-      <input
-        type="number"
-        value={seriesTotals.I}
-        onChange={(e) => setSeriesTotals({...seriesTotals, I: e.target.value})}
-        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-        placeholder="Optional"
-      />
-    </div>
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">Total P (W)</label>
-      <input
-        type="number"
-        value={seriesTotals.P}
-        onChange={(e) => setSeriesTotals({...seriesTotals, P: e.target.value})}
-        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-        placeholder="Optional"
-      />
-    </div>
-  </div>
-  <p className="text-xs text-gray-500 mt-2">Enter known total values to help solve the circuit. Series: Current is constant.</p>
-</div>
-                
-                {seriesComponents.map((comp, index) => (
-                  <div key={comp.id} className="bg-gray-50 p-4 rounded border-2 border-gray-200">
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="font-bold text-gray-700">Component {index + 1}</h3>
-                      {seriesComponents.length > 1 && (
-                        <button
-                          onClick={() => removeSeriesComponent(comp.id)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">R (Ω)</label>
-                        <input
-                          type="number"
-                          value={comp.R}
-                          onChange={(e) => updateSeriesComponent(comp.id, 'R', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">V (V)</label>
-                        <input
-                          type="number"
-                          value={comp.V}
-                          onChange={(e) => updateSeriesComponent(comp.id, 'V', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">I (A)</label>
-                        <input
-                          type="number"
-                          value={comp.I}
-                          onChange={(e) => updateSeriesComponent(comp.id, 'I', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">P (W)</label>
-                        <input
-                          type="number"
-                          value={comp.P}
-                          onChange={(e) => updateSeriesComponent(comp.id, 'P', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                <button
-                  onClick={addSeriesComponent}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded transition-colors flex items-center justify-center gap-2"
-                >
-                  <Plus className="w-5 h-5" />
-                  Add Component
-                </button>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={calculateSeries}
-                    className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Calculator className="w-5 h-5" />
-                    Calculate
-                  </button>
-                  <button
-                    onClick={clearSeries}
-                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded transition-colors"
-                  >
-                    Clear All
-                  </button>
-                </div>
-
-                <div className="bg-green-50 border-2 border-green-500 p-4 rounded">
-                  <h3 className="font-bold text-green-800 mb-2">Circuit Totals</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div>
-                      <span className="font-semibold">Total R:</span>
-                      <p className="text-lg font-bold text-green-700">{getTotalsSeries().totalR.toFixed(3)} Ω</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Total V:</span>
-                      <p className="text-lg font-bold text-green-700">{getTotalsSeries().totalV.toFixed(3)} V</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Current:</span>
-                      <p className="text-lg font-bold text-green-700">{getTotalsSeries().totalI.toFixed(3)} A</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Total P:</span>
-                      <p className="text-lg font-bold text-green-700">{getTotalsSeries().totalP.toFixed(3)} W</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'parallel' && (
-              <div className="space-y-4">
-                <div className="bg-purple-50 border-l-4 border-purple-500 p-4 mb-4">
-                  <p className="text-sm text-purple-800 font-semibold">
-                    Parallel Circuit: Voltage is constant across all components
-                  </p>
-                </div>
-
-                <div className="bg-gray-50 border-2 border-gray-300 p-4 rounded mb-4">
-  <h3 className="font-bold text-gray-700 mb-3">Circuit Totals (Optional)</h3>
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">Total R (Ω)</label>
-      <input
-        type="number"
-        value={parallelTotals.R}
-        onChange={(e) => setParallelTotals({...parallelTotals, R: e.target.value})}
-        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-        placeholder="Optional"
-      />
-    </div>
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">Total V (V)</label>
-      <input
-        type="number"
-        value={parallelTotals.V}
-        onChange={(e) => setParallelTotals({...parallelTotals, V: e.target.value})}
-        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-        placeholder="Optional"
-      />
-    </div>
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">Total I (A)</label>
-      <input
-        type="number"
-        value={parallelTotals.I}
-        onChange={(e) => setParallelTotals({...parallelTotals, I: e.target.value})}
-        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-        placeholder="Optional"
-      />
-    </div>
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">Total P (W)</label>
-      <input
-        type="number"
-        value={parallelTotals.P}
-        onChange={(e) => setParallelTotals({...parallelTotals, P: e.target.value})}
-        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-        placeholder="Optional"
-      />
-    </div>
-  </div>
-  <p className="text-xs text-gray-500 mt-2">Enter known total values to help solve the circuit. Parallel: Voltage is constant.</p>
-</div>
-                
-                {parallelComponents.map((comp, index) => (
-                  <div key={comp.id} className="bg-gray-50 p-4 rounded border-2 border-gray-200">
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="font-bold text-gray-700">Component {index + 1}</h3>
-                      {parallelComponents.length > 1 && (
-                        <button
-                          onClick={() => removeParallelComponent(comp.id)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">R (Ω)</label>
-                        <input
-                          type="number"
-                          value={comp.R}
-                          onChange={(e) => updateParallelComponent(comp.id, 'R', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">V (V)</label>
-                        <input
-                          type="number"
-                          value={comp.V}
-                          onChange={(e) => updateParallelComponent(comp.id, 'V', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">I (A)</label>
-                        <input
-                          type="number"
-                          value={comp.I}
-                          onChange={(e) => updateParallelComponent(comp.id, 'I', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">P (W)</label>
-                        <input
-                          type="number"
-                          value={comp.P}
-                          onChange={(e) => updateParallelComponent(comp.id, 'P', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                <button
-                  onClick={addParallelComponent}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded transition-colors flex items-center justify-center gap-2"
-                >
-                  <Plus className="w-5 h-5" />
-                  Add Component
-                </button>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={calculateParallel}
-                    className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Calculator className="w-5 h-5" />
-                    Calculate
-                  </button>
-                  <button
-                    onClick={clearParallel}
-                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded transition-colors"
-                  >
-                    Clear All
-                  </button>
-                </div>
-
-                <div className="bg-green-50 border-2 border-green-500 p-4 rounded">
-                  <h3 className="font-bold text-green-800 mb-2">Circuit Totals</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div>
-                      <span className="font-semibold">Total R:</span>
-                      <p className="text-lg font-bold text-green-700">{getTotalsParallel().totalR.toFixed(3)} Ω</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Voltage:</span>
-                      <p className="text-lg font-bold text-green-700">{getTotalsParallel().totalV.toFixed(3)} V</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Total I:</span>
-                      <p className="text-lg font-bold text-green-700">{getTotalsParallel().totalI.toFixed(3)} A</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Total P:</span>
-                      <p className="text-lg font-bold text-green-700">{getTotalsParallel().totalP.toFixed(3)} W</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
-          <p className="font-semibold mb-2">Formulas:</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <p>V = I × R</p>
-            <p>P = V × I</p>
-            <p>I = V ÷ R</p>
-            <p>P = I² × R</p>
-            <p>R = V ÷ I</p>
-            <p>P = V² ÷ R</p>
+      <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Zap size={32} />
+          <div>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Ohm's Law Calculator</h1>
+            <p style={{ fontSize: '0.875rem', margin: 0 }}>Professional Electrical Calculations - V, I, R, P</p>
           </div>
         </div>
       </div>
+
+      <div style={{ background: 'white', padding: '1.5rem' }}>
+        {/* Tab Navigation */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '2px solid #e5e7eb' }}>
+          <button
+            onClick={() => setActiveTab('basic')}
+            style={{
+              flex: 1,
+              padding: '0.75rem 1rem',
+              background: activeTab === 'basic' ? '#fbbf24' : '#f3f4f6',
+              color: activeTab === 'basic' ? 'black' : '#6b7280',
+              border: 'none',
+              borderRadius: '0',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              transition: 'all 0.2s'
+            }}
+          >
+            Basic
+          </button>
+          <button
+            onClick={() => setActiveTab('series')}
+            style={{
+              flex: 1,
+              padding: '0.75rem 1rem',
+              background: activeTab === 'series' ? '#fbbf24' : '#f3f4f6',
+              color: activeTab === 'series' ? 'black' : '#6b7280',
+              border: 'none',
+              borderRadius: '0',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              transition: 'all 0.2s'
+            }}
+          >
+            Series
+          </button>
+          <button
+            onClick={() => setActiveTab('parallel')}
+            style={{
+              flex: 1,
+              padding: '0.75rem 1rem',
+              background: activeTab === 'parallel' ? '#fbbf24' : '#f3f4f6',
+              color: activeTab === 'parallel' ? 'black' : '#6b7280',
+              border: 'none',
+              borderRadius: '0',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              transition: 'all 0.2s'
+            }}
+          >
+            Parallel
+          </button>
+        </div>
+
+        {/* Basic Tab */}
+        {activeTab === 'basic' && (
+          <div>
+            <div style={{ 
+              background: '#dbeafe', 
+              border: '1px solid #3b82f6', 
+              padding: '0.75rem', 
+              borderRadius: '0.5rem', 
+              marginBottom: '1rem',
+              textAlign: 'center'
+            }}>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: '#1e40af', fontWeight: '600' }}>
+                Enter any 2 known values to calculate the remaining values
+              </p>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                  Voltage (V)
+                </label>
+                <input
+                  type="number"
+                  value={voltage}
+                  onChange={(e) => setVoltage(e.target.value)}
+                  placeholder="Enter voltage"
+                  disabled={
+                    (current && resistance) || 
+                    (current && power) || 
+                    (resistance && power)
+                  }
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.5rem 1rem', 
+                    border: '2px solid #d1d5db', 
+                    borderRadius: '0.25rem', 
+                    fontSize: '1rem',
+                    background: ((current && resistance) || (current && power) || (resistance && power)) ? '#f3f4f6' : 'white',
+                    cursor: ((current && resistance) || (current && power) || (resistance && power)) ? 'not-allowed' : 'text'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                  Current (A)
+                </label>
+                <input
+                  type="number"
+                  value={current}
+                  onChange={(e) => setCurrent(e.target.value)}
+                  placeholder="Enter current"
+                  disabled={
+                    (voltage && resistance) || 
+                    (voltage && power) || 
+                    (resistance && power)
+                  }
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.5rem 1rem', 
+                    border: '2px solid #d1d5db', 
+                    borderRadius: '0.25rem', 
+                    fontSize: '1rem',
+                    background: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? '#f3f4f6' : 'white',
+                    cursor: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? 'not-allowed' : 'text'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                  Resistance (Ω)
+                </label>
+                <input
+                  type="number"
+                  value={resistance}
+                  onChange={(e) => setResistance(e.target.value)}
+                  placeholder="Enter resistance"
+                  disabled={
+                    (voltage && current) || 
+                    (voltage && power) || 
+                    (current && power)
+                  }
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.5rem 1rem', 
+                    border: '2px solid #d1d5db', 
+                    borderRadius: '0.25rem', 
+                    fontSize: '1rem',
+                    background: ((voltage && current) || (voltage && power) || (current && power)) ? '#f3f4f6' : 'white',
+                    cursor: ((voltage && current) || (voltage && power) || (current && power)) ? 'not-allowed' : 'text'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                  Power (W)
+                </label>
+                <input
+                  type="number"
+                  value={power}
+                  onChange={(e) => setPower(e.target.value)}
+                  placeholder="Enter power"
+                  disabled={
+                    (voltage && current) || 
+                    (voltage && resistance) || 
+                    (current && resistance)
+                  }
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.5rem 1rem', 
+                    border: '2px solid #d1d5db', 
+                    borderRadius: '0.25rem', 
+                    fontSize: '1rem',
+                    background: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? '#f3f4f6' : 'white',
+                    cursor: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? 'not-allowed' : 'text'
+                  }}
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={calculateBasic}
+              style={{
+                width: '100%',
+                background: '#fbbf24',
+                color: 'black',
+                fontWeight: 'bold',
+                padding: '0.75rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                marginBottom: '0.75rem'
+              }}
+            >
+              <Calculator size={20} />
+              Calculate
+            </button>
+
+            <button
+              onClick={clearBasic}
+              style={{
+                width: '100%',
+                background: '#6b7280',
+                color: 'white',
+                fontWeight: '600',
+                padding: '0.5rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                marginBottom: '1rem'
+              }}
+            >
+              Clear All
+            </button>
+
+            {(basicResults.V || basicResults.I || basicResults.R || basicResults.P) && (
+              <div style={{ 
+                background: '#dcfce7', 
+                border: '2px solid #16a34a', 
+                padding: '1.5rem', 
+                borderRadius: '0.5rem'
+              }}>
+                <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem', textAlign: 'center' }}>
+                  Results
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                  {basicResults.V && (
+                    <div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Voltage:</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803d' }}>
+                        {basicResults.V} V
+                      </div>
+                    </div>
+                  )}
+                  {basicResults.I && (
+                    <div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Current:</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803d' }}>
+                        {basicResults.I} A
+                      </div>
+                    </div>
+                  )}
+                  {basicResults.R && (
+                    <div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Resistance:</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803d' }}>
+                        {basicResults.R} Ω
+                      </div>
+                    </div>
+                  )}
+                  {basicResults.P && (
+                    <div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Power:</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803d' }}>
+                        {basicResults.P} W
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Series Tab */}
+        {activeTab === 'series' && (
+          <div>
+            <div style={{ background: '#eff6ff', borderLeft: '4px solid #3b82f6', padding: '1rem', marginBottom: '1rem', borderRadius: '0.25rem' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: '#1e40af', fontWeight: '600' }}>
+                Series Circuit: Current is constant across all components
+              </p>
+            </div>
+
+            <div style={{ background: '#f9fafb', border: '2px solid #d1d5db', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+              <h3 style={{ fontWeight: 'bold', color: '#374151', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                Circuit Totals (Optional)
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+                {['R', 'V', 'I', 'P'].map(field => (
+                  <div key={field}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+                      Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
+                    </label>
+                    <input
+                      type="number"
+                      value={seriesTotals[field]}
+                      onChange={(e) => setSeriesTotals({...seriesTotals, [field]: e.target.value})}
+                      placeholder="Optional"
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem', marginBottom: 0 }}>
+                Enter known total values to help solve the circuit. Series: Current is constant.
+              </p>
+            </div>
+
+            {seriesComponents.map((comp, index) => (
+              <div key={comp.id} style={{ background: '#f9fafb', padding: '1rem', borderRadius: '0.5rem', border: '2px solid #e5e7eb', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <h3 style={{ fontWeight: 'bold', color: '#374151', margin: 0, fontSize: '0.875rem' }}>Component {index + 1}</h3>
+                  {seriesComponents.length > 1 && (
+                    <button
+                      onClick={() => removeSeriesComponent(comp.id)}
+                      style={{ color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  )}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+                  {[
+                    { field: 'R', label: 'R (Ω)' },
+                    { field: 'V', label: 'V (V)' },
+                    { field: 'I', label: 'I (A)' },
+                    { field: 'P', label: 'P (W)' }
+                  ].map(({ field, label }) => (
+                    <div key={field}>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+                        {label}
+                      </label>
+                      <input
+                        type="number"
+                        value={comp[field]}
+                        onChange={(e) => updateSeriesComponent(comp.id, field, e.target.value)}
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <button
+              onClick={addSeriesComponent}
+              style={{
+                width: '100%',
+                background: '#16a34a',
+                color: 'white',
+                fontWeight: '600',
+                padding: '0.5rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                marginBottom: '1rem'
+              }}
+            >
+              <Plus size={20} />
+              Add Component
+            </button>
+
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <button
+                onClick={calculateSeries}
+                style={{
+                  flex: 1,
+                  background: '#fbbf24',
+                  color: 'black',
+                  fontWeight: 'bold',
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <Calculator size={20} />
+                Calculate
+              </button>
+              <button
+                onClick={clearSeries}
+                style={{
+                  flex: 1,
+                  background: '#6b7280',
+                  color: 'white',
+                  fontWeight: '600',
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem'
+                }}
+              >
+                Clear All
+              </button>
+            </div>
+
+            <div style={{ background: '#dcfce7', border: '2px solid #16a34a', padding: '1rem', borderRadius: '0.5rem' }}>
+              <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                Circuit Totals
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', fontSize: '0.875rem' }}>
+                <div>
+                  <span style={{ fontWeight: '600', color: '#374151' }}>Total R:</span>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                    {getTotalsSeries().totalR.toFixed(3)} Ω
+                  </p>
+                </div>
+                <div>
+                  <span style={{ fontWeight: '600', color: '#374151' }}>Total V:</span>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                    {getTotalsSeries().totalV.toFixed(3)} V
+                  </p>
+                </div>
+                <div>
+                  <span style={{ fontWeight: '600', color: '#374151' }}>Current:</span>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                    {getTotalsSeries().totalI.toFixed(3)} A
+                  </p>
+                </div>
+                <div>
+                  <span style={{ fontWeight: '600', color: '#374151' }}>Total P:</span>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                    {getTotalsSeries().totalP.toFixed(3)} W
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Parallel Tab */}
+        {activeTab === 'parallel' && (
+          <div>
+            <div style={{ background: '#faf5ff', borderLeft: '4px solid #a855f7', padding: '1rem', marginBottom: '1rem', borderRadius: '0.25rem' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: '#7e22ce', fontWeight: '600' }}>
+                Parallel Circuit: Voltage is constant across all components
+              </p>
+            </div>
+
+            <div style={{ background: '#f9fafb', border: '2px solid #d1d5db', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+              <h3 style={{ fontWeight: 'bold', color: '#374151', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                Circuit Totals (Optional)
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+                {['R', 'V', 'I', 'P'].map(field => (
+                  <div key={field}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+                      Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
+                    </label>
+                    <input
+                      type="number"
+                      value={parallelTotals[field]}
+                      onChange={(e) => setParallelTotals({...parallelTotals, [field]: e.target.value})}
+                      placeholder="Optional"
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem', marginBottom: 0 }}>
+                Enter known total values to help solve the circuit. Parallel: Voltage is constant.
+              </p>
+            </div>
+
+            {parallelComponents.map((comp, index) => (
+              <div key={comp.id} style={{ background: '#f9fafb', padding: '1rem', borderRadius: '0.5rem', border: '2px solid #e5e7eb', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <h3 style={{ fontWeight: 'bold', color: '#374151', margin: 0, fontSize: '0.875rem' }}>Component {index + 1}</h3>
+                  {parallelComponents.length > 1 && (
+                    <button
+                      onClick={() => removeParallelComponent(comp.id)}
+                      style={{ color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  )}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+                  {[
+                    { field: 'R', label: 'R (Ω)' },
+                    { field: 'V', label: 'V (V)' },
+                    { field: 'I', label: 'I (A)' },
+                    { field: 'P', label: 'P (W)' }
+                  ].map(({ field, label }) => (
+                    <div key={field}>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+                        {label}
+                      </label>
+                      <input
+                        type="number"
+                        value={comp[field]}
+                        onChange={(e) => updateParallelComponent(comp.id, field, e.target.value)}
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <button
+              onClick={addParallelComponent}
+              style={{
+                width: '100%',
+                background: '#16a34a',
+                color: 'white',
+                fontWeight: '600',
+                padding: '0.5rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                marginBottom: '1rem'
+              }}
+            >
+              <Plus size={20} />
+              Add Component
+            </button>
+
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <button
+                onClick={calculateParallel}
+                style={{
+                  flex: 1,
+                  background: '#fbbf24',
+                  color: 'black',
+                  fontWeight: 'bold',
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <Calculator size={20} />
+                Calculate
+              </button>
+              <button
+                onClick={clearParallel}
+                style={{
+                  flex: 1,
+                  background: '#6b7280',
+                  color: 'white',
+                  fontWeight: '600',
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem'
+                }}
+              >
+                Clear All
+              </button>
+            </div>
+
+            <div style={{ background: '#dcfce7', border: '2px solid #16a34a', padding: '1rem', borderRadius: '0.5rem' }}>
+              <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                Circuit Totals
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', fontSize: '0.875rem' }}>
+                <div>
+                  <span style={{ fontWeight: '600', color: '#374151' }}>Total R:</span>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                    {getTotalsParallel().totalR.toFixed(3)} Ω
+                  </p>
+                </div>
+                <div>
+                  <span style={{ fontWeight: '600', color: '#374151' }}>Voltage:</span>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                    {getTotalsParallel().totalV.toFixed(3)} V
+                  </p>
+                </div>
+                <div>
+                  <span style={{ fontWeight: '600', color: '#374151' }}>Total I:</span>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                    {getTotalsParallel().totalI.toFixed(3)} A
+                  </p>
+                </div>
+                <div>
+                  <span style={{ fontWeight: '600', color: '#374151' }}>Total P:</span>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                    {getTotalsParallel().totalP.toFixed(3)} W
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.75rem' }}>Formulas:</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+          <p style={{ margin: 0 }}>V = I × R</p>
+          <p style={{ margin: 0 }}>P = V × I</p>
+          <p style={{ margin: 0 }}>I = V ÷ R</p>
+          <p style={{ margin: 0 }}>P = I² × R</p>
+          <p style={{ margin: 0 }}>R = V ÷ I</p>
+          <p style={{ margin: 0 }}>P = V² ÷ R</p>
+        </div>
+      </div>
+    </div>
   );
 };
 
