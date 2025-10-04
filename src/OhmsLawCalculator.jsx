@@ -125,7 +125,7 @@ function OhmsLawCalculator() {
 
   // Series Circuit Calculator
   const SeriesCalculator = () => {
-    const [resistors, setResistors] = useState(['', '', '']);
+    const [resistors, setResistors] = useState(['']);
     const [sourceVoltage, setSourceVoltage] = useState('');
 
     const addResistor = () => {
@@ -133,7 +133,7 @@ function OhmsLawCalculator() {
     };
 
     const removeResistor = (index) => {
-      if (resistors.length > 2) {
+      if (resistors.length > 1) {
         setResistors(resistors.filter((_, i) => i !== index));
       }
     };
@@ -201,7 +201,7 @@ function OhmsLawCalculator() {
       placeholder={`R${index + 1} (Ohms)`}
       style={{ width: '100%', marginBottom: resistors.length > 2 ? '8px' : '0' }}
     />
-    {resistors.length > 2 && (
+    {resistors.length > 1 && (
       <button 
         onClick={() => removeResistor(index)}
         style={{ 
@@ -282,7 +282,7 @@ function OhmsLawCalculator() {
 
   // Parallel Circuit Calculator
   const ParallelCalculator = () => {
-    const [resistors, setResistors] = useState(['', '', '']);
+    const [resistors, setResistors] = useState(['']);
     const [sourceVoltage, setSourceVoltage] = useState('');
 
     const addResistor = () => {
@@ -290,7 +290,7 @@ function OhmsLawCalculator() {
     };
 
     const removeResistor = (index) => {
-      if (resistors.length > 2) {
+      if (resistors.length > 1) {
         setResistors(resistors.filter((_, i) => i !== index));
       }
     };
@@ -360,7 +360,7 @@ function OhmsLawCalculator() {
       placeholder={`R${index + 1} (Ohms)`}
       style={{ width: '100%', marginBottom: resistors.length > 2 ? '8px' : '0' }}
     />
-    {resistors.length > 2 && (
+    {resistors.length > 1 && (
       <button 
         onClick={() => removeResistor(index)}
         style={{ 
