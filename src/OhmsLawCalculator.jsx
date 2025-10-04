@@ -24,45 +24,48 @@ const OhmsLawCalculator = ({ onBack }) => {
   const [seriesTotals, setSeriesTotals] = useState({ R: '', V: '', I: '', P: '' });
   const [parallelTotals, setParallelTotals] = useState({ R: '', V: '', I: '', P: '' });
 
-  // Basic Ohm's Law calculations
-  const calculateBasic = (field) => {
-    const V = parseFloat(voltage);
-    const I = parseFloat(current);
-    const R = parseFloat(resistance);
-    const P = parseFloat(power);
+  const calculateBasic = () => {
+  const V = parseFloat(voltage);
+  const I = parseFloat(current);
+  const R = parseFloat(resistance);
+  const P = parseFloat(power);
 
-    if (field !== 'voltage' && !isNaN(I) && !isNaN(R)) {
-      setVoltage((I * R).toFixed(2));
-    } else if (field !== 'voltage' && !isNaN(P) && !isNaN(I) && I !== 0) {
-      setVoltage((P / I).toFixed(2));
-    } else if (field !== 'voltage' && !isNaN(P) && !isNaN(R)) {
-      setVoltage(Math.sqrt(P * R).toFixed(2));
-    }
+  // Calculate Voltage
+  if (isNaN(V) && !isNaN(I) && !isNaN(R)) {
+    setVoltage((I * R).toFixed(2));
+  } else if (isNaN(V) && !isNaN(P) && !isNaN(I) && I !== 0) {
+    setVoltage((P / I).toFixed(2));
+  } else if (isNaN(V) && !isNaN(P) && !isNaN(R)) {
+    setVoltage(Math.sqrt(P * R).toFixed(2));
+  }
 
-    if (field !== 'current' && !isNaN(V) && !isNaN(R) && R !== 0) {
-      setCurrent((V / R).toFixed(2));
-    } else if (field !== 'current' && !isNaN(P) && !isNaN(V) && V !== 0) {
-      setCurrent((P / V).toFixed(2));
-    } else if (field !== 'current' && !isNaN(P) && !isNaN(R) && R !== 0) {
-      setCurrent(Math.sqrt(P / R).toFixed(2));
-    }
+  // Calculate Current
+  if (isNaN(I) && !isNaN(V) && !isNaN(R) && R !== 0) {
+    setCurrent((V / R).toFixed(2));
+  } else if (isNaN(I) && !isNaN(P) && !isNaN(V) && V !== 0) {
+    setCurrent((P / V).toFixed(2));
+  } else if (isNaN(I) && !isNaN(P) && !isNaN(R) && R !== 0) {
+    setCurrent(Math.sqrt(P / R).toFixed(2));
+  }
 
-    if (field !== 'resistance' && !isNaN(V) && !isNaN(I) && I !== 0) {
-      setResistance((V / I).toFixed(2));
-    } else if (field !== 'resistance' && !isNaN(V) && !isNaN(P) && P !== 0) {
-      setResistance((V * V / P).toFixed(2));
-    } else if (field !== 'resistance' && !isNaN(P) && !isNaN(I) && I !== 0) {
-      setResistance((P / (I * I)).toFixed(2));
-    }
+  // Calculate Resistance
+  if (isNaN(R) && !isNaN(V) && !isNaN(I) && I !== 0) {
+    setResistance((V / I).toFixed(2));
+  } else if (isNaN(R) && !isNaN(V) && !isNaN(P) && P !== 0) {
+    setResistance((V * V / P).toFixed(2));
+  } else if (isNaN(R) && !isNaN(P) && !isNaN(I) && I !== 0) {
+    setResistance((P / (I * I)).toFixed(2));
+  }
 
-    if (field !== 'power' && !isNaN(V) && !isNaN(I)) {
-      setPower((V * I).toFixed(2));
-    } else if (field !== 'power' && !isNaN(I) && !isNaN(R)) {
-      setPower((I * I * R).toFixed(2));
-    } else if (field !== 'power' && !isNaN(V) && !isNaN(R) && R !== 0) {
-      setPower((V * V / R).toFixed(2));
-    }
-  };
+  // Calculate Power
+  if (isNaN(P) && !isNaN(V) && !isNaN(I)) {
+    setPower((V * I).toFixed(2));
+  } else if (isNaN(P) && !isNaN(I) && !isNaN(R)) {
+    setPower((I * I * R).toFixed(2));
+  } else if (isNaN(P) && !isNaN(V) && !isNaN(R) && R !== 0) {
+    setPower((V * V / R).toFixed(2));
+  }
+};
 
   const clearBasic = () => {
     setVoltage('');
@@ -521,10 +524,7 @@ const validateParallelTotals = (components, totals) => {
                     <input
                       type="number"
                       value={voltage}
-                      onChange={(e) => {
-                        setVoltage(e.target.value);
-                        setTimeout(() => calculateBasic('voltage'), 0);
-                      }}
+                      onChange={(e) => setVoltage(e.target.value)}
                       className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
                       placeholder="Enter voltage"
                     />
@@ -536,10 +536,7 @@ const validateParallelTotals = (components, totals) => {
                     <input
                       type="number"
                       value={current}
-                      onChange={(e) => {
-                        setCurrent(e.target.value);
-                        setTimeout(() => calculateBasic('current'), 0);
-                      }}
+                      onChange={(e) => setCurrent(e.target.value)}
                       className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
                       placeholder="Enter current"
                     />
@@ -551,10 +548,7 @@ const validateParallelTotals = (components, totals) => {
                     <input
                       type="number"
                       value={resistance}
-                      onChange={(e) => {
-                        setResistance(e.target.value);
-                        setTimeout(() => calculateBasic('resistance'), 0);
-                      }}
+                      onChange={(e) => setResistance(e.target.value)}
                       className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
                       placeholder="Enter resistance"
                     />
@@ -566,15 +560,19 @@ const validateParallelTotals = (components, totals) => {
                     <input
                       type="number"
                       value={power}
-                      onChange={(e) => {
-                        setPower(e.target.value);
-                        setTimeout(() => calculateBasic('power'), 0);
-                      }}
+                      onChange={(e) => setPower(e.target.value)}
                       className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:border-yellow-400 focus:outline-none"
                       placeholder="Enter power"
                     />
                   </div>
                 </div>
+                <button
+                  onClick={calculateBasic}
+                  className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded transition-colors flex items-center justify-center gap-2 mb-3"
+                >
+                  <Calculator className="w-5 h-5" />
+                  Calculate
+                </button>
                 <button
                   onClick={clearBasic}
                   className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 rounded transition-colors"
