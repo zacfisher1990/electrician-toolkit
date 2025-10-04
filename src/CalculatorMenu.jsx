@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building } from 'lucide-react';
+import { Search, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield } from 'lucide-react';
 
 function CalculatorMenu({ onSelectCalculator }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,7 +13,8 @@ function CalculatorMenu({ onSelectCalculator }) {
     { id: 'motor-calculations', name: 'Motors', icon: Settings, keywords: 'motor flc protection starter 430' },
     { id: 'load-calculations', name: 'Load', icon: BarChart3, keywords: 'load calculation service size residential commercial demand' },
     { id: 'transformer-sizing', name: 'Transformers', icon: Cpu, keywords: 'transformer kva sizing current primary secondary 450' },
-    { id: 'service-entrance', name: 'Service', icon: Building, keywords: 'service entrance sizing panel main 230' }
+    { id: 'service-entrance', name: 'Service', icon: Building, keywords: 'service entrance sizing panel main 230' },
+    { id: 'grounding-bonding', name: 'Grounding', icon: Shield, keywords: 'grounding bonding ground electrode equipment gec egc jumper 250' }
   ];
 
   const filteredCalculators = calculators.filter(calc => {

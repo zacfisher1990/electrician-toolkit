@@ -9,6 +9,7 @@ import MotorCalculations from './MotorCalculations.jsx';
 import LoadCalculations from './LoadCalculations.jsx';
 import TransformerSizingCalculator from './TransformerSizingCalculator.jsx';
 import ServiceEntranceSizing from './ServiceEntranceSizing.jsx';
+import GroundingBondingCalculator from './GroundingBondingCalculator.jsx';
 import './App.css';
 
 function App() {
@@ -36,6 +37,8 @@ function App() {
         return <ServiceEntranceSizing onBack={() => setActiveCalculator(null)} />;
       default:
         return <CalculatorMenu onSelectCalculator={setActiveCalculator} />;
+        case 'grounding-bonding':
+        return <GroundingBondingCalculator onBack={() => setActiveCalculator(null)} />;
     }
   };
 
