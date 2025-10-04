@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Zap, Plus, Trash2, Calculator } from 'lucide-react';
+import { Zap, Plus, Trash2, Calculator, ArrowLeft } from 'lucide-react';
 
-const OhmsLawCalculator = () => {
+const OhmsLawCalculator = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState('basic');
   
   // Basic calculator state
@@ -364,19 +364,40 @@ const OhmsLawCalculator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-yellow-400 text-black px-6 py-4 rounded-t-lg">
-          <div className="flex items-center gap-3">
-            <Zap className="w-8 h-8" />
-            <div>
-              <h1 className="text-2xl font-bold">Ohm's Law Calculator</h1>
-              <p className="text-sm">Professional Electrical Calculations</p>
-            </div>
-          </div>
-        </div>
+  <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
+    {onBack && (
+      <button
+        onClick={onBack}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.75rem 1.5rem',
+          marginBottom: '1rem',
+          background: '#374151',
+          color: 'white',
+          border: 'none',
+          borderRadius: '0.5rem',
+          fontSize: '1rem',
+          fontWeight: '600',
+          cursor: 'pointer'
+        }}
+      >
+        <ArrowLeft size={20} />
+        Back to Menu
+      </button>
+    )}
+        <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <Zap size={32} />
+    <div>
+      <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Ohm's Law Calculator</h1>
+      <p style={{ fontSize: '0.875rem', margin: 0 }}>Professional Electrical Calculations</p>
+    </div>
+  </div>
+</div>
 
-        <div className="bg-white">
+<div style={{ background: 'white' }}>
           <div className="flex border-b">
             <button
               onClick={() => setActiveTab('basic')}
@@ -706,7 +727,7 @@ const OhmsLawCalculator = () => {
           </div>
         </div>
 
-        <div className="bg-gray-800 text-gray-300 px-6 py-4 rounded-b-lg text-sm">
+        <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
           <p className="font-semibold mb-2">Formulas:</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <p>V = I × R</p>
@@ -718,7 +739,6 @@ const OhmsLawCalculator = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
