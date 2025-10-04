@@ -4,16 +4,16 @@ function CalculatorMenu({ onSelectCalculator }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const calculators = [
-    { id: 'voltage-drop', name: 'Voltage Drop', icon: '⚡', keywords: 'voltage drop vd wire circuit' },
-    { id: 'ohms-law', name: "Ohm's Law", icon: '🔌', keywords: 'ohms law voltage current resistance power series parallel circuit' },
-    { id: 'box-fill', name: 'Box Fill', icon: '📦', keywords: 'box fill junction cubic inch volume 314' },
-    { id: 'conduit-fill', name: 'Conduit Fill', icon: '🔧', keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
-    { id: 'ampacity', name: 'Ampacity', icon: '⚠️', keywords: 'ampacity current rating 310 temperature' },
-    { id: 'motor-calculations', name: 'Motor Calc', icon: '⚙️', keywords: 'motor flc protection starter 430' },
-    { id: 'load-calculations', name: 'Load Calc', icon: '📊', keywords: 'load calculation service size residential commercial demand' },
-    { id: 'transformer-sizing', name: 'Transformer', icon: '🔌', keywords: 'transformer kva sizing current primary secondary 450' },
-    { id: 'service-entrance', name: 'Service Size', icon: '🏢', keywords: 'service entrance sizing panel main 230' }
-  ];
+  { id: 'voltage-drop', name: 'Voltage Drop', icon: '⚡', keywords: 'voltage drop vd wire circuit' },
+  { id: 'ohms-law', name: "Ohm's Law", icon: '🔌', keywords: 'ohms law voltage current resistance power series parallel circuit' },
+  { id: 'box-fill', name: 'Box Fill', icon: '📦', keywords: 'box fill junction cubic inch volume 314' },
+  { id: 'conduit-fill', name: 'Conduit Fill', icon: '🔧', keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
+  { id: 'ampacity', name: 'Ampacity', icon: '⚠️', keywords: 'ampacity current rating 310 temperature' },
+  { id: 'motor-calculations', name: 'Motors', icon: '⚙️', keywords: 'motor flc protection starter 430' },
+  { id: 'load-calculations', name: 'Load', icon: '📊', keywords: 'load calculation service size residential commercial demand' },
+  { id: 'transformer-sizing', name: 'Transformers', icon: '🔌', keywords: 'transformer kva sizing current primary secondary 450' },
+  { id: 'service-entrance', name: 'Service', icon: '🏢', keywords: 'service entrance sizing panel main 230' }
+];
 
   const filteredCalculators = calculators.filter(calc => {
     const searchLower = searchTerm.toLowerCase();
@@ -52,38 +52,43 @@ function CalculatorMenu({ onSelectCalculator }) {
       }}>
         {filteredCalculators.length > 0 ? (
           filteredCalculators.map(calc => (
-            <div
+            
+  <div
   key={calc.id}
   onClick={() => onSelectCalculator(calc.id)}
   style={{
-    backgroundColor: '#f59e0b',
+    backgroundColor: '#c9a227',
     borderRadius: '12px',
-    padding: '12px 6px',
+    padding: '12px 8px',
     textAlign: 'center',
     cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '6px',
+    gap: '8px',
     minHeight: '110px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
   }}
 >
-  <div style={{ fontSize: '28px' }}>
+  <div style={{ fontSize: '32px', lineHeight: '1' }}>
     {calc.icon}
   </div>
   <div style={{ 
-    fontSize: '12px', 
+    fontSize: '13px', 
     fontWeight: '600',
     color: '#000',
-    lineHeight: '1.3',
-    wordBreak: 'break-word',
-    hyphens: 'auto'
+    lineHeight: '1.2',
+    whiteSpace: 'normal',
+    wordWrap: 'break-word',
+    textAlign: 'center',
+    width: '100%',
+    padding: '0 4px'
   }}>
     {calc.name}
   </div>
 </div>
+
           ))
         ) : (
           <div style={{ 
