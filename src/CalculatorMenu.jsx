@@ -86,8 +86,8 @@ function CalculatorMenu({ onSelectCalculator }) {
         {/* Calculator Grid */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-          gap: '1rem',
+          gridTemplateColumns: 'repeat(3, 1fr)',  // 3 columns instead of auto-fill
+          gap: '0.75rem',  // Tighter gap
           marginBottom: '2rem'
         }}>
           {filteredCalculators.length > 0 ? (
@@ -101,35 +101,33 @@ function CalculatorMenu({ onSelectCalculator }) {
                     backgroundColor: '#fbbf24',
                     border: 'none',
                     borderRadius: '0.75rem',
-                    padding: '1.5rem 1rem',
+                    padding: '1rem 0.5rem',  // Reduced horizontal padding
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '0.75rem',
-                    minHeight: '140px',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                    gap: '0.5rem',  // Reduced gap
+                    minHeight: '100px',  // Reduced from 140px
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                     transition: 'all 0.2s',
                     color: 'black'
                   }}
                   onMouseOver={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.4)';
-                    e.currentTarget.style.backgroundColor = '#f59e0b';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
                   }}
                   onMouseOut={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.3)';
-                    e.currentTarget.style.backgroundColor = '#fbbf24';
+                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
                   }}
                 >
-                  <IconComponent size={40} strokeWidth={2} />
+                  <IconComponent size={32} strokeWidth={2} />  {/* Reduced from 40 */}
                   <div style={{ 
-                    fontSize: '1rem', 
+                    fontSize: '0.875rem',  // Reduced from 1rem
                     fontWeight: '700',
                     textAlign: 'center',
-                    lineHeight: '1.3'
+                    lineHeight: '1.2'
                   }}>
                     {calc.name}
                   </div>
