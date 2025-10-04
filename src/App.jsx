@@ -42,10 +42,9 @@ function App() {
   return (
     <div className="App">
       {!activeCalculator ? (
-        <header className="App-header">
-          <h1>Electrician's Toolkit</h1>
-          {renderCalculator()}
-        </header>
+  <div>
+    {renderCalculator()}
+  </div>
       ) : (
         // Consistent dark gradient background wrapper for all calculators
         <div style={{ 
