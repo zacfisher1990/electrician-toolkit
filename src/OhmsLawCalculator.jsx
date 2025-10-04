@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function OhmsLawCalculator() {
+function OhmsLawCalculator({ onBack }) {
   const [activeTab, setActiveTab] = useState('basic');
 
   // Basic Ohm's Law Calculator
@@ -447,8 +447,13 @@ function OhmsLawCalculator() {
   };
 
   return (
-    <div className="calculator-container">
-      <h2>Ohm's Law & Circuit Analysis</h2>
+  <div className="calculator-container">
+    {onBack && (
+  <button onClick={onBack} style={{ marginBottom: '20px' }}>
+    ← Back to Menu
+  </button>
+)}
+    <h2>Ohm's Law & Circuit Analysis</h2>
       
       {/* Tab Navigation */}
       <div style={{ 

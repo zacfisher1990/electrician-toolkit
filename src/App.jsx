@@ -70,10 +70,16 @@ function App() {
 
   return (
   <div className="App">
-    <header className="App-header">
-      {!activeCalculator && <h1>Electrician's Toolkit</h1>}
-      {renderCalculator()}
-    </header>
+    {!activeCalculator ? (
+      <header className="App-header">
+        <h1>Electrician's Toolkit</h1>
+        {renderCalculator()}
+      </header>
+    ) : (
+      <div>
+        {renderCalculator()}
+      </div>
+    )}
   </div>
 );
 }
