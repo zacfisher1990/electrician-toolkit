@@ -53,34 +53,37 @@ function CalculatorMenu({ onSelectCalculator }) {
         {filteredCalculators.length > 0 ? (
           filteredCalculators.map(calc => (
             <div
-              key={calc.id}
-              onClick={() => onSelectCalculator(calc.id)}
-              style={{
-                backgroundColor: '#f59e0b',
-                borderRadius: '12px',
-                padding: '16px 8px',
-                textAlign: 'center',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '8px',
-                minHeight: '100px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}
-            >
-              <div style={{ fontSize: '32px' }}>
-                {calc.icon}
-              </div>
-              <div style={{ 
-                fontSize: '13px', 
-                fontWeight: '600',
-                color: '#000',
-                lineHeight: '1.2'
-              }}>
-                {calc.name}
-              </div>
-            </div>
+  key={calc.id}
+  onClick={() => onSelectCalculator(calc.id)}
+  style={{
+    backgroundColor: '#f59e0b',
+    borderRadius: '12px',
+    padding: '12px 6px',
+    textAlign: 'center',
+    cursor: 'pointer',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    minHeight: '110px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+  }}
+>
+  <div style={{ fontSize: '28px' }}>
+    {calc.icon}
+  </div>
+  <div style={{ 
+    fontSize: '12px', 
+    fontWeight: '600',
+    color: '#000',
+    lineHeight: '1.3',
+    wordBreak: 'break-word',
+    hyphens: 'auto'
+  }}>
+    {calc.name}
+  </div>
+</div>
           ))
         ) : (
           <div style={{ 
