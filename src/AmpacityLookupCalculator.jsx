@@ -9,21 +9,21 @@ function AmpacityLookupCalculator({ onBack }) {
   const ampacityData = {
   copper: {
     '60C': {
-      '22': 7, '20': 11, '18': 14, '16': 18,
+      '22': 3, '20': 5, '18': 7, '16': 10,
       '14': 15, '12': 20, '10': 30, '8': 40, '6': 55, '4': 70, '3': 85,
       '2': 95, '1': 110, '1/0': 125, '2/0': 145, '3/0': 165, '4/0': 195,
       '250': 215, '300': 240, '350': 260, '400': 280, '500': 320,
       '600': 355, '700': 385, '750': 400
     },
     '75C': {
-      '22': 10, '20': 15, '18': 18, '16': 24,
+      '22': 3, '20': 5, '18': 7, '16': 18,
       '14': 20, '12': 25, '10': 35, '8': 50, '6': 65, '4': 85, '3': 100,
       '2': 115, '1': 130, '1/0': 150, '2/0': 175, '3/0': 200, '4/0': 230,
       '250': 255, '300': 285, '350': 310, '400': 335, '500': 380,
       '600': 420, '700': 460, '750': 475
     },
     '90C': {
-      '22': 13, '20': 18, '18': 21, '16': 28,
+      '22': 3, '20': 5, '18': 7, '16': 18,
       '14': 25, '12': 30, '10': 40, '8': 55, '6': 75, '4': 95, '3': 115,
       '2': 130, '1': 150, '1/0': 170, '2/0': 195, '3/0': 225, '4/0': 260,
       '250': 290, '300': 320, '350': 350, '400': 380, '500': 430,
@@ -51,7 +51,15 @@ function AmpacityLookupCalculator({ onBack }) {
     }
   }
 };
- const getCommonApplications = (ampacity) => {
+
+const getCommonApplications = (ampacity, wireSize) => {
+  // Special cases for small wire sizes
+  if (wireSize === '22') return "Thermostat wiring, doorbells, low-voltage controls";
+  if (wireSize === '20') return "Doorbells, security systems, low-voltage controls";
+  if (wireSize === '18') return "Thermostats, lighting controls, doorbells, signaling circuits";
+  if (wireSize === '16') return "Electronics, lighting control systems, doorbells, low-voltage applications";
+  
+  // Standard building wire applications
   if (ampacity <= 15) return "Lighting circuits, small appliances";
   if (ampacity <= 20) return "Lighting circuits, small appliances";
   if (ampacity <= 25) return "General outlets, lighting circuits";
@@ -62,7 +70,6 @@ function AmpacityLookupCalculator({ onBack }) {
   if (ampacity <= 200) return "Main panels, large commercial loads";
   return "Service entrances, industrial applications";
 };
-
   const getOCPDLimit = (size, material) => {
     const limits = {
       copper: { '14': 15, '12': 20, '10': 30 },
@@ -229,15 +236,15 @@ function AmpacityLookupCalculator({ onBack }) {
           )}
           
           <div style={{ 
-            color: '#14532d',
-            paddingTop: '1rem',
-            borderTop: '1px solid #bbf7d0'
-          }}>
-            <strong>Common Applications:</strong>
-            <div style={{ marginTop: '0.5rem', color: '#15803d' }}>
-              {getCommonApplications(currentAmpacity)}
-            </div>
-          </div>
+  color: '#14532d',
+  paddingTop: '1rem',
+  borderTop: '1px solid #bbf7d0'
+}}>
+  <strong>Common Applications:</strong>
+  <div style={{ marginTop: '0.5rem', color: '#15803d' }}>
+    {getCommonApplications(currentAmpacity, wireSize)}
+  </div>
+</div>
         </div>
 
         {/* Derating Info */}
