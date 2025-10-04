@@ -188,31 +188,37 @@ function OhmsLawCalculator() {
         <div style={{ marginBottom: '15px' }}>
           <label>Resistors:</label>
           {resistors.map((resistor, index) => (
-            <div key={index} style={{ display: 'flex', marginBottom: '8px', alignItems: 'center' }}>
-              <input 
-                type="number" 
-                value={resistor} 
-                onChange={(e) => updateResistor(index, e.target.value)}
-                placeholder={`R${index + 1} (Ohms)`}
-                style={{ flex: 1, marginRight: '10px' }}
-              />
-              {resistors.length > 2 && (
-                <button 
-                  onClick={() => removeResistor(index)}
-                  style={{ 
-                    backgroundColor: '#ef4444', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: '4px',
-                    padding: '8px 12px',
-                    fontSize: '12px'
-                  }}
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          ))}
+  <div key={index} style={{ 
+    backgroundColor: '#f8fafc',
+    padding: '10px',
+    borderRadius: '6px',
+    marginBottom: '10px'
+  }}>
+    <input 
+      type="number" 
+      value={resistor} 
+      onChange={(e) => updateResistor(index, e.target.value)}
+      placeholder={`R${index + 1} (Ohms)`}
+      style={{ width: '100%', marginBottom: resistors.length > 2 ? '8px' : '0' }}
+    />
+    {resistors.length > 2 && (
+      <button 
+        onClick={() => removeResistor(index)}
+        style={{ 
+          backgroundColor: '#ef4444', 
+          color: 'white', 
+          border: 'none', 
+          borderRadius: '4px',
+          padding: '8px 12px',
+          fontSize: '14px',
+          width: '100%'
+        }}
+      >
+        Remove
+      </button>
+    )}
+  </div>
+))}
           <button 
             onClick={addResistor}
             style={{ 
@@ -341,31 +347,37 @@ function OhmsLawCalculator() {
         <div style={{ marginBottom: '15px' }}>
           <label>Resistors:</label>
           {resistors.map((resistor, index) => (
-            <div key={index} style={{ display: 'flex', marginBottom: '8px', alignItems: 'center' }}>
-              <input 
-                type="number" 
-                value={resistor} 
-                onChange={(e) => updateResistor(index, e.target.value)}
-                placeholder={`R${index + 1} (Ohms)`}
-                style={{ flex: 1, marginRight: '10px' }}
-              />
-              {resistors.length > 2 && (
-                <button 
-                  onClick={() => removeResistor(index)}
-                  style={{ 
-                    backgroundColor: '#ef4444', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: '4px',
-                    padding: '8px 12px',
-                    fontSize: '12px'
-                  }}
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          ))}
+  <div key={index} style={{ 
+    backgroundColor: '#f8fafc',
+    padding: '10px',
+    borderRadius: '6px',
+    marginBottom: '10px'
+  }}>
+    <input 
+      type="number" 
+      value={resistor} 
+      onChange={(e) => updateResistor(index, e.target.value)}
+      placeholder={`R${index + 1} (Ohms)`}
+      style={{ width: '100%', marginBottom: resistors.length > 2 ? '8px' : '0' }}
+    />
+    {resistors.length > 2 && (
+      <button 
+        onClick={() => removeResistor(index)}
+        style={{ 
+          backgroundColor: '#ef4444', 
+          color: 'white', 
+          border: 'none', 
+          borderRadius: '4px',
+          padding: '8px 12px',
+          fontSize: '14px',
+          width: '100%'
+        }}
+      >
+        Remove
+      </button>
+    )}
+  </div>
+))}
           <button 
             onClick={addResistor}
             style={{ 
