@@ -23,56 +23,70 @@ const OhmsLawCalculator = ({ onBack }) => {
   // Total circuit inputs (optional)
   const [seriesTotals, setSeriesTotals] = useState({ R: '', V: '', I: '', P: '' });
   const [parallelTotals, setParallelTotals] = useState({ R: '', V: '', I: '', P: '' });
+  const [basicResults, setBasicResults] = useState({ V: '', I: '', R: '', P: '' });
 
   const calculateBasic = () => {
-  const V = parseFloat(voltage);
-  const I = parseFloat(current);
-  const R = parseFloat(resistance);
-  const P = parseFloat(power);
+  const V = parseFloat(voltage) || 0;
+  const I = parseFloat(current) || 0;
+  const R = parseFloat(resistance) || 0;
+  const P = parseFloat(power) || 0;
+
+  const results = { V: '', I: '', R: '', P: '' };
 
   // Calculate Voltage
-  if (isNaN(V) && !isNaN(I) && !isNaN(R)) {
-    setVoltage((I * R).toFixed(2));
-  } else if (isNaN(V) && !isNaN(P) && !isNaN(I) && I !== 0) {
-    setVoltage((P / I).toFixed(2));
-  } else if (isNaN(V) && !isNaN(P) && !isNaN(R)) {
-    setVoltage(Math.sqrt(P * R).toFixed(2));
+  if (!voltage && I && R) {
+    results.V = (I * R).toFixed(2);
+  } else if (!voltage && P && I && I !== 0) {
+    results.V = (P / I).toFixed(2);
+  } else if (!voltage && P && R) {
+    results.V = Math.sqrt(P * R).toFixed(2);
+  } else if (voltage) {
+    results.V = V.toFixed(2);
   }
 
   // Calculate Current
-  if (isNaN(I) && !isNaN(V) && !isNaN(R) && R !== 0) {
-    setCurrent((V / R).toFixed(2));
-  } else if (isNaN(I) && !isNaN(P) && !isNaN(V) && V !== 0) {
-    setCurrent((P / V).toFixed(2));
-  } else if (isNaN(I) && !isNaN(P) && !isNaN(R) && R !== 0) {
-    setCurrent(Math.sqrt(P / R).toFixed(2));
+  if (!current && V && R && R !== 0) {
+    results.I = (V / R).toFixed(2);
+  } else if (!current && P && V && V !== 0) {
+    results.I = (P / V).toFixed(2);
+  } else if (!current && P && R && R !== 0) {
+    results.I = Math.sqrt(P / R).toFixed(2);
+  } else if (current) {
+    results.I = I.toFixed(2);
   }
 
   // Calculate Resistance
-  if (isNaN(R) && !isNaN(V) && !isNaN(I) && I !== 0) {
-    setResistance((V / I).toFixed(2));
-  } else if (isNaN(R) && !isNaN(V) && !isNaN(P) && P !== 0) {
-    setResistance((V * V / P).toFixed(2));
-  } else if (isNaN(R) && !isNaN(P) && !isNaN(I) && I !== 0) {
-    setResistance((P / (I * I)).toFixed(2));
+  if (!resistance && V && I && I !== 0) {
+    results.R = (V / I).toFixed(2);
+  } else if (!resistance && V && P && P !== 0) {
+    results.R = (V * V / P).toFixed(2);
+  } else if (!resistance && P && I && I !== 0) {
+    results.R = (P / (I * I)).toFixed(2);
+  } else if (resistance) {
+    results.R = R.toFixed(2);
   }
 
   // Calculate Power
-  if (isNaN(P) && !isNaN(V) && !isNaN(I)) {
-    setPower((V * I).toFixed(2));
-  } else if (isNaN(P) && !isNaN(I) && !isNaN(R)) {
-    setPower((I * I * R).toFixed(2));
-  } else if (isNaN(P) && !isNaN(V) && !isNaN(R) && R !== 0) {
-    setPower((V * V / R).toFixed(2));
+  if (!power && V && I) {
+    results.P = (V * I).toFixed(2);
+  } else if (!power && I && R) {
+    results.P = (I * I * R).toFixed(2);
+  } else if (!power && V && R && R !== 0) {
+    results.P = (V * V / R).toFixed(2);
+  } else if (power) {
+    results.P = P.toFixed(2);
   }
+
+  setBasicResults(results);
 };
 
   const clearBasic = () => {
-    setVoltage('');
-    setCurrent('');
-    setResistance('');
-    setPower('');
-  };
+  setVoltage('');
+  setCurrent('');
+  setResistance('');
+  setPower('');
+  setBasicResults({ V: '', I: '', R: '', P: '' });
+};
 
   // Series circuit functions
   const addSeriesComponent = () => {
@@ -579,9 +593,57 @@ const validateParallelTotals = (components, totals) => {
                 >
                   Clear All
                 </button>
-              </div>
-            )}
 
+                {/* Results Box */}
+                {(basicResults.V || basicResults.I || basicResults.R || basicResults.P) && (
+                  <div style={{ 
+                    background: '#dcfce7', 
+                    border: '2px solid #16a34a', 
+                    padding: '1rem', 
+                    borderRadius: '0.5rem', 
+                    marginTop: '1rem' 
+                  }}>
+                    <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '0.75rem', textAlign: 'center' }}>
+                      Results
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', fontSize: '0.875rem' }}>
+                      {basicResults.V && (
+                        <div>
+                          <span style={{ fontWeight: '600', color: '#374151' }}>Voltage:</span>
+                          <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#15803d', margin: '0.25rem 0 0 0' }}>
+                            {basicResults.V} V
+                          </p>
+                        </div>
+                      )}
+                      {basicResults.I && (
+                        <div>
+                          <span style={{ fontWeight: '600', color: '#374151' }}>Current:</span>
+                          <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#15803d', margin: '0.25rem 0 0 0' }}>
+                            {basicResults.I} A
+                          </p>
+                        </div>
+                      )}
+                      {basicResults.R && (
+                        <div>
+                          <span style={{ fontWeight: '600', color: '#374151' }}>Resistance:</span>
+                          <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#15803d', margin: '0.25rem 0 0 0' }}>
+                            {basicResults.R} Ω
+                          </p>
+                        </div>
+                      )}
+                      {basicResults.P && (
+                        <div>
+                          <span style={{ fontWeight: '600', color: '#374151' }}>Power:</span>
+                          <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#15803d', margin: '0.25rem 0 0 0' }}>
+                            {basicResults.P} W
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                </div>
+            )}
             {activeTab === 'series' && (
               <div className="space-y-4">
                 <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
