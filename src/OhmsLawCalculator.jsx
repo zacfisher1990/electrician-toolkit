@@ -474,11 +474,18 @@ const OhmsLawCalculator = ({ onBack }) => {
 
       <div style={{ background: 'white', padding: '1.5rem' }}>
         {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '2px solid #e5e7eb' }}>
+        <div style={{ 
+          display: 'flex', 
+          gap: '0.5rem', 
+          marginBottom: '1.5rem', 
+          borderBottom: '2px solid #e5e7eb',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch'
+        }}>
           <button
             onClick={() => setActiveTab('basic')}
             style={{
-              flex: 1,
+              minWidth: 'fit-content',
               padding: '0.75rem 1rem',
               background: activeTab === 'basic' ? '#fbbf24' : '#f3f4f6',
               color: activeTab === 'basic' ? 'black' : '#6b7280',
@@ -487,7 +494,8 @@ const OhmsLawCalculator = ({ onBack }) => {
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap'
             }}
           >
             Basic
@@ -495,7 +503,7 @@ const OhmsLawCalculator = ({ onBack }) => {
           <button
             onClick={() => setActiveTab('series')}
             style={{
-              flex: 1,
+              minWidth: 'fit-content',
               padding: '0.75rem 1rem',
               background: activeTab === 'series' ? '#fbbf24' : '#f3f4f6',
               color: activeTab === 'series' ? 'black' : '#6b7280',
@@ -504,7 +512,8 @@ const OhmsLawCalculator = ({ onBack }) => {
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap'
             }}
           >
             Series
@@ -512,7 +521,7 @@ const OhmsLawCalculator = ({ onBack }) => {
           <button
             onClick={() => setActiveTab('parallel')}
             style={{
-              flex: 1,
+              minWidth: 'fit-content',
               padding: '0.75rem 1rem',
               background: activeTab === 'parallel' ? '#fbbf24' : '#f3f4f6',
               color: activeTab === 'parallel' ? 'black' : '#6b7280',
@@ -521,7 +530,8 @@ const OhmsLawCalculator = ({ onBack }) => {
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap'
             }}
           >
             Parallel
