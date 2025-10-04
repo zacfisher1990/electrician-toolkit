@@ -8,14 +8,13 @@ function CalculatorMenu({ onSelectCalculator }) {
     { id: 'ohms-law', name: "Ohm's Law", icon: '🔌', keywords: 'ohms law voltage current resistance power series parallel circuit' },
     { id: 'box-fill', name: 'Box Fill', icon: '📦', keywords: 'box fill junction cubic inch volume 314' },
     { id: 'conduit-fill', name: 'Conduit Fill', icon: '🔧', keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
-    { id: 'ampacity', name: 'Ampacity Lookup', icon: '⚠️', keywords: 'ampacity current rating 310 temperature' },
-    { id: 'motor-calculations', name: 'Motor Calculations', icon: '⚙️', keywords: 'motor flc protection starter 430' },
-    { id: 'load-calculations', name: 'Load Calculations', icon: '📊', keywords: 'load calculation service size residential commercial demand' },
-    { id: 'transformer-sizing', name: 'Transformer Sizing', icon: '🔌', keywords: 'transformer kva sizing current primary secondary 450' },
-    { id: 'service-entrance', name: 'Service Entrance Sizing', icon: '🏢', keywords: 'service entrance sizing panel main 230' }
+    { id: 'ampacity', name: 'Ampacity', icon: '⚠️', keywords: 'ampacity current rating 310 temperature' },
+    { id: 'motor-calculations', name: 'Motor Calc', icon: '⚙️', keywords: 'motor flc protection starter 430' },
+    { id: 'load-calculations', name: 'Load Calc', icon: '📊', keywords: 'load calculation service size residential commercial demand' },
+    { id: 'transformer-sizing', name: 'Transformer', icon: '🔌', keywords: 'transformer kva sizing current primary secondary 450' },
+    { id: 'service-entrance', name: 'Service Size', icon: '🏢', keywords: 'service entrance sizing panel main 230' }
   ];
 
-  // Filter calculators based on search term
   const filteredCalculators = calculators.filter(calc => {
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -25,9 +24,9 @@ function CalculatorMenu({ onSelectCalculator }) {
   });
 
   return (
-    <div className="calculator-menu">
+    <div className="calculator-menu" style={{ padding: '15px' }}>
       {/* Search Bar */}
-      <div style={{ marginBottom: '25px' }}>
+      <div style={{ marginBottom: '20px' }}>
         <input
           type="text"
           placeholder="Search calculators..."
@@ -35,7 +34,7 @@ function CalculatorMenu({ onSelectCalculator }) {
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
             width: '100%',
-            padding: '15px',
+            padding: '12px',
             fontSize: '16px',
             border: '2px solid #d1d5db',
             borderRadius: '8px',
@@ -43,35 +42,44 @@ function CalculatorMenu({ onSelectCalculator }) {
             boxSizing: 'border-box'
           }}
         />
-        {searchTerm && (
-          <div style={{ 
-            marginTop: '8px', 
-            fontSize: '14px', 
-            color: '#6b7280' 
-          }}>
-            {filteredCalculators.length} calculator{filteredCalculators.length !== 1 ? 's' : ''} found
-          </div>
-        )}
       </div>
       
-      {/* Calculator Grid */}
+      {/* Compact Grid */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '15px',
-        marginTop: '20px'
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '12px'
       }}>
         {filteredCalculators.length > 0 ? (
           filteredCalculators.map(calc => (
             <div
               key={calc.id}
-              className="menu-item"
               onClick={() => onSelectCalculator(calc.id)}
+              style={{
+                backgroundColor: '#f59e0b',
+                borderRadius: '12px',
+                padding: '16px 8px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '8px',
+                minHeight: '100px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}
             >
-              <div style={{ fontSize: '32px', marginBottom: '10px' }}>
+              <div style={{ fontSize: '32px' }}>
                 {calc.icon}
               </div>
-              <h3>{calc.name}</h3>
+              <div style={{ 
+                fontSize: '13px', 
+                fontWeight: '600',
+                color: '#000',
+                lineHeight: '1.2'
+              }}>
+                {calc.name}
+              </div>
             </div>
           ))
         ) : (
@@ -81,25 +89,24 @@ function CalculatorMenu({ onSelectCalculator }) {
             padding: '40px 20px',
             color: '#6b7280'
           }}>
-            No calculators found matching "{searchTerm}"
+            No calculators found
           </div>
         )}
       </div>
 
       <div style={{ 
-        marginTop: '30px', 
-        padding: '20px', 
+        marginTop: '25px', 
+        padding: '15px', 
         backgroundColor: '#f8fafc',
         borderRadius: '12px',
         textAlign: 'center'
       }}>
         <p style={{ 
-          fontSize: '14px', 
+          fontSize: '13px', 
           color: '#374151',
           margin: 0
         }}>
-          All calculations based on current NEC standards. 
-          Always verify with local codes and current NEC edition.
+          All calculations based on current NEC standards
         </p>
       </div>
     </div>
