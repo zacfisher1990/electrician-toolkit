@@ -11,6 +11,7 @@ import TransformerSizingCalculator from './TransformerSizingCalculator.jsx';
 import ServiceEntranceSizing from './ServiceEntranceSizing.jsx';
 import GroundingBondingCalculator from './GroundingBondingCalculator.jsx';
 import ConduitBendingCalculator from './ConduitBendingCalculator.jsx';
+import LightingCalculator from './LightingCalculator.jsx';
 import './App.css';
 
 function App() {
@@ -40,7 +41,9 @@ function App() {
         return <GroundingBondingCalculator onBack={() => setActiveCalculator(null)} />;
       case 'conduit-bending':
         return <ConduitBendingCalculator onBack={() => setActiveCalculator(null)} />;
-        default:
+      case 'lighting':
+        return <LightingCalculator onBack={() => setActiveCalculator(null)} />;
+      default:
         return <CalculatorMenu onSelectCalculator={setActiveCalculator} />;
     }
   };
