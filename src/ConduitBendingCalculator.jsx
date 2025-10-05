@@ -415,10 +415,154 @@ function ConduitBendingCalculator({ onBack }) {
     );
   };
 
+  // 4-Point Saddle Calculator
+  const FourPointSaddleCalculator = () => {
+    const [obstacleHeight, setObstacleHeight] = useState('');
+    const [obstacleWidth, setObstacleWidth] = useState('');
+
+    const calculateFourPointSaddle = () => {
+      if (!obstacleHeight || !obstacleWidth) return null;
+      
+      const height = parseFloat(obstacleHeight);
+      const width = parseFloat(obstacleWidth);
+      
+      // 4-point saddle uses 22.5° bends (all four bends)
+      // Distance to first/last bend from center
+      const distanceToOuter = width / 2;
+      
+      // Distance between inner bends (typically 1/4 of total width)
+      const innerSpacing = width / 4;
+      
+      // Shrinkage for 4-point saddle (approximate)
+      const shrinkage = height * 0.15;
+
+      return {
+        bendAngle: 22.5,
+        distanceToOuter: distanceToOuter.toFixed(2),
+        innerSpacing: innerSpacing.toFixed(2),
+        shrinkage: shrinkage.toFixed(2),
+        obstacleHeight: height.toFixed(2),
+        obstacleWidth: width.toFixed(2)
+      };
+    };
+
+    const results = calculateFourPointSaddle();
+
+    return (
+      <div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Obstacle Height (inches)
+            </label>
+            <input
+              type="number"
+              value={obstacleHeight}
+              onChange={(e) => setObstacleHeight(e.target.value)}
+              placeholder="Enter height"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Height to clear</div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              Obstacle Width (inches)
+            </label>
+            <input
+              type="number"
+              value={obstacleWidth}
+              onChange={(e) => setObstacleWidth(e.target.value)}
+              placeholder="Enter width"
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+            />
+            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Width of obstacle</div>
+          </div>
+        </div>
+
+        {results && (
+          <div style={{ 
+            background: '#dcfce7', 
+            border: '2px solid #16a34a', 
+            padding: '1.5rem', 
+            borderRadius: '0.5rem'
+          }}>
+            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
+              4-Point Saddle Results
+            </h3>
+
+            <div style={{ 
+              background: '#f8fafc', 
+              padding: '1rem', 
+              borderRadius: '0.5rem',
+              marginBottom: '1rem',
+              color: '#374151'
+            }}>
+              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                <strong>All Four Bends:</strong> {results.bendAngle}° each
+              </div>
+              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                <strong>Distance to Outer Bends:</strong> {results.distanceToOuter}" (each side from center)
+              </div>
+              <div style={{ fontSize: '0.875rem' }}>
+                <strong>Spacing Between Inner Bends:</strong> {results.innerSpacing}"
+              </div>
+            </div>
+
+            <div style={{ 
+              color: '#14532d',
+              paddingTop: '1rem',
+              borderTop: '1px solid #bbf7d0'
+            }}>
+              <div style={{ marginBottom: '0.5rem' }}><strong>Shrinkage:</strong> ~{results.shrinkage}"</div>
+              <div style={{ marginBottom: '0.5rem' }}><strong>Obstacle Height:</strong> {results.obstacleHeight}"</div>
+              <div><strong>Obstacle Width:</strong> {results.obstacleWidth}"</div>
+            </div>
+
+            <div style={{ 
+              background: '#fef3c7',
+              padding: '0.75rem',
+              borderRadius: '0.375rem',
+              border: '1px solid #fbbf24',
+              color: '#92400e',
+              fontSize: '0.875rem',
+              marginTop: '1rem'
+            }}>
+              <strong>Bending sequence:</strong>
+              <ol style={{ margin: '0.5rem 0 0 1.25rem', padding: 0 }}>
+                <li>Mark center of obstacle on conduit</li>
+                <li>Measure {results.distanceToOuter}" from center in both directions (outer bends)</li>
+                <li>Measure {results.innerSpacing}" from center in both directions (inner bends)</li>
+                <li>Make all four 22.5° bends: outer bends go up, inner bends go down</li>
+              </ol>
+            </div>
+          </div>
+        )}
+
+        <div style={{ 
+          background: '#f8fafc',
+          padding: '1rem',
+          borderRadius: '0.5rem',
+          border: '1px solid #e2e8f0',
+          marginTop: '1.5rem'
+        }}>
+          <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>4-Point Saddle Tips:</strong>
+          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#6b7280', fontSize: '0.875rem' }}>
+            <li style={{ marginBottom: '0.25rem' }}>Used for larger obstacles where 3-point saddle won't work</li>
+            <li style={{ marginBottom: '0.25rem' }}>Outer bends go up, inner bends go down (alternating pattern)</li>
+            <li style={{ marginBottom: '0.25rem' }}>Creates a flatter top for better clearance over wide obstacles</li>
+            <li>Mark all four bend locations before starting to bend</li>
+          </ul>
+        </div>
+      </div>
+    );
+  };
+
   const tabComponents = {
     offset: <OffsetBendCalculator />,
     stubup: <StubUpCalculator />,
-    saddle: <SaddleBendCalculator />
+    saddle: <SaddleBendCalculator />,
+    fourpoint: <FourPointSaddleCalculator />
   };
 
   return (
@@ -511,6 +655,22 @@ function ConduitBendingCalculator({ onBack }) {
             }}
           >
             3-Point Saddle
+          </button>
+          <button 
+            onClick={() => setActiveTab('fourpoint')}
+            style={{
+              padding: '0.75rem 1.25rem',
+              background: activeTab === 'fourpoint' ? '#3b82f6' : '#e5e7eb',
+              color: activeTab === 'fourpoint' ? 'white' : '#374151',
+              border: 'none',
+              borderRadius: '0.5rem',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              transition: 'all 0.2s'
+            }}
+          >
+            4-Point Saddle
           </button>
         </div>
 
