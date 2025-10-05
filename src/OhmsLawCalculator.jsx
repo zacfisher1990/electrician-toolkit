@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Zap, Plus, Trash2, Calculator, ArrowLeft } from 'lucide-react';
+
 
 const OhmsLawCalculator = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState('basic');
@@ -20,64 +21,82 @@ const OhmsLawCalculator = ({ onBack }) => {
     { id: 1, R: '', V: '', I: '', P: '' }
   ]);
 
+  // Auto-calculate when inputs change
+useEffect(() => {
+  calculateBasic();
+}, [voltage, current, resistance, power]);
+
+  // Helper function to check if any 2 total fields are filled
+const getTotalFieldsCount = (totals) => {
+  return Object.values(totals).filter(val => val && val !== '').length;
+};
+
+// Helper function to check if a specific total field should be disabled
+const isTotalFieldDisabled = (totals, fieldName) => {
+  const filledFields = Object.entries(totals)
+    .filter(([key, val]) => key !== fieldName && val && val !== '')
+    .map(([key]) => key);
+  return filledFields.length >= 2;
+};
+
   const [seriesTotals, setSeriesTotals] = useState({ R: '', V: '', I: '', P: '' });
   const [parallelTotals, setParallelTotals] = useState({ R: '', V: '', I: '', P: '' });
   const [basicResults, setBasicResults] = useState({ V: '', I: '', R: '', P: '' });
 
   const calculateBasic = () => {
-    const V = parseFloat(voltage) || 0;
-    const I = parseFloat(current) || 0;
-    const R = parseFloat(resistance) || 0;
-    const P = parseFloat(power) || 0;
+  const V = parseFloat(voltage) || 0;
+  const I = parseFloat(current) || 0;
+  const R = parseFloat(resistance) || 0;
+  const P = parseFloat(power) || 0;
 
-    const results = { V: '', I: '', R: '', P: '' };
+  const results = { V: '', I: '', R: '', P: '' };
 
-    // Calculate Voltage
-    if (!voltage && I && R) {
-      results.V = (I * R).toFixed(1);
-    } else if (!voltage && P && I && I !== 0) {
-      results.V = (P / I).toFixed(1);
-    } else if (!voltage && P && R) {
-      results.V = Math.sqrt(P * R).toFixed(1);
-    } else if (voltage) {
-      results.V = V.toFixed(1);
-    }
+  // Calculate Voltage
+  if (!voltage && I && R) {
+    results.V = (I * R).toFixed(1);
+  } else if (!voltage && P && I && I !== 0) {
+    results.V = (P / I).toFixed(1);
+  } else if (!voltage && P && R) {
+    results.V = Math.sqrt(P * R).toFixed(1);
+  } else if (voltage) {
+    results.V = V.toFixed(1);
+  }
 
-    // Calculate Current
-    if (!current && V && R && R !== 0) {
-      results.I = (V / R).toFixed(1);
-    } else if (!current && P && V && V !== 0) {
-      results.I = (P / V).toFixed(1);
-    } else if (!current && P && R && R !== 0) {
-      results.I = Math.sqrt(P / R).toFixed(1);
-    } else if (current) {
-      results.I = I.toFixed(1);
-    }
+  // Calculate Current
+  if (!current && V && R && R !== 0) {
+    results.I = (V / R).toFixed(1);
+  } else if (!current && P && V && V !== 0) {
+    results.I = (P / V).toFixed(1);
+  } else if (!current && P && R && R !== 0) {
+    results.I = Math.sqrt(P / R).toFixed(1);
+  } else if (current) {
+    results.I = I.toFixed(1);
+  }
 
-    // Calculate Resistance
-    if (!resistance && V && I && I !== 0) {
-      results.R = (V / I).toFixed(1);
-    } else if (!resistance && V && P && P !== 0) {
-      results.R = (V * V / P).toFixed(1);
-    } else if (!resistance && P && I && I !== 0) {
-      results.R = (P / (I * I)).toFixed(1);
-    } else if (resistance) {
-      results.R = R.toFixed(1);
-    }
+  // Calculate Resistance
+  if (!resistance && V && I && I !== 0) {
+    results.R = (V / I).toFixed(1);
+  } else if (!resistance && V && P && P !== 0) {
+    results.R = (V * V / P).toFixed(1);
+  } else if (!resistance && P && I && I !== 0) {
+    results.R = (P / (I * I)).toFixed(1);
+  } else if (resistance) {
+    results.R = R.toFixed(1);
+  }
 
-    // Calculate Power
-    if (!power && V && I) {
-      results.P = (V * I).toFixed(1);
-    } else if (!power && I && R) {
-      results.P = (I * I * R).toFixed(1);
-    } else if (!power && V && R && R !== 0) {
-      results.P = (V * V / R).toFixed(1);
-    } else if (power) {
-      results.P = P.toFixed(1);
-    }
+  // Calculate Power
+  if (!power && V && I) {
+    results.P = (V * I).toFixed(1);
+  } else if (!power && I && R) {
+    results.P = (I * I * R).toFixed(1);
+  } else if (!power && V && R && R !== 0) {
+    results.P = (V * V / R).toFixed(1);
+  } else if (power) {
+    results.P = P.toFixed(1);
+  }
 
-    setBasicResults(results);
-  };
+  setBasicResults(results);
+};
 
   const clearBasic = () => {
     setVoltage('');
@@ -561,7 +580,7 @@ const OhmsLawCalculator = ({ onBack }) => {
                 </label>
                 <input
                   type="number"
-                  value={voltage}
+                  value={voltage || basicResults.V}
                   onChange={(e) => setVoltage(e.target.value)}
                   placeholder="Enter voltage"
                   disabled={
@@ -586,7 +605,7 @@ const OhmsLawCalculator = ({ onBack }) => {
                 </label>
                 <input
                   type="number"
-                  value={current}
+                  value={current || basicResults.I}
                   onChange={(e) => setCurrent(e.target.value)}
                   placeholder="Enter current"
                   disabled={
@@ -611,7 +630,7 @@ const OhmsLawCalculator = ({ onBack }) => {
                 </label>
                 <input
                   type="number"
-                  value={resistance}
+                  value={resistance || basicResults.R}
                   onChange={(e) => setResistance(e.target.value)}
                   placeholder="Enter resistance"
                   disabled={
@@ -636,7 +655,7 @@ const OhmsLawCalculator = ({ onBack }) => {
                 </label>
                 <input
                   type="number"
-                  value={power}
+                  value={power || basicResults.P}
                   onChange={(e) => setPower(e.target.value)}
                   placeholder="Enter power"
                   disabled={
@@ -656,29 +675,6 @@ const OhmsLawCalculator = ({ onBack }) => {
                 />
               </div>
             </div>
-
-            <button
-              onClick={calculateBasic}
-              style={{
-                width: '100%',
-                background: '#fbbf24',
-                color: 'black',
-                fontWeight: 'bold',
-                padding: '0.75rem',
-                borderRadius: '0.5rem',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.75rem'
-              }}
-            >
-              <Calculator size={20} />
-              Calculate
-            </button>
 
             <button
               onClick={clearBasic}
@@ -761,21 +757,30 @@ const OhmsLawCalculator = ({ onBack }) => {
                 Circuit Totals (Optional)
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-                {['R', 'V', 'I', 'P'].map(field => (
-                  <div key={field}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
-                      Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
-                    </label>
-                    <input
-                      type="number"
-                      value={seriesTotals[field]}
-                      onChange={(e) => setSeriesTotals({...seriesTotals, [field]: e.target.value})}
-                      placeholder="Optional"
-                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }}
-                    />
-                  </div>
-                ))}
-              </div>
+  {['R', 'V', 'I', 'P'].map(field => (
+    <div key={field}>
+      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+        Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
+      </label>
+      <input
+        type="number"
+        value={seriesTotals[field]}
+        onChange={(e) => setSeriesTotals({...seriesTotals, [field]: e.target.value})}
+        placeholder="Optional"
+        disabled={isTotalFieldDisabled(seriesTotals, field)}
+        style={{ 
+          width: '100%', 
+          padding: '0.5rem', 
+          border: '1px solid #d1d5db', 
+          borderRadius: '0.25rem', 
+          fontSize: '0.875rem',
+          background: isTotalFieldDisabled(seriesTotals, field) ? '#f3f4f6' : 'white',
+          cursor: isTotalFieldDisabled(seriesTotals, field) ? 'not-allowed' : 'text'
+        }}
+      />
+    </div>
+  ))}
+</div>
               <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem', marginBottom: 0 }}>
                 Enter known total values to help solve the circuit. Series: Current is constant.
               </p>
@@ -928,21 +933,30 @@ const OhmsLawCalculator = ({ onBack }) => {
                 Circuit Totals (Optional)
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-                {['R', 'V', 'I', 'P'].map(field => (
-                  <div key={field}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
-                      Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
-                    </label>
-                    <input
-                      type="number"
-                      value={parallelTotals[field]}
-                      onChange={(e) => setParallelTotals({...parallelTotals, [field]: e.target.value})}
-                      placeholder="Optional"
-                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }}
-                    />
-                  </div>
-                ))}
-              </div>
+  {['R', 'V', 'I', 'P'].map(field => (
+    <div key={field}>
+      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+        Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
+      </label>
+      <input
+        type="number"
+        value={parallelTotals[field]}
+        onChange={(e) => setParallelTotals({...parallelTotals, [field]: e.target.value})}
+        placeholder="Optional"
+        disabled={isTotalFieldDisabled(parallelTotals, field)}
+        style={{ 
+          width: '100%', 
+          padding: '0.5rem', 
+          border: '1px solid #d1d5db', 
+          borderRadius: '0.25rem', 
+          fontSize: '0.875rem',
+          background: isTotalFieldDisabled(parallelTotals, field) ? '#f3f4f6' : 'white',
+          cursor: isTotalFieldDisabled(parallelTotals, field) ? 'not-allowed' : 'text'
+        }}
+      />
+    </div>
+  ))}
+</div>
               <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem', marginBottom: 0 }}>
                 Enter known total values to help solve the circuit. Parallel: Voltage is constant.
               </p>
