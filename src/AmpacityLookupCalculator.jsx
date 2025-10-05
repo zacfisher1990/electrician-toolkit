@@ -1,13 +1,36 @@
 import React, { useState } from 'react';
-import { AlertTriangle, } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
-function AmpacityLookupCalculator() {
+function AmpacityLookupCalculator({ isDarkMode = false }) {
   const [wireSize, setWireSize] = useState('12');
   const [wireType, setWireType] = useState('copper');
   const [tempRating, setTempRating] = useState('75C');
   const [ambientTemp, setAmbientTemp] = useState('30');
   const [numConductors, setNumConductors] = useState('3');
   const [continuousLoad, setContinuousLoad] = useState(false);
+
+  // Dark mode colors
+  const colors = {
+    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
+    headerBg: isDarkMode ? '#111827' : '#ffffff',
+    headerText: isDarkMode ? '#f9fafb' : '#111827',
+    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
+    contentBg: isDarkMode ? '#111827' : '#f9fafb',
+    labelText: isDarkMode ? '#d1d5db' : '#374151',
+    inputBg: isDarkMode ? '#374151' : 'white',
+    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
+    inputText: isDarkMode ? '#f9fafb' : '#111827',
+    cardBg: isDarkMode ? '#1f2937' : 'white',
+    cardBgAlt: isDarkMode ? '#374151' : '#f1f5f9',
+    cardBorder: isDarkMode ? '#4b5563' : '#cbd5e1',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBg: isDarkMode ? '#111827' : '#f9fafb',
+    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBorder: isDarkMode ? '#374151' : '#e5e7eb',
+    infoBg: isDarkMode ? '#1e3a5f' : '#dbeafe',
+    infoBorder: isDarkMode ? '#1e40af' : '#93c5fd',
+    infoText: isDarkMode ? '#93c5fd' : '#1e3a8a'
+  };
 
   const ampacityData = {
     copper: {
@@ -55,7 +78,6 @@ function AmpacityLookupCalculator() {
     }
   };
 
-  // Temperature correction factors (NEC Table 310.15(B)(1))
   const tempCorrectionFactors = {
     '60C': {
       '10': 1.29, '15': 1.20, '20': 1.11, '25': 1.05, '30': 1.00,
@@ -107,10 +129,8 @@ function AmpacityLookupCalculator() {
   const calculateDeratedAmpacity = () => {
     let baseAmpacity = currentAmpacity;
     
-    // Temperature correction
     const tempFactor = tempCorrectionFactors[tempRating][ambientTemp] || 1.00;
     
-    // Conductor adjustment
     let conductorFactor = 1.00;
     const numCond = parseInt(numConductors);
     if (numCond <= 3) conductorFactor = 1.00;
@@ -121,10 +141,8 @@ function AmpacityLookupCalculator() {
     else if (numCond <= 40) conductorFactor = 0.40;
     else conductorFactor = 0.35;
     
-    // Apply derating
     let deratedAmpacity = baseAmpacity * tempFactor * conductorFactor;
     
-    // Continuous load (80% rule)
     let continuousAmpacity = deratedAmpacity;
     if (continuousLoad) {
       continuousAmpacity = deratedAmpacity * 0.8;
@@ -144,27 +162,28 @@ function AmpacityLookupCalculator() {
   const deratingResults = calculateDeratedAmpacity();
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-      <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
+      {/* Modern Header */}
+      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <AlertTriangle size={32} />
+          <AlertTriangle size={24} color="#3b82f6" />
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Ampacity Lookup</h1>
-            <p style={{ fontSize: '0.875rem', margin: 0 }}>Wire ampacity ratings per NEC Table 310.16</p>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Ampacity Lookup</h1>
+            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>NEC Table 310.16 - Wire current ratings</p>
           </div>
         </div>
       </div>
 
-      <div style={{ background: 'white', padding: '1.5rem' }}>
+      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Wire Size
             </label>
             <select 
               value={wireSize} 
               onChange={(e) => setWireSize(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="22">22 AWG</option>
               <option value="20">20 AWG</option>
@@ -195,13 +214,13 @@ function AmpacityLookupCalculator() {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Wire Material
             </label>
             <select 
               value={wireType} 
               onChange={(e) => setWireType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="copper">Copper</option>
               <option value="aluminum">Aluminum</option>
@@ -209,13 +228,13 @@ function AmpacityLookupCalculator() {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Temperature Rating
             </label>
             <select 
               value={tempRating} 
               onChange={(e) => setTempRating(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="60C">60°C (140°F) - TW, UF</option>
               <option value="75C">75°C (167°F) - THWN, XHHW</option>
@@ -226,25 +245,25 @@ function AmpacityLookupCalculator() {
 
         {/* Derating Factors Section */}
         <div style={{ 
-          background: '#f1f5f9',
+          background: colors.cardBgAlt,
           padding: '1.5rem',
           borderRadius: '0.5rem',
-          border: '2px solid #cbd5e1',
+          border: `1px solid ${colors.cardBorder}`,
           marginBottom: '1.5rem'
         }}>
-          <h3 style={{ fontWeight: 'bold', color: '#374151', marginTop: 0, marginBottom: '1rem' }}>
+          <h3 style={{ fontWeight: 'bold', color: colors.labelText, marginTop: 0, marginBottom: '1rem' }}>
             Derating Factors (Optional)
           </h3>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
                 Ambient Temperature (°C)
               </label>
               <select 
                 value={ambientTemp} 
                 onChange={(e) => setAmbientTemp(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }}
+                style={{ width: '100%', padding: '0.5rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '0.875rem', background: colors.inputBg, color: colors.inputText }}
               >
                 <option value="10">10°C (50°F)</option>
                 <option value="15">15°C (59°F)</option>
@@ -261,7 +280,7 @@ function AmpacityLookupCalculator() {
             </div>
             
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
                 Current-Carrying Conductors
               </label>
               <input
@@ -269,9 +288,9 @@ function AmpacityLookupCalculator() {
                 value={numConductors}
                 onChange={(e) => setNumConductors(e.target.value)}
                 min="1"
-                style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }}
+                style={{ width: '100%', padding: '0.5rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '0.875rem', background: colors.inputBg, color: colors.inputText }}
               />
-              <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0.25rem 0 0 0' }}>
+              <p style={{ fontSize: '0.75rem', color: colors.subtleText, margin: '0.25rem 0 0 0' }}>
                 In same raceway/cable (excludes grounds)
               </p>
             </div>
@@ -284,7 +303,7 @@ function AmpacityLookupCalculator() {
               onChange={(e) => setContinuousLoad(e.target.checked)}
               style={{ width: '1.25rem', height: '1.25rem', cursor: 'pointer' }}
             />
-            <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: '600', color: colors.labelText }}>
               Continuous Load (3+ hours) - Apply 80% factor
             </span>
           </label>
@@ -292,8 +311,8 @@ function AmpacityLookupCalculator() {
 
         {/* Results Box */}
         <div style={{ 
-          background: '#dcfce7', 
-          border: '2px solid #16a34a', 
+          background: '#f0fdf4', 
+          border: '2px solid #22c55e', 
           padding: '1.5rem', 
           borderRadius: '0.5rem',
           marginBottom: '1.5rem'
@@ -305,10 +324,10 @@ function AmpacityLookupCalculator() {
           <div style={{ 
             fontSize: '2rem', 
             fontWeight: 'bold', 
-            color: '#16a34a',
+            color: '#22c55e',
             marginBottom: '0.5rem',
             padding: '1rem',
-            background: 'white',
+            background: colors.cardBg,
             borderRadius: '0.5rem',
             textAlign: 'center'
           }}>
@@ -353,7 +372,7 @@ function AmpacityLookupCalculator() {
                 color: '#ea580c',
                 marginBottom: '1rem',
                 padding: '1rem',
-                background: 'white',
+                background: colors.cardBg,
                 borderRadius: '0.5rem',
                 textAlign: 'center',
                 border: '2px solid #fb923c'
@@ -401,13 +420,13 @@ function AmpacityLookupCalculator() {
 
         {/* Quick Reference */}
         <div style={{ 
-          background: '#dbeafe',
+          background: colors.infoBg,
           padding: '1rem',
           borderRadius: '0.5rem',
-          border: '1px solid #93c5fd'
+          border: `1px solid ${colors.infoBorder}`
         }}>
-          <strong style={{ color: '#1e3a8a', display: 'block', marginBottom: '0.5rem' }}>Quick Reference (75°C Copper):</strong>
-          <div style={{ fontSize: '0.875rem', color: '#1e40af' }}>
+          <strong style={{ color: colors.infoText, display: 'block', marginBottom: '0.5rem' }}>Quick Reference (75°C Copper):</strong>
+          <div style={{ fontSize: '0.875rem', color: colors.infoText }}>
             <div style={{ marginBottom: '0.25rem' }}>14 AWG: 20A (15A max OCPD) - Lighting circuits</div>
             <div style={{ marginBottom: '0.25rem' }}>12 AWG: 25A (20A max OCPD) - General receptacles</div>
             <div style={{ marginBottom: '0.25rem' }}>10 AWG: 35A (30A max OCPD) - Dryers, small AC units</div>
@@ -417,15 +436,12 @@ function AmpacityLookupCalculator() {
         </div>
       </div>
 
-      <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.75rem' }}>NEC References:</p>
-        <ul style={{ paddingLeft: '1.5rem', margin: 0 }}>
-          <li style={{ marginBottom: '0.25rem' }}>Table 310.16 - Allowable ampacities of insulated conductors</li>
-          <li style={{ marginBottom: '0.25rem' }}>240.4(D) - Small conductor overcurrent protection limits</li>
-          <li style={{ marginBottom: '0.25rem' }}>Table 310.15(B)(1) - Temperature correction factors</li>
-          <li style={{ marginBottom: '0.25rem' }}>Table 310.15(C)(1) - Adjustment factors for multiple conductors</li>
-          <li>210.19(A) - Continuous loads require 125% conductor capacity</li>
-        </ul>
+      {/* Footer */}
+      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>NEC References:</p>
+        <p style={{ margin: 0 }}>
+          Table 310.16 - Ampacities • 240.4(D) - OCPD limits • Table 310.15(B)(1) - Temperature factors • Table 310.15(C)(1) - Adjustment factors • 210.19(A) - Continuous loads (125%)
+        </p>
       </div>
     </div>
   );
