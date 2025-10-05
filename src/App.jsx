@@ -12,10 +12,17 @@ import ServiceEntranceSizing from './ServiceEntranceSizing.jsx';
 import GroundingBondingCalculator from './GroundingBondingCalculator.jsx';
 import ConduitBendingCalculator from './ConduitBendingCalculator.jsx';
 import LightingCalculator from './LightingCalculator.jsx';
+import BottomNavigation from './BottomNavigation.jsx';
 import './App.css';
 
 function App() {
   const [activeCalculator, setActiveCalculator] = useState(null);
+
+  const handleNavigate = (view) => {
+    if (view === 'home' || view === 'calculators') {
+      setActiveCalculator(null);
+    }
+  };
 
   const renderCalculator = () => {
     switch(activeCalculator) {
@@ -49,21 +56,26 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className="App" style={{ paddingBottom: '5rem' }}>
       {!activeCalculator ? (
-  <div>
-    {renderCalculator()}
-  </div>
+        <div>
+          {renderCalculator()}
+        </div>
       ) : (
-        // Consistent dark gradient background wrapper for all calculators
         <div style={{ 
           minHeight: '100vh', 
           background: 'linear-gradient(to bottom right, #0f172a, #1e293b)', 
-          padding: '1rem' 
+          padding: '1rem',
+          paddingBottom: '6rem'
         }}>
           {renderCalculator()}
         </div>
       )}
+      
+      <BottomNavigation 
+        onNavigate={handleNavigate}
+        currentView={activeCalculator ? 'calculators' : 'home'}
+      />
     </div>
   );
 }
