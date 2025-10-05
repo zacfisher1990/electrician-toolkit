@@ -1,8 +1,28 @@
 import React, { useState } from 'react';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Home } from 'lucide-react';
 
-function ServiceEntranceSizing({ onBack }) {
+function ServiceEntranceSizing({ isDarkMode = false }) {
   const [activeTab, setActiveTab] = useState('residential');
+
+  // Dark mode colors - matching the design system
+  const colors = {
+    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
+    headerBg: isDarkMode ? '#111827' : '#ffffff',
+    headerText: isDarkMode ? '#f9fafb' : '#111827',
+    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
+    contentBg: isDarkMode ? '#111827' : '#f9fafb',
+    labelText: isDarkMode ? '#d1d5db' : '#374151',
+    inputBg: isDarkMode ? '#374151' : 'white',
+    inputBgAlt: isDarkMode ? '#1f2937' : '#f9fafb',
+    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
+    inputText: isDarkMode ? '#f9fafb' : '#111827',
+    cardBg: isDarkMode ? '#1f2937' : 'white',
+    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBg: isDarkMode ? '#111827' : '#f9fafb',
+    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBorder: isDarkMode ? '#374151' : '#e5e7eb'
+  };
 
   // Residential Service Sizing
   const ResidentialService = () => {
@@ -88,7 +108,7 @@ function ServiceEntranceSizing({ onBack }) {
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Square Footage
             </label>
             <input 
@@ -96,13 +116,13 @@ function ServiceEntranceSizing({ onBack }) {
               value={squareFootage} 
               onChange={(e) => setSquareFootage(e.target.value)}
               placeholder="Living area"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
-            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Heated/cooled living space</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Heated/cooled living space</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               HVAC/Heat Load (Watts)
             </label>
             <input 
@@ -110,12 +130,12 @@ function ServiceEntranceSizing({ onBack }) {
               value={hvacLoad} 
               onChange={(e) => setHvacLoad(e.target.value)}
               placeholder="Largest heating or cooling load"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Water Heater (Watts)
             </label>
             <input 
@@ -123,12 +143,12 @@ function ServiceEntranceSizing({ onBack }) {
               value={waterHeater} 
               onChange={(e) => setWaterHeater(e.target.value)}
               placeholder="Water heater nameplate"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Range/Oven (Watts)
             </label>
             <input 
@@ -136,12 +156,12 @@ function ServiceEntranceSizing({ onBack }) {
               value={rangeOven} 
               onChange={(e) => setRangeOven(e.target.value)}
               placeholder="Electric range rating"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Dryer (Watts)
             </label>
             <input 
@@ -149,13 +169,13 @@ function ServiceEntranceSizing({ onBack }) {
               value={dryer} 
               onChange={(e) => setDryer(e.target.value)}
               placeholder="Electric dryer rating"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
-            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Minimum 5000W if electric</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Minimum 5000W if electric</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Other Loads (Watts)
             </label>
             <input 
@@ -163,18 +183,18 @@ function ServiceEntranceSizing({ onBack }) {
               value={otherLoads} 
               onChange={(e) => setOtherLoads(e.target.value)}
               placeholder="Pool, spa, workshop, etc."
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Service Voltage
             </label>
             <select 
               value={voltage} 
               onChange={(e) => setVoltage(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="240">240V</option>
               <option value="208">208V</option>
@@ -184,8 +204,8 @@ function ServiceEntranceSizing({ onBack }) {
 
         {squareFootage && (
           <div style={{ 
-            background: '#dcfce7', 
-            border: '2px solid #16a34a', 
+            background: '#f0fdf4', 
+            border: '2px solid #22c55e', 
             padding: '1.5rem', 
             borderRadius: '0.5rem'
           }}>
@@ -194,35 +214,33 @@ function ServiceEntranceSizing({ onBack }) {
             </h3>
             
             <div style={{ 
-              background: '#f8fafc', 
+              background: colors.cardBg, 
               padding: '1rem', 
               borderRadius: '0.5rem',
-              marginBottom: '1rem',
-              color: '#374151'
+              marginBottom: '1rem'
             }}>
-              <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Connected Loads:</strong>
-              <div style={{ fontSize: '0.875rem' }}>General Lighting: {results.generalLighting.toLocaleString()} VA</div>
-              <div style={{ fontSize: '0.875rem' }}>Small Appliance: {results.smallAppliance.toLocaleString()} VA</div>
-              <div style={{ fontSize: '0.875rem' }}>Laundry: {results.laundry.toLocaleString()} VA</div>
-              <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+              <strong style={{ display: 'block', marginBottom: '0.5rem', color: colors.labelText }}>Connected Loads:</strong>
+              <div style={{ fontSize: '0.875rem', color: colors.labelText }}>General Lighting: {results.generalLighting.toLocaleString()} VA</div>
+              <div style={{ fontSize: '0.875rem', color: colors.labelText }}>Small Appliance: {results.smallAppliance.toLocaleString()} VA</div>
+              <div style={{ fontSize: '0.875rem', color: colors.labelText }}>Laundry: {results.laundry.toLocaleString()} VA</div>
+              <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.5rem' }}>
                 Subtotal: {results.subtotal.toLocaleString()} VA
               </div>
             </div>
 
             <div style={{ 
-              background: '#f8fafc', 
+              background: colors.cardBg, 
               padding: '1rem', 
               borderRadius: '0.5rem',
-              marginBottom: '1rem',
-              color: '#374151'
+              marginBottom: '1rem'
             }}>
-              <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Demand Loads (after factors):</strong>
-              <div style={{ fontSize: '0.875rem' }}>Lighting: {results.demandLighting.toFixed(0)} W</div>
-              {rangeOven && <div style={{ fontSize: '0.875rem' }}>Range: {results.rangeDemand.toFixed(0)} W</div>}
-              {dryer && <div style={{ fontSize: '0.875rem' }}>Dryer: {results.dryerDemand.toFixed(0)} W</div>}
-              {waterHeater && <div style={{ fontSize: '0.875rem' }}>Water Heater: {results.whDemand.toFixed(0)} W</div>}
-              {hvacLoad && <div style={{ fontSize: '0.875rem' }}>HVAC: {results.hvacDemand.toFixed(0)} W</div>}
-              {otherLoads && <div style={{ fontSize: '0.875rem' }}>Other: {results.otherDemand.toFixed(0)} W</div>}
+              <strong style={{ display: 'block', marginBottom: '0.5rem', color: colors.labelText }}>Demand Loads (after factors):</strong>
+              <div style={{ fontSize: '0.875rem', color: colors.labelText }}>Lighting: {results.demandLighting.toFixed(0)} W</div>
+              {rangeOven && <div style={{ fontSize: '0.875rem', color: colors.labelText }}>Range: {results.rangeDemand.toFixed(0)} W</div>}
+              {dryer && <div style={{ fontSize: '0.875rem', color: colors.labelText }}>Dryer: {results.dryerDemand.toFixed(0)} W</div>}
+              {waterHeater && <div style={{ fontSize: '0.875rem', color: colors.labelText }}>Water Heater: {results.whDemand.toFixed(0)} W</div>}
+              {hvacLoad && <div style={{ fontSize: '0.875rem', color: colors.labelText }}>HVAC: {results.hvacDemand.toFixed(0)} W</div>}
+              {otherLoads && <div style={{ fontSize: '0.875rem', color: colors.labelText }}>Other: {results.otherDemand.toFixed(0)} W</div>}
             </div>
 
             <div style={{ color: '#14532d', marginBottom: '0.75rem' }}>
@@ -258,14 +276,14 @@ function ServiceEntranceSizing({ onBack }) {
         )}
 
         <div style={{ 
-          background: '#f8fafc',
+          background: colors.cardBg,
           padding: '1rem',
           borderRadius: '0.5rem',
-          border: '1px solid #e2e8f0',
+          border: `1px solid ${colors.cardBorder}`,
           marginTop: '1.5rem'
         }}>
-          <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>Important Notes:</strong>
-          <div style={{ color: '#6b7280', fontSize: '0.875rem', fontStyle: 'italic' }}>
+          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Important Notes:</strong>
+          <div style={{ color: colors.subtleText, fontSize: '0.875rem', fontStyle: 'italic' }}>
             Service conductors are approximate for 75°C copper. Consult NEC Table 310.15(B)(16) for exact sizing with all derating factors.
           </div>
         </div>
@@ -315,7 +333,7 @@ function ServiceEntranceSizing({ onBack }) {
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Total Connected Load (kW)
             </label>
             <input 
@@ -323,12 +341,12 @@ function ServiceEntranceSizing({ onBack }) {
               value={connectedLoad} 
               onChange={(e) => setConnectedLoad(e.target.value)}
               placeholder="Total building load"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Demand Factor (%)
             </label>
             <input 
@@ -336,13 +354,13 @@ function ServiceEntranceSizing({ onBack }) {
               value={demandFactor} 
               onChange={(e) => setDemandFactor(e.target.value)}
               placeholder="Typically 70-90%"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
-            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Percentage of connected load at peak demand</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Percentage of connected load at peak demand</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Future Expansion (%)
             </label>
             <input 
@@ -350,19 +368,19 @@ function ServiceEntranceSizing({ onBack }) {
               value={futureExpansion} 
               onChange={(e) => setFutureExpansion(e.target.value)}
               placeholder="Typically 20-30%"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
-            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Spare capacity for future growth</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Spare capacity for future growth</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Service Voltage
             </label>
             <select 
               value={voltage} 
               onChange={(e) => setVoltage(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="208">208V</option>
               <option value="240">240V</option>
@@ -372,13 +390,13 @@ function ServiceEntranceSizing({ onBack }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               System Phase
             </label>
             <select 
               value={phase} 
               onChange={(e) => setPhase(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="single">Single Phase</option>
               <option value="three">Three Phase</option>
@@ -388,8 +406,8 @@ function ServiceEntranceSizing({ onBack }) {
 
         {connectedLoad && (
           <div style={{ 
-            background: '#dcfce7', 
-            border: '2px solid #16a34a', 
+            background: '#f0fdf4', 
+            border: '2px solid #22c55e', 
             padding: '1.5rem', 
             borderRadius: '0.5rem'
           }}>
@@ -398,15 +416,14 @@ function ServiceEntranceSizing({ onBack }) {
             </h3>
             
             <div style={{ 
-              background: '#f8fafc', 
+              background: colors.cardBg, 
               padding: '1rem', 
               borderRadius: '0.5rem',
-              marginBottom: '1rem',
-              color: '#374151'
+              marginBottom: '1rem'
             }}>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}><strong>Connected Load:</strong> {results.connectedLoad.toFixed(1)} kW</div>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}><strong>Demand Load ({demandFactor}%):</strong> {results.demandLoad.toFixed(1)} kW</div>
-              <div style={{ fontSize: '0.875rem' }}><strong>With Future Expansion ({futureExpansion}%):</strong> {results.futureLoad.toFixed(1)} kW</div>
+              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}><strong>Connected Load:</strong> {results.connectedLoad.toFixed(1)} kW</div>
+              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}><strong>Demand Load ({demandFactor}%):</strong> {results.demandLoad.toFixed(1)} kW</div>
+              <div style={{ fontSize: '0.875rem', color: colors.labelText }}><strong>With Future Expansion ({futureExpansion}%):</strong> {results.futureLoad.toFixed(1)} kW</div>
             </div>
 
             <div style={{ color: '#14532d', marginBottom: '0.75rem' }}>
@@ -439,14 +456,14 @@ function ServiceEntranceSizing({ onBack }) {
         )}
 
         <div style={{ 
-          background: '#f8fafc',
+          background: colors.cardBg,
           padding: '1rem',
           borderRadius: '0.5rem',
-          border: '1px solid #e2e8f0',
+          border: `1px solid ${colors.cardBorder}`,
           marginTop: '1.5rem'
         }}>
-          <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>Commercial Service Considerations:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#6b7280', fontSize: '0.875rem' }}>
+          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Commercial Service Considerations:</strong>
+          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
             <li style={{ marginBottom: '0.25rem' }}>Include demand factors per NEC 220.40 and Article 220 Part IV</li>
             <li style={{ marginBottom: '0.25rem' }}>Consider future expansion (typically 20-30% spare capacity)</li>
             <li style={{ marginBottom: '0.25rem' }}>Account for motor loads, HVAC, and large equipment</li>
@@ -464,18 +481,19 @@ function ServiceEntranceSizing({ onBack }) {
   };
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-      <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
+      {/* Modern Header */}
+      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <AlertTriangle size={32} />
+          <Home size={24} color="#3b82f6" />
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Service Entrance Sizing</h1>
-            <p style={{ fontSize: '0.875rem', margin: 0 }}>NEC Article 230 - Services and Service Equipment</p>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Service Entrance Sizing</h1>
+            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>NEC Article 230</p>
           </div>
         </div>
       </div>
 
-      <div style={{ background: 'white', padding: '1.5rem' }}>
+      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
         {/* Tab Navigation */}
         <div style={{ 
           display: 'flex', 
@@ -487,9 +505,9 @@ function ServiceEntranceSizing({ onBack }) {
             onClick={() => setActiveTab('residential')}
             style={{
               padding: '0.75rem 1.25rem',
-              background: activeTab === 'residential' ? '#3b82f6' : '#e5e7eb',
-              color: activeTab === 'residential' ? 'white' : '#374151',
-              border: 'none',
+              background: activeTab === 'residential' ? '#3b82f6' : colors.inputBgAlt,
+              color: activeTab === 'residential' ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === 'residential' ? '#3b82f6' : colors.inputBorder}`,
               borderRadius: '0.5rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
@@ -503,9 +521,9 @@ function ServiceEntranceSizing({ onBack }) {
             onClick={() => setActiveTab('commercial')}
             style={{
               padding: '0.75rem 1.25rem',
-              background: activeTab === 'commercial' ? '#3b82f6' : '#e5e7eb',
-              color: activeTab === 'commercial' ? 'white' : '#374151',
-              border: 'none',
+              background: activeTab === 'commercial' ? '#3b82f6' : colors.inputBgAlt,
+              color: activeTab === 'commercial' ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === 'commercial' ? '#3b82f6' : colors.inputBorder}`,
               borderRadius: '0.5rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
@@ -521,15 +539,12 @@ function ServiceEntranceSizing({ onBack }) {
         {tabComponents[activeTab]}
       </div>
 
-      <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.75rem' }}>NEC References:</p>
-        <ul style={{ paddingLeft: '1.5rem', margin: 0 }}>
-          <li style={{ marginBottom: '0.25rem' }}>220.82 - Dwelling Unit Optional Calculation (Residential)</li>
-          <li style={{ marginBottom: '0.25rem' }}>230.42 - Minimum service conductor size requirements</li>
-          <li style={{ marginBottom: '0.25rem' }}>230.79 - Service disconnecting means rating</li>
-          <li style={{ marginBottom: '0.25rem' }}>230.90 - Overload protection requirements for services</li>
-          <li>Always verify calculations with local code and utility requirements</li>
-        </ul>
+      {/* Footer */}
+      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>NEC Article 230 - Services and Service Equipment:</p>
+        <p style={{ margin: 0 }}>
+          220.82: Dwelling unit optional calculation • 230.42: Minimum conductor size • 230.79: Disconnecting means rating • 230.90: Overload protection
+        </p>
       </div>
     </div>
   );
