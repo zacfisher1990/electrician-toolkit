@@ -205,72 +205,62 @@ function ConduitFillCalculator({ onBack }) {
             Conductors
           </label>
           {conductors.map((conductor, index) => (
-            <div key={index} style={{ 
-              background: '#f9fafb',
-              padding: '1rem',
-              borderRadius: '0.5rem',
-              marginBottom: '0.75rem',
-              border: '1px solid #e5e7eb'
-            }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: conductors.length > 1 ? '0.75rem' : 0 }}>
-                <select 
-                  value={conductor.size} 
-                  onChange={(e) => updateConductor(index, 'size', e.target.value)}
-                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
-                >
-                  <option value="14">14 AWG</option>
-                  <option value="12">12 AWG</option>
-                  <option value="10">10 AWG</option>
-                  <option value="8">8 AWG</option>
-                  <option value="6">6 AWG</option>
-                  <option value="4">4 AWG</option>
-                  <option value="3">3 AWG</option>
-                  <option value="2">2 AWG</option>
-                  <option value="1">1 AWG</option>
-                  <option value="1/0">1/0 AWG</option>
-                  <option value="2/0">2/0 AWG</option>
-                  <option value="3/0">3/0 AWG</option>
-                  <option value="4/0">4/0 AWG</option>
-                  <option value="250">250 kcmil</option>
-                  <option value="300">300 kcmil</option>
-                  <option value="350">350 kcmil</option>
-                  <option value="400">400 kcmil</option>
-                  <option value="500">500 kcmil</option>
-                </select>
-                <input 
-                  type="number" 
-                  value={conductor.count} 
-                  onChange={(e) => updateConductor(index, 'count', e.target.value)}
-                  placeholder="Quantity"
-                  min="0"
-                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
-                />
-              </div>
-              {conductors.length > 1 && (
-                <button 
-                  onClick={() => removeConductor(index)}
-                  style={{ 
-                    width: '100%',
-                    background: '#ef4444',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '0.25rem',
-                    padding: '0.5rem',
-                    fontSize: '0.875rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem'
-                  }}
-                >
-                  <Trash2 size={16} />
-                  Remove
-                </button>
-              )}
-            </div>
-          ))}
+  <div key={index} style={{ 
+    background: '#f9fafb',
+    padding: '1rem',
+    borderRadius: '0.5rem',
+    marginBottom: '0.75rem',
+    border: '1px solid #e5e7eb'
+  }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+      <h3 style={{ fontWeight: 'bold', color: '#374151', margin: 0, fontSize: '0.875rem' }}>
+        Wire Size {index + 1}
+      </h3>
+      {conductors.length > 1 && (
+        <button
+          onClick={() => removeConductor(index)}
+          style={{ color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+        >
+          <Trash2 size={20} />
+        </button>
+      )}
+    </div>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+      <select 
+        value={conductor.size} 
+        onChange={(e) => updateConductor(index, 'size', e.target.value)}
+        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
+      >
+        <option value="14">14 AWG</option>
+        <option value="12">12 AWG</option>
+        <option value="10">10 AWG</option>
+        <option value="8">8 AWG</option>
+        <option value="6">6 AWG</option>
+        <option value="4">4 AWG</option>
+        <option value="3">3 AWG</option>
+        <option value="2">2 AWG</option>
+        <option value="1">1 AWG</option>
+        <option value="1/0">1/0 AWG</option>
+        <option value="2/0">2/0 AWG</option>
+        <option value="3/0">3/0 AWG</option>
+        <option value="4/0">4/0 AWG</option>
+        <option value="250">250 kcmil</option>
+        <option value="300">300 kcmil</option>
+        <option value="350">350 kcmil</option>
+        <option value="400">400 kcmil</option>
+        <option value="500">500 kcmil</option>
+      </select>
+      <input 
+        type="number" 
+        value={conductor.count} 
+        onChange={(e) => updateConductor(index, 'count', e.target.value)}
+        placeholder="Quantity"
+        min="0"
+        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
+      />
+    </div>
+  </div>
+))}
           <button 
             onClick={addConductor}
             style={{ 
