@@ -1,8 +1,28 @@
 import React, { useState } from 'react';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
-function GroundingBondingCalculator({ onBack }) {
+function GroundingBondingCalculator({ isDarkMode = false }) {
   const [activeTab, setActiveTab] = useState('gec');
+
+  // Dark mode colors - matching the design system
+  const colors = {
+    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
+    headerBg: isDarkMode ? '#111827' : '#ffffff',
+    headerText: isDarkMode ? '#f9fafb' : '#111827',
+    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
+    contentBg: isDarkMode ? '#111827' : '#f9fafb',
+    labelText: isDarkMode ? '#d1d5db' : '#374151',
+    inputBg: isDarkMode ? '#374151' : 'white',
+    inputBgAlt: isDarkMode ? '#1f2937' : '#f9fafb',
+    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
+    inputText: isDarkMode ? '#f9fafb' : '#111827',
+    cardBg: isDarkMode ? '#1f2937' : 'white',
+    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBg: isDarkMode ? '#111827' : '#f9fafb',
+    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBorder: isDarkMode ? '#374151' : '#e5e7eb'
+  };
 
   // Grounding Electrode Conductor Calculator
   const GECCalculator = () => {
@@ -72,13 +92,13 @@ function GroundingBondingCalculator({ onBack }) {
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Service Conductor Size
             </label>
             <select 
               value={serviceSize} 
               onChange={(e) => setServiceSize(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="">Select Size</option>
               <option value="8">8 AWG</option>
@@ -102,17 +122,17 @@ function GroundingBondingCalculator({ onBack }) {
               <option value="1250">1250 kcmil</option>
               <option value="1500">1500 kcmil</option>
             </select>
-            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Largest ungrounded service conductor</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Largest ungrounded service conductor</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               GEC Material
             </label>
             <select 
               value={conductorMaterial} 
               onChange={(e) => setConductorMaterial(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="copper">Copper</option>
               <option value="aluminum">Aluminum</option>
@@ -122,8 +142,8 @@ function GroundingBondingCalculator({ onBack }) {
 
         {results && results.gecSize !== 'N/A' && (
           <div style={{ 
-            background: '#dcfce7', 
-            border: '2px solid #16a34a', 
+            background: '#f0fdf4', 
+            border: '2px solid #22c55e', 
             padding: '1.5rem', 
             borderRadius: '0.5rem'
           }}>
@@ -162,14 +182,14 @@ function GroundingBondingCalculator({ onBack }) {
         )}
 
         <div style={{ 
-          background: '#f8fafc',
+          background: colors.cardBg,
           padding: '1rem',
           borderRadius: '0.5rem',
-          border: '1px solid #e2e8f0',
+          border: `1px solid ${colors.cardBorder}`,
           marginTop: '1.5rem'
         }}>
-          <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>Important Notes:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#6b7280', fontSize: '0.875rem' }}>
+          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Important Notes:</strong>
+          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
             <li style={{ marginBottom: '0.25rem' }}>GEC connected to rod, pipe, or plate electrodes need not be larger than 6 AWG copper or 4 AWG aluminum</li>
             <li style={{ marginBottom: '0.25rem' }}>GEC connected to concrete-encased electrode need not be larger than 4 AWG copper</li>
             <li style={{ marginBottom: '0.25rem' }}>Where multiple service conductors run in parallel, use the equivalent area for one conductor</li>
@@ -226,7 +246,7 @@ function GroundingBondingCalculator({ onBack }) {
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Overcurrent Device Rating (Amps)
             </label>
             <input 
@@ -234,19 +254,19 @@ function GroundingBondingCalculator({ onBack }) {
               value={ocpdRating} 
               onChange={(e) => setOcpdRating(e.target.value)}
               placeholder="Enter breaker/fuse rating"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
-            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Circuit breaker or fuse rating</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Circuit breaker or fuse rating</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               EGC Material
             </label>
             <select 
               value={conductorMaterial} 
               onChange={(e) => setConductorMaterial(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="copper">Copper</option>
               <option value="aluminum">Aluminum</option>
@@ -256,8 +276,8 @@ function GroundingBondingCalculator({ onBack }) {
 
         {results && (
           <div style={{ 
-            background: '#dcfce7', 
-            border: '2px solid #16a34a', 
+            background: '#f0fdf4', 
+            border: '2px solid #22c55e', 
             padding: '1.5rem', 
             borderRadius: '0.5rem'
           }}>
@@ -296,14 +316,14 @@ function GroundingBondingCalculator({ onBack }) {
         )}
 
         <div style={{ 
-          background: '#f8fafc',
+          background: colors.cardBg,
           padding: '1rem',
           borderRadius: '0.5rem',
-          border: '1px solid #e2e8f0',
+          border: `1px solid ${colors.cardBorder}`,
           marginTop: '1.5rem'
         }}>
-          <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>Important Notes:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#6b7280', fontSize: '0.875rem' }}>
+          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Important Notes:</strong>
+          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
             <li style={{ marginBottom: '0.25rem' }}>Where circuit conductors are adjusted for voltage drop, the EGC must be proportionally increased</li>
             <li style={{ marginBottom: '0.25rem' }}>Where ungrounded conductors are run in parallel, the EGC must be run in parallel and sized per each raceway</li>
             <li style={{ marginBottom: '0.25rem' }}>EGC sizes are based on the rating of the OCPD ahead of the circuit</li>
@@ -383,13 +403,13 @@ function GroundingBondingCalculator({ onBack }) {
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Bonding Jumper Type
             </label>
             <select 
               value={jumperType} 
               onChange={(e) => setJumperType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="main">Main Bonding Jumper (Service)</option>
               <option value="system">System Bonding Jumper (Separately Derived System)</option>
@@ -397,13 +417,13 @@ function GroundingBondingCalculator({ onBack }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Service/Derived Conductor Size
             </label>
             <select 
               value={serviceSize} 
               onChange={(e) => setServiceSize(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="">Select Size</option>
               <option value="8">8 AWG</option>
@@ -427,17 +447,17 @@ function GroundingBondingCalculator({ onBack }) {
               <option value="1250">1250 kcmil</option>
               <option value="1500">1500 kcmil</option>
             </select>
-            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Largest ungrounded conductor</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Largest ungrounded conductor</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Jumper Material
             </label>
             <select 
               value={conductorMaterial} 
               onChange={(e) => setConductorMaterial(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="copper">Copper</option>
               <option value="aluminum">Aluminum</option>
@@ -447,8 +467,8 @@ function GroundingBondingCalculator({ onBack }) {
 
         {results && results.jumperSize !== 'N/A' && (
           <div style={{ 
-            background: '#dcfce7', 
-            border: '2px solid #16a34a', 
+            background: '#f0fdf4', 
+            border: '2px solid #22c55e', 
             padding: '1.5rem', 
             borderRadius: '0.5rem'
           }}>
@@ -487,16 +507,16 @@ function GroundingBondingCalculator({ onBack }) {
         )}
 
         <div style={{ 
-          background: '#f8fafc',
+          background: colors.cardBg,
           padding: '1rem',
           borderRadius: '0.5rem',
-          border: '1px solid #e2e8f0',
+          border: `1px solid ${colors.cardBorder}`,
           marginTop: '1.5rem'
         }}>
-          <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>
+          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>
             {jumperType === 'main' ? 'Main Bonding Jumper' : 'System Bonding Jumper'} Requirements:
           </strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#6b7280', fontSize: '0.875rem' }}>
+          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
             {jumperType === 'main' ? (
               <>
                 <li style={{ marginBottom: '0.25rem' }}>Connects grounded conductor to equipment grounding conductor and service enclosure</li>
@@ -525,18 +545,19 @@ function GroundingBondingCalculator({ onBack }) {
   };
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-      <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
+      {/* Modern Header */}
+      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <AlertTriangle size={32} />
+          <Zap size={24} color="#3b82f6" />
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Grounding & Bonding</h1>
-            <p style={{ fontSize: '0.875rem', margin: 0 }}>NEC Article 250 - Grounding and Bonding Conductor Sizing</p>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Grounding & Bonding</h1>
+            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>NEC Article 250</p>
           </div>
         </div>
       </div>
 
-      <div style={{ background: 'white', padding: '1.5rem' }}>
+      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
         {/* Tab Navigation */}
         <div style={{ 
           display: 'flex', 
@@ -548,9 +569,9 @@ function GroundingBondingCalculator({ onBack }) {
             onClick={() => setActiveTab('gec')}
             style={{
               padding: '0.75rem 1.25rem',
-              background: activeTab === 'gec' ? '#3b82f6' : '#e5e7eb',
-              color: activeTab === 'gec' ? 'white' : '#374151',
-              border: 'none',
+              background: activeTab === 'gec' ? '#3b82f6' : colors.inputBgAlt,
+              color: activeTab === 'gec' ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === 'gec' ? '#3b82f6' : colors.inputBorder}`,
               borderRadius: '0.5rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
@@ -564,9 +585,9 @@ function GroundingBondingCalculator({ onBack }) {
             onClick={() => setActiveTab('egc')}
             style={{
               padding: '0.75rem 1.25rem',
-              background: activeTab === 'egc' ? '#3b82f6' : '#e5e7eb',
-              color: activeTab === 'egc' ? 'white' : '#374151',
-              border: 'none',
+              background: activeTab === 'egc' ? '#3b82f6' : colors.inputBgAlt,
+              color: activeTab === 'egc' ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === 'egc' ? '#3b82f6' : colors.inputBorder}`,
               borderRadius: '0.5rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
@@ -580,9 +601,9 @@ function GroundingBondingCalculator({ onBack }) {
             onClick={() => setActiveTab('bonding')}
             style={{
               padding: '0.75rem 1.25rem',
-              background: activeTab === 'bonding' ? '#3b82f6' : '#e5e7eb',
-              color: activeTab === 'bonding' ? 'white' : '#374151',
-              border: 'none',
+              background: activeTab === 'bonding' ? '#3b82f6' : colors.inputBgAlt,
+              color: activeTab === 'bonding' ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === 'bonding' ? '#3b82f6' : colors.inputBorder}`,
               borderRadius: '0.5rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
@@ -598,15 +619,12 @@ function GroundingBondingCalculator({ onBack }) {
         {tabComponents[activeTab]}
       </div>
 
-      <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.75rem' }}>NEC References:</p>
-        <ul style={{ paddingLeft: '1.5rem', margin: 0 }}>
-          <li style={{ marginBottom: '0.25rem' }}>250.66 - Grounding Electrode Conductor sizing table</li>
-          <li style={{ marginBottom: '0.25rem' }}>250.122 - Equipment Grounding Conductor sizing table</li>
-          <li style={{ marginBottom: '0.25rem' }}>250.28 - Main Bonding Jumper and System Bonding Jumper</li>
-          <li style={{ marginBottom: '0.25rem' }}>250.30 - Grounding Separately Derived Alternating-Current Systems</li>
-          <li>250.102 - Bonding conductors and jumpers</li>
-        </ul>
+      {/* Footer */}
+      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>NEC Article 250 - Grounding and Bonding:</p>
+        <p style={{ margin: 0 }}>
+          250.66: GEC sizing table • 250.122: EGC sizing table • 250.28: Main bonding jumper • 250.30: Separately derived systems • 250.102: Bonding conductors
+        </p>
       </div>
     </div>
   );
