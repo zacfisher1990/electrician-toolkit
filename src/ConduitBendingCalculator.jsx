@@ -11,11 +11,10 @@ function ConduitBendingCalculator({ onBack }) {
 
     const multipliers = {
       '10': { distance: 6.0, shrink: 0.01 },
-      '15': { distance: 3.9, shrink: 0.02 },
-      '22.5': { distance: 2.6, shrink: 0.03 },
-      '30': { distance: 2.0, shrink: 0.04 },
-      '45': { distance: 1.4, shrink: 0.07 },
-      '60': { distance: 1.2, shrink: 0.11 }
+      '22.5': { distance: 2.6, shrink: 0.06 },
+      '30': { distance: 2.0, shrink: 0.25 },
+      '45': { distance: 1.4, shrink: 0.41 },
+      '60': { distance: 1.2, shrink: 0.58 }
     };
 
     const calculateOffset = () => {
