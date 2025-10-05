@@ -89,7 +89,8 @@ function CalculatorMenu({ onSelectCalculator }) {
           display: 'grid', 
           gridTemplateColumns: 'repeat(3, 1fr)',  // 3 columns instead of auto-fill
           gap: '0.75rem',  // Tighter gap
-          marginBottom: '2rem'
+          marginBottom: '2rem',
+          padding: '0 0.5rem'
         }}>
           {filteredCalculators.length > 0 ? (
             filteredCalculators.map(calc => {
