@@ -34,46 +34,46 @@ const OhmsLawCalculator = ({ onBack }) => {
 
     // Calculate Voltage
     if (!voltage && I && R) {
-      results.V = (I * R).toFixed(2);
+      results.V = (I * R).toFixed(1);
     } else if (!voltage && P && I && I !== 0) {
-      results.V = (P / I).toFixed(2);
+      results.V = (P / I).toFixed(1);
     } else if (!voltage && P && R) {
-      results.V = Math.sqrt(P * R).toFixed(2);
+      results.V = Math.sqrt(P * R).toFixed(1);
     } else if (voltage) {
-      results.V = V.toFixed(2);
+      results.V = V.toFixed(1);
     }
 
     // Calculate Current
     if (!current && V && R && R !== 0) {
-      results.I = (V / R).toFixed(2);
+      results.I = (V / R).toFixed(1);
     } else if (!current && P && V && V !== 0) {
-      results.I = (P / V).toFixed(2);
+      results.I = (P / V).toFixed(1);
     } else if (!current && P && R && R !== 0) {
-      results.I = Math.sqrt(P / R).toFixed(2);
+      results.I = Math.sqrt(P / R).toFixed(1);
     } else if (current) {
-      results.I = I.toFixed(2);
+      results.I = I.toFixed(1);
     }
 
     // Calculate Resistance
     if (!resistance && V && I && I !== 0) {
-      results.R = (V / I).toFixed(2);
+      results.R = (V / I).toFixed(1);
     } else if (!resistance && V && P && P !== 0) {
-      results.R = (V * V / P).toFixed(2);
+      results.R = (V * V / P).toFixed(1);
     } else if (!resistance && P && I && I !== 0) {
-      results.R = (P / (I * I)).toFixed(2);
+      results.R = (P / (I * I)).toFixed(1);
     } else if (resistance) {
-      results.R = R.toFixed(2);
+      results.R = R.toFixed(1);
     }
 
     // Calculate Power
     if (!power && V && I) {
-      results.P = (V * I).toFixed(2);
+      results.P = (V * I).toFixed(1);
     } else if (!power && I && R) {
-      results.P = (I * I * R).toFixed(2);
+      results.P = (I * I * R).toFixed(1);
     } else if (!power && V && R && R !== 0) {
-      results.P = (V * V / R).toFixed(2);
+      results.P = (V * V / R).toFixed(1);
     } else if (power) {
-      results.P = P.toFixed(2);
+      results.P = P.toFixed(1);
     }
 
     setBasicResults(results);
@@ -150,7 +150,7 @@ const OhmsLawCalculator = ({ onBack }) => {
       const totalI = parseFloat(seriesTotals.I);
       components = components.map(comp => {
         if (!comp.I || comp.I === '') {
-          return { ...comp, I: totalI.toFixed(3) };
+          return { ...comp, I: totalI.toFixed(1) };
         }
         return comp;
       });
@@ -195,7 +195,7 @@ const OhmsLawCalculator = ({ onBack }) => {
         components = components.map(comp => {
           if (!comp.I || comp.I === '') {
             changed = true;
-            return { ...comp, I: knownCurrent.toFixed(3) };
+            return { ...comp, I: knownCurrent.toFixed(1) };
           }
           return comp;
         });
@@ -209,38 +209,38 @@ const OhmsLawCalculator = ({ onBack }) => {
         const P = parseFloat(comp.P);
 
         if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
-          newComp.R = (V / I).toFixed(3);
+          newComp.R = (V / I).toFixed(1);
           changed = true;
         } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
-          newComp.R = (P / (I * I)).toFixed(3);
+          newComp.R = (P / (I * I)).toFixed(1);
           changed = true;
         } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
-          newComp.R = (V * V / P).toFixed(3);
+          newComp.R = (V * V / P).toFixed(1);
           changed = true;
         }
 
         const newR = parseFloat(newComp.R);
         const newI = parseFloat(newComp.I);
         if ((comp.V === '' || isNaN(V)) && !isNaN(newI) && !isNaN(newR)) {
-          newComp.V = (newI * newR).toFixed(3);
+          newComp.V = (newI * newR).toFixed(1);
           changed = true;
         } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newI) && newI !== 0) {
-          newComp.V = (P / newI).toFixed(3);
+          newComp.V = (P / newI).toFixed(1);
           changed = true;
         } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newR)) {
-          newComp.V = Math.sqrt(P * newR).toFixed(3);
+          newComp.V = Math.sqrt(P * newR).toFixed(1);
           changed = true;
         }
 
         const newV = parseFloat(newComp.V);
         if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
-          newComp.P = (newV * newI).toFixed(3);
+          newComp.P = (newV * newI).toFixed(1);
           changed = true;
         } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
-          newComp.P = (newI * newI * newR).toFixed(3);
+          newComp.P = (newI * newI * newR).toFixed(1);
           changed = true;
         } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
-          newComp.P = (newV * newV / newR).toFixed(3);
+          newComp.P = (newV * newV / newR).toFixed(1);
           changed = true;
         }
 
@@ -287,7 +287,7 @@ const OhmsLawCalculator = ({ onBack }) => {
       const totalV = parseFloat(parallelTotals.V);
       components = components.map(comp => {
         if (!comp.V || comp.V === '') {
-          return { ...comp, V: totalV.toFixed(3) };
+          return { ...comp, V: totalV.toFixed(1) };
         }
         return comp;
       });
@@ -332,7 +332,7 @@ const OhmsLawCalculator = ({ onBack }) => {
         components = components.map(comp => {
           if (!comp.V || comp.V === '') {
             changed = true;
-            return { ...comp, V: knownVoltage.toFixed(3) };
+            return { ...comp, V: knownVoltage.toFixed(1) };
           }
           return comp;
         });
@@ -346,38 +346,38 @@ const OhmsLawCalculator = ({ onBack }) => {
         const P = parseFloat(comp.P);
 
         if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(I) && I !== 0) {
-          newComp.R = (V / I).toFixed(3);
+          newComp.R = (V / I).toFixed(1);
           changed = true;
         } else if ((comp.R === '' || isNaN(R)) && !isNaN(P) && !isNaN(I) && I !== 0) {
-          newComp.R = (P / (I * I)).toFixed(3);
+          newComp.R = (P / (I * I)).toFixed(1);
           changed = true;
         } else if ((comp.R === '' || isNaN(R)) && !isNaN(V) && !isNaN(P) && P !== 0) {
-          newComp.R = (V * V / P).toFixed(3);
+          newComp.R = (V * V / P).toFixed(1);
           changed = true;
         }
 
         const newR = parseFloat(newComp.R);
         const newV = parseFloat(newComp.V);
         if ((comp.I === '' || isNaN(I)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
-          newComp.I = (newV / newR).toFixed(3);
+          newComp.I = (newV / newR).toFixed(1);
           changed = true;
         } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newV) && newV !== 0) {
-          newComp.I = (P / newV).toFixed(3);
+          newComp.I = (P / newV).toFixed(1);
           changed = true;
         } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newR) && newR !== 0) {
-          newComp.I = Math.sqrt(P / newR).toFixed(3);
+          newComp.I = Math.sqrt(P / newR).toFixed(1);
           changed = true;
         }
 
         const newI = parseFloat(newComp.I);
         if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
-          newComp.P = (newV * newI).toFixed(3);
+          newComp.P = (newV * newI).toFixed(1);
           changed = true;
         } else if ((comp.P === '' || isNaN(P)) && !isNaN(newI) && !isNaN(newR)) {
-          newComp.P = (newI * newI * newR).toFixed(3);
+          newComp.P = (newI * newI * newR).toFixed(1);
           changed = true;
         } else if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
-          newComp.P = (newV * newV / newR).toFixed(3);
+          newComp.P = (newV * newV / newR).toFixed(1);
           changed = true;
         }
 
@@ -888,25 +888,25 @@ const OhmsLawCalculator = ({ onBack }) => {
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total R:</span>
                   <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsSeries().totalR.toFixed(3)} Ω
+                    {getTotalsSeries().totalR.toFixed(1)} Ω
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total V:</span>
                   <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsSeries().totalV.toFixed(3)} V
+                    {getTotalsSeries().totalV.toFixed(1)} V
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Current:</span>
                   <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsSeries().totalI.toFixed(3)} A
+                    {getTotalsSeries().totalI.toFixed(1)} A
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total P:</span>
                   <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsSeries().totalP.toFixed(3)} W
+                    {getTotalsSeries().totalP.toFixed(1)} W
                   </p>
                 </div>
               </div>
@@ -1055,25 +1055,25 @@ const OhmsLawCalculator = ({ onBack }) => {
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total R:</span>
                   <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsParallel().totalR.toFixed(3)} Ω
+                    {getTotalsParallel().totalR.toFixed(1)} Ω
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Voltage:</span>
                   <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsParallel().totalV.toFixed(3)} V
+                    {getTotalsParallel().totalV.toFixed(1)} V
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total I:</span>
                   <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsParallel().totalI.toFixed(3)} A
+                    {getTotalsParallel().totalI.toFixed(1)} A
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total P:</span>
                   <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsParallel().totalP.toFixed(3)} W
+                    {getTotalsParallel().totalP.toFixed(1)} W
                   </p>
                 </div>
               </div>
