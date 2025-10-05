@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { AlertTriangle, } from 'lucide-react';
 
-function AmpacityLookupCalculator({ onBack }) {
+function AmpacityLookupCalculator() {
   const [wireSize, setWireSize] = useState('12');
   const [wireType, setWireType] = useState('copper');
   const [tempRating, setTempRating] = useState('75C');
@@ -145,29 +145,6 @@ function AmpacityLookupCalculator({ onBack }) {
 
   return (
     <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-      {onBack && (
-        <button
-          onClick={onBack}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.75rem 1.5rem',
-            marginBottom: '1rem',
-            background: '#374151',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.5rem',
-            fontSize: '1rem',
-            fontWeight: '600',
-            cursor: 'pointer'
-          }}
-        >
-          <ArrowLeft size={20} />
-          Back to Menu
-        </button>
-      )}
-
       <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <AlertTriangle size={32} />
