@@ -54,7 +54,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, onToggleDarkMode }) {
         {/* Compact Professional Header */}
         <div style={{ 
           background: colors.headerBg,
-          padding: '1rem 1.5rem',
+          padding: '0.5rem 1.5rem',
           borderBottom: `1px solid ${colors.headerBorder}`,
           position: 'sticky',
           top: 0,
