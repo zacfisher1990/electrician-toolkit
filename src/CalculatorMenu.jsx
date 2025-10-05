@@ -31,7 +31,7 @@ function CalculatorMenu({ onSelectCalculator }) {
     <div style={{ 
       minHeight: '100vh', 
       background: 'linear-gradient(to bottom right, #0f172a, #1e293b)', 
-      padding: '2rem 0.75rem' 
+      padding: '2rem 2rem' 
     }}>
       <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
         {/* Header */}
