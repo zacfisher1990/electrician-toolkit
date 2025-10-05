@@ -17,7 +17,7 @@ import './App.css';
 
 function App() {
   const [activeCalculator, setActiveCalculator] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(false); // ADD THIS LINE
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const handleNavigate = (view) => {
     if (view === 'home' || view === 'calculators') {
@@ -52,33 +52,16 @@ function App() {
       case 'lighting':
         return <LightingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       default:
-        return <CalculatorMenu isDarkMode={isDarkMode} onSelectCalculator={setActiveCalculator} />;
+        return <CalculatorMenu 
+          isDarkMode={isDarkMode} 
+          onSelectCalculator={setActiveCalculator}
+          onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        />;
     }
   };
 
   return (
     <div className="App" style={{ paddingBottom: '5rem' }}>
-      {/* Dark Mode Toggle Button */}
-      <button 
-        onClick={() => setIsDarkMode(!isDarkMode)}
-        style={{
-          position: 'fixed',
-          top: '1rem',
-          right: '1rem',
-          zIndex: 1000,
-          padding: '0.5rem 1rem',
-          borderRadius: '0.5rem',
-          border: 'none',
-          background: isDarkMode ? '#374151' : '#f3f4f6',
-          color: isDarkMode ? 'white' : 'black',
-          cursor: 'pointer',
-          fontWeight: '600',
-          fontSize: '0.875rem'
-        }}
-      >
-        {isDarkMode ? '☀️ Light' : '🌙 Dark'}
-      </button>
-
       {!activeCalculator ? (
         <div style={{ background: isDarkMode ? '#1f2937' : '#ffffff' }}>
           {renderCalculator()}
@@ -95,9 +78,10 @@ function App() {
       )}
       
       <BottomNavigation 
-        onNavigate={handleNavigate}
-        currentView={activeCalculator ? 'calculators' : 'home'}
-      />
+  onNavigate={handleNavigate}
+  currentView={activeCalculator ? 'calculators' : 'home'}
+  isDarkMode={isDarkMode}
+/>
     </div>
   );
 }

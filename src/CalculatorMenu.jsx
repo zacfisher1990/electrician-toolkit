@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Search, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Menu } from 'lucide-react';
 
-function CalculatorMenu({ onSelectCalculator }) {
+function CalculatorMenu({ onSelectCalculator, isDarkMode, onToggleDarkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showMenu, setShowMenu] = useState(false);
 
   const calculators = [
     { id: 'voltage-drop', name: 'Voltage Drop', icon: Zap, keywords: 'voltage drop vd wire circuit' },
@@ -19,6 +20,22 @@ function CalculatorMenu({ onSelectCalculator }) {
     { id: 'lighting', name: 'Lighting', icon: Lightbulb, keywords: 'lighting lumens foot candles fixtures spacing watts illumination' } 
   ];
 
+  // Dark mode colors
+  const colors = {
+    mainBg: isDarkMode ? '#1f2937' : '#f9fafb',
+    headerBg: isDarkMode ? '#111827' : '#ffffff',
+    headerText: isDarkMode ? '#f9fafb' : '#111827',
+    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
+    cardBg: isDarkMode ? '#374151' : '#ffffff',
+    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
+    cardText: isDarkMode ? '#f9fafb' : '#111827',
+    inputBg: isDarkMode ? '#374151' : '#f9fafb',
+    inputBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
+    inputText: isDarkMode ? '#f9fafb' : '#111827',
+    placeholderText: isDarkMode ? '#9ca3af' : '#6b7280',
+    menuBg: isDarkMode ? '#1f2937' : 'white'
+  };
+
   const filteredCalculators = calculators.filter(calc => {
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -30,15 +47,15 @@ function CalculatorMenu({ onSelectCalculator }) {
   return (
     <div style={{ 
       minHeight: '100vh', 
-      background: '#f9fafb',
+      background: colors.mainBg,
       padding: '0'
     }}>
       <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
         {/* Compact Professional Header */}
         <div style={{ 
-          background: '#ffffff',
+          background: colors.headerBg,
           padding: '1rem 1.5rem',
-          borderBottom: '1px solid #e5e7eb',
+          borderBottom: `1px solid ${colors.headerBorder}`,
           position: 'sticky',
           top: 0,
           zIndex: 100,
@@ -49,24 +66,89 @@ function CalculatorMenu({ onSelectCalculator }) {
           <h1 style={{ 
             fontSize: '1.25rem', 
             fontWeight: '600',
-            color: '#111827',
+            color: colors.headerText,
             margin: 0,
             letterSpacing: '-0.01em'
           }}>
             Electrician's Toolkit
           </h1>
           
-          {/* Placeholder for future menu */}
-          <button style={{ 
-            background: 'none', 
-            border: 'none', 
-            cursor: 'pointer',
-            padding: '0.25rem',
-            display: 'flex',
-            alignItems: 'center'
-          }}>
-            <Menu size={24} color="#6b7280" />
-          </button>
+          {/* Menu Button */}
+          <div style={{ position: 'relative' }}>
+            <button 
+              onClick={() => setShowMenu(!showMenu)}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                cursor: 'pointer',
+                padding: '0.25rem',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              <Menu size={24} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {showMenu && (
+              <>
+                {/* Backdrop */}
+                <div 
+                  onClick={() => setShowMenu(false)}
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 998
+                  }}
+                />
+                
+                {/* Menu */}
+                <div style={{
+                  position: 'absolute',
+                  top: '2.5rem',
+                  right: 0,
+                  zIndex: 999,
+                  background: colors.menuBg,
+                  border: `1px solid ${colors.cardBorder}`,
+                  borderRadius: '0.5rem',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  minWidth: '200px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ padding: '0.5rem 0' }}>
+                    <button
+                      onClick={() => {
+                        onToggleDarkMode();
+                        setShowMenu(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 1rem',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        color: colors.cardText,
+                        fontSize: '0.875rem',
+                        fontWeight: '500'
+                      }}
+                      onMouseEnter={(e) => e.target.style.background = isDarkMode ? '#374151' : '#f3f4f6'}
+                      onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                    >
+                      
+                      <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                      <span>{isDarkMode ? '☀️' : '🌙'}</span>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Content Area */}
@@ -83,7 +165,7 @@ function CalculatorMenu({ onSelectCalculator }) {
                 left: '1rem', 
                 top: '50%', 
                 transform: 'translateY(-50%)',
-                color: '#9ca3af'
+                color: colors.placeholderText
               }} 
             />
             <input
@@ -95,19 +177,20 @@ function CalculatorMenu({ onSelectCalculator }) {
                 width: '100%',
                 padding: '0.75rem 1rem 0.75rem 2.75rem',
                 fontSize: '0.9375rem',
-                border: '1px solid #e5e7eb',
+                border: `1px solid ${colors.inputBorder}`,
                 borderRadius: '10px',
-                backgroundColor: '#f9fafb',
+                backgroundColor: colors.inputBg,
+                color: colors.inputText,
                 boxSizing: 'border-box',
                 outline: 'none'
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = '#3b82f6';
-                e.target.style.backgroundColor = '#ffffff';
+                e.target.style.backgroundColor = isDarkMode ? '#1f2937' : '#ffffff';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.backgroundColor = '#f9fafb';
+                e.target.style.borderColor = colors.inputBorder;
+                e.target.style.backgroundColor = colors.inputBg;
               }}
             />
           </div>
@@ -127,8 +210,8 @@ function CalculatorMenu({ onSelectCalculator }) {
                     key={calc.id}
                     onClick={() => onSelectCalculator(calc.id)}
                     style={{
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #e5e7eb',
+                      backgroundColor: colors.cardBg,
+                      border: `1px solid ${colors.cardBorder}`,
                       borderRadius: '12px',
                       padding: '1rem 0.5rem',
                       cursor: 'pointer',
@@ -140,7 +223,7 @@ function CalculatorMenu({ onSelectCalculator }) {
                       minHeight: '100px',
                       boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                       transition: 'all 0.2s',
-                      color: '#111827'
+                      color: colors.cardText
                     }}
                     onMouseOver={(e) => {
                       e.currentTarget.style.transform = 'translateY(-2px)';
@@ -150,7 +233,7 @@ function CalculatorMenu({ onSelectCalculator }) {
                     onMouseOut={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
                       e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-                      e.currentTarget.style.borderColor = '#e5e7eb';
+                      e.currentTarget.style.borderColor = colors.cardBorder;
                     }}
                   >
                     <IconComponent size={28} strokeWidth={1.5} color="#3b82f6" />
@@ -170,7 +253,7 @@ function CalculatorMenu({ onSelectCalculator }) {
                 gridColumn: '1 / -1',
                 textAlign: 'center',
                 padding: '3rem 1rem',
-                color: '#6b7280',
+                color: colors.placeholderText,
                 fontSize: '0.9375rem'
               }}>
                 No calculators found
