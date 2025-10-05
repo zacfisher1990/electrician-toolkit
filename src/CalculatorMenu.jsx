@@ -31,7 +31,7 @@ function CalculatorMenu({ onSelectCalculator }) {
     <div style={{ 
       minHeight: '100vh', 
       background: 'linear-gradient(to bottom right, #0f172a, #1e293b)', 
-      padding: '2rem 1rem' 
+      padding: '2rem' 
     }}>
       <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
         {/* Header */}
@@ -91,8 +91,7 @@ function CalculatorMenu({ onSelectCalculator }) {
           display: 'grid', 
           gridTemplateColumns: 'repeat(3, 1fr)',  // 3 columns instead of auto-fill
           gap: '0.75rem',  // Tighter gap
-          marginBottom: '2rem',
-          padding: '0 0.5rem'
+          marginBottom: '2rem'
         }}>
           {filteredCalculators.length > 0 ? (
             filteredCalculators.map(calc => {
