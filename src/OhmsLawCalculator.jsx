@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Zap, Plus, Trash2, Calculator } from 'lucide-react';
 
 
-const OhmsLawCalculator = ({ onBack }) => {
+const OhmsLawCalculator = ({ isDarkMode = false }) => {
   const [activeTab, setActiveTab] = useState('basic');
   
   // Basic calculator state
@@ -21,82 +21,105 @@ const OhmsLawCalculator = ({ onBack }) => {
     { id: 1, R: '', V: '', I: '', P: '' }
   ]);
 
+  // Dark mode colors
+  const colors = {
+    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
+    headerBg: isDarkMode ? '#111827' : '#ffffff',
+    headerText: isDarkMode ? '#f9fafb' : '#111827',
+    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
+    contentBg: isDarkMode ? '#111827' : '#f9fafb',
+    labelText: isDarkMode ? '#d1d5db' : '#374151',
+    inputBg: isDarkMode ? '#374151' : 'white',
+    inputBgAlt: isDarkMode ? '#1f2937' : '#f9fafb',
+    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
+    inputText: isDarkMode ? '#f9fafb' : '#111827',
+    cardBg: isDarkMode ? '#1f2937' : 'white',
+    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBg: isDarkMode ? '#111827' : '#f9fafb',
+    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBorder: isDarkMode ? '#374151' : '#e5e7eb',
+    infoBg: isDarkMode ? '#1e3a5f' : '#dbeafe',
+    infoText: isDarkMode ? '#93c5fd' : '#1e40af',
+    infoBorder: isDarkMode ? '#1e40af' : '#3b82f6'
+  };
+
   // Auto-calculate when inputs change
-useEffect(() => {
-  calculateBasic();
-}, [voltage, current, resistance, power]);
+  useEffect(() => {
+    calculateBasic();
+  }, [voltage, current, resistance, power]);
 
   // Helper function to check if any 2 total fields are filled
-const getTotalFieldsCount = (totals) => {
-  return Object.values(totals).filter(val => val && val !== '').length;
-};
+  const getTotalFieldsCount = (totals) => {
+    return Object.values(totals).filter(val => val && val !== '').length;
+  };
 
-// Helper function to check if a specific total field should be disabled
-const isTotalFieldDisabled = (totals, fieldName) => {
-  const filledFields = Object.entries(totals)
-    .filter(([key, val]) => key !== fieldName && val && val !== '')
-    .map(([key]) => key);
-  return filledFields.length >= 2;
-};
+  // Helper function to check if a specific total field should be disabled
+  const isTotalFieldDisabled = (totals, fieldName) => {
+    const filledFields = Object.entries(totals)
+      .filter(([key, val]) => key !== fieldName && val && val !== '')
+      .map(([key]) => key);
+    return filledFields.length >= 2;
+  };
 
   const [seriesTotals, setSeriesTotals] = useState({ R: '', V: '', I: '', P: '' });
   const [parallelTotals, setParallelTotals] = useState({ R: '', V: '', I: '', P: '' });
   const [basicResults, setBasicResults] = useState({ V: '', I: '', R: '', P: '' });
 
   const calculateBasic = () => {
-  const V = parseFloat(voltage) || 0;
-  const I = parseFloat(current) || 0;
-  const R = parseFloat(resistance) || 0;
-  const P = parseFloat(power) || 0;
+    const V = parseFloat(voltage) || 0;
+    const I = parseFloat(current) || 0;
+    const R = parseFloat(resistance) || 0;
+    const P = parseFloat(power) || 0;
 
-  const results = { V: '', I: '', R: '', P: '' };
+    const results = { V: '', I: '', R: '', P: '' };
 
-  // Calculate Voltage
-  if (!voltage && I && R) {
-    results.V = (I * R).toFixed(1);
-  } else if (!voltage && P && I && I !== 0) {
-    results.V = (P / I).toFixed(1);
-  } else if (!voltage && P && R) {
-    results.V = Math.sqrt(P * R).toFixed(1);
-  } else if (voltage) {
-    results.V = V.toFixed(1);
-  }
+    // Calculate Voltage
+    if (!voltage && I && R) {
+      results.V = (I * R).toFixed(1);
+    } else if (!voltage && P && I && I !== 0) {
+      results.V = (P / I).toFixed(1);
+    } else if (!voltage && P && R) {
+      results.V = Math.sqrt(P * R).toFixed(1);
+    } else if (voltage) {
+      results.V = V.toFixed(1);
+    }
 
-  // Calculate Current
-  if (!current && V && R && R !== 0) {
-    results.I = (V / R).toFixed(1);
-  } else if (!current && P && V && V !== 0) {
-    results.I = (P / V).toFixed(1);
-  } else if (!current && P && R && R !== 0) {
-    results.I = Math.sqrt(P / R).toFixed(1);
-  } else if (current) {
-    results.I = I.toFixed(1);
-  }
+    // Calculate Current
+    if (!current && V && R && R !== 0) {
+      results.I = (V / R).toFixed(1);
+    } else if (!current && P && V && V !== 0) {
+      results.I = (P / V).toFixed(1);
+    } else if (!current && P && R && R !== 0) {
+      results.I = Math.sqrt(P / R).toFixed(1);
+    } else if (current) {
+      results.I = I.toFixed(1);
+    }
 
-  // Calculate Resistance
-  if (!resistance && V && I && I !== 0) {
-    results.R = (V / I).toFixed(1);
-  } else if (!resistance && V && P && P !== 0) {
-    results.R = (V * V / P).toFixed(1);
-  } else if (!resistance && P && I && I !== 0) {
-    results.R = (P / (I * I)).toFixed(1);
-  } else if (resistance) {
-    results.R = R.toFixed(1);
-  }
+    // Calculate Resistance
+    if (!resistance && V && I && I !== 0) {
+      results.R = (V / I).toFixed(1);
+    } else if (!resistance && V && P && P !== 0) {
+      results.R = (V * V / P).toFixed(1);
+    } else if (!resistance && P && I && I !== 0) {
+      results.R = (P / (I * I)).toFixed(1);
+    } else if (resistance) {
+      results.R = R.toFixed(1);
+    }
 
-  // Calculate Power
-  if (!power && V && I) {
-    results.P = (V * I).toFixed(1);
-  } else if (!power && I && R) {
-    results.P = (I * I * R).toFixed(1);
-  } else if (!power && V && R && R !== 0) {
-    results.P = (V * V / R).toFixed(1);
-  } else if (power) {
-    results.P = P.toFixed(1);
-  }
+    // Calculate Power
+    if (!power && V && I) {
+      results.P = (V * I).toFixed(1);
+    } else if (!power && I && R) {
+      results.P = (I * I * R).toFixed(1);
+    } else if (!power && V && R && R !== 0) {
+      results.P = (V * V / R).toFixed(1);
+    } else if (power) {
+      results.P = P.toFixed(1);
+    }
 
-  setBasicResults(results);
-};
+    setBasicResults(results);
+  };
 
   const clearBasic = () => {
     setVoltage('');
@@ -457,19 +480,19 @@ const isTotalFieldDisabled = (totals, fieldName) => {
   };
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto', background: '#ffffff', borderRadius: '0.5rem', overflow: 'hidden' }}>
+    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
       {/* Modern Header */}
-      <div style={{ background: '#ffffff', color: '#111827', padding: '1rem 1.5rem', borderBottom: '1px solid #e5e7eb' }}>
+      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <Zap size={24} color="#3b82f6" />
           <div>
             <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Ohm's Law Calculator</h1>
-            <p style={{ fontSize: '0.8125rem', margin: 0, color: '#6b7280' }}>Professional Electrical Calculations - V, I, R, P</p>
+            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>Professional Electrical Calculations - V, I, R, P</p>
           </div>
         </div>
       </div>
 
-      <div style={{ background: '#f9fafb', padding: '1.5rem' }}>
+      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
         {/* Tab Navigation */}
         <div style={{ 
           display: 'flex', 
@@ -483,9 +506,9 @@ const isTotalFieldDisabled = (totals, fieldName) => {
             style={{
               minWidth: 'fit-content',
               padding: '0.75rem 1rem',
-              background: activeTab === 'basic' ? '#3b82f6' : 'white',
-              color: activeTab === 'basic' ? 'white' : '#6b7280',
-              border: '1px solid #e5e7eb',
+              background: activeTab === 'basic' ? '#3b82f6' : colors.cardBg,
+              color: activeTab === 'basic' ? 'white' : colors.subtleText,
+              border: `1px solid ${colors.cardBorder}`,
               borderRadius: '0.375rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
@@ -501,9 +524,9 @@ const isTotalFieldDisabled = (totals, fieldName) => {
             style={{
               minWidth: 'fit-content',
               padding: '0.75rem 1rem',
-              background: activeTab === 'series' ? '#3b82f6' : 'white',
-              color: activeTab === 'series' ? 'white' : '#6b7280',
-              border: '1px solid #e5e7eb',
+              background: activeTab === 'series' ? '#3b82f6' : colors.cardBg,
+              color: activeTab === 'series' ? 'white' : colors.subtleText,
+              border: `1px solid ${colors.cardBorder}`,
               borderRadius: '0.375rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
@@ -519,9 +542,9 @@ const isTotalFieldDisabled = (totals, fieldName) => {
             style={{
               minWidth: 'fit-content',
               padding: '0.75rem 1rem',
-              background: activeTab === 'parallel' ? '#3b82f6' : 'white',
-              color: activeTab === 'parallel' ? 'white' : '#6b7280',
-              border: '1px solid #e5e7eb',
+              background: activeTab === 'parallel' ? '#3b82f6' : colors.cardBg,
+              color: activeTab === 'parallel' ? 'white' : colors.subtleText,
+              border: `1px solid ${colors.cardBorder}`,
               borderRadius: '0.375rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
@@ -538,21 +561,21 @@ const isTotalFieldDisabled = (totals, fieldName) => {
         {activeTab === 'basic' && (
           <div>
             <div style={{ 
-              background: '#dbeafe', 
-              border: '1px solid #3b82f6', 
+              background: colors.infoBg, 
+              border: `1px solid ${colors.infoBorder}`, 
               padding: '0.75rem', 
               borderRadius: '0.5rem', 
               marginBottom: '1rem',
               textAlign: 'center'
             }}>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#1e40af', fontWeight: '600' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: colors.infoText, fontWeight: '600' }}>
                 Enter any 2 known values to calculate the remaining values
               </p>
             </div>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
                   Voltage (V)
                 </label>
                 <input
@@ -568,16 +591,17 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   style={{ 
                     width: '100%', 
                     padding: '0.5rem 1rem', 
-                    border: '1px solid #d1d5db', 
+                    border: `1px solid ${colors.inputBorder}`, 
                     borderRadius: '0.375rem', 
                     fontSize: '1rem',
-                    background: ((current && resistance) || (current && power) || (resistance && power)) ? '#f3f4f6' : 'white',
+                    background: ((current && resistance) || (current && power) || (resistance && power)) ? colors.inputBgAlt : colors.inputBg,
+                    color: colors.inputText,
                     cursor: ((current && resistance) || (current && power) || (resistance && power)) ? 'not-allowed' : 'text'
                   }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
                   Current (A)
                 </label>
                 <input
@@ -593,16 +617,17 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   style={{ 
                     width: '100%', 
                     padding: '0.5rem 1rem', 
-                    border: '1px solid #d1d5db', 
+                    border: `1px solid ${colors.inputBorder}`, 
                     borderRadius: '0.375rem', 
                     fontSize: '1rem',
-                    background: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? '#f3f4f6' : 'white',
+                    background: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? colors.inputBgAlt : colors.inputBg,
+                    color: colors.inputText,
                     cursor: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? 'not-allowed' : 'text'
                   }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
                   Resistance (Ω)
                 </label>
                 <input
@@ -618,16 +643,17 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   style={{ 
                     width: '100%', 
                     padding: '0.5rem 1rem', 
-                    border: '1px solid #d1d5db', 
+                    border: `1px solid ${colors.inputBorder}`, 
                     borderRadius: '0.375rem', 
                     fontSize: '1rem',
-                    background: ((voltage && current) || (voltage && power) || (current && power)) ? '#f3f4f6' : 'white',
+                    background: ((voltage && current) || (voltage && power) || (current && power)) ? colors.inputBgAlt : colors.inputBg,
+                    color: colors.inputText,
                     cursor: ((voltage && current) || (voltage && power) || (current && power)) ? 'not-allowed' : 'text'
                   }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
                   Power (W)
                 </label>
                 <input
@@ -643,10 +669,11 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   style={{ 
                     width: '100%', 
                     padding: '0.5rem 1rem', 
-                    border: '1px solid #d1d5db', 
+                    border: `1px solid ${colors.inputBorder}`, 
                     borderRadius: '0.375rem', 
                     fontSize: '1rem',
-                    background: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? '#f3f4f6' : 'white',
+                    background: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? colors.inputBgAlt : colors.inputBg,
+                    color: colors.inputText,
                     cursor: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? 'not-allowed' : 'text'
                   }}
                 />
@@ -723,20 +750,20 @@ const isTotalFieldDisabled = (totals, fieldName) => {
         {/* Series Tab */}
         {activeTab === 'series' && (
           <div>
-            <div style={{ background: '#eff6ff', borderLeft: '4px solid #3b82f6', padding: '1rem', marginBottom: '1rem', borderRadius: '0.375rem' }}>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#1e40af', fontWeight: '600' }}>
+            <div style={{ background: colors.infoBg, borderLeft: `4px solid ${colors.infoBorder}`, padding: '1rem', marginBottom: '1rem', borderRadius: '0.375rem' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: colors.infoText, fontWeight: '600' }}>
                 Series Circuit: Current is constant across all components
               </p>
             </div>
 
-            <div style={{ background: 'white', border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
-              <h3 style={{ fontWeight: 'bold', color: '#374151', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+            <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+              <h3 style={{ fontWeight: 'bold', color: colors.labelText, marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
                 Circuit Totals (Optional)
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
                 {['R', 'V', 'I', 'P'].map(field => (
                   <div key={field}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: colors.subtleText, marginBottom: '0.25rem' }}>
                       Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
                     </label>
                     <input
@@ -748,25 +775,26 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                       style={{ 
                         width: '100%', 
                         padding: '0.5rem', 
-                        border: '1px solid #d1d5db', 
+                        border: `1px solid ${colors.inputBorder}`, 
                         borderRadius: '0.375rem', 
                         fontSize: '0.875rem',
-                        background: isTotalFieldDisabled(seriesTotals, field) ? '#f3f4f6' : 'white',
+                        background: isTotalFieldDisabled(seriesTotals, field) ? colors.inputBgAlt : colors.inputBg,
+                        color: colors.inputText,
                         cursor: isTotalFieldDisabled(seriesTotals, field) ? 'not-allowed' : 'text'
                       }}
                     />
                   </div>
                 ))}
               </div>
-              <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem', marginBottom: 0 }}>
+              <p style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.5rem', marginBottom: 0 }}>
                 Enter known total values to help solve the circuit. Series: Current is constant.
               </p>
             </div>
 
             {seriesComponents.map((comp, index) => (
-              <div key={comp.id} style={{ background: 'white', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e5e7eb', marginBottom: '1rem' }}>
+              <div key={comp.id} style={{ background: colors.cardBg, padding: '1rem', borderRadius: '0.5rem', border: `1px solid ${colors.cardBorder}`, marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <h3 style={{ fontWeight: 'bold', color: '#374151', margin: 0, fontSize: '0.875rem' }}>Component {index + 1}</h3>
+                  <h3 style={{ fontWeight: 'bold', color: colors.labelText, margin: 0, fontSize: '0.875rem' }}>Component {index + 1}</h3>
                   {seriesComponents.length > 1 && (
                     <button
                       onClick={() => removeSeriesComponent(comp.id)}
@@ -784,14 +812,14 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                     { field: 'P', label: 'P (W)' }
                   ].map(({ field, label }) => (
                     <div key={field}>
-                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: colors.subtleText, marginBottom: '0.25rem' }}>
                         {label}
                       </label>
                       <input
                         type="number"
                         value={comp[field]}
                         onChange={(e) => updateSeriesComponent(comp.id, field, e.target.value)}
-                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', background: '#f9fafb' }}
+                        style={{ width: '100%', padding: '0.5rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '0.875rem', background: colors.inputBgAlt, color: colors.inputText }}
                       />
                     </div>
                   ))}
@@ -905,14 +933,14 @@ const isTotalFieldDisabled = (totals, fieldName) => {
               </p>
             </div>
 
-            <div style={{ background: 'white', border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
-              <h3 style={{ fontWeight: 'bold', color: '#374151', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+            <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+              <h3 style={{ fontWeight: 'bold', color: colors.labelText, marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
                 Circuit Totals (Optional)
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
                 {['R', 'V', 'I', 'P'].map(field => (
                   <div key={field}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: colors.subtleText, marginBottom: '0.25rem' }}>
                       Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
                     </label>
                     <input
@@ -924,25 +952,26 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                       style={{ 
                         width: '100%', 
                         padding: '0.5rem', 
-                        border: '1px solid #d1d5db', 
+                        border: `1px solid ${colors.inputBorder}`, 
                         borderRadius: '0.375rem', 
                         fontSize: '0.875rem',
-                        background: isTotalFieldDisabled(parallelTotals, field) ? '#f3f4f6' : 'white',
+                        background: isTotalFieldDisabled(parallelTotals, field) ? colors.inputBgAlt : colors.inputBg,
+                        color: colors.inputText,
                         cursor: isTotalFieldDisabled(parallelTotals, field) ? 'not-allowed' : 'text'
                       }}
                     />
                   </div>
                 ))}
               </div>
-              <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem', marginBottom: 0 }}>
+              <p style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.5rem', marginBottom: 0 }}>
                 Enter known total values to help solve the circuit. Parallel: Voltage is constant.
               </p>
             </div>
 
             {parallelComponents.map((comp, index) => (
-              <div key={comp.id} style={{ background: 'white', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e5e7eb', marginBottom: '1rem' }}>
+              <div key={comp.id} style={{ background: colors.cardBg, padding: '1rem', borderRadius: '0.5rem', border: `1px solid ${colors.cardBorder}`, marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <h3 style={{ fontWeight: 'bold', color: '#374151', margin: 0, fontSize: '0.875rem' }}>Component {index + 1}</h3>
+                  <h3 style={{ fontWeight: 'bold', color: colors.labelText, margin: 0, fontSize: '0.875rem' }}>Component {index + 1}</h3>
                   {parallelComponents.length > 1 && (
                     <button
                       onClick={() => removeParallelComponent(comp.id)}
@@ -960,14 +989,14 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                     { field: 'P', label: 'P (W)' }
                   ].map(({ field, label }) => (
                     <div key={field}>
-                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: colors.subtleText, marginBottom: '0.25rem' }}>
                         {label}
                       </label>
                       <input
                         type="number"
                         value={comp[field]}
                         onChange={(e) => updateParallelComponent(comp.id, field, e.target.value)}
-                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', background: '#f9fafb' }}
+                        style={{ width: '100%', padding: '0.5rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '0.875rem', background: colors.inputBgAlt, color: colors.inputText }}
                       />
                     </div>
                   ))}
@@ -1074,8 +1103,8 @@ const isTotalFieldDisabled = (totals, fieldName) => {
       </div>
 
       {/* Footer */}
-      <div style={{ background: '#f9fafb', color: '#6b7280', padding: '1rem 1.5rem', borderTop: '1px solid #e5e7eb', fontSize: '0.75rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: '#374151' }}>Formulas:</p>
+      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>Formulas:</p>
         <p style={{ margin: 0 }}>
           V = I × R • P = V × I • I = V ÷ R • P = I² × R • R = V ÷ I • P = V² ÷ R
         </p>
