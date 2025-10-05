@@ -8,32 +8,33 @@ function BottomNavigation({ onNavigate, currentView }) {
       bottom: 0,
       left: 0,
       right: 0,
-      background: '#1e293b',
-      borderTop: '2px solid #475569',
+      background: '#ffffff',
+      borderTop: '1px solid #e5e7eb',
       display: 'flex',
       justifyContent: 'space-around',
-      padding: '0.75rem 0',
+      padding: '0.5rem 0',
       zIndex: 1000,
-      boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.3)'
+      boxShadow: '0 -1px 3px rgba(0, 0, 0, 0.1)'
     }}>
       <button
         onClick={() => onNavigate('home')}
         style={{
           background: 'none',
           border: 'none',
-          color: currentView === 'home' ? '#fbbf24' : '#94a3b8',
+          color: currentView === 'home' ? '#3b82f6' : '#6b7280',
           cursor: 'pointer',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '0.25rem',
-          fontSize: '0.75rem',
-          fontWeight: '600',
+          gap: '0.125rem',
+          fontSize: '0.625rem',
+          fontWeight: '500',
           flex: 1,
+          padding: '0.25rem',
           transition: 'color 0.2s'
         }}
       >
-        <Home size={24} />
+        <Home size={20} strokeWidth={2} />
         <span>Home</span>
       </button>
       
@@ -42,19 +43,20 @@ function BottomNavigation({ onNavigate, currentView }) {
         style={{
           background: 'none',
           border: 'none',
-          color: currentView === 'calculators' ? '#fbbf24' : '#94a3b8',
+          color: currentView === 'calculators' ? '#3b82f6' : '#6b7280',
           cursor: 'pointer',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '0.25rem',
-          fontSize: '0.75rem',
-          fontWeight: '600',
+          gap: '0.125rem',
+          fontSize: '0.625rem',
+          fontWeight: '500',
           flex: 1,
+          padding: '0.25rem',
           transition: 'color 0.2s'
         }}
       >
-        <Calculator size={24} />
+        <Calculator size={20} strokeWidth={2} />
         <span>Calculators</span>
       </button>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb } from 'lucide-react';
+import { Search, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Menu } from 'lucide-react';
 
 function CalculatorMenu({ onSelectCalculator }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,64 +30,60 @@ function CalculatorMenu({ onSelectCalculator }) {
   return (
     <div style={{ 
       minHeight: '100vh', 
-      background: 'linear-gradient(to bottom right, #0f172a, #1e293b)', 
+      background: '#f9fafb',
       padding: '0'
     }}>
       <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-        {/* Modern Header */}
+        {/* Compact Professional Header */}
         <div style={{ 
-          background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)',
-          padding: '1.5rem 1.5rem 2rem 1.5rem',
-          position: 'relative',
-          overflow: 'hidden'
+          background: '#ffffff',
+          padding: '1rem 1.5rem',
+          borderBottom: '1px solid #e5e7eb',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
         }}>
-          {/* Subtle background pattern */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.05) 0%, transparent 50%)',
-            pointerEvents: 'none'
-          }}></div>
+          <h1 style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '600',
+            color: '#111827',
+            margin: 0,
+            letterSpacing: '-0.01em'
+          }}>
+            Electrician's Toolkit
+          </h1>
           
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <h1 style={{ 
-              fontSize: '1.75rem', 
-              fontWeight: '700',
-              color: '#fbbf24',
-              margin: '0 0 0.5rem 0',
-              letterSpacing: '-0.02em'
-            }}>
-              Electrician's Toolkit
-            </h1>
-            <p style={{ 
-              fontSize: '0.875rem', 
-              color: 'rgba(255,255,255,0.8)',
-              margin: 0,
-              fontWeight: '400'
-            }}>
-              NEC-compliant calculations & tools
-            </p>
-          </div>
+          {/* Placeholder for future menu */}
+          <button style={{ 
+            background: 'none', 
+            border: 'none', 
+            cursor: 'pointer',
+            padding: '0.25rem',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <Menu size={24} color="#6b7280" />
+          </button>
         </div>
 
         {/* Content Area */}
-        <div style={{ padding: '1.5rem 1rem' }}>
+        <div style={{ padding: '1rem' }}>
           {/* Search Bar */}
           <div style={{ 
-            marginBottom: '1.5rem',
+            marginBottom: '1rem',
             position: 'relative'
           }}>
             <Search 
-              size={20} 
+              size={18} 
               style={{ 
                 position: 'absolute', 
                 left: '1rem', 
                 top: '50%', 
                 transform: 'translateY(-50%)',
-                color: '#6b7280'
+                color: '#9ca3af'
               }} 
             />
             <input
@@ -97,14 +93,21 @@ function CalculatorMenu({ onSelectCalculator }) {
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 width: '100%',
-                padding: '1rem 1rem 1rem 3rem',
-                fontSize: '1rem',
-                border: 'none',
-                borderRadius: '12px',
-                backgroundColor: 'white',
+                padding: '0.75rem 1rem 0.75rem 2.75rem',
+                fontSize: '0.9375rem',
+                border: '1px solid #e5e7eb',
+                borderRadius: '10px',
+                backgroundColor: '#f9fafb',
                 boxSizing: 'border-box',
-                outline: 'none',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#3b82f6';
+                e.target.style.backgroundColor = '#ffffff';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#e5e7eb';
+                e.target.style.backgroundColor = '#f9fafb';
               }}
             />
           </div>
@@ -114,7 +117,7 @@ function CalculatorMenu({ onSelectCalculator }) {
             display: 'grid', 
             gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
             gap: '0.75rem',
-            marginBottom: '1.5rem'
+            marginBottom: '1rem'
           }}>
             {filteredCalculators.length > 0 ? (
               filteredCalculators.map(calc => {
@@ -124,9 +127,9 @@ function CalculatorMenu({ onSelectCalculator }) {
                     key={calc.id}
                     onClick={() => onSelectCalculator(calc.id)}
                     style={{
-                      backgroundColor: '#fbbf24',
-                      border: 'none',
-                      borderRadius: '0.75rem',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '12px',
                       padding: '1rem 0.5rem',
                       cursor: 'pointer',
                       display: 'flex',
@@ -135,23 +138,25 @@ function CalculatorMenu({ onSelectCalculator }) {
                       justifyContent: 'center',
                       gap: '0.5rem',
                       minHeight: '100px',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                       transition: 'all 0.2s',
-                      color: 'black'
+                      color: '#111827'
                     }}
                     onMouseOver={(e) => {
                       e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+                      e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+                      e.currentTarget.style.borderColor = '#3b82f6';
                     }}
                     onMouseOut={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                      e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                      e.currentTarget.style.borderColor = '#e5e7eb';
                     }}
                   >
-                    <IconComponent size={32} strokeWidth={2} />
+                    <IconComponent size={28} strokeWidth={1.5} color="#3b82f6" />
                     <div style={{ 
-                      fontSize: '0.875rem',
-                      fontWeight: '700',
+                      fontSize: '0.8125rem',
+                      fontWeight: '600',
                       textAlign: 'center',
                       lineHeight: '1.2'
                     }}>
@@ -165,30 +170,12 @@ function CalculatorMenu({ onSelectCalculator }) {
                 gridColumn: '1 / -1',
                 textAlign: 'center',
                 padding: '3rem 1rem',
-                color: '#cbd5e1',
-                fontSize: '1.125rem'
+                color: '#6b7280',
+                fontSize: '0.9375rem'
               }}>
                 No calculators found
               </div>
             )}
-          </div>
-
-          {/* Simplified Footer */}
-          <div style={{ 
-            padding: '0.75rem', 
-            backgroundColor: 'rgba(30, 41, 59, 0.5)',
-            borderRadius: '0.5rem',
-            textAlign: 'center',
-            border: '1px solid rgba(255, 255, 255, 0.1)'
-          }}>
-            <p style={{ 
-              fontSize: '0.75rem', 
-              color: '#94a3b8',
-              margin: 0,
-              fontWeight: '400'
-            }}>
-              All calculations based on current NEC standards
-            </p>
           </div>
         </div>
       </div>
