@@ -1,8 +1,28 @@
 import React, { useState } from 'react';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
-function TransformerSizingCalculator({ onBack }) {
+function TransformerSizingCalculator({ isDarkMode = false }) {
   const [activeTab, setActiveTab] = useState('sizing');
+
+  // Dark mode colors - matching conduit fill calculator
+  const colors = {
+    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
+    headerBg: isDarkMode ? '#111827' : '#ffffff',
+    headerText: isDarkMode ? '#f9fafb' : '#111827',
+    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
+    contentBg: isDarkMode ? '#111827' : '#f9fafb',
+    labelText: isDarkMode ? '#d1d5db' : '#374151',
+    inputBg: isDarkMode ? '#374151' : 'white',
+    inputBgAlt: isDarkMode ? '#1f2937' : '#f9fafb',
+    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
+    inputText: isDarkMode ? '#f9fafb' : '#111827',
+    cardBg: isDarkMode ? '#1f2937' : 'white',
+    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBg: isDarkMode ? '#111827' : '#f9fafb',
+    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBorder: isDarkMode ? '#374151' : '#e5e7eb'
+  };
 
   // Transformer Sizing Calculator
   const TransformerSizing = () => {
@@ -45,7 +65,7 @@ function TransformerSizingCalculator({ onBack }) {
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Load (kVA)
             </label>
             <input 
@@ -53,19 +73,19 @@ function TransformerSizingCalculator({ onBack }) {
               value={loadKVA} 
               onChange={(e) => setLoadKVA(e.target.value)}
               placeholder="Connected load in kVA"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
-            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Enter total connected load or demand load</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Enter total connected load or demand load</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Primary Voltage
             </label>
             <select 
               value={primaryVoltage} 
               onChange={(e) => setPrimaryVoltage(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="208">208V</option>
               <option value="240">240V</option>
@@ -79,13 +99,13 @@ function TransformerSizingCalculator({ onBack }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Secondary Voltage
             </label>
             <select 
               value={secondaryVoltage} 
               onChange={(e) => setSecondaryVoltage(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="120">120V</option>
               <option value="208">208V</option>
@@ -97,13 +117,13 @@ function TransformerSizingCalculator({ onBack }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Phase
             </label>
             <select 
               value={phase} 
               onChange={(e) => setPhase(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="single">Single Phase</option>
               <option value="three">Three Phase</option>
@@ -111,28 +131,28 @@ function TransformerSizingCalculator({ onBack }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Load Type
             </label>
             <select 
               value={loadType} 
               onChange={(e) => setLoadType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="continuous">Continuous (125% sizing)</option>
               <option value="noncontinuous">Non-Continuous (100% sizing)</option>
             </select>
-            <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>Continuous loads operate for 3+ hours</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Continuous loads operate for 3+ hours</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Power Factor
             </label>
             <select 
               value={powerFactor} 
               onChange={(e) => setPowerFactor(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="1.0">1.0 (Unity)</option>
               <option value="0.95">0.95 (Excellent)</option>
@@ -145,8 +165,8 @@ function TransformerSizingCalculator({ onBack }) {
 
         {results && (
           <div style={{ 
-            background: '#dcfce7', 
-            border: '2px solid #16a34a', 
+            background: '#f0fdf4', 
+            border: '2px solid #22c55e', 
             padding: '1.5rem', 
             borderRadius: '0.5rem'
           }}>
@@ -155,15 +175,14 @@ function TransformerSizingCalculator({ onBack }) {
             </h3>
             
             <div style={{ 
-              background: '#f8fafc', 
+              background: colors.cardBg, 
               padding: '1rem', 
-              borderRadius: '0.5rem',
-              marginBottom: '1rem',
-              color: '#374151'
+              borderRadius: '0.375rem',
+              marginBottom: '1rem'
             }}>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}><strong>Connected Load:</strong> {results.loadKVA} kVA</div>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}><strong>Required Capacity:</strong> {results.requiredKVA} kVA</div>
-              <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}><strong>Connected Load:</strong> {results.loadKVA} kVA</div>
+              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}><strong>Required Capacity:</strong> {results.requiredKVA} kVA</div>
+              <div style={{ fontSize: '0.75rem', color: colors.subtleText }}>
                 ({loadType === 'continuous' ? '125%' : '100%'} sizing factor applied)
               </div>
             </div>
@@ -210,14 +229,14 @@ function TransformerSizingCalculator({ onBack }) {
         )}
 
         <div style={{ 
-          background: '#f8fafc',
+          background: colors.cardBg,
           padding: '1rem',
           borderRadius: '0.5rem',
-          border: '1px solid #e2e8f0',
+          border: `1px solid ${colors.cardBorder}`,
           marginTop: '1.5rem'
         }}>
-          <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>Transformer Sizing Guidelines:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#6b7280', fontSize: '0.875rem' }}>
+          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Transformer Sizing Guidelines:</strong>
+          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
             <li style={{ marginBottom: '0.25rem' }}>Size for continuous loads at 125% per NEC 450.3</li>
             <li style={{ marginBottom: '0.25rem' }}>Consider future load growth (typically 20-25%)</li>
             <li style={{ marginBottom: '0.25rem' }}>Keep utilization below 80% for optimal efficiency</li>
@@ -268,7 +287,7 @@ function TransformerSizingCalculator({ onBack }) {
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Transformer Rating (kVA)
             </label>
             <input 
@@ -276,18 +295,18 @@ function TransformerSizingCalculator({ onBack }) {
               value={transformerKVA} 
               onChange={(e) => setTransformerKVA(e.target.value)}
               placeholder="Transformer kVA rating"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Primary Voltage
             </label>
             <select 
               value={primaryVoltage} 
               onChange={(e) => setPrimaryVoltage(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="208">208V</option>
               <option value="240">240V</option>
@@ -300,13 +319,13 @@ function TransformerSizingCalculator({ onBack }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Secondary Voltage
             </label>
             <select 
               value={secondaryVoltage} 
               onChange={(e) => setSecondaryVoltage(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="120">120V</option>
               <option value="208">208V</option>
@@ -317,13 +336,13 @@ function TransformerSizingCalculator({ onBack }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Phase
             </label>
             <select 
               value={phase} 
               onChange={(e) => setPhase(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="single">Single Phase</option>
               <option value="three">Three Phase</option>
@@ -333,8 +352,8 @@ function TransformerSizingCalculator({ onBack }) {
 
         {results && (
           <div style={{ 
-            background: '#dcfce7', 
-            border: '2px solid #16a34a', 
+            background: '#f0fdf4', 
+            border: '2px solid #22c55e', 
             padding: '1.5rem', 
             borderRadius: '0.5rem'
           }}>
@@ -343,16 +362,15 @@ function TransformerSizingCalculator({ onBack }) {
             </h3>
             
             <div style={{ 
-              background: '#f8fafc', 
+              background: colors.cardBg, 
               padding: '1rem', 
               borderRadius: '0.5rem',
-              marginBottom: '1rem',
-              color: '#374151'
+              marginBottom: '1rem'
             }}>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}>
                 <strong>Transformer:</strong> {results.kva} kVA, {phase === 'single' ? 'Single' : 'Three'} Phase
               </div>
-              <div style={{ fontSize: '0.875rem' }}><strong>Configuration:</strong> {results.primaryVoltage}V / {results.secondaryVoltage}V</div>
+              <div style={{ fontSize: '0.875rem', color: colors.labelText }}><strong>Configuration:</strong> {results.primaryVoltage}V / {results.secondaryVoltage}V</div>
             </div>
 
             <div style={{ 
@@ -409,18 +427,18 @@ function TransformerSizingCalculator({ onBack }) {
         )}
 
         <div style={{ 
-          background: '#f8fafc',
+          background: colors.cardBg,
           padding: '1rem',
           borderRadius: '0.5rem',
-          border: '1px solid #e2e8f0',
+          border: `1px solid ${colors.cardBorder}`,
           marginTop: '1.5rem'
         }}>
-          <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>Current Formulas:</strong>
-          <div style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Current Formulas:</strong>
+          <div style={{ color: colors.subtleText, fontSize: '0.875rem', marginTop: '0.5rem' }}>
             <div style={{ marginBottom: '0.25rem' }}><strong>Single Phase:</strong> I = (kVA × 1000) ÷ V</div>
             <div><strong>Three Phase:</strong> I = (kVA × 1000) ÷ (1.732 × V)</div>
           </div>
-          <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', fontStyle: 'italic', color: '#6b7280' }}>
+          <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', fontStyle: 'italic', color: colors.subtleText }}>
             Note: Use these currents for selecting primary and secondary protection devices per NEC Article 450.
           </div>
         </div>
@@ -434,18 +452,19 @@ function TransformerSizingCalculator({ onBack }) {
   };
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-      <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
+      {/* Modern Header */}
+      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <AlertTriangle size={32} />
+          <Zap size={24} color="#3b82f6" />
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Transformer Calculations</h1>
-            <p style={{ fontSize: '0.875rem', margin: 0 }}>NEC Article 450 - Transformers and Transformer Vaults</p>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Transformer Calculations</h1>
+            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>NEC Article 450</p>
           </div>
         </div>
       </div>
 
-      <div style={{ background: 'white', padding: '1.5rem' }}>
+      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
         {/* Tab Navigation */}
         <div style={{ 
           display: 'flex', 
@@ -457,9 +476,9 @@ function TransformerSizingCalculator({ onBack }) {
             onClick={() => setActiveTab('sizing')}
             style={{
               padding: '0.75rem 1.25rem',
-              background: activeTab === 'sizing' ? '#3b82f6' : '#e5e7eb',
-              color: activeTab === 'sizing' ? 'white' : '#374151',
-              border: 'none',
+              background: activeTab === 'sizing' ? '#3b82f6' : colors.inputBgAlt,
+              color: activeTab === 'sizing' ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === 'sizing' ? '#3b82f6' : colors.inputBorder}`,
               borderRadius: '0.5rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
@@ -473,9 +492,9 @@ function TransformerSizingCalculator({ onBack }) {
             onClick={() => setActiveTab('currents')}
             style={{
               padding: '0.75rem 1.25rem',
-              background: activeTab === 'currents' ? '#3b82f6' : '#e5e7eb',
-              color: activeTab === 'currents' ? 'white' : '#374151',
-              border: 'none',
+              background: activeTab === 'currents' ? '#3b82f6' : colors.inputBgAlt,
+              color: activeTab === 'currents' ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === 'currents' ? '#3b82f6' : colors.inputBorder}`,
               borderRadius: '0.5rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
@@ -491,14 +510,12 @@ function TransformerSizingCalculator({ onBack }) {
         {tabComponents[activeTab]}
       </div>
 
-      <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.75rem' }}>NEC References:</p>
-        <ul style={{ paddingLeft: '1.5rem', margin: 0 }}>
-          <li style={{ marginBottom: '0.25rem' }}>450.3 - Overcurrent protection requirements for transformers</li>
-          <li style={{ marginBottom: '0.25rem' }}>450.9 - Ventilation requirements for transformer installations</li>
-          <li style={{ marginBottom: '0.25rem' }}>450.11 - Marking requirements for transformers</li>
-          <li>450.21 - Dry-type transformers installed indoors (1000V or less)</li>
-        </ul>
+      {/* Footer */}
+      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>NEC Article 450 - Transformers and Transformer Vaults:</p>
+        <p style={{ margin: 0 }}>
+          450.3: Overcurrent protection • 450.9: Ventilation requirements • 450.11: Marking • 450.21: Dry-type transformers indoors
+        </p>
       </div>
     </div>
   );
