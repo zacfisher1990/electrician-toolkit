@@ -1,12 +1,32 @@
 import React, { useState } from 'react';
 import { Wrench, Plus, Trash2 } from 'lucide-react';
 
-function ConduitFillCalculator() {
+function ConduitFillCalculator({ isDarkMode = false }) {
   const [conduitType, setConduitType] = useState('emt-0.5');
   const [wireType, setWireType] = useState('thwn');
   const [conductors, setConductors] = useState([
     { size: '12', count: '' }
   ]);
+
+  // Dark mode colors
+  const colors = {
+    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
+    headerBg: isDarkMode ? '#111827' : '#ffffff',
+    headerText: isDarkMode ? '#f9fafb' : '#111827',
+    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
+    contentBg: isDarkMode ? '#111827' : '#f9fafb',
+    labelText: isDarkMode ? '#d1d5db' : '#374151',
+    inputBg: isDarkMode ? '#374151' : 'white',
+    inputBgAlt: isDarkMode ? '#1f2937' : '#f9fafb',
+    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
+    inputText: isDarkMode ? '#f9fafb' : '#111827',
+    cardBg: isDarkMode ? '#1f2937' : 'white',
+    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBg: isDarkMode ? '#111827' : '#f9fafb',
+    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBorder: isDarkMode ? '#374151' : '#e5e7eb'
+  };
 
   const conduitData = {
     // EMT Conduit
@@ -116,28 +136,28 @@ function ConduitFillCalculator() {
   const results = calculateFill();
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto', background: '#ffffff', borderRadius: '0.5rem', overflow: 'hidden' }}>
+    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
       {/* Modern Header */}
-      <div style={{ background: '#ffffff', color: '#111827', padding: '1rem 1.5rem', borderBottom: '1px solid #e5e7eb' }}>
+      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <Wrench size={24} color="#3b82f6" />
           <div>
             <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Conduit Fill Calculator</h1>
-            <p style={{ fontSize: '0.8125rem', margin: 0, color: '#6b7280' }}>NEC Chapter 9, Table 1</p>
+            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>NEC Chapter 9, Table 1</p>
           </div>
         </div>
       </div>
 
-      <div style={{ background: '#f9fafb', padding: '1.5rem' }}>
+      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Conduit Type & Size
             </label>
             <select 
               value={conduitType} 
               onChange={(e) => setConduitType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', background: 'white' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <optgroup label="EMT">
                 {Object.entries(conduitData)
@@ -164,13 +184,13 @@ function ConduitFillCalculator() {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Wire Type
             </label>
             <select 
               value={wireType} 
               onChange={(e) => setWireType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', background: 'white' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="thwn">THWN-2</option>
               <option value="xhhw">XHHW-2</option>
@@ -179,19 +199,19 @@ function ConduitFillCalculator() {
         </div>
 
         <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '700', color: '#374151', marginBottom: '0.75rem' }}>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '700', color: colors.labelText, marginBottom: '0.75rem' }}>
             Conductors
           </label>
           {conductors.map((conductor, index) => (
             <div key={index} style={{ 
-              background: 'white',
+              background: colors.cardBg,
               padding: '1rem',
               borderRadius: '0.5rem',
               marginBottom: '0.75rem',
-              border: '1px solid #e5e7eb'
+              border: `1px solid ${colors.cardBorder}`
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <h3 style={{ fontWeight: 'bold', color: '#374151', margin: 0, fontSize: '0.875rem' }}>
+                <h3 style={{ fontWeight: 'bold', color: colors.labelText, margin: 0, fontSize: '0.875rem' }}>
                   Wire Size {index + 1}
                 </h3>
                 {conductors.length > 1 && (
@@ -207,7 +227,7 @@ function ConduitFillCalculator() {
                 <select 
                   value={conductor.size} 
                   onChange={(e) => updateConductor(index, 'size', e.target.value)}
-                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', background: '#f9fafb' }}
+                  style={{ width: '100%', padding: '0.5rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.25rem', background: colors.inputBgAlt, color: colors.inputText }}
                 >
                   <option value="14">14 AWG</option>
                   <option value="12">12 AWG</option>
@@ -234,7 +254,7 @@ function ConduitFillCalculator() {
                   onChange={(e) => updateConductor(index, 'count', e.target.value)}
                   placeholder="Quantity"
                   min="0"
-                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', background: '#f9fafb' }}
+                  style={{ width: '100%', padding: '0.5rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.25rem', background: colors.inputBgAlt, color: colors.inputText }}
                 />
               </div>
             </div>
@@ -275,22 +295,22 @@ function ConduitFillCalculator() {
           
           {results.conductorDetails.length > 0 && results.totalWireCount > 0 && (
             <div style={{ 
-              background: 'white', 
+              background: colors.cardBg, 
               padding: '1rem', 
               borderRadius: '0.375rem',
               marginBottom: '1rem'
             }}>
-              <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>Conductor Breakdown:</strong>
+              <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Conductor Breakdown:</strong>
               {results.conductorDetails.map((detail, index) => (
                 detail.count > 0 && (
                   <div key={index} style={{ 
                     marginTop: index > 0 ? '0.5rem' : 0,
                     paddingTop: index > 0 ? '0.5rem' : 0,
-                    borderTop: index > 0 ? '1px solid #e5e7eb' : 'none',
-                    color: '#374151'
+                    borderTop: index > 0 ? `1px solid ${colors.cardBorder}` : 'none',
+                    color: colors.labelText
                   }}>
                     <div style={{ fontWeight: '600' }}>{detail.count}x {detail.size} AWG {wireType.toUpperCase()}</div>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                    <div style={{ fontSize: '0.875rem', color: colors.subtleText }}>
                       {detail.areaEach.toFixed(4)} sq.in. each = {detail.subtotal.toFixed(4)} sq.in. total
                     </div>
                   </div>
@@ -351,8 +371,8 @@ function ConduitFillCalculator() {
       </div>
 
       {/* Footer */}
-      <div style={{ background: '#f9fafb', color: '#6b7280', padding: '1rem 1.5rem', borderTop: '1px solid #e5e7eb', fontSize: '0.75rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: '#374151' }}>NEC Chapter 9, Table 1:</p>
+      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>NEC Chapter 9, Table 1:</p>
         <p style={{ margin: 0 }}>
           1 conductor: 53% • 2 conductors: 31% • 3+ conductors: 40% • Nipples (&lt;24"): 60%
         </p>
