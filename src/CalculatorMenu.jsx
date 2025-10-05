@@ -89,7 +89,7 @@ function CalculatorMenu({ onSelectCalculator }) {
         {/* Calculator Grid */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(3, 1fr)',  // 3 columns instead of auto-fill
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
           gap: '0.75rem',  // Tighter gap
           marginBottom: '2rem'
         }}>
