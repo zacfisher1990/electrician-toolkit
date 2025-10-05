@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { TrendingDown, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { TrendingDown, AlertTriangle } from 'lucide-react';
 
-function VoltageDropCalculator({ onBack }) {
+function VoltageDropCalculator() {
   const [voltage, setVoltage] = useState('');
   const [current, setCurrent] = useState('');
   const [distance, setDistance] = useState('');
@@ -76,18 +76,19 @@ function VoltageDropCalculator({ onBack }) {
   const result = calculateDrop();
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-      <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+    <div style={{ maxWidth: '64rem', margin: '0 auto', background: '#ffffff', borderRadius: '0.5rem', overflow: 'hidden' }}>
+      {/* Modern Header */}
+      <div style={{ background: '#ffffff', color: '#111827', padding: '1rem 1.5rem', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <TrendingDown size={32} />
+          <TrendingDown size={24} color="#3b82f6" />
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Voltage Drop Calculator</h1>
-            <p style={{ fontSize: '0.875rem', margin: 0 }}>Calculate voltage drop using NEC approved methods</p>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Voltage Drop Calculator</h1>
+            <p style={{ fontSize: '0.8125rem', margin: 0, color: '#6b7280' }}>NEC approved calculation method</p>
           </div>
         </div>
       </div>
 
-      <div style={{ background: 'white', padding: '1.5rem' }}>
+      <div style={{ background: '#f9fafb', padding: '1.5rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
@@ -96,7 +97,7 @@ function VoltageDropCalculator({ onBack }) {
             <select 
               value={phaseType} 
               onChange={(e) => setPhaseType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', background: 'white' }}
             >
               <option value="single">Single Phase</option>
               <option value="three">Three Phase</option>
@@ -110,7 +111,7 @@ function VoltageDropCalculator({ onBack }) {
             <select 
               value={conductorType} 
               onChange={(e) => setConductorType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', background: 'white' }}
             >
               <option value="copper">Copper</option>
               <option value="aluminum">Aluminum</option>
@@ -126,7 +127,7 @@ function VoltageDropCalculator({ onBack }) {
               value={voltage} 
               onChange={(e) => setVoltage(e.target.value)}
               placeholder="120, 240, 480, etc."
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', background: 'white' }}
             />
           </div>
 
@@ -139,7 +140,7 @@ function VoltageDropCalculator({ onBack }) {
               value={current} 
               onChange={(e) => setCurrent(e.target.value)}
               placeholder="15, 20, 30, etc."
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', background: 'white' }}
             />
           </div>
 
@@ -152,7 +153,7 @@ function VoltageDropCalculator({ onBack }) {
               value={distance} 
               onChange={(e) => setDistance(e.target.value)}
               placeholder="100, 200, 500, etc."
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', background: 'white' }}
             />
           </div>
 
@@ -163,7 +164,7 @@ function VoltageDropCalculator({ onBack }) {
             <select 
               value={wireSize} 
               onChange={(e) => setWireSize(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', background: 'white' }}
             >
               <option value="14">14 AWG</option>
               <option value="12">12 AWG</option>
@@ -196,7 +197,7 @@ function VoltageDropCalculator({ onBack }) {
             <select 
               value={powerFactor} 
               onChange={(e) => setPowerFactor(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', background: 'white' }}
             >
               <option value="1.0">1.0 (Resistive loads)</option>
               <option value="0.9">0.9 (Most motors)</option>
@@ -206,43 +207,65 @@ function VoltageDropCalculator({ onBack }) {
           </div>
         </div>
 
+        {/* Results Box */}
         <div style={{ 
-          background: result.excessive ? '#fef2f2' : '#dcfce7', 
-          border: `2px solid ${result.excessive ? '#dc2626' : '#16a34a'}`, 
+          background: result.excessive ? '#fef2f2' : '#f0fdf4', 
+          border: `2px solid ${result.excessive ? '#dc2626' : '#22c55e'}`, 
           padding: '1.5rem', 
-          borderRadius: '0.5rem',
-          marginBottom: '1.5rem'
+          borderRadius: '0.5rem'
         }}>
-          <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: result.excessive ? '#991b1b' : '#166534', marginBottom: '1rem' }}>
+          <h3 style={{ fontWeight: 'bold', color: result.excessive ? '#991b1b' : '#166534', marginTop: 0, marginBottom: '1rem' }}>
+            Results
+          </h3>
+          
+          <div style={{ 
+            fontWeight: 'bold',
+            fontSize: '1.5rem',
+            marginBottom: '1rem',
+            color: result.excessive ? '#dc2626' : '#22c55e'
+          }}>
             Voltage Drop: {result.drop}V ({result.percentage}%)
           </div>
           
           {result.excessive && (
             <div style={{ 
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '0.5rem',
+              color: '#dc2626', 
+              fontWeight: 'bold', 
+              marginBottom: '1rem',
+              padding: '0.75rem',
               background: '#fee2e2',
-              padding: '1rem',
-              borderRadius: '0.25rem',
-              border: '1px solid #fecaca',
-              marginBottom: '1rem'
+              borderRadius: '0.375rem',
+              border: '1px solid #fecaca'
             }}>
-              <AlertTriangle size={20} style={{ color: '#dc2626', flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#991b1b' }}>
-                <strong>WARNING:</strong> Voltage drop exceeds NEC recommended 3% limit! Consider using larger wire size.
+              <div style={{ fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <AlertTriangle size={20} />
+                WARNING: Exceeds NEC 3% Limit
+              </div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 'normal', marginTop: '0.5rem' }}>
+                Consider using larger wire size to reduce voltage drop
               </div>
             </div>
           )}
 
+          {!result.excessive && voltage && current && distance && (
+            <div style={{ 
+              color: '#22c55e', 
+              marginBottom: '1rem',
+              fontSize: '1rem',
+              fontWeight: '600'
+            }}>
+              ✓ Voltage drop is within NEC recommended limits
+            </div>
+          )}
+
           <div style={{ 
-            fontSize: '0.875rem', 
-            color: result.excessive ? '#7f1d1d' : '#14532d',
-            borderTop: `1px solid ${result.excessive ? '#fecaca' : '#bbf7d0'}`,
-            paddingTop: '1rem'
+            background: 'white', 
+            padding: '1rem', 
+            borderRadius: '0.375rem',
+            marginTop: '1rem'
           }}>
-            <strong>Calculation Details:</strong>
-            <div style={{ marginTop: '0.5rem', display: 'grid', gap: '0.25rem' }}>
+            <strong style={{ color: '#374151', display: 'block', marginBottom: '0.5rem' }}>Calculation Details:</strong>
+            <div style={{ fontSize: '0.875rem', color: '#6b7280', display: 'grid', gap: '0.25rem' }}>
               <div>• Formula: {phaseType === 'single' ? '2' : '1.732'} × K × I × L × PF ÷ CM</div>
               <div>• K constant ({conductorType}): {kConstants[conductorType].ac}</div>
               <div>• Circular mils: {circularMils[wireSize].toLocaleString()}</div>
@@ -251,27 +274,13 @@ function VoltageDropCalculator({ onBack }) {
             </div>
           </div>
         </div>
-
-        <div style={{ 
-          background: '#f8fafc',
-          border: '2px solid #e2e8f0',
-          borderRadius: '0.5rem',
-          padding: '1rem'
-        }}>
-          <div style={{ fontWeight: '600', color: '#1e293b', marginBottom: '0.5rem' }}>NEC Guidelines:</div>
-          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem', color: '#475569', fontSize: '0.875rem' }}>
-            <li>Branch circuits: 3% maximum recommended</li>
-            <li>Feeders: 3% maximum recommended</li>
-            <li>Combined branch circuit + feeder: 5% maximum</li>
-          </ul>
-        </div>
       </div>
 
-      <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem' }}>Notes:</p>
+      {/* Footer */}
+      <div style={{ background: '#f9fafb', color: '#6b7280', padding: '1rem 1.5rem', borderTop: '1px solid #e5e7eb', fontSize: '0.75rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: '#374151' }}>NEC Guidelines:</p>
         <p style={{ margin: 0 }}>
-          This calculator uses the K constant method as recommended by the NEC. 
-          Always verify calculations against local codes and consult a licensed electrician for final decisions.
+          Branch circuits: 3% max • Feeders: 3% max • Combined: 5% max
         </p>
       </div>
     </div>

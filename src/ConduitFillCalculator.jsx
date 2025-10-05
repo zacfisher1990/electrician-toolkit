@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Wrench, Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { Wrench, Plus, Trash2 } from 'lucide-react';
 
-function ConduitFillCalculator({ onBack }) {
+function ConduitFillCalculator() {
   const [conduitType, setConduitType] = useState('emt-0.5');
   const [wireType, setWireType] = useState('thwn');
   const [conductors, setConductors] = useState([
@@ -116,18 +116,19 @@ function ConduitFillCalculator({ onBack }) {
   const results = calculateFill();
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-      <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+    <div style={{ maxWidth: '64rem', margin: '0 auto', background: '#ffffff', borderRadius: '0.5rem', overflow: 'hidden' }}>
+      {/* Modern Header */}
+      <div style={{ background: '#ffffff', color: '#111827', padding: '1rem 1.5rem', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Wrench size={32} />
+          <Wrench size={24} color="#3b82f6" />
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Conduit Fill Calculator</h1>
-            <p style={{ fontSize: '0.875rem', margin: 0 }}>Calculate conduit fill per NEC Chapter 9, Table 1</p>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Conduit Fill Calculator</h1>
+            <p style={{ fontSize: '0.8125rem', margin: 0, color: '#6b7280' }}>NEC Chapter 9, Table 1</p>
           </div>
         </div>
       </div>
 
-      <div style={{ background: 'white', padding: '1.5rem' }}>
+      <div style={{ background: '#f9fafb', padding: '1.5rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
@@ -136,7 +137,7 @@ function ConduitFillCalculator({ onBack }) {
             <select 
               value={conduitType} 
               onChange={(e) => setConduitType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', background: 'white' }}
             >
               <optgroup label="EMT">
                 {Object.entries(conduitData)
@@ -169,7 +170,7 @@ function ConduitFillCalculator({ onBack }) {
             <select 
               value={wireType} 
               onChange={(e) => setWireType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', background: 'white' }}
             >
               <option value="thwn">THWN-2</option>
               <option value="xhhw">XHHW-2</option>
@@ -182,71 +183,71 @@ function ConduitFillCalculator({ onBack }) {
             Conductors
           </label>
           {conductors.map((conductor, index) => (
-  <div key={index} style={{ 
-    background: '#f9fafb',
-    padding: '1rem',
-    borderRadius: '0.5rem',
-    marginBottom: '0.75rem',
-    border: '1px solid #e5e7eb'
-  }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-      <h3 style={{ fontWeight: 'bold', color: '#374151', margin: 0, fontSize: '0.875rem' }}>
-        Wire Size {index + 1}
-      </h3>
-      {conductors.length > 1 && (
-        <button
-          onClick={() => removeConductor(index)}
-          style={{ color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
-        >
-          <Trash2 size={20} />
-        </button>
-      )}
-    </div>
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-      <select 
-        value={conductor.size} 
-        onChange={(e) => updateConductor(index, 'size', e.target.value)}
-        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
-      >
-        <option value="14">14 AWG</option>
-        <option value="12">12 AWG</option>
-        <option value="10">10 AWG</option>
-        <option value="8">8 AWG</option>
-        <option value="6">6 AWG</option>
-        <option value="4">4 AWG</option>
-        <option value="3">3 AWG</option>
-        <option value="2">2 AWG</option>
-        <option value="1">1 AWG</option>
-        <option value="1/0">1/0 AWG</option>
-        <option value="2/0">2/0 AWG</option>
-        <option value="3/0">3/0 AWG</option>
-        <option value="4/0">4/0 AWG</option>
-        <option value="250">250 kcmil</option>
-        <option value="300">300 kcmil</option>
-        <option value="350">350 kcmil</option>
-        <option value="400">400 kcmil</option>
-        <option value="500">500 kcmil</option>
-      </select>
-      <input 
-        type="number" 
-        value={conductor.count} 
-        onChange={(e) => updateConductor(index, 'count', e.target.value)}
-        placeholder="Quantity"
-        min="0"
-        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
-      />
-    </div>
-  </div>
-))}
+            <div key={index} style={{ 
+              background: 'white',
+              padding: '1rem',
+              borderRadius: '0.5rem',
+              marginBottom: '0.75rem',
+              border: '1px solid #e5e7eb'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <h3 style={{ fontWeight: 'bold', color: '#374151', margin: 0, fontSize: '0.875rem' }}>
+                  Wire Size {index + 1}
+                </h3>
+                {conductors.length > 1 && (
+                  <button
+                    onClick={() => removeConductor(index)}
+                    style={{ color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <select 
+                  value={conductor.size} 
+                  onChange={(e) => updateConductor(index, 'size', e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', background: '#f9fafb' }}
+                >
+                  <option value="14">14 AWG</option>
+                  <option value="12">12 AWG</option>
+                  <option value="10">10 AWG</option>
+                  <option value="8">8 AWG</option>
+                  <option value="6">6 AWG</option>
+                  <option value="4">4 AWG</option>
+                  <option value="3">3 AWG</option>
+                  <option value="2">2 AWG</option>
+                  <option value="1">1 AWG</option>
+                  <option value="1/0">1/0 AWG</option>
+                  <option value="2/0">2/0 AWG</option>
+                  <option value="3/0">3/0 AWG</option>
+                  <option value="4/0">4/0 AWG</option>
+                  <option value="250">250 kcmil</option>
+                  <option value="300">300 kcmil</option>
+                  <option value="350">350 kcmil</option>
+                  <option value="400">400 kcmil</option>
+                  <option value="500">500 kcmil</option>
+                </select>
+                <input 
+                  type="number" 
+                  value={conductor.count} 
+                  onChange={(e) => updateConductor(index, 'count', e.target.value)}
+                  placeholder="Quantity"
+                  min="0"
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', background: '#f9fafb' }}
+                />
+              </div>
+            </div>
+          ))}
           <button 
             onClick={addConductor}
             style={{ 
               width: '100%',
-              background: '#16a34a',
+              background: '#3b82f6',
               color: 'white',
               border: 'none',
-              borderRadius: '0.25rem',
-              padding: '0.625rem',
+              borderRadius: '0.375rem',
+              padding: '0.75rem',
               fontSize: '0.875rem',
               fontWeight: '600',
               cursor: 'pointer',
@@ -263,8 +264,8 @@ function ConduitFillCalculator({ onBack }) {
 
         {/* Results Box */}
         <div style={{ 
-          background: results.isOverfilled ? '#fef2f2' : '#dcfce7', 
-          border: `2px solid ${results.isOverfilled ? '#dc2626' : '#16a34a'}`, 
+          background: results.isOverfilled ? '#fef2f2' : '#f0fdf4', 
+          border: `2px solid ${results.isOverfilled ? '#dc2626' : '#22c55e'}`, 
           padding: '1.5rem', 
           borderRadius: '0.5rem'
         }}>
@@ -314,7 +315,7 @@ function ConduitFillCalculator({ onBack }) {
             marginTop: '1rem',
             paddingTop: '1rem',
             borderTop: `2px solid ${results.isOverfilled ? '#fecaca' : '#bbf7d0'}`,
-            color: results.isOverfilled ? '#dc2626' : '#16a34a'
+            color: results.isOverfilled ? '#dc2626' : '#22c55e'
           }}>
             Fill: {results.fillPercentage}% (Max: {results.maxFill}%)
           </div>
@@ -338,7 +339,7 @@ function ConduitFillCalculator({ onBack }) {
 
           {!results.isOverfilled && results.totalWireCount > 0 && (
             <div style={{ 
-              color: '#16a34a', 
+              color: '#22c55e', 
               marginTop: '0.75rem',
               fontSize: '1rem',
               fontWeight: '600'
@@ -349,16 +350,11 @@ function ConduitFillCalculator({ onBack }) {
         </div>
       </div>
 
-      <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.75rem' }}>NEC Chapter 9, Table 1 - Conduit Fill Limits:</p>
-        <ul style={{ paddingLeft: '1.5rem', margin: '0 0 0.75rem 0' }}>
-          <li style={{ marginBottom: '0.25rem' }}>1 conductor: 53% maximum fill</li>
-          <li style={{ marginBottom: '0.25rem' }}>2 conductors: 31% maximum fill</li>
-          <li style={{ marginBottom: '0.25rem' }}>3+ conductors: 40% maximum fill</li>
-          <li>Nipples (under 24"): 60% maximum fill per NEC 314.16(B)(4)</li>
-        </ul>
-        <p style={{ fontSize: '0.75rem', fontStyle: 'italic', margin: 0 }}>
-          Note: Equipment grounding conductors and bonding conductors count as conductors for fill calculations.
+      {/* Footer */}
+      <div style={{ background: '#f9fafb', color: '#6b7280', padding: '1rem 1.5rem', borderTop: '1px solid #e5e7eb', fontSize: '0.75rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: '#374151' }}>NEC Chapter 9, Table 1:</p>
+        <p style={{ margin: 0 }}>
+          1 conductor: 53% • 2 conductors: 31% • 3+ conductors: 40% • Nipples (&lt;24"): 60%
         </p>
       </div>
     </div>
