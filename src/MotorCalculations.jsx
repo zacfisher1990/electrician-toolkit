@@ -1,8 +1,26 @@
 import React, { useState } from 'react';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
-function MotorCalculations({ onBack }) {
+function MotorCalculations({ isDarkMode = false }) {
   const [activeCalculator, setActiveCalculator] = useState('flc');
+
+  // Dark mode colors
+  const colors = {
+    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
+    headerBg: isDarkMode ? '#111827' : '#ffffff',
+    headerText: isDarkMode ? '#f9fafb' : '#111827',
+    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
+    contentBg: isDarkMode ? '#111827' : '#f9fafb',
+    labelText: isDarkMode ? '#d1d5db' : '#374151',
+    inputBg: isDarkMode ? '#374151' : 'white',
+    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
+    inputText: isDarkMode ? '#f9fafb' : '#111827',
+    cardBg: isDarkMode ? '#1f2937' : 'white',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBg: isDarkMode ? '#111827' : '#f9fafb',
+    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
+    footerBorder: isDarkMode ? '#374151' : '#e5e7eb'
+  };
   
   // Motor Full Load Current Calculator
   const MotorFLCCalculator = () => {
@@ -12,7 +30,6 @@ function MotorCalculations({ onBack }) {
     const [efficiency, setEfficiency] = useState('0.85');
     const [powerFactor, setPowerFactor] = useState('0.8');
 
-    // NEC Table 430.250 - Full Load Current values (approximate)
     const necFLCTable = {
       single: {
         115: { 0.25: 4.4, 0.33: 5.8, 0.5: 7.2, 0.75: 9.8, 1: 13.8, 1.5: 20, 2: 24, 3: 34, 5: 56 },
@@ -51,13 +68,13 @@ function MotorCalculations({ onBack }) {
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Motor Horsepower
             </label>
             <select 
               value={horsepower} 
               onChange={(e) => setHorsepower(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="">Select HP</option>
               <option value="0.25">1/4 HP</option>
@@ -83,13 +100,13 @@ function MotorCalculations({ onBack }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Voltage
             </label>
             <select 
               value={voltage} 
               onChange={(e) => setVoltage(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="115">115V</option>
               <option value="230">230V</option>
@@ -102,13 +119,13 @@ function MotorCalculations({ onBack }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Phase
             </label>
             <select 
               value={phase} 
               onChange={(e) => setPhase(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="single">Single Phase</option>
               <option value="three">Three Phase</option>
@@ -119,13 +136,13 @@ function MotorCalculations({ onBack }) {
         {horsepower && !necFLCTable[phase]?.[parseInt(voltage)]?.[parseFloat(horsepower)] && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
                 Motor Efficiency
               </label>
               <select 
                 value={efficiency} 
                 onChange={(e) => setEfficiency(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+                style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
               >
                 <option value="0.8">80% (Standard)</option>
                 <option value="0.85">85% (High Efficiency)</option>
@@ -135,13 +152,13 @@ function MotorCalculations({ onBack }) {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
                 Power Factor
               </label>
               <select 
                 value={powerFactor} 
                 onChange={(e) => setPowerFactor(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+                style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
               >
                 <option value="0.7">0.7 (Poor)</option>
                 <option value="0.8">0.8 (Typical)</option>
@@ -153,8 +170,8 @@ function MotorCalculations({ onBack }) {
         )}
 
         <div style={{ 
-          background: '#dcfce7', 
-          border: '2px solid #16a34a', 
+          background: '#f0fdf4', 
+          border: '2px solid #22c55e', 
           padding: '1.5rem', 
           borderRadius: '0.5rem'
         }}>
@@ -165,10 +182,10 @@ function MotorCalculations({ onBack }) {
           <div style={{ 
             fontSize: '2rem', 
             fontWeight: 'bold', 
-            color: '#16a34a',
+            color: '#22c55e',
             marginBottom: '1rem',
             padding: '1rem',
-            background: 'white',
+            background: colors.cardBg,
             borderRadius: '0.5rem',
             textAlign: 'center'
           }}>
@@ -225,7 +242,7 @@ function MotorCalculations({ onBack }) {
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Motor Full Load Current (FLC)
             </label>
             <input 
@@ -233,18 +250,18 @@ function MotorCalculations({ onBack }) {
               value={flc} 
               onChange={(e) => setFlc(e.target.value)}
               placeholder="Enter FLC in amps"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Protection Type
             </label>
             <select 
               value={protectionType} 
               onChange={(e) => setProtectionType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="inverse-time-breaker">Inverse Time Breaker</option>
               <option value="instantaneous-trip-breaker">Instantaneous Trip Breaker</option>
@@ -255,8 +272,8 @@ function MotorCalculations({ onBack }) {
         </div>
 
         <div style={{ 
-          background: '#dcfce7', 
-          border: '2px solid #16a34a', 
+          background: '#f0fdf4', 
+          border: '2px solid #22c55e', 
           padding: '1.5rem', 
           borderRadius: '0.5rem'
         }}>
@@ -271,10 +288,10 @@ function MotorCalculations({ onBack }) {
           <div style={{ 
             fontSize: '2rem', 
             fontWeight: 'bold', 
-            color: '#16a34a',
+            color: '#22c55e',
             marginBottom: '1rem',
             padding: '1rem',
-            background: 'white',
+            background: colors.cardBg,
             borderRadius: '0.5rem',
             textAlign: 'center'
           }}>
@@ -326,19 +343,16 @@ function MotorCalculations({ onBack }) {
         }
       };
 
-      // NEC 240.4(D) - Small conductor OCPD limits
       const ocpdLimits = {
         '14': 15,
         '12': 20,
         '10': 30
       };
 
-      // Define wire sizes in order from smallest to largest
       const wireSizes = ['14', '12', '10', '8', '6', '4', '3', '2', '1', 
                          '1/0', '2/0', '3/0', '4/0', '250', '300', '350', 
                          '400', '500', '600', '700', '750'];
       
-      // Find suitable wire based on ampacity AND OCPD limits
       const suitableWire = wireSizes.find(size => {
         const hasEnoughAmpacity = ampacityTable[tempRating][size] >= requiredAmps;
         const meetsOCPDLimit = !ocpdLimits[size] || ocpdLimits[size] >= requiredAmps;
@@ -359,7 +373,7 @@ function MotorCalculations({ onBack }) {
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Motor Full Load Current (FLC)
             </label>
             <input 
@@ -367,18 +381,18 @@ function MotorCalculations({ onBack }) {
               value={flc} 
               onChange={(e) => setFlc(e.target.value)}
               placeholder="Enter FLC in amps"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
               Temperature Rating
             </label>
             <select 
               value={tempRating} 
               onChange={(e) => setTempRating(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: '2px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
             >
               <option value="60C">60°C (140°F) - TW, UF</option>
               <option value="75C">75°C (167°F) - THWN, XHHW</option>
@@ -389,8 +403,8 @@ function MotorCalculations({ onBack }) {
 
         {wireCalc && (
           <div style={{ 
-            background: '#dcfce7', 
-            border: '2px solid #16a34a', 
+            background: '#f0fdf4', 
+            border: '2px solid #22c55e', 
             padding: '1.5rem', 
             borderRadius: '0.5rem'
           }}>
@@ -405,10 +419,10 @@ function MotorCalculations({ onBack }) {
             <div style={{ 
               fontSize: '2rem', 
               fontWeight: 'bold', 
-              color: '#16a34a',
+              color: '#22c55e',
               marginBottom: '1rem',
               padding: '1rem',
-              background: 'white',
+              background: colors.cardBg,
               borderRadius: '0.5rem',
               textAlign: 'center'
             }}>
@@ -457,18 +471,19 @@ function MotorCalculations({ onBack }) {
   };
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-      <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
+      {/* Modern Header */}
+      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <AlertTriangle size={32} />
+          <Settings size={24} color="#3b82f6" />
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Motor Calculations</h1>
-            <p style={{ fontSize: '0.875rem', margin: 0 }}>NEC Article 430 - Motors, Motor Circuits, and Controllers</p>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Motor Calculations</h1>
+            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>NEC Article 430 - Motors and controllers</p>
           </div>
         </div>
       </div>
 
-      <div style={{ background: 'white', padding: '1.5rem' }}>
+      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
         {/* Calculator Selection Tabs */}
         <div style={{ 
           display: 'flex', 
@@ -480,10 +495,10 @@ function MotorCalculations({ onBack }) {
             onClick={() => setActiveCalculator('flc')}
             style={{
               padding: '0.75rem 1.25rem',
-              background: activeCalculator === 'flc' ? '#3b82f6' : '#e5e7eb',
-              color: activeCalculator === 'flc' ? 'white' : '#374151',
-              border: 'none',
-              borderRadius: '0.5rem',
+              background: activeCalculator === 'flc' ? '#3b82f6' : colors.cardBg,
+              color: activeCalculator === 'flc' ? 'white' : colors.subtleText,
+              border: `1px solid ${activeCalculator === 'flc' ? '#3b82f6' : colors.headerBorder}`,
+              borderRadius: '0.375rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
@@ -496,10 +511,10 @@ function MotorCalculations({ onBack }) {
             onClick={() => setActiveCalculator('protection')}
             style={{
               padding: '0.75rem 1.25rem',
-              background: activeCalculator === 'protection' ? '#3b82f6' : '#e5e7eb',
-              color: activeCalculator === 'protection' ? 'white' : '#374151',
-              border: 'none',
-              borderRadius: '0.5rem',
+              background: activeCalculator === 'protection' ? '#3b82f6' : colors.cardBg,
+              color: activeCalculator === 'protection' ? 'white' : colors.subtleText,
+              border: `1px solid ${activeCalculator === 'protection' ? '#3b82f6' : colors.headerBorder}`,
+              borderRadius: '0.375rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
@@ -512,10 +527,10 @@ function MotorCalculations({ onBack }) {
             onClick={() => setActiveCalculator('wiresize')}
             style={{
               padding: '0.75rem 1.25rem',
-              background: activeCalculator === 'wiresize' ? '#3b82f6' : '#e5e7eb',
-              color: activeCalculator === 'wiresize' ? 'white' : '#374151',
-              border: 'none',
-              borderRadius: '0.5rem',
+              background: activeCalculator === 'wiresize' ? '#3b82f6' : colors.cardBg,
+              color: activeCalculator === 'wiresize' ? 'white' : colors.subtleText,
+              border: `1px solid ${activeCalculator === 'wiresize' ? '#3b82f6' : colors.headerBorder}`,
+              borderRadius: '0.375rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
@@ -530,14 +545,12 @@ function MotorCalculations({ onBack }) {
         {calculatorComponents[activeCalculator]}
       </div>
 
-      <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.75rem' }}>NEC References:</p>
-        <ul style={{ paddingLeft: '1.5rem', margin: 0 }}>
-          <li style={{ marginBottom: '0.25rem' }}>430.22 - Branch circuit conductors must carry 125% of motor FLC</li>
-          <li style={{ marginBottom: '0.25rem' }}>430.52 - Maximum rating for motor branch circuit protection</li>
-          <li style={{ marginBottom: '0.25rem' }}>430.250 - Full load current tables for motors</li>
-          <li>430.32 - Overload protection requirements</li>
-        </ul>
+      {/* Footer */}
+      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>NEC References:</p>
+        <p style={{ margin: 0 }}>
+          430.22 - Conductors (125% FLC) • 430.52 - Circuit protection • 430.250 - FLC tables • 430.32 - Overload protection
+        </p>
       </div>
     </div>
   );
