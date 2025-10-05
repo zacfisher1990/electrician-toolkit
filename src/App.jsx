@@ -17,6 +17,7 @@ import './App.css';
 
 function App() {
   const [activeCalculator, setActiveCalculator] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(false); // ADD THIS LINE
 
   const handleNavigate = (view) => {
     if (view === 'home' || view === 'calculators') {
@@ -27,44 +28,65 @@ function App() {
   const renderCalculator = () => {
     switch(activeCalculator) {
       case 'voltage-drop':
-        return <VoltageDropCalculator onBack={() => setActiveCalculator(null)} />;
+        return <VoltageDropCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'ohms-law':
-        return <OhmsLawCalculator onBack={() => setActiveCalculator(null)} />;
+        return <OhmsLawCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'box-fill':
-        return <BoxFillCalculator onBack={() => setActiveCalculator(null)} />;
+        return <BoxFillCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'conduit-fill':
-        return <ConduitFillCalculator onBack={() => setActiveCalculator(null)} />;
+        return <ConduitFillCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'ampacity':
-        return <AmpacityLookupCalculator onBack={() => setActiveCalculator(null)} />;
+        return <AmpacityLookupCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'motor-calculations':
-        return <MotorCalculations onBack={() => setActiveCalculator(null)} />;
+        return <MotorCalculations isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'load-calculations':
-        return <LoadCalculations onBack={() => setActiveCalculator(null)} />;
+        return <LoadCalculations isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'transformer-sizing':
-        return <TransformerSizingCalculator onBack={() => setActiveCalculator(null)} />;
+        return <TransformerSizingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'service-entrance':
-        return <ServiceEntranceSizing onBack={() => setActiveCalculator(null)} />;
+        return <ServiceEntranceSizing isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'grounding-bonding':
-        return <GroundingBondingCalculator onBack={() => setActiveCalculator(null)} />;
+        return <GroundingBondingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'conduit-bending':
-        return <ConduitBendingCalculator onBack={() => setActiveCalculator(null)} />;
+        return <ConduitBendingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'lighting':
-        return <LightingCalculator onBack={() => setActiveCalculator(null)} />;
+        return <LightingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       default:
-        return <CalculatorMenu onSelectCalculator={setActiveCalculator} />;
+        return <CalculatorMenu isDarkMode={isDarkMode} onSelectCalculator={setActiveCalculator} />;
     }
   };
 
   return (
     <div className="App" style={{ paddingBottom: '5rem' }}>
+      {/* Dark Mode Toggle Button */}
+      <button 
+        onClick={() => setIsDarkMode(!isDarkMode)}
+        style={{
+          position: 'fixed',
+          top: '1rem',
+          right: '1rem',
+          zIndex: 1000,
+          padding: '0.5rem 1rem',
+          borderRadius: '0.5rem',
+          border: 'none',
+          background: isDarkMode ? '#374151' : '#f3f4f6',
+          color: isDarkMode ? 'white' : 'black',
+          cursor: 'pointer',
+          fontWeight: '600',
+          fontSize: '0.875rem'
+        }}
+      >
+        {isDarkMode ? '☀️ Light' : '🌙 Dark'}
+      </button>
+
       {!activeCalculator ? (
-        <div>
+        <div style={{ background: isDarkMode ? '#1f2937' : '#ffffff' }}>
           {renderCalculator()}
         </div>
       ) : (
         <div style={{ 
           minHeight: '100vh', 
-          background: 'linear-gradient(to bottom right, #0f172a, #1e293b)', 
+          background: isDarkMode ? '#1f2937' : '#ffffff', 
           padding: '1rem',
           paddingBottom: '6rem'
         }}>
