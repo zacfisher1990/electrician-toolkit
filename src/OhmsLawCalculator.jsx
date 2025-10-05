@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Zap, Plus, Trash2, Calculator, ArrowLeft } from 'lucide-react';
+import { Zap, Plus, Trash2, Calculator } from 'lucide-react';
 
 
 const OhmsLawCalculator = ({ onBack }) => {
@@ -457,24 +457,24 @@ const isTotalFieldDisabled = (totals, fieldName) => {
   };
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-      <div style={{ background: '#fbbf24', color: 'black', padding: '1.5rem', borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+    <div style={{ maxWidth: '64rem', margin: '0 auto', background: '#ffffff', borderRadius: '0.5rem', overflow: 'hidden' }}>
+      {/* Modern Header */}
+      <div style={{ background: '#ffffff', color: '#111827', padding: '1rem 1.5rem', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Zap size={32} />
+          <Zap size={24} color="#3b82f6" />
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Ohm's Law Calculator</h1>
-            <p style={{ fontSize: '0.875rem', margin: 0 }}>Professional Electrical Calculations - V, I, R, P</p>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Ohm's Law Calculator</h1>
+            <p style={{ fontSize: '0.8125rem', margin: 0, color: '#6b7280' }}>Professional Electrical Calculations - V, I, R, P</p>
           </div>
         </div>
       </div>
 
-      <div style={{ background: 'white', padding: '1.5rem' }}>
+      <div style={{ background: '#f9fafb', padding: '1.5rem' }}>
         {/* Tab Navigation */}
         <div style={{ 
           display: 'flex', 
           gap: '0.5rem', 
-          marginBottom: '1.5rem', 
-          borderBottom: '2px solid #e5e7eb',
+          marginBottom: '1.5rem',
           overflowX: 'auto',
           WebkitOverflowScrolling: 'touch'
         }}>
@@ -483,10 +483,10 @@ const isTotalFieldDisabled = (totals, fieldName) => {
             style={{
               minWidth: 'fit-content',
               padding: '0.75rem 1rem',
-              background: activeTab === 'basic' ? '#fbbf24' : '#f3f4f6',
-              color: activeTab === 'basic' ? 'black' : '#6b7280',
-              border: 'none',
-              borderRadius: '0',
+              background: activeTab === 'basic' ? '#3b82f6' : 'white',
+              color: activeTab === 'basic' ? 'white' : '#6b7280',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.375rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
@@ -501,10 +501,10 @@ const isTotalFieldDisabled = (totals, fieldName) => {
             style={{
               minWidth: 'fit-content',
               padding: '0.75rem 1rem',
-              background: activeTab === 'series' ? '#fbbf24' : '#f3f4f6',
-              color: activeTab === 'series' ? 'black' : '#6b7280',
-              border: 'none',
-              borderRadius: '0',
+              background: activeTab === 'series' ? '#3b82f6' : 'white',
+              color: activeTab === 'series' ? 'white' : '#6b7280',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.375rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
@@ -519,10 +519,10 @@ const isTotalFieldDisabled = (totals, fieldName) => {
             style={{
               minWidth: 'fit-content',
               padding: '0.75rem 1rem',
-              background: activeTab === 'parallel' ? '#fbbf24' : '#f3f4f6',
-              color: activeTab === 'parallel' ? 'black' : '#6b7280',
-              border: 'none',
-              borderRadius: '0',
+              background: activeTab === 'parallel' ? '#3b82f6' : 'white',
+              color: activeTab === 'parallel' ? 'white' : '#6b7280',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.375rem',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
@@ -568,8 +568,8 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   style={{ 
                     width: '100%', 
                     padding: '0.5rem 1rem', 
-                    border: '2px solid #d1d5db', 
-                    borderRadius: '0.25rem', 
+                    border: '1px solid #d1d5db', 
+                    borderRadius: '0.375rem', 
                     fontSize: '1rem',
                     background: ((current && resistance) || (current && power) || (resistance && power)) ? '#f3f4f6' : 'white',
                     cursor: ((current && resistance) || (current && power) || (resistance && power)) ? 'not-allowed' : 'text'
@@ -593,8 +593,8 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   style={{ 
                     width: '100%', 
                     padding: '0.5rem 1rem', 
-                    border: '2px solid #d1d5db', 
-                    borderRadius: '0.25rem', 
+                    border: '1px solid #d1d5db', 
+                    borderRadius: '0.375rem', 
                     fontSize: '1rem',
                     background: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? '#f3f4f6' : 'white',
                     cursor: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? 'not-allowed' : 'text'
@@ -618,8 +618,8 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   style={{ 
                     width: '100%', 
                     padding: '0.5rem 1rem', 
-                    border: '2px solid #d1d5db', 
-                    borderRadius: '0.25rem', 
+                    border: '1px solid #d1d5db', 
+                    borderRadius: '0.375rem', 
                     fontSize: '1rem',
                     background: ((voltage && current) || (voltage && power) || (current && power)) ? '#f3f4f6' : 'white',
                     cursor: ((voltage && current) || (voltage && power) || (current && power)) ? 'not-allowed' : 'text'
@@ -643,8 +643,8 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   style={{ 
                     width: '100%', 
                     padding: '0.5rem 1rem', 
-                    border: '2px solid #d1d5db', 
-                    borderRadius: '0.25rem', 
+                    border: '1px solid #d1d5db', 
+                    borderRadius: '0.375rem', 
                     fontSize: '1rem',
                     background: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? '#f3f4f6' : 'white',
                     cursor: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? 'not-allowed' : 'text'
@@ -661,7 +661,7 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                 color: 'white',
                 fontWeight: '600',
                 padding: '0.5rem',
-                borderRadius: '0.5rem',
+                borderRadius: '0.375rem',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '0.875rem',
@@ -673,19 +673,19 @@ const isTotalFieldDisabled = (totals, fieldName) => {
 
             {(basicResults.V || basicResults.I || basicResults.R || basicResults.P) && (
               <div style={{ 
-                background: '#dcfce7', 
-                border: '2px solid #16a34a', 
+                background: '#f0fdf4', 
+                border: '2px solid #22c55e', 
                 padding: '1.5rem', 
                 borderRadius: '0.5rem'
               }}>
-                <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem', textAlign: 'center' }}>
+                <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
                   Results
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
                   {basicResults.V && (
                     <div>
                       <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Voltage:</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803d' }}>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#22c55e' }}>
                         {basicResults.V} V
                       </div>
                     </div>
@@ -693,7 +693,7 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   {basicResults.I && (
                     <div>
                       <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Current:</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803d' }}>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#22c55e' }}>
                         {basicResults.I} A
                       </div>
                     </div>
@@ -701,7 +701,7 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   {basicResults.R && (
                     <div>
                       <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Resistance:</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803d' }}>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#22c55e' }}>
                         {basicResults.R} Ω
                       </div>
                     </div>
@@ -709,7 +709,7 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   {basicResults.P && (
                     <div>
                       <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Power:</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#15803d' }}>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#22c55e' }}>
                         {basicResults.P} W
                       </div>
                     </div>
@@ -723,48 +723,48 @@ const isTotalFieldDisabled = (totals, fieldName) => {
         {/* Series Tab */}
         {activeTab === 'series' && (
           <div>
-            <div style={{ background: '#eff6ff', borderLeft: '4px solid #3b82f6', padding: '1rem', marginBottom: '1rem', borderRadius: '0.25rem' }}>
+            <div style={{ background: '#eff6ff', borderLeft: '4px solid #3b82f6', padding: '1rem', marginBottom: '1rem', borderRadius: '0.375rem' }}>
               <p style={{ margin: 0, fontSize: '0.875rem', color: '#1e40af', fontWeight: '600' }}>
                 Series Circuit: Current is constant across all components
               </p>
             </div>
 
-            <div style={{ background: '#f9fafb', border: '2px solid #d1d5db', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+            <div style={{ background: 'white', border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
               <h3 style={{ fontWeight: 'bold', color: '#374151', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
                 Circuit Totals (Optional)
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-  {['R', 'V', 'I', 'P'].map(field => (
-    <div key={field}>
-      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
-        Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
-      </label>
-      <input
-        type="number"
-        value={seriesTotals[field]}
-        onChange={(e) => setSeriesTotals({...seriesTotals, [field]: e.target.value})}
-        placeholder="Optional"
-        disabled={isTotalFieldDisabled(seriesTotals, field)}
-        style={{ 
-          width: '100%', 
-          padding: '0.5rem', 
-          border: '1px solid #d1d5db', 
-          borderRadius: '0.25rem', 
-          fontSize: '0.875rem',
-          background: isTotalFieldDisabled(seriesTotals, field) ? '#f3f4f6' : 'white',
-          cursor: isTotalFieldDisabled(seriesTotals, field) ? 'not-allowed' : 'text'
-        }}
-      />
-    </div>
-  ))}
-</div>
+                {['R', 'V', 'I', 'P'].map(field => (
+                  <div key={field}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+                      Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
+                    </label>
+                    <input
+                      type="number"
+                      value={seriesTotals[field]}
+                      onChange={(e) => setSeriesTotals({...seriesTotals, [field]: e.target.value})}
+                      placeholder="Optional"
+                      disabled={isTotalFieldDisabled(seriesTotals, field)}
+                      style={{ 
+                        width: '100%', 
+                        padding: '0.5rem', 
+                        border: '1px solid #d1d5db', 
+                        borderRadius: '0.375rem', 
+                        fontSize: '0.875rem',
+                        background: isTotalFieldDisabled(seriesTotals, field) ? '#f3f4f6' : 'white',
+                        cursor: isTotalFieldDisabled(seriesTotals, field) ? 'not-allowed' : 'text'
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
               <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem', marginBottom: 0 }}>
                 Enter known total values to help solve the circuit. Series: Current is constant.
               </p>
             </div>
 
             {seriesComponents.map((comp, index) => (
-              <div key={comp.id} style={{ background: '#f9fafb', padding: '1rem', borderRadius: '0.5rem', border: '2px solid #e5e7eb', marginBottom: '1rem' }}>
+              <div key={comp.id} style={{ background: 'white', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e5e7eb', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                   <h3 style={{ fontWeight: 'bold', color: '#374151', margin: 0, fontSize: '0.875rem' }}>Component {index + 1}</h3>
                   {seriesComponents.length > 1 && (
@@ -791,7 +791,7 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                         type="number"
                         value={comp[field]}
                         onChange={(e) => updateSeriesComponent(comp.id, field, e.target.value)}
-                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }}
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', background: '#f9fafb' }}
                       />
                     </div>
                   ))}
@@ -803,11 +803,11 @@ const isTotalFieldDisabled = (totals, fieldName) => {
               onClick={addSeriesComponent}
               style={{
                 width: '100%',
-                background: '#16a34a',
+                background: '#3b82f6',
                 color: 'white',
                 fontWeight: '600',
-                padding: '0.5rem',
-                borderRadius: '0.5rem',
+                padding: '0.75rem',
+                borderRadius: '0.375rem',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '0.875rem',
@@ -818,7 +818,7 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                 marginBottom: '1rem'
               }}
             >
-              <Plus size={20} />
+              <Plus size={16} />
               Add Component
             </button>
 
@@ -827,11 +827,11 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                 onClick={calculateSeries}
                 style={{
                   flex: 1,
-                  background: '#fbbf24',
-                  color: 'black',
+                  background: '#3b82f6',
+                  color: 'white',
                   fontWeight: 'bold',
                   padding: '0.75rem',
-                  borderRadius: '0.5rem',
+                  borderRadius: '0.375rem',
                   border: 'none',
                   cursor: 'pointer',
                   fontSize: '1rem',
@@ -852,7 +852,7 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   color: 'white',
                   fontWeight: '600',
                   padding: '0.75rem',
-                  borderRadius: '0.5rem',
+                  borderRadius: '0.375rem',
                   border: 'none',
                   cursor: 'pointer',
                   fontSize: '0.875rem'
@@ -862,32 +862,32 @@ const isTotalFieldDisabled = (totals, fieldName) => {
               </button>
             </div>
 
-            <div style={{ background: '#dcfce7', border: '2px solid #16a34a', padding: '1rem', borderRadius: '0.5rem' }}>
+            <div style={{ background: '#f0fdf4', border: '2px solid #22c55e', padding: '1rem', borderRadius: '0.5rem' }}>
               <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
                 Circuit Totals
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', fontSize: '0.875rem' }}>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total R:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
                     {getTotalsSeries().totalR.toFixed(1)} Ω
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total V:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
                     {getTotalsSeries().totalV.toFixed(1)} V
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Current:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
                     {getTotalsSeries().totalI.toFixed(1)} A
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total P:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
                     {getTotalsSeries().totalP.toFixed(1)} W
                   </p>
                 </div>
@@ -899,48 +899,48 @@ const isTotalFieldDisabled = (totals, fieldName) => {
         {/* Parallel Tab */}
         {activeTab === 'parallel' && (
           <div>
-            <div style={{ background: '#faf5ff', borderLeft: '4px solid #a855f7', padding: '1rem', marginBottom: '1rem', borderRadius: '0.25rem' }}>
+            <div style={{ background: '#faf5ff', borderLeft: '4px solid #a855f7', padding: '1rem', marginBottom: '1rem', borderRadius: '0.375rem' }}>
               <p style={{ margin: 0, fontSize: '0.875rem', color: '#7e22ce', fontWeight: '600' }}>
                 Parallel Circuit: Voltage is constant across all components
               </p>
             </div>
 
-            <div style={{ background: '#f9fafb', border: '2px solid #d1d5db', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+            <div style={{ background: 'white', border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
               <h3 style={{ fontWeight: 'bold', color: '#374151', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
                 Circuit Totals (Optional)
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-  {['R', 'V', 'I', 'P'].map(field => (
-    <div key={field}>
-      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
-        Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
-      </label>
-      <input
-        type="number"
-        value={parallelTotals[field]}
-        onChange={(e) => setParallelTotals({...parallelTotals, [field]: e.target.value})}
-        placeholder="Optional"
-        disabled={isTotalFieldDisabled(parallelTotals, field)}
-        style={{ 
-          width: '100%', 
-          padding: '0.5rem', 
-          border: '1px solid #d1d5db', 
-          borderRadius: '0.25rem', 
-          fontSize: '0.875rem',
-          background: isTotalFieldDisabled(parallelTotals, field) ? '#f3f4f6' : 'white',
-          cursor: isTotalFieldDisabled(parallelTotals, field) ? 'not-allowed' : 'text'
-        }}
-      />
-    </div>
-  ))}
-</div>
+                {['R', 'V', 'I', 'P'].map(field => (
+                  <div key={field}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280', marginBottom: '0.25rem' }}>
+                      Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
+                    </label>
+                    <input
+                      type="number"
+                      value={parallelTotals[field]}
+                      onChange={(e) => setParallelTotals({...parallelTotals, [field]: e.target.value})}
+                      placeholder="Optional"
+                      disabled={isTotalFieldDisabled(parallelTotals, field)}
+                      style={{ 
+                        width: '100%', 
+                        padding: '0.5rem', 
+                        border: '1px solid #d1d5db', 
+                        borderRadius: '0.375rem', 
+                        fontSize: '0.875rem',
+                        background: isTotalFieldDisabled(parallelTotals, field) ? '#f3f4f6' : 'white',
+                        cursor: isTotalFieldDisabled(parallelTotals, field) ? 'not-allowed' : 'text'
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
               <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem', marginBottom: 0 }}>
                 Enter known total values to help solve the circuit. Parallel: Voltage is constant.
               </p>
             </div>
 
             {parallelComponents.map((comp, index) => (
-              <div key={comp.id} style={{ background: '#f9fafb', padding: '1rem', borderRadius: '0.5rem', border: '2px solid #e5e7eb', marginBottom: '1rem' }}>
+              <div key={comp.id} style={{ background: 'white', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e5e7eb', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                   <h3 style={{ fontWeight: 'bold', color: '#374151', margin: 0, fontSize: '0.875rem' }}>Component {index + 1}</h3>
                   {parallelComponents.length > 1 && (
@@ -967,7 +967,7 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                         type="number"
                         value={comp[field]}
                         onChange={(e) => updateParallelComponent(comp.id, field, e.target.value)}
-                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }}
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', background: '#f9fafb' }}
                       />
                     </div>
                   ))}
@@ -979,11 +979,11 @@ const isTotalFieldDisabled = (totals, fieldName) => {
               onClick={addParallelComponent}
               style={{
                 width: '100%',
-                background: '#16a34a',
+                background: '#3b82f6',
                 color: 'white',
                 fontWeight: '600',
-                padding: '0.5rem',
-                borderRadius: '0.5rem',
+                padding: '0.75rem',
+                borderRadius: '0.375rem',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '0.875rem',
@@ -994,7 +994,7 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                 marginBottom: '1rem'
               }}
             >
-              <Plus size={20} />
+              <Plus size={16} />
               Add Component
             </button>
 
@@ -1003,11 +1003,11 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                 onClick={calculateParallel}
                 style={{
                   flex: 1,
-                  background: '#fbbf24',
-                  color: 'black',
+                  background: '#3b82f6',
+                  color: 'white',
                   fontWeight: 'bold',
                   padding: '0.75rem',
-                  borderRadius: '0.5rem',
+                  borderRadius: '0.375rem',
                   border: 'none',
                   cursor: 'pointer',
                   fontSize: '1rem',
@@ -1028,7 +1028,7 @@ const isTotalFieldDisabled = (totals, fieldName) => {
                   color: 'white',
                   fontWeight: '600',
                   padding: '0.75rem',
-                  borderRadius: '0.5rem',
+                  borderRadius: '0.375rem',
                   border: 'none',
                   cursor: 'pointer',
                   fontSize: '0.875rem'
@@ -1038,32 +1038,32 @@ const isTotalFieldDisabled = (totals, fieldName) => {
               </button>
             </div>
 
-            <div style={{ background: '#dcfce7', border: '2px solid #16a34a', padding: '1rem', borderRadius: '0.5rem' }}>
+            <div style={{ background: '#f0fdf4', border: '2px solid #22c55e', padding: '1rem', borderRadius: '0.5rem' }}>
               <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
                 Circuit Totals
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', fontSize: '0.875rem' }}>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total R:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
                     {getTotalsParallel().totalR.toFixed(1)} Ω
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Voltage:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
                     {getTotalsParallel().totalV.toFixed(1)} V
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total I:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
                     {getTotalsParallel().totalI.toFixed(1)} A
                   </p>
                 </div>
                 <div>
                   <span style={{ fontWeight: '600', color: '#374151' }}>Total P:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#16a34a', margin: '0.25rem 0 0 0' }}>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
                     {getTotalsParallel().totalP.toFixed(1)} W
                   </p>
                 </div>
@@ -1073,16 +1073,12 @@ const isTotalFieldDisabled = (totals, fieldName) => {
         )}
       </div>
 
-      <div style={{ background: '#1e293b', color: '#cbd5e1', padding: '1.5rem', borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem', fontSize: '0.875rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.75rem' }}>Formulas:</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
-          <p style={{ margin: 0 }}>V = I × R</p>
-          <p style={{ margin: 0 }}>P = V × I</p>
-          <p style={{ margin: 0 }}>I = V ÷ R</p>
-          <p style={{ margin: 0 }}>P = I² × R</p>
-          <p style={{ margin: 0 }}>R = V ÷ I</p>
-          <p style={{ margin: 0 }}>P = V² ÷ R</p>
-        </div>
+      {/* Footer */}
+      <div style={{ background: '#f9fafb', color: '#6b7280', padding: '1rem 1.5rem', borderTop: '1px solid #e5e7eb', fontSize: '0.75rem' }}>
+        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: '#374151' }}>Formulas:</p>
+        <p style={{ margin: 0 }}>
+          V = I × R • P = V × I • I = V ÷ R • P = I² × R • R = V ÷ I • P = V² ÷ R
+        </p>
       </div>
     </div>
   );
