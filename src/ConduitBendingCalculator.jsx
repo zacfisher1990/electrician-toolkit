@@ -1,27 +1,19 @@
 import React, { useState } from 'react';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, CheckCircle, AlertCircle } from 'lucide-react';
 
-function ConduitBendingCalculator({ isDarkMode = false }) {
+function ConduitBendingCalculator({ isDarkMode = false, onBack }) {
   const [activeTab, setActiveTab] = useState('offset');
 
-  // Dark mode colors - matching the design system
+  // Dark mode colors
   const colors = {
-    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
-    headerBg: isDarkMode ? '#111827' : '#ffffff',
-    headerText: isDarkMode ? '#f9fafb' : '#111827',
-    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
-    contentBg: isDarkMode ? '#111827' : '#f9fafb',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#374151' : 'white',
-    inputBgAlt: isDarkMode ? '#1f2937' : '#f9fafb',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    inputText: isDarkMode ? '#f9fafb' : '#111827',
-    cardBg: isDarkMode ? '#1f2937' : 'white',
+    cardBg: isDarkMode ? '#374151' : '#ffffff',
     cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBg: isDarkMode ? '#111827' : '#f9fafb',
-    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBorder: isDarkMode ? '#374151' : '#e5e7eb'
+    cardText: isDarkMode ? '#f9fafb' : '#111827',
+    labelText: isDarkMode ? '#d1d5db' : '#374151',
+    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
+    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
+    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
   };
 
   // Offset Bend Calculator
@@ -53,9 +45,9 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Obstacle Height (inches)
             </label>
             <input
@@ -63,22 +55,39 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
               value={obstacleHeight}
               onChange={(e) => setObstacleHeight(e.target.value)}
               placeholder="Enter height"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
             <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Height to clear obstacle</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Bend Angle
             </label>
             <select
               value={bendAngle}
               onChange={(e) => setBendAngle(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="10">10°</option>
-              <option value="15">15°</option>
               <option value="22.5">22.5°</option>
               <option value="30">30°</option>
               <option value="45">45°</option>
@@ -89,71 +98,74 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
         </div>
 
         {results && (
-          <div style={{ 
-            background: '#f0fdf4', 
-            border: '2px solid #22c55e', 
-            padding: '1.5rem', 
-            borderRadius: '0.5rem'
-          }}>
-            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-              Offset Bend Results
-            </h3>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ color: '#14532d', marginBottom: '0.5rem' }}>
-                <strong>Distance Between Bends:</strong>
-              </div>
-              <div style={{ 
-                fontSize: '2rem', 
-                fontWeight: 'bold', 
-                color: '#16a34a',
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                background: '#dbeafe',
                 padding: '1rem',
-                background: 'white',
-                borderRadius: '0.5rem',
+                borderRadius: '8px',
                 textAlign: 'center'
               }}>
-                {results.distanceBetweenBends}"
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+                  Distance Between Bends
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                  {results.distanceBetweenBends}"
+                </div>
+              </div>
+              
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Shrinkage
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.shrinkage}"
+                </div>
               </div>
             </div>
 
-            <div style={{ 
-              color: '#14532d',
-              paddingTop: '1rem',
-              borderTop: '1px solid #bbf7d0'
+            <div style={{
+              background: '#d1fae5',
+              border: '1px solid #6ee7b7',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1rem'
             }}>
-              <div style={{ marginBottom: '0.5rem' }}><strong>Shrinkage:</strong> {results.shrinkage}"</div>
-              <div><strong>Bend Angle:</strong> {results.angle}°</div>
+              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+                    How to Make the Bend
+                  </div>
+                  <div>Mark first bend, measure {results.distanceBetweenBends}" from center of first bend, then make second bend at {results.angle}°.</div>
+                </div>
+              </div>
             </div>
 
-            <div style={{ 
-              background: '#fef3c7',
-              padding: '0.75rem',
-              borderRadius: '0.375rem',
-              border: '1px solid #fbbf24',
-              color: '#92400e',
+            <div style={{
+              background: colors.sectionBg,
+              padding: '1rem',
+              borderRadius: '8px',
+              border: `1px solid ${colors.cardBorder}`,
               fontSize: '0.875rem',
-              marginTop: '1rem'
+              color: colors.labelText
             }}>
-              <strong>Note:</strong> Mark first bend, measure distance between bends from center of first bend, then make second bend.
+              <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+                Offset Bend Tips:
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                <li>30° bends are most common for typical offsets</li>
+                <li>45° bends create shorter, steeper offsets</li>
+                <li>Always account for shrinkage in measurements</li>
+              </ul>
             </div>
-          </div>
+          </>
         )}
-
-        <div style={{ 
-          background: colors.cardBg,
-          padding: '1rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${colors.cardBorder}`,
-          marginTop: '1.5rem'
-        }}>
-          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Offset Bend Tips:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
-            <li style={{ marginBottom: '0.25rem' }}>30° bends are most common for typical offsets</li>
-            <li style={{ marginBottom: '0.25rem' }}>45° bends create shorter, steeper offsets</li>
-            <li style={{ marginBottom: '0.25rem' }}>10° bends are gentler and take more space</li>
-            <li>Always account for shrinkage in your measurements</li>
-          </ul>
-        </div>
       </div>
     );
   };
@@ -164,16 +176,8 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
     const [conduitSize, setConduitSize] = useState('3/4');
 
     const deductions = {
-      '1/2': 5,
-      '3/4': 6,
-      '1': 8,
-      '1-1/4': 11,
-      '1-1/2': 14,
-      '2': 16,
-      '2-1/2': 21,
-      '3': 26,
-      '3-1/2': 30,
-      '4': 34
+      '1/2': 5, '3/4': 6, '1': 8, '1-1/4': 11, '1-1/2': 14,
+      '2': 16, '2-1/2': 21, '3': 26, '3-1/2': 30, '4': 34
     };
 
     const calculateStubUp = () => {
@@ -192,9 +196,9 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Desired Stub Height (inches)
             </label>
             <input
@@ -202,101 +206,128 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
               value={stubHeight}
               onChange={(e) => setStubHeight(e.target.value)}
               placeholder="Enter stub height"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
             <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Back of 90° to floor</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Conduit Size
             </label>
             <select
               value={conduitSize}
               onChange={(e) => setConduitSize(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
-              <option value="1/2">1/2"</option>
-              <option value="3/4">3/4"</option>
-              <option value="1">1"</option>
-              <option value="1-1/4">1-1/4"</option>
-              <option value="1-1/2">1-1/2"</option>
-              <option value="2">2"</option>
-              <option value="2-1/2">2-1/2"</option>
-              <option value="3">3"</option>
-              <option value="3-1/2">3-1/2"</option>
-              <option value="4">4"</option>
+              {Object.keys(deductions).map(size => (
+                <option key={size} value={size}>{size}"</option>
+              ))}
             </select>
           </div>
         </div>
 
         {results && (
-          <div style={{ 
-            background: '#f0fdf4', 
-            border: '2px solid #22c55e', 
-            padding: '1.5rem', 
-            borderRadius: '0.5rem'
-          }}>
-            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-              90° Stub-Up Results
-            </h3>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ color: '#14532d', marginBottom: '0.5rem' }}>
-                <strong>Mark at:</strong>
-              </div>
-              <div style={{ 
-                fontSize: '2rem', 
-                fontWeight: 'bold', 
-                color: '#16a34a',
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                background: '#dbeafe',
                 padding: '1rem',
-                background: 'white',
-                borderRadius: '0.5rem',
+                borderRadius: '8px',
                 textAlign: 'center'
               }}>
-                {results.markDistance}"
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+                  Mark At
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                  {results.markDistance}"
+                </div>
+              </div>
+              
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Deduction
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.deduction}"
+                </div>
+              </div>
+
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Conduit Size
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {conduitSize}"
+                </div>
               </div>
             </div>
 
-            <div style={{ 
-              color: '#14532d',
-              paddingTop: '1rem',
-              borderTop: '1px solid #bbf7d0'
+            <div style={{
+              background: '#d1fae5',
+              border: '1px solid #6ee7b7',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1rem'
             }}>
-              <div style={{ marginBottom: '0.5rem' }}><strong>Deduction Used:</strong> {results.deduction}"</div>
-              <div style={{ marginBottom: '0.5rem' }}><strong>Conduit Size:</strong> {conduitSize}"</div>
-              <div><strong>Final Stub Height:</strong> {results.stubHeight}"</div>
+              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+                    How to Bend
+                  </div>
+                  <div>Measure from end of conduit, mark at {results.markDistance}", line up mark with arrow on bender, make 90° bend.</div>
+                </div>
+              </div>
             </div>
 
-            <div style={{ 
-              background: '#fef3c7',
-              padding: '0.75rem',
-              borderRadius: '0.375rem',
-              border: '1px solid #fbbf24',
-              color: '#92400e',
+            <div style={{
+              background: colors.sectionBg,
+              padding: '1rem',
+              borderRadius: '8px',
+              border: `1px solid ${colors.cardBorder}`,
               fontSize: '0.875rem',
-              marginTop: '1rem'
+              color: colors.labelText
             }}>
-              <strong>How to bend:</strong> Measure from end of conduit, mark at {results.markDistance}", line up mark with arrow on bender, make 90° bend.
+              <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+                Stub-Up Tips:
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                <li>Deduction accounts for the radius of the bend</li>
+                <li>Larger conduit = larger deduction</li>
+                <li>Always check your bender - deductions vary by manufacturer</li>
+              </ul>
             </div>
-          </div>
+          </>
         )}
-
-        <div style={{ 
-          background: colors.cardBg,
-          padding: '1rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${colors.cardBorder}`,
-          marginTop: '1.5rem'
-        }}>
-          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Stub-Up Tips:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
-            <li style={{ marginBottom: '0.25rem' }}>Deduction accounts for the radius of the bend</li>
-            <li style={{ marginBottom: '0.25rem' }}>Larger conduit = larger deduction</li>
-            <li style={{ marginBottom: '0.25rem' }}>Always check your bender - deductions can vary slightly by manufacturer</li>
-            <li>Measure from end of conduit to your mark for accuracy</li>
-          </ul>
-        </div>
       </div>
     );
   };
@@ -327,9 +358,9 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Obstacle Height (inches)
             </label>
             <input
@@ -337,98 +368,130 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
               value={obstacleHeight}
               onChange={(e) => setObstacleHeight(e.target.value)}
               placeholder="Enter height"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
-            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Height to clear</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
-              Obstacle Width (inches) - Optional
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
+              Obstacle Width (Optional)
             </label>
             <input
               type="number"
               value={obstacleWidth}
               onChange={(e) => setObstacleWidth(e.target.value)}
               placeholder="Auto: 4x height"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
-            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Width of obstacle</div>
           </div>
         </div>
 
         {results && (
-          <div style={{ 
-            background: '#f0fdf4', 
-            border: '2px solid #22c55e', 
-            padding: '1.5rem', 
-            borderRadius: '0.5rem'
-          }}>
-            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-              3-Point Saddle Results
-            </h3>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                background: '#dbeafe',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+                  Center Bend
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                  {results.centerBend}°
+                </div>
+              </div>
+              
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Outer Bends
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.outerBends}°
+                </div>
+              </div>
 
-            <div style={{ 
-              background: colors.cardBg, 
-              padding: '1rem', 
-              borderRadius: '0.5rem',
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Distance to Outer
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.distanceToOuter}"
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              background: '#d1fae5',
+              border: '1px solid #6ee7b7',
+              borderRadius: '8px',
+              padding: '1rem',
               marginBottom: '1rem'
             }}>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}>
-                <strong>Center Bend:</strong> {results.centerBend}°
-              </div>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}>
-                <strong>Outer Bends:</strong> {results.outerBends}° each
-              </div>
-              <div style={{ fontSize: '0.875rem', color: colors.labelText }}>
-                <strong>Distance to Outer Bends:</strong> {results.distanceToOuter}" (each side of center)
+              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+                    Bending Sequence
+                  </div>
+                  <ol style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                    <li>Mark center of obstacle on conduit</li>
+                    <li>Make 45° center bend at mark</li>
+                    <li>Measure {results.distanceToOuter}" from center each direction</li>
+                    <li>Make 22.5° bends on each side (opposite direction)</li>
+                  </ol>
+                </div>
               </div>
             </div>
 
-            <div style={{ 
-              color: '#14532d',
-              paddingTop: '1rem',
-              borderTop: '1px solid #bbf7d0'
-            }}>
-              <div style={{ marginBottom: '0.5rem' }}><strong>Shrinkage:</strong> ~{results.shrinkage}"</div>
-              <div><strong>Obstacle Height:</strong> {results.obstacleHeight}"</div>
-            </div>
-
-            <div style={{ 
-              background: '#fef3c7',
-              padding: '0.75rem',
-              borderRadius: '0.375rem',
-              border: '1px solid #fbbf24',
-              color: '#92400e',
+            <div style={{
+              background: colors.sectionBg,
+              padding: '1rem',
+              borderRadius: '8px',
+              border: `1px solid ${colors.cardBorder}`,
               fontSize: '0.875rem',
-              marginTop: '1rem'
+              color: colors.labelText
             }}>
-              <strong>Bending sequence:</strong>
-              <ol style={{ margin: '0.5rem 0 0 1.25rem', padding: 0 }}>
-                <li>Mark center of obstacle on conduit</li>
-                <li>Make 45° center bend at mark</li>
-                <li>Measure {results.distanceToOuter}" from center each direction</li>
-                <li>Make 22.5° bends on each side (opposite direction of center)</li>
-              </ol>
+              <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+                3-Point Saddle Tips:
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                <li>Center bend goes up, outer bends go down</li>
+                <li>Most common for going over pipes or other conduits</li>
+                <li>Mark all three bend locations before starting</li>
+              </ul>
             </div>
-          </div>
+          </>
         )}
-
-        <div style={{ 
-          background: colors.cardBg,
-          padding: '1rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${colors.cardBorder}`,
-          marginTop: '1.5rem'
-        }}>
-          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>3-Point Saddle Tips:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
-            <li style={{ marginBottom: '0.25rem' }}>Center bend goes up, outer bends go down</li>
-            <li style={{ marginBottom: '0.25rem' }}>Most common for going over pipes or other conduits</li>
-            <li style={{ marginBottom: '0.25rem' }}>Distance between bends typically 2-4x the obstacle height</li>
-            <li>Mark all three bend locations before starting</li>
-          </ul>
-        </div>
       </div>
     );
   };
@@ -452,9 +515,7 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
         bendAngle: 22.5,
         distanceToOuter: distanceToOuter.toFixed(2),
         innerSpacing: innerSpacing.toFixed(2),
-        shrinkage: shrinkage.toFixed(2),
-        obstacleHeight: height.toFixed(2),
-        obstacleWidth: width.toFixed(2)
+        shrinkage: shrinkage.toFixed(2)
       };
     };
 
@@ -462,9 +523,9 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Obstacle Height (inches)
             </label>
             <input
@@ -472,13 +533,21 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
               value={obstacleHeight}
               onChange={(e) => setObstacleHeight(e.target.value)}
               placeholder="Enter height"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
-            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Height to clear</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Obstacle Width (inches)
             </label>
             <input
@@ -486,85 +555,108 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
               value={obstacleWidth}
               onChange={(e) => setObstacleWidth(e.target.value)}
               placeholder="Enter width"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
-            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Width of obstacle</div>
           </div>
         </div>
 
         {results && (
-          <div style={{ 
-            background: '#f0fdf4', 
-            border: '2px solid #22c55e', 
-            padding: '1.5rem', 
-            borderRadius: '0.5rem'
-          }}>
-            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-              4-Point Saddle Results
-            </h3>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                background: '#dbeafe',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+                  All Bends
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                  {results.bendAngle}°
+                </div>
+              </div>
+              
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Outer Distance
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.distanceToOuter}"
+                </div>
+              </div>
 
-            <div style={{ 
-              background: colors.cardBg, 
-              padding: '1rem', 
-              borderRadius: '0.5rem',
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Inner Spacing
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.innerSpacing}"
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              background: '#d1fae5',
+              border: '1px solid #6ee7b7',
+              borderRadius: '8px',
+              padding: '1rem',
               marginBottom: '1rem'
             }}>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}>
-                <strong>All Four Bends:</strong> {results.bendAngle}° each
-              </div>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}>
-                <strong>Distance to Outer Bends:</strong> {results.distanceToOuter}" (each side from center)
-              </div>
-              <div style={{ fontSize: '0.875rem', color: colors.labelText }}>
-                <strong>Spacing Between Inner Bends:</strong> {results.innerSpacing}"
+              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+                    Bending Sequence
+                  </div>
+                  <ol style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                    <li>Mark center of obstacle on conduit</li>
+                    <li>Measure {results.distanceToOuter}" from center (outer bends)</li>
+                    <li>Measure {results.innerSpacing}" from center (inner bends)</li>
+                    <li>Make all four 22.5° bends: outer up, inner down</li>
+                  </ol>
+                </div>
               </div>
             </div>
 
-            <div style={{ 
-              color: '#14532d',
-              paddingTop: '1rem',
-              borderTop: '1px solid #bbf7d0'
-            }}>
-              <div style={{ marginBottom: '0.5rem' }}><strong>Shrinkage:</strong> ~{results.shrinkage}"</div>
-              <div style={{ marginBottom: '0.5rem' }}><strong>Obstacle Height:</strong> {results.obstacleHeight}"</div>
-              <div><strong>Obstacle Width:</strong> {results.obstacleWidth}"</div>
-            </div>
-
-            <div style={{ 
-              background: '#fef3c7',
-              padding: '0.75rem',
-              borderRadius: '0.375rem',
-              border: '1px solid #fbbf24',
-              color: '#92400e',
+            <div style={{
+              background: colors.sectionBg,
+              padding: '1rem',
+              borderRadius: '8px',
+              border: `1px solid ${colors.cardBorder}`,
               fontSize: '0.875rem',
-              marginTop: '1rem'
+              color: colors.labelText
             }}>
-              <strong>Bending sequence:</strong>
-              <ol style={{ margin: '0.5rem 0 0 1.25rem', padding: 0 }}>
-                <li>Mark center of obstacle on conduit</li>
-                <li>Measure {results.distanceToOuter}" from center in both directions (outer bends)</li>
-                <li>Measure {results.innerSpacing}" from center in both directions (inner bends)</li>
-                <li>Make all four 22.5° bends: outer bends go up, inner bends go down</li>
-              </ol>
+              <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+                4-Point Saddle Tips:
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                <li>Used for larger obstacles where 3-point won't work</li>
+                <li>Outer bends go up, inner bends go down</li>
+                <li>Creates a flatter top for better clearance</li>
+              </ul>
             </div>
-          </div>
+          </>
         )}
-
-        <div style={{ 
-          background: colors.cardBg,
-          padding: '1rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${colors.cardBorder}`,
-          marginTop: '1.5rem'
-        }}>
-          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>4-Point Saddle Tips:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
-            <li style={{ marginBottom: '0.25rem' }}>Used for larger obstacles where 3-point saddle won't work</li>
-            <li style={{ marginBottom: '0.25rem' }}>Outer bends go up, inner bends go down (alternating pattern)</li>
-            <li style={{ marginBottom: '0.25rem' }}>Creates a flatter top for better clearance over wide obstacles</li>
-            <li>Mark all four bend locations before starting to bend</li>
-          </ul>
-        </div>
       </div>
     );
   };
@@ -577,102 +669,86 @@ function ConduitBendingCalculator({ isDarkMode = false }) {
   };
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
-      {/* Modern Header */}
-      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      {/* Header Card */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
           <TrendingUp size={24} color="#3b82f6" />
-          <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Conduit Bending</h1>
-            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>Professional Bending Calculations</p>
-          </div>
+          <h2 style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '600', 
+            color: colors.cardText,
+            margin: 0 
+          }}>
+            Conduit Bending
+          </h2>
         </div>
-      </div>
-
-      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
-        {/* Tab Navigation */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '0.5rem', 
-          marginBottom: '1.5rem',
-          flexWrap: 'wrap'
+        <p style={{ 
+          fontSize: '0.875rem', 
+          color: colors.labelText,
+          margin: 0 
         }}>
-          <button 
-            onClick={() => setActiveTab('offset')}
-            style={{
-              padding: '0.75rem 1.25rem',
-              background: activeTab === 'offset' ? '#3b82f6' : colors.inputBgAlt,
-              color: activeTab === 'offset' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'offset' ? '#3b82f6' : colors.inputBorder}`,
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            Offset Bends
-          </button>
-          <button 
-            onClick={() => setActiveTab('stubup')}
-            style={{
-              padding: '0.75rem 1.25rem',
-              background: activeTab === 'stubup' ? '#3b82f6' : colors.inputBgAlt,
-              color: activeTab === 'stubup' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'stubup' ? '#3b82f6' : colors.inputBorder}`,
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            90° Stub-Up
-          </button>
-          <button 
-            onClick={() => setActiveTab('saddle')}
-            style={{
-              padding: '0.75rem 1.25rem',
-              background: activeTab === 'saddle' ? '#3b82f6' : colors.inputBgAlt,
-              color: activeTab === 'saddle' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'saddle' ? '#3b82f6' : colors.inputBorder}`,
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            3-Point Saddle
-          </button>
-          <button 
-            onClick={() => setActiveTab('fourpoint')}
-            style={{
-              padding: '0.75rem 1.25rem',
-              background: activeTab === 'fourpoint' ? '#3b82f6' : colors.inputBgAlt,
-              color: activeTab === 'fourpoint' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'fourpoint' ? '#3b82f6' : colors.inputBorder}`,
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            4-Point Saddle
-          </button>
-        </div>
-
-        {/* Active Tab Content */}
-        {tabComponents[activeTab]}
+          Professional Bending Calculations
+        </p>
       </div>
 
-      {/* Footer */}
-      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>Bending Best Practices:</p>
-        <p style={{ margin: 0 }}>
-          Use quality benders for your conduit size • Deductions vary by manufacturer - verify with your tool • Practice on scrap before final runs • EMT is most common; rigid/IMC require hydraulic benders
-        </p>
+      {/* Tab Navigation */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        display: 'flex',
+        gap: '0.5rem',
+        flexWrap: 'wrap'
+      }}>
+        {[
+          { id: 'offset', label: 'Offset Bends' },
+          { id: 'stubup', label: '90° Stub-Up' },
+          { id: 'saddle', label: '3-Point Saddle' },
+          { id: 'fourpoint', label: '4-Point Saddle' }
+        ].map(tab => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              flex: '1 1 auto',
+              minWidth: '120px',
+              padding: '0.625rem 1rem',
+              background: activeTab === tab.id ? '#3b82f6' : colors.sectionBg,
+              color: activeTab === tab.id ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === tab.id ? '#3b82f6' : colors.cardBorder}`,
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              transition: 'all 0.2s'
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Active Tab Content */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        {tabComponents[activeTab]}
       </div>
     </div>
   );
