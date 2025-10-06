@@ -71,11 +71,32 @@ function App() {
     }
   };
 
+  const getHeaderTitle = () => {
+  if (!activeCalculator) return 'Calculator Menu';
+  
+  const titles = {
+    'voltage-drop': 'Voltage Drop',
+    'ohms-law': "Ohm's Law",
+    'box-fill': 'Box Fill',
+    'conduit-fill': 'Conduit Fill',
+    'ampacity': 'Ampacity',
+    'motor-calculations': 'Motors',
+    'load-calculations': 'Load Calculations',
+    'transformer-sizing': 'Transformers',
+    'service-entrance': 'Service Entrance Sizing',
+    'grounding-bonding': 'Grounding & Bonding',
+    'conduit-bending': 'Conduit Bending',
+    'lighting': 'Lighting'
+  };
+  
+  return titles[activeCalculator] || 'Electrician\'s Toolkit';
+};
+
   return (
     <div className="App" style={{ background: isDarkMode ? '#1f2937' : '#ffffff' }}>
       {/* Persistent Header - Always Visible */}
       <div style={{ 
-        background: colors.headerBg,
+        background: '#2563eb',
         padding: '0.5rem 1rem',
         borderBottom: `1px solid ${colors.headerBorder}`,
         position: 'sticky',
@@ -88,11 +109,11 @@ function App() {
         <h1 style={{ 
           fontSize: '1.125rem', 
           fontWeight: '600',
-          color: colors.headerText,
+          color: 'white',
           margin: 0,
           letterSpacing: '-0.01em'
         }}>
-          Electrician's Toolkit
+          {getHeaderTitle()}
         </h1>
         
         {/* Menu Button */}
