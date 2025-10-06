@@ -179,7 +179,8 @@ function App() {
         ) : (
           <div style={{ 
             minHeight: 'calc(100vh - 3.5rem)', 
-            padding: '1rem'
+            padding: '1rem',
+            paddingBottom: '5rem'
           }}>
             {renderCalculator()}
           </div>
