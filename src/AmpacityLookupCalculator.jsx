@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, CheckCircle } from 'lucide-react';
 
-function AmpacityLookupCalculator({ isDarkMode = false }) {
+function AmpacityLookupCalculator({ isDarkMode = false, onBack }) {
   const [wireSize, setWireSize] = useState('12');
   const [wireType, setWireType] = useState('copper');
   const [tempRating, setTempRating] = useState('75C');
@@ -11,25 +11,13 @@ function AmpacityLookupCalculator({ isDarkMode = false }) {
 
   // Dark mode colors
   const colors = {
-    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
-    headerBg: isDarkMode ? '#111827' : '#ffffff',
-    headerText: isDarkMode ? '#f9fafb' : '#111827',
-    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
-    contentBg: isDarkMode ? '#111827' : '#f9fafb',
+    cardBg: isDarkMode ? '#374151' : '#ffffff',
+    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
+    cardText: isDarkMode ? '#f9fafb' : '#111827',
     labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#374151' : 'white',
+    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
     inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    inputText: isDarkMode ? '#f9fafb' : '#111827',
-    cardBg: isDarkMode ? '#1f2937' : 'white',
-    cardBgAlt: isDarkMode ? '#374151' : '#f1f5f9',
-    cardBorder: isDarkMode ? '#4b5563' : '#cbd5e1',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBg: isDarkMode ? '#111827' : '#f9fafb',
-    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBorder: isDarkMode ? '#374151' : '#e5e7eb',
-    infoBg: isDarkMode ? '#1e3a5f' : '#dbeafe',
-    infoBorder: isDarkMode ? '#1e40af' : '#93c5fd',
-    infoText: isDarkMode ? '#93c5fd' : '#1e3a8a'
+    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
   };
 
   const ampacityData = {
@@ -160,30 +148,84 @@ function AmpacityLookupCalculator({ isDarkMode = false }) {
   const currentAmpacity = getCurrentAmpacity();
   const ocpdLimit = getOCPDLimit(wireSize, wireType);
   const deratingResults = calculateDeratedAmpacity();
+  const hasDerating = deratingResults.tempFactor !== 1.00 || deratingResults.conductorFactor !== 1.00 || continuousLoad;
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
-      {/* Modern Header */}
-      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      {/* Header Card */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
           <AlertTriangle size={24} color="#3b82f6" />
-          <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Ampacity Lookup</h1>
-            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>NEC Table 310.16 - Wire current ratings</p>
-          </div>
+          <h2 style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '600', 
+            color: colors.cardText,
+            margin: 0 
+          }}>
+            Ampacity Lookup
+          </h2>
         </div>
+        <p style={{ 
+          fontSize: '0.875rem', 
+          color: colors.labelText,
+          margin: 0 
+        }}>
+          NEC Table 310.16 - Wire current ratings
+        </p>
       </div>
 
-      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+      {/* Wire Selection */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <h3 style={{ 
+          fontSize: '1rem', 
+          fontWeight: '600', 
+          color: colors.cardText,
+          marginTop: 0,
+          marginBottom: '1rem',
+          borderBottom: `1px solid ${colors.cardBorder}`,
+          paddingBottom: '0.5rem'
+        }}>
+          Wire Selection
+        </h3>
+        
+        <div style={{ display: 'grid', gap: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText,
+              marginBottom: '0.5rem' 
+            }}>
               Wire Size
             </label>
             <select 
               value={wireSize} 
               onChange={(e) => setWireSize(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="22">22 AWG</option>
               <option value="20">20 AWG</option>
@@ -213,57 +255,115 @@ function AmpacityLookupCalculator({ isDarkMode = false }) {
             </select>
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
-              Wire Material
-            </label>
-            <select 
-              value={wireType} 
-              onChange={(e) => setWireType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
-            >
-              <option value="copper">Copper</option>
-              <option value="aluminum">Aluminum</option>
-            </select>
-          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label style={{ 
+                display: 'block', 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: colors.labelText,
+                marginBottom: '0.5rem' 
+              }}>
+                Wire Material
+              </label>
+              <select 
+                value={wireType} 
+                onChange={(e) => setWireType(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.625rem',
+                  fontSize: '0.9375rem',
+                  border: `1px solid ${colors.inputBorder}`,
+                  borderRadius: '8px',
+                  backgroundColor: colors.inputBg,
+                  color: colors.cardText,
+                  boxSizing: 'border-box'
+                }}
+              >
+                <option value="copper">Copper</option>
+                <option value="aluminum">Aluminum</option>
+              </select>
+            </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
-              Temperature Rating
-            </label>
-            <select 
-              value={tempRating} 
-              onChange={(e) => setTempRating(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
-            >
-              <option value="60C">60°C (140°F) - TW, UF</option>
-              <option value="75C">75°C (167°F) - THWN, XHHW</option>
-              <option value="90C">90°C (194°F) - THHN, XHHW-2</option>
-            </select>
+            <div>
+              <label style={{ 
+                display: 'block', 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: colors.labelText,
+                marginBottom: '0.5rem' 
+              }}>
+                Temperature Rating
+              </label>
+              <select 
+                value={tempRating} 
+                onChange={(e) => setTempRating(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.625rem',
+                  fontSize: '0.9375rem',
+                  border: `1px solid ${colors.inputBorder}`,
+                  borderRadius: '8px',
+                  backgroundColor: colors.inputBg,
+                  color: colors.cardText,
+                  boxSizing: 'border-box'
+                }}
+              >
+                <option value="60C">60°C (140°F)</option>
+                <option value="75C">75°C (167°F)</option>
+                <option value="90C">90°C (194°F)</option>
+              </select>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Derating Factors Section */}
-        <div style={{ 
-          background: colors.cardBgAlt,
-          padding: '1.5rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${colors.cardBorder}`,
-          marginBottom: '1.5rem'
+      {/* Derating Factors */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <h3 style={{ 
+          fontSize: '1rem', 
+          fontWeight: '600', 
+          color: colors.cardText,
+          marginTop: 0,
+          marginBottom: '1rem',
+          borderBottom: `1px solid ${colors.cardBorder}`,
+          paddingBottom: '0.5rem'
         }}>
-          <h3 style={{ fontWeight: 'bold', color: colors.labelText, marginTop: 0, marginBottom: '1rem' }}>
-            Derating Factors (Optional)
-          </h3>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+          Derating Factors (Optional)
+        </h3>
+        
+        <div style={{ display: 'grid', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
-                Ambient Temperature (°C)
+              <label style={{ 
+                display: 'block', 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: colors.labelText,
+                marginBottom: '0.5rem' 
+              }}>
+                Ambient Temp (°C)
               </label>
               <select 
                 value={ambientTemp} 
                 onChange={(e) => setAmbientTemp(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '0.875rem', background: colors.inputBg, color: colors.inputText }}
+                style={{
+                  width: '100%',
+                  padding: '0.625rem',
+                  fontSize: '0.9375rem',
+                  border: `1px solid ${colors.inputBorder}`,
+                  borderRadius: '8px',
+                  backgroundColor: colors.inputBg,
+                  color: colors.cardText,
+                  boxSizing: 'border-box'
+                }}
               >
                 <option value="10">10°C (50°F)</option>
                 <option value="15">15°C (59°F)</option>
@@ -274,13 +374,17 @@ function AmpacityLookupCalculator({ isDarkMode = false }) {
                 <option value="40">40°C (104°F)</option>
                 <option value="45">45°C (113°F)</option>
                 <option value="50">50°C (122°F)</option>
-                <option value="55">55°C (131°F)</option>
-                <option value="60">60°C (140°F)</option>
               </select>
             </div>
             
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+              <label style={{ 
+                display: 'block', 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: colors.labelText,
+                marginBottom: '0.5rem' 
+              }}>
                 Current-Carrying Conductors
               </label>
               <input
@@ -288,11 +392,17 @@ function AmpacityLookupCalculator({ isDarkMode = false }) {
                 value={numConductors}
                 onChange={(e) => setNumConductors(e.target.value)}
                 min="1"
-                style={{ width: '100%', padding: '0.5rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '0.875rem', background: colors.inputBg, color: colors.inputText }}
+                style={{
+                  width: '100%',
+                  padding: '0.625rem',
+                  fontSize: '0.9375rem',
+                  border: `1px solid ${colors.inputBorder}`,
+                  borderRadius: '8px',
+                  backgroundColor: colors.inputBg,
+                  color: colors.cardText,
+                  boxSizing: 'border-box'
+                }}
               />
-              <p style={{ fontSize: '0.75rem', color: colors.subtleText, margin: '0.25rem 0 0 0' }}>
-                In same raceway/cable (excludes grounds)
-              </p>
             </div>
           </div>
           
@@ -301,147 +411,171 @@ function AmpacityLookupCalculator({ isDarkMode = false }) {
               type="checkbox" 
               checked={continuousLoad} 
               onChange={(e) => setContinuousLoad(e.target.checked)}
-              style={{ width: '1.25rem', height: '1.25rem', cursor: 'pointer' }}
+              style={{ width: '1.125rem', height: '1.125rem', cursor: 'pointer' }}
             />
-            <span style={{ fontSize: '0.875rem', fontWeight: '600', color: colors.labelText }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.labelText }}>
               Continuous Load (3+ hours) - Apply 80% factor
             </span>
           </label>
-        </div>
 
-        {/* Results Box */}
-        <div style={{ 
-          background: '#f0fdf4', 
-          border: '2px solid #22c55e', 
-          padding: '1.5rem', 
-          borderRadius: '0.5rem',
-          marginBottom: '1.5rem'
-        }}>
-          <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-            Results
-          </h3>
-          
-          <div style={{ 
-            fontSize: '2rem', 
-            fontWeight: 'bold', 
-            color: '#22c55e',
-            marginBottom: '0.5rem',
+          <div style={{
+            background: colors.sectionBg,
             padding: '1rem',
-            background: colors.cardBg,
-            borderRadius: '0.5rem',
-            textAlign: 'center'
+            borderRadius: '8px',
+            border: `1px solid ${colors.cardBorder}`
           }}>
-            {deratingResults.base} Amperes
-            <div style={{ fontSize: '0.875rem', fontWeight: 'normal', color: '#15803d', marginTop: '0.5rem' }}>
-              Base Ampacity
-            </div>
-          </div>
-          
-          {(deratingResults.tempFactor !== 1.00 || deratingResults.conductorFactor !== 1.00 || continuousLoad) && (
-            <>
-              <div style={{ 
-                background: '#fef3c7',
-                padding: '1rem',
-                borderRadius: '0.5rem',
-                marginBottom: '1rem',
-                border: '1px solid #fbbf24'
-              }}>
-                <div style={{ fontWeight: 'bold', color: '#92400e', marginBottom: '0.5rem' }}>
-                  Derating Applied:
-                </div>
-                {deratingResults.tempFactor !== 1.00 && (
-                  <div style={{ fontSize: '0.875rem', color: '#78350f', marginBottom: '0.25rem' }}>
-                    • Temperature correction: ×{deratingResults.tempFactor.toFixed(2)}
-                  </div>
-                )}
-                {deratingResults.conductorFactor !== 1.00 && (
-                  <div style={{ fontSize: '0.875rem', color: '#78350f', marginBottom: '0.25rem' }}>
-                    • Conductor adjustment: ×{deratingResults.conductorFactor.toFixed(2)}
-                  </div>
-                )}
-                {continuousLoad && (
-                  <div style={{ fontSize: '0.875rem', color: '#78350f' }}>
-                    • Continuous load: ×0.80
-                  </div>
-                )}
-              </div>
-              
-              <div style={{ 
-                fontSize: '1.75rem', 
-                fontWeight: 'bold', 
-                color: '#ea580c',
-                marginBottom: '1rem',
-                padding: '1rem',
-                background: colors.cardBg,
-                borderRadius: '0.5rem',
-                textAlign: 'center',
-                border: '2px solid #fb923c'
-              }}>
-                {continuousLoad ? deratingResults.continuous : deratingResults.derated} Amperes
-                <div style={{ fontSize: '0.875rem', fontWeight: 'normal', color: '#c2410c', marginTop: '0.5rem' }}>
-                  {continuousLoad ? 'Final Derated Ampacity (with continuous load)' : 'Derated Ampacity'}
-                </div>
-              </div>
-            </>
-          )}
-          
-          <div style={{ color: '#14532d', marginBottom: '0.75rem' }}>
-            <strong>Wire:</strong> {wireSize} AWG {wireType}
-          </div>
-          
-          <div style={{ color: '#14532d', marginBottom: '1rem' }}>
-            <strong>Temperature Rating:</strong> {tempRating} ({tempRating === '60C' ? '140°F' : tempRating === '75C' ? '167°F' : '194°F'})
-          </div>
-          
-          {ocpdLimit && (
-            <div style={{ 
-              color: '#92400e', 
-              marginBottom: '1rem',
-              padding: '0.75rem',
-              background: '#fef3c7',
-              borderRadius: '0.375rem',
-              border: '1px solid #fbbf24'
+            <h4 style={{ 
+              fontSize: '0.875rem', 
+              fontWeight: '600', 
+              color: colors.cardText,
+              marginTop: 0,
+              marginBottom: '0.75rem'
             }}>
-              <strong>⚠ NEC 240.4(D) Limit:</strong> {ocpdLimit}A max overcurrent protection
+              Applied Factors
+            </h4>
+            <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem', color: colors.labelText }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Temperature Factor:</span>
+                <span style={{ fontWeight: '600', color: colors.cardText }}>
+                  ×{deratingResults.tempFactor.toFixed(2)}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Conductor Adjustment:</span>
+                <span style={{ fontWeight: '600', color: colors.cardText }}>
+                  ×{deratingResults.conductorFactor.toFixed(2)}
+                </span>
+              </div>
+              {continuousLoad && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Continuous Load:</span>
+                  <span style={{ fontWeight: '600', color: colors.cardText }}>
+                    ×0.80
+                  </span>
+                </div>
+              )}
             </div>
-          )}
-          
-          <div style={{ 
-            color: '#14532d',
-            paddingTop: '1rem',
-            borderTop: '1px solid #bbf7d0'
-          }}>
-            <strong>Common Applications:</strong>
-            <div style={{ marginTop: '0.5rem', color: '#15803d' }}>
-              {getCommonApplications(currentAmpacity, wireSize)}
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Reference */}
-        <div style={{ 
-          background: colors.infoBg,
-          padding: '1rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${colors.infoBorder}`
-        }}>
-          <strong style={{ color: colors.infoText, display: 'block', marginBottom: '0.5rem' }}>Quick Reference (75°C Copper):</strong>
-          <div style={{ fontSize: '0.875rem', color: colors.infoText }}>
-            <div style={{ marginBottom: '0.25rem' }}>14 AWG: 20A (15A max OCPD) - Lighting circuits</div>
-            <div style={{ marginBottom: '0.25rem' }}>12 AWG: 25A (20A max OCPD) - General receptacles</div>
-            <div style={{ marginBottom: '0.25rem' }}>10 AWG: 35A (30A max OCPD) - Dryers, small AC units</div>
-            <div style={{ marginBottom: '0.25rem' }}>8 AWG: 50A - Electric ranges, heat pumps</div>
-            <div>6 AWG: 65A - Large appliances, sub-panels</div>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>NEC References:</p>
-        <p style={{ margin: 0 }}>
-          Table 310.16 - Ampacities • 240.4(D) - OCPD limits • Table 310.15(B)(1) - Temperature factors • Table 310.15(C)(1) - Adjustment factors • 210.19(A) - Continuous loads (125%)
-        </p>
+      {/* Results */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <h3 style={{ 
+          fontSize: '1.125rem', 
+          fontWeight: '600', 
+          color: colors.cardText,
+          marginTop: 0,
+          marginBottom: '1rem'
+        }}>
+          Results
+        </h3>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: hasDerating ? 'repeat(3, 1fr)' : '1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div style={{
+            background: colors.sectionBg,
+            padding: '1rem',
+            borderRadius: '8px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+              Base Ampacity
+            </div>
+            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+              {deratingResults.base} A
+            </div>
+          </div>
+          
+          {hasDerating && (
+            <>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Derated Ampacity
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {deratingResults.derated} A
+                </div>
+              </div>
+              
+              <div style={{
+                background: '#dbeafe',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+                  {continuousLoad ? 'Final Ampacity' : 'Final Ampacity'}
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                  {continuousLoad ? deratingResults.continuous : deratingResults.derated} A
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div style={{
+          background: '#d1fae5',
+          border: '1px solid #6ee7b7',
+          borderRadius: '8px',
+          padding: '1rem',
+          marginBottom: '1rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+            <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+            <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5', width: '100%' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <strong>Wire:</strong> {wireSize} AWG {wireType}
+              </div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <strong>Temperature Rating:</strong> {tempRating} ({tempRating === '60C' ? '140°F' : tempRating === '75C' ? '167°F' : '194°F'})
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {ocpdLimit && (
+          <div style={{
+            background: '#fef3c7',
+            border: '1px solid #fcd34d',
+            borderRadius: '8px',
+            padding: '1rem',
+            marginBottom: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+              <AlertTriangle size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+              <div style={{ fontSize: '0.875rem', color: '#92400e', lineHeight: '1.5' }}>
+                <strong>NEC 240.4(D) Limit:</strong> {ocpdLimit}A max overcurrent protection
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div style={{
+          background: colors.sectionBg,
+          padding: '1rem',
+          borderRadius: '8px',
+          border: `1px solid ${colors.cardBorder}`
+        }}>
+          <div style={{ fontSize: '0.875rem', color: colors.labelText, lineHeight: '1.5' }}>
+            <div style={{ fontWeight: '600', color: colors.cardText, marginBottom: '0.5rem' }}>
+              Common Applications:
+            </div>
+            {getCommonApplications(currentAmpacity, wireSize)}
+          </div>
+        </div>
       </div>
     </div>
   );
