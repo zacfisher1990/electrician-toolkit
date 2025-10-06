@@ -14,6 +14,7 @@ import GroundingBondingCalculator from './GroundingBondingCalculator.jsx';
 import ConduitBendingCalculator from './ConduitBendingCalculator.jsx';
 import LightingCalculator from './LightingCalculator.jsx';
 import BottomNavigation from './BottomNavigation.jsx';
+import VFDSizingCalculator from './VFDSizingCalculator.jsx';
 import './App.css';
 
 function App() {
@@ -63,6 +64,8 @@ function App() {
         return <ConduitBendingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'lighting':
         return <LightingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+      case 'vfd-sizing':
+        return <VFDSizingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       default:
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -86,7 +89,8 @@ function App() {
     'service-entrance': 'Service Entrance Sizing',
     'grounding-bonding': 'Grounding & Bonding',
     'conduit-bending': 'Conduit Bending',
-    'lighting': 'Lighting'
+    'lighting': 'Lighting',
+    'vfd-sizing': 'VFD Sizing'
   };
   
   return titles[activeCalculator] || 'Electrician\'s Toolkit';
