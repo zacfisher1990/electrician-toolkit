@@ -1,26 +1,19 @@
 import React, { useState } from 'react';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, CheckCircle, Info } from 'lucide-react';
 
-function LoadCalculations({ isDarkMode = false }) {
+function LoadCalculations({ isDarkMode = false, onBack }) {
   const [activeTab, setActiveTab] = useState('residential');
 
   // Dark mode colors
   const colors = {
-    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
-    headerBg: isDarkMode ? '#111827' : '#ffffff',
-    headerText: isDarkMode ? '#f9fafb' : '#111827',
-    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
-    contentBg: isDarkMode ? '#111827' : '#f9fafb',
+    cardBg: isDarkMode ? '#374151' : '#ffffff',
+    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
+    cardText: isDarkMode ? '#f9fafb' : '#111827',
     labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#374151' : 'white',
+    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
     inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    inputText: isDarkMode ? '#f9fafb' : '#111827',
-    cardBg: isDarkMode ? '#1f2937' : 'white',
-    cardBgAlt: isDarkMode ? '#374151' : '#f8fafc',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBg: isDarkMode ? '#111827' : '#f9fafb',
-    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBorder: isDarkMode ? '#374151' : '#e5e7eb'
+    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
   };
 
   // Residential Load Calculator (NEC 220.82 Standard Method)
@@ -105,36 +98,54 @@ function LoadCalculations({ isDarkMode = false }) {
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Square Footage
             </label>
             <input 
               type="number" 
               value={squareFootage} 
               onChange={(e) => setSquareFootage(e.target.value)}
-              placeholder="Living area square footage"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="Living area"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Small Appliance Circuits
             </label>
             <input 
               type="number" 
               value={smallApplianceCircuits} 
               onChange={(e) => setSmallApplianceCircuits(e.target.value)}
-              placeholder="Minimum 2 required"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="Min 2"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
-            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Kitchen/dining circuits @ 1500 VA each</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>@ 1500 VA each</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Laundry Circuits
             </label>
             <input 
@@ -142,84 +153,147 @@ function LoadCalculations({ isDarkMode = false }) {
               value={laundryCircuits} 
               onChange={(e) => setLaundryCircuits(e.target.value)}
               placeholder="Typically 1"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
-            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>@ 1500 VA each</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>@ 1500 VA</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Electric Range (kW)
             </label>
             <input 
               type="number" 
               value={rangeKW} 
               onChange={(e) => setRangeKW(e.target.value)}
-              placeholder="Range nameplate rating"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="Nameplate rating"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Electric Dryer (kW)
             </label>
             <input 
               type="number" 
               value={dryerKW} 
               onChange={(e) => setDryerKW(e.target.value)}
-              placeholder="Minimum 5 kW"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="Min 5 kW"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Water Heater (kW)
             </label>
             <input 
               type="number" 
               value={waterHeaterKW} 
               onChange={(e) => setWaterHeaterKW(e.target.value)}
-              placeholder="Water heater rating"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="Rating"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               HVAC/Heat (kW)
             </label>
             <input 
               type="number" 
               value={hvacKW} 
               onChange={(e) => setHvacKW(e.target.value)}
-              placeholder="Largest heating or cooling load"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="Largest load"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Other Loads (kW)
             </label>
             <input 
               type="number" 
               value={otherLoadsKW} 
               onChange={(e) => setOtherLoadsKW(e.target.value)}
-              placeholder="Pool, spa, etc."
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="Pool, spa, etc"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Service Voltage
             </label>
             <select 
               value={voltage} 
               onChange={(e) => setVoltage(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="240">240V</option>
               <option value="208">208V</option>
@@ -228,68 +302,102 @@ function LoadCalculations({ isDarkMode = false }) {
         </div>
 
         {squareFootage && (
-          <div style={{ 
-            background: '#f0fdf4', 
-            border: '2px solid #22c55e', 
-            padding: '1.5rem', 
-            borderRadius: '0.5rem'
-          }}>
-            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-              Load Calculation Summary
-            </h3>
-            
-            <div style={{ 
-              background: colors.cardBgAlt, 
-              padding: '1rem', 
-              borderRadius: '0.5rem',
-              marginBottom: '1rem',
-              color: colors.labelText
-            }}>
-              <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Connected Loads:</strong>
-              <div style={{ fontSize: '0.875rem' }}>General Lighting: {results.generalLighting.toLocaleString()} VA</div>
-              <div style={{ fontSize: '0.875rem' }}>Small Appliance: {results.smallApplianceLoad.toLocaleString()} VA</div>
-              <div style={{ fontSize: '0.875rem' }}>Laundry: {results.laundryLoad.toLocaleString()} VA</div>
-              <div style={{ borderTop: `1px solid ${colors.inputBorder}`, marginTop: '0.5rem', paddingTop: '0.5rem', fontSize: '0.875rem' }}>
-                <strong>Subtotal: {results.subtotalVA.toLocaleString()} VA</strong>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Total Demand
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.totalDemandKW.toFixed(2)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  kW
+                </div>
+              </div>
+              
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Total Amperage
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.totalAmperage.toFixed(1)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  amps
+                </div>
+              </div>
+
+              <div style={{
+                background: '#dbeafe',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+                  Recommended Service
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                  {results.recommendedService}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
+                  amp service
+                </div>
               </div>
             </div>
 
-            <div style={{ 
-              background: colors.cardBgAlt, 
-              padding: '1rem', 
-              borderRadius: '0.5rem',
-              marginBottom: '1rem',
-              color: colors.labelText
-            }}>
-              <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Demand Loads:</strong>
-              <div style={{ fontSize: '0.875rem' }}>Lighting (with demand factors): {results.demandLighting.toFixed(0)} VA</div>
-              {rangeKW && <div style={{ fontSize: '0.875rem' }}>Range: {results.rangeDemand.toLocaleString()} W</div>}
-              {dryerKW && <div style={{ fontSize: '0.875rem' }}>Dryer: {results.dryerDemand.toLocaleString()} W</div>}
-              {waterHeaterKW && <div style={{ fontSize: '0.875rem' }}>Water Heater: {results.waterHeaterDemand.toLocaleString()} W</div>}
-              {hvacKW && <div style={{ fontSize: '0.875rem' }}>HVAC: {results.hvacDemand.toLocaleString()} W</div>}
-              {otherLoadsKW && <div style={{ fontSize: '0.875rem' }}>Other Loads: {results.otherDemand.toLocaleString()} W</div>}
-            </div>
-
-            <div style={{ color: '#14532d', marginBottom: '0.75rem' }}>
-              <strong>Total Demand Load:</strong> {results.totalDemandKW.toFixed(2)} kW
-            </div>
-            
-            <div style={{ color: '#14532d', marginBottom: '1rem' }}>
-              <strong>Total Amperage:</strong> {results.totalAmperage.toFixed(1)} A
-            </div>
-
-            <div style={{ 
-              fontSize: '2rem', 
-              fontWeight: 'bold', 
-              color: '#22c55e',
+            <div style={{
+              background: colors.sectionBg,
               padding: '1rem',
-              background: colors.cardBg,
-              borderRadius: '0.5rem',
-              textAlign: 'center'
+              borderRadius: '8px',
+              border: `1px solid ${colors.cardBorder}`,
+              marginBottom: '1rem'
             }}>
-              {results.recommendedService} Amp Service
+              <div style={{ fontWeight: '600', color: colors.cardText, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                Connected Loads:
+              </div>
+              <div style={{ fontSize: '0.875rem', color: colors.labelText, display: 'grid', gap: '0.25rem' }}>
+                <div>General Lighting: {results.generalLighting.toLocaleString()} VA</div>
+                <div>Small Appliance: {results.smallApplianceLoad.toLocaleString()} VA</div>
+                <div>Laundry: {results.laundryLoad.toLocaleString()} VA</div>
+                <div style={{ borderTop: `1px solid ${colors.cardBorder}`, marginTop: '0.5rem', paddingTop: '0.5rem' }}>
+                  <strong>Subtotal: {results.subtotalVA.toLocaleString()} VA</strong>
+                </div>
+              </div>
             </div>
-          </div>
+
+            <div style={{
+              background: '#d1fae5',
+              border: '1px solid #6ee7b7',
+              borderRadius: '8px',
+              padding: '1rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5', width: '100%' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+                    Demand Loads (with factors applied):
+                  </div>
+                  <div>Lighting: {results.demandLighting.toFixed(0)} VA</div>
+                  {rangeKW > 0 && <div>Range: {results.rangeDemand.toLocaleString()} W</div>}
+                  {dryerKW > 0 && <div>Dryer: {results.dryerDemand.toLocaleString()} W</div>}
+                  {waterHeaterKW > 0 && <div>Water Heater: {results.waterHeaterDemand.toLocaleString()} W</div>}
+                  {hvacKW > 0 && <div>HVAC: {results.hvacDemand.toLocaleString()} W</div>}
+                  {otherLoadsKW > 0 && <div>Other: {results.otherDemand.toLocaleString()} W</div>}
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </div>
     );
@@ -308,14 +416,8 @@ function LoadCalculations({ isDarkMode = false }) {
     const [phase, setPhase] = useState('three');
 
     const lightingVAPerSqFt = {
-      'office': 3.5,
-      'warehouse': 0.25,
-      'retail': 3.0,
-      'school': 3.0,
-      'restaurant': 2.0,
-      'hotel': 2.0,
-      'hospital': 2.0,
-      'industrial': 2.0
+      'office': 3.5, 'warehouse': 0.25, 'retail': 3.0, 'school': 3.0,
+      'restaurant': 2.0, 'hotel': 2.0, 'hospital': 2.0, 'industrial': 2.0
     };
 
     const calculateCommercialLoad = () => {
@@ -355,9 +457,9 @@ function LoadCalculations({ isDarkMode = false }) {
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Square Footage
             </label>
             <input 
@@ -365,22 +467,40 @@ function LoadCalculations({ isDarkMode = false }) {
               value={squareFootage} 
               onChange={(e) => setSquareFootage(e.target.value)}
               placeholder="Building area"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Occupancy Type
             </label>
             <select 
               value={occupancyType} 
               onChange={(e) => setOccupancyType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
-              <option value="office">Office Building (3.5 VA/sq ft)</option>
+              <option value="office">Office (3.5 VA/sq ft)</option>
               <option value="warehouse">Warehouse (0.25 VA/sq ft)</option>
-              <option value="retail">Retail Store (3.0 VA/sq ft)</option>
+              <option value="retail">Retail (3.0 VA/sq ft)</option>
               <option value="school">School (3.0 VA/sq ft)</option>
               <option value="restaurant">Restaurant (2.0 VA/sq ft)</option>
               <option value="hotel">Hotel (2.0 VA/sq ft)</option>
@@ -390,79 +510,133 @@ function LoadCalculations({ isDarkMode = false }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               HVAC Load (kW)
             </label>
             <input 
               type="number" 
               value={hvacLoad} 
               onChange={(e) => setHvacLoad(e.target.value)}
-              placeholder="Total HVAC load"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="Total HVAC"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Receptacle Load (kW)
             </label>
             <input 
               type="number" 
               value={receptacleLoad} 
               onChange={(e) => setReceptacleLoad(e.target.value)}
-              placeholder="Calculated receptacle load"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="Receptacles"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Motor Loads (kW)
             </label>
             <input 
               type="number" 
               value={motorLoads} 
               onChange={(e) => setMotorLoads(e.target.value)}
-              placeholder="Total motor loads"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="Total motors"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Other Loads (kW)
             </label>
             <input 
               type="number" 
               value={otherLoads} 
               onChange={(e) => setOtherLoads(e.target.value)}
-              placeholder="Additional loads"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="Additional"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Demand Factor (%)
             </label>
             <input 
               type="number" 
               value={demandFactor} 
               onChange={(e) => setDemandFactor(e.target.value)}
-              placeholder="Typically 80-100%"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="80-100%"
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
-            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Percentage of connected load expected at peak</div>
+            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Peak load %</div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               System Voltage
             </label>
             <select 
               value={voltage} 
               onChange={(e) => setVoltage(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="208">208V</option>
               <option value="240">240V</option>
@@ -473,13 +647,22 @@ function LoadCalculations({ isDarkMode = false }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               System Phase
             </label>
             <select 
               value={phase} 
               onChange={(e) => setPhase(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="single">Single Phase</option>
               <option value="three">Three Phase</option>
@@ -488,64 +671,97 @@ function LoadCalculations({ isDarkMode = false }) {
         </div>
 
         {squareFootage && (
-          <div style={{ 
-            background: '#f0fdf4', 
-            border: '2px solid #22c55e', 
-            padding: '1.5rem', 
-            borderRadius: '0.5rem'
-          }}>
-            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-              Load Calculation Summary
-            </h3>
-            
-            <div style={{ 
-              background: colors.cardBgAlt, 
-              padding: '1rem', 
-              borderRadius: '0.5rem',
-              marginBottom: '1rem',
-              color: colors.labelText
-            }}>
-              <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Connected Loads:</strong>
-              <div style={{ fontSize: '0.875rem' }}>Lighting: {results.lightingKW.toFixed(2)} kW ({results.lightingVA.toFixed(0)} VA)</div>
-              {hvacLoad && <div style={{ fontSize: '0.875rem' }}>HVAC: {results.hvac.toFixed(2)} kW</div>}
-              {receptacleLoad && <div style={{ fontSize: '0.875rem' }}>Receptacles: {results.receptacles.toFixed(2)} kW</div>}
-              {motorLoads && <div style={{ fontSize: '0.875rem' }}>Motors: {results.motors.toFixed(2)} kW</div>}
-              {otherLoads && <div style={{ fontSize: '0.875rem' }}>Other: {results.other.toFixed(2)} kW</div>}
-              <div style={{ borderTop: `1px solid ${colors.inputBorder}`, marginTop: '0.5rem', paddingTop: '0.5rem', fontSize: '0.875rem' }}>
-                <strong>Total Connected: {results.totalConnectedKW.toFixed(2)} kW</strong>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Connected Load
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.totalConnectedKW.toFixed(2)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  kW
+                </div>
+              </div>
+              
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Demand Load
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.demandLoadKW.toFixed(2)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  kW
+                </div>
+              </div>
+
+              <div style={{
+                background: '#dbeafe',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+                  Total Amperage
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                  {results.amperage.toFixed(1)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
+                  amps
+                </div>
               </div>
             </div>
 
-            <div style={{ color: '#14532d', marginBottom: '0.75rem' }}>
-              <strong>Demand Load:</strong> {results.demandLoadKW.toFixed(2)} kW
-              <div style={{ fontSize: '0.875rem', color: '#15803d', marginTop: '0.25rem' }}>
-                ({demandFactor}% demand factor applied)
-              </div>
-            </div>
-
-            <div style={{ 
-              fontSize: '2rem', 
-              fontWeight: 'bold', 
-              color: '#22c55e',
-              marginBottom: '0.5rem',
+            <div style={{
+              background: colors.sectionBg,
               padding: '1rem',
-              background: colors.cardBg,
-              borderRadius: '0.5rem',
-              textAlign: 'center'
+              borderRadius: '8px',
+              border: `1px solid ${colors.cardBorder}`,
+              marginBottom: '1rem'
             }}>
-              {results.amperage.toFixed(1)} Amperes
+              <div style={{ fontWeight: '600', color: colors.cardText, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                Connected Loads:
+              </div>
+              <div style={{ fontSize: '0.875rem', color: colors.labelText, display: 'grid', gap: '0.25rem' }}>
+                <div>Lighting: {results.lightingKW.toFixed(2)} kW ({results.lightingVA.toFixed(0)} VA)</div>
+                {hvacLoad > 0 && <div>HVAC: {results.hvac.toFixed(2)} kW</div>}
+                {receptacleLoad > 0 && <div>Receptacles: {results.receptacles.toFixed(2)} kW</div>}
+                {motorLoads > 0 && <div>Motors: {results.motors.toFixed(2)} kW</div>}
+                {otherLoads > 0 && <div>Other: {results.other.toFixed(2)} kW</div>}
+              </div>
             </div>
 
-            <div style={{ 
-              color: '#14532d',
-              paddingTop: '1rem',
-              borderTop: '1px solid #bbf7d0',
-              fontSize: '0.875rem',
-              textAlign: 'center'
+            <div style={{
+              background: '#d1fae5',
+              border: '1px solid #6ee7b7',
+              borderRadius: '8px',
+              padding: '1rem'
             }}>
-              @ {voltage}V {phase === 'single' ? 'Single' : 'Three'} Phase
+              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+                    System Configuration
+                  </div>
+                  <div>{voltage}V {phase === 'single' ? 'Single' : 'Three'} Phase</div>
+                  <div>{demandFactor}% demand factor applied</div>
+                </div>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     );
@@ -557,70 +773,84 @@ function LoadCalculations({ isDarkMode = false }) {
   };
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
-      {/* Modern Header */}
-      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      {/* Header Card */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
           <BarChart3 size={24} color="#3b82f6" />
-          <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Load Calculations</h1>
-            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>NEC Article 220 - Service and feeder sizing</p>
-          </div>
+          <h2 style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '600', 
+            color: colors.cardText,
+            margin: 0 
+          }}>
+            Load Calculations
+          </h2>
         </div>
-      </div>
-
-      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
-        {/* Tab Navigation */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '0.5rem', 
-          marginBottom: '1.5rem',
-          flexWrap: 'wrap'
+        <p style={{ 
+          fontSize: '0.875rem', 
+          color: colors.labelText,
+          margin: 0 
         }}>
-          <button 
-            onClick={() => setActiveTab('residential')}
-            style={{
-              padding: '0.75rem 1.25rem',
-              background: activeTab === 'residential' ? '#3b82f6' : colors.cardBg,
-              color: activeTab === 'residential' ? 'white' : colors.subtleText,
-              border: `1px solid ${activeTab === 'residential' ? '#3b82f6' : colors.headerBorder}`,
-              borderRadius: '0.375rem',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            Residential
-          </button>
-          <button 
-            onClick={() => setActiveTab('commercial')}
-            style={{
-              padding: '0.75rem 1.25rem',
-              background: activeTab === 'commercial' ? '#3b82f6' : colors.cardBg,
-              color: activeTab === 'commercial' ? 'white' : colors.subtleText,
-              border: `1px solid ${activeTab === 'commercial' ? '#3b82f6' : colors.headerBorder}`,
-              borderRadius: '0.375rem',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            Commercial
-          </button>
-        </div>
-
-        {/* Active Tab Content */}
-        {tabComponents[activeTab]}
+          NEC Article 220 - Service and feeder sizing
+        </p>
       </div>
 
-      {/* Footer */}
-      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>NEC References:</p>
-        <p style={{ margin: 0 }}>
-          220.12 - Lighting loads (3 VA/sq ft residential) • 220.52 - Small appliance/laundry (1500 VA each) • 220.55 - Range demand • 220.82 - Optional calculation • 220.40 - Commercial loads
-        </p>
+      {/* Tab Navigation */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        display: 'flex',
+        gap: '0.5rem',
+        flexWrap: 'wrap'
+      }}>
+        {[
+          { id: 'residential', label: 'Residential' },
+          { id: 'commercial', label: 'Commercial' }
+        ].map(tab => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              flex: '1 1 auto',
+              minWidth: '140px',
+              padding: '0.625rem 1rem',
+              background: activeTab === tab.id ? '#3b82f6' : colors.sectionBg,
+              color: activeTab === tab.id ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === tab.id ? '#3b82f6' : colors.cardBorder}`,
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              transition: 'all 0.2s'
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Active Tab Content */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        {tabComponents[activeTab]}
       </div>
     </div>
   );

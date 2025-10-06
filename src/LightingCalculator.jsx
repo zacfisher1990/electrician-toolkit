@@ -1,27 +1,19 @@
 import React, { useState } from 'react';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, CheckCircle, Info } from 'lucide-react';
 
-function LightingCalculator({ isDarkMode = false }) {
+function LightingCalculator({ isDarkMode = false, onBack }) {
   const [activeTab, setActiveTab] = useState('lumens');
 
-  // Dark mode colors - matching the design system
+  // Dark mode colors
   const colors = {
-    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
-    headerBg: isDarkMode ? '#111827' : '#ffffff',
-    headerText: isDarkMode ? '#f9fafb' : '#111827',
-    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
-    contentBg: isDarkMode ? '#111827' : '#f9fafb',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#374151' : 'white',
-    inputBgAlt: isDarkMode ? '#1f2937' : '#f9fafb',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    inputText: isDarkMode ? '#f9fafb' : '#111827',
-    cardBg: isDarkMode ? '#1f2937' : 'white',
+    cardBg: isDarkMode ? '#374151' : '#ffffff',
     cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBg: isDarkMode ? '#111827' : '#f9fafb',
-    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBorder: isDarkMode ? '#374151' : '#e5e7eb'
+    cardText: isDarkMode ? '#f9fafb' : '#111827',
+    labelText: isDarkMode ? '#d1d5db' : '#374151',
+    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
+    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
+    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
   };
 
   // Lumens Calculator
@@ -32,29 +24,17 @@ function LightingCalculator({ isDarkMode = false }) {
     const [lumensPerFixture, setLumensPerFixture] = useState('');
 
     const footCandlesByRoom = {
-      'living': 10,
-      'kitchen': 50,
-      'bathroom': 70,
-      'bedroom': 10,
-      'office': 50,
-      'workshop': 75,
-      'garage': 50,
-      'hallway': 5,
-      'dining': 30,
-      'laundry': 50
+      'living': 10, 'kitchen': 50, 'bathroom': 70, 'bedroom': 10,
+      'office': 50, 'workshop': 75, 'garage': 50, 'hallway': 5,
+      'dining': 30, 'laundry': 50
     };
 
     const roomTypeNames = {
-      'living': 'Living Room (10 fc)',
-      'kitchen': 'Kitchen (50 fc)',
-      'bathroom': 'Bathroom (70 fc)',
-      'bedroom': 'Bedroom (10 fc)',
-      'office': 'Office/Study (50 fc)',
-      'workshop': 'Workshop (75 fc)',
-      'garage': 'Garage (50 fc)',
-      'hallway': 'Hallway (5 fc)',
-      'dining': 'Dining Room (30 fc)',
-      'laundry': 'Laundry Room (50 fc)'
+      'living': 'Living Room (10 fc)', 'kitchen': 'Kitchen (50 fc)',
+      'bathroom': 'Bathroom (70 fc)', 'bedroom': 'Bedroom (10 fc)',
+      'office': 'Office/Study (50 fc)', 'workshop': 'Workshop (75 fc)',
+      'garage': 'Garage (50 fc)', 'hallway': 'Hallway (5 fc)',
+      'dining': 'Dining Room (30 fc)', 'laundry': 'Laundry Room (50 fc)'
     };
 
     const calculateLumens = () => {
@@ -64,7 +44,6 @@ function LightingCalculator({ isDarkMode = false }) {
       const width = parseFloat(roomWidth);
       const area = length * width;
       const footCandles = footCandlesByRoom[roomType];
-      
       const totalLumens = footCandles * area;
       
       let fixturesNeeded = null;
@@ -85,9 +64,9 @@ function LightingCalculator({ isDarkMode = false }) {
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Room Length (feet)
             </label>
             <input
@@ -95,12 +74,21 @@ function LightingCalculator({ isDarkMode = false }) {
               value={roomLength}
               onChange={(e) => setRoomLength(e.target.value)}
               placeholder="Enter length"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Room Width (feet)
             </label>
             <input
@@ -108,18 +96,36 @@ function LightingCalculator({ isDarkMode = false }) {
               value={roomWidth}
               onChange={(e) => setRoomWidth(e.target.value)}
               placeholder="Enter width"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Room Type
             </label>
             <select
               value={roomType}
               onChange={(e) => setRoomType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               {Object.entries(roomTypeNames).map(([key, name]) => (
                 <option key={key} value={key}>{name}</option>
@@ -129,7 +135,7 @@ function LightingCalculator({ isDarkMode = false }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Lumens per Fixture (Optional)
             </label>
             <input
@@ -137,84 +143,118 @@ function LightingCalculator({ isDarkMode = false }) {
               value={lumensPerFixture}
               onChange={(e) => setLumensPerFixture(e.target.value)}
               placeholder="e.g., 800"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
             <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>To calculate fixture count</div>
           </div>
         </div>
 
         {results && (
-          <div style={{ 
-            background: '#f0fdf4', 
-            border: '2px solid #22c55e', 
-            padding: '1.5rem', 
-            borderRadius: '0.5rem'
-          }}>
-            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-              Lighting Requirements
-            </h3>
-
-            <div style={{ 
-              background: colors.cardBg, 
-              padding: '1rem', 
-              borderRadius: '0.5rem',
-              marginBottom: '1rem'
-            }}>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}>
-                <strong>Room Area:</strong> {results.area} sq ft
-              </div>
-              <div style={{ fontSize: '0.875rem', color: colors.labelText }}>
-                <strong>Recommended Level:</strong> {results.footCandles} foot-candles
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ color: '#14532d', marginBottom: '0.5rem' }}>
-                <strong>Total Lumens Needed:</strong>
-              </div>
-              <div style={{ 
-                fontSize: '2rem', 
-                fontWeight: 'bold', 
-                color: '#16a34a',
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: results.fixturesNeeded ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                background: colors.sectionBg,
                 padding: '1rem',
-                background: 'white',
-                borderRadius: '0.5rem',
+                borderRadius: '8px',
                 textAlign: 'center'
               }}>
-                {results.totalLumens} lumens
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Room Area
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.area}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  sq ft
+                </div>
+              </div>
+              
+              <div style={{
+                background: '#dbeafe',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+                  Total Lumens Needed
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                  {results.totalLumens}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
+                  lumens
+                </div>
+              </div>
+
+              {results.fixturesNeeded && (
+                <div style={{
+                  background: colors.sectionBg,
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                    Fixtures Needed
+                  </div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                    {results.fixturesNeeded}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                    fixtures
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{
+              background: '#d1fae5',
+              border: '1px solid #6ee7b7',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+                    Lighting Requirements
+                  </div>
+                  <div>Recommended level: {results.footCandles} foot-candles</div>
+                  {results.fixturesNeeded && (
+                    <div>Using {lumensPerFixture} lumens per fixture</div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {results.fixturesNeeded && (
-              <div style={{ 
-                color: '#14532d',
-                paddingTop: '1rem',
-                borderTop: '1px solid #bbf7d0'
-              }}>
-                <strong>Fixtures Needed:</strong> {results.fixturesNeeded} fixtures
-                <div style={{ fontSize: '0.875rem', color: '#15803d', marginTop: '0.25rem' }}>
-                  @ {lumensPerFixture} lumens each
-                </div>
+            <div style={{
+              background: colors.sectionBg,
+              padding: '1rem',
+              borderRadius: '8px',
+              border: `1px solid ${colors.cardBorder}`,
+              fontSize: '0.875rem',
+              color: colors.labelText
+            }}>
+              <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+                Lighting Tips:
               </div>
-            )}
-          </div>
+              <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                <li>LED bulbs typically produce 60-100 lumens per watt</li>
+                <li>Layer lighting: combine ambient, task, and accent lighting</li>
+                <li>Dark wall colors absorb light; increase lumens by 10-20%</li>
+              </ul>
+            </div>
+          </>
         )}
-
-        <div style={{ 
-          background: colors.cardBg,
-          padding: '1rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${colors.cardBorder}`,
-          marginTop: '1.5rem'
-        }}>
-          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Lighting Tips:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
-            <li style={{ marginBottom: '0.25rem' }}>LED bulbs typically produce 60-100 lumens per watt</li>
-            <li style={{ marginBottom: '0.25rem' }}>Layer lighting: combine ambient, task, and accent lighting</li>
-            <li style={{ marginBottom: '0.25rem' }}>Higher ceilings may require more lumens</li>
-            <li>Dark wall colors absorb light; increase lumens by 10-20%</li>
-          </ul>
-        </div>
       </div>
     );
   };
@@ -242,11 +282,9 @@ function LightingCalculator({ isDarkMode = false }) {
       const ratio = spacingRatios[fixtureType];
       
       const maxSpacing = height * ratio;
-      
       const fixturesLength = Math.ceil(length / maxSpacing);
       const fixturesWidth = Math.ceil(width / maxSpacing);
       const totalFixtures = fixturesLength * fixturesWidth;
-      
       const actualSpacingLength = length / fixturesLength;
       const actualSpacingWidth = width / fixturesWidth;
 
@@ -264,9 +302,9 @@ function LightingCalculator({ isDarkMode = false }) {
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Room Length (feet)
             </label>
             <input
@@ -274,12 +312,21 @@ function LightingCalculator({ isDarkMode = false }) {
               value={roomLength}
               onChange={(e) => setRoomLength(e.target.value)}
               placeholder="Enter length"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Room Width (feet)
             </label>
             <input
@@ -287,12 +334,21 @@ function LightingCalculator({ isDarkMode = false }) {
               value={roomWidth}
               onChange={(e) => setRoomWidth(e.target.value)}
               placeholder="Enter width"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Ceiling Height (feet)
             </label>
             <input
@@ -300,18 +356,36 @@ function LightingCalculator({ isDarkMode = false }) {
               value={ceilingHeight}
               onChange={(e) => setCeilingHeight(e.target.value)}
               placeholder="8"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Fixture Type
             </label>
             <select
               value={fixtureType}
               onChange={(e) => setFixtureType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="recessed">Recessed Can (1.5:1 ratio)</option>
               <option value="pendant">Pendant (1:1 ratio)</option>
@@ -322,92 +396,101 @@ function LightingCalculator({ isDarkMode = false }) {
         </div>
 
         {results && (
-          <div style={{ 
-            background: '#f0fdf4', 
-            border: '2px solid #22c55e', 
-            padding: '1.5rem', 
-            borderRadius: '0.5rem'
-          }}>
-            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-              Fixture Spacing Results
-            </h3>
-
-            <div style={{ 
-              background: colors.cardBg, 
-              padding: '1rem', 
-              borderRadius: '0.5rem',
-              marginBottom: '1rem'
-            }}>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}>
-                <strong>Maximum Spacing:</strong> {results.maxSpacing} ft
-              </div>
-              <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: colors.labelText }}>
-                <strong>Fixtures in Length:</strong> {results.fixturesLength}
-              </div>
-              <div style={{ fontSize: '0.875rem', color: colors.labelText }}>
-                <strong>Fixtures in Width:</strong> {results.fixturesWidth}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ color: '#14532d', marginBottom: '0.5rem' }}>
-                <strong>Total Fixtures:</strong>
-              </div>
-              <div style={{ 
-                fontSize: '2rem', 
-                fontWeight: 'bold', 
-                color: '#16a34a',
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                background: colors.sectionBg,
                 padding: '1rem',
-                background: 'white',
-                borderRadius: '0.5rem',
+                borderRadius: '8px',
                 textAlign: 'center'
               }}>
-                {results.totalFixtures} fixtures
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Max Spacing
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.maxSpacing}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  feet
+                </div>
+              </div>
+              
+              <div style={{
+                background: '#dbeafe',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+                  Total Fixtures
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                  {results.totalFixtures}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
+                  fixtures
+                </div>
+              </div>
+
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Layout
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.fixturesLength}×{results.fixturesWidth}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  grid
+                </div>
               </div>
             </div>
 
-            <div style={{ 
-              color: '#14532d',
-              paddingTop: '1rem',
-              borderTop: '1px solid #bbf7d0'
+            <div style={{
+              background: '#d1fae5',
+              border: '1px solid #6ee7b7',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1rem'
             }}>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <strong>Actual Spacing (Length):</strong> {results.actualSpacingLength} ft
-              </div>
-              <div>
-                <strong>Actual Spacing (Width):</strong> {results.actualSpacingWidth} ft
+              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+                    Spacing Results
+                  </div>
+                  <div>Length spacing: {results.actualSpacingLength} ft</div>
+                  <div>Width spacing: {results.actualSpacingWidth} ft</div>
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.8125rem' }}>
+                    Start {(parseFloat(results.actualSpacingLength) / 2).toFixed(1)} ft from walls (length) and {(parseFloat(results.actualSpacingWidth) / 2).toFixed(1)} ft from walls (width)
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div style={{ 
-              background: '#fef3c7',
-              padding: '0.75rem',
-              borderRadius: '0.375rem',
-              border: '1px solid #fbbf24',
-              color: '#92400e',
+            <div style={{
+              background: colors.sectionBg,
+              padding: '1rem',
+              borderRadius: '8px',
+              border: `1px solid ${colors.cardBorder}`,
               fontSize: '0.875rem',
-              marginTop: '1rem'
+              color: colors.labelText
             }}>
-              <strong>Layout tip:</strong> Start {(parseFloat(results.actualSpacingLength) / 2).toFixed(1)} ft from walls along length, and {(parseFloat(results.actualSpacingWidth) / 2).toFixed(1)} ft from walls along width for balanced spacing.
+              <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+                Spacing Guidelines:
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                <li>Spacing ratio = max distance between fixtures ÷ ceiling height</li>
+                <li>Recessed cans: 1.5:1 ratio is standard</li>
+                <li>Space fixtures evenly; avoid placing directly against walls</li>
+              </ul>
             </div>
-          </div>
+          </>
         )}
-
-        <div style={{ 
-          background: colors.cardBg,
-          padding: '1rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${colors.cardBorder}`,
-          marginTop: '1.5rem'
-        }}>
-          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Spacing Guidelines:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
-            <li style={{ marginBottom: '0.25rem' }}>Spacing ratio = maximum distance between fixtures ÷ ceiling height</li>
-            <li style={{ marginBottom: '0.25rem' }}>Recessed cans: 1.5:1 ratio is standard (8 ft ceiling = 12 ft max spacing)</li>
-            <li style={{ marginBottom: '0.25rem' }}>Space fixtures evenly; avoid placing directly against walls</li>
-            <li>Higher ceilings may require more fixtures for even coverage</li>
-          </ul>
-        </div>
       </div>
     );
   };
@@ -418,14 +501,8 @@ function LightingCalculator({ isDarkMode = false }) {
     const [buildingType, setBuildingType] = useState('office');
 
     const wattsPerSqFt = {
-      'office': 1.0,
-      'retail': 1.5,
-      'warehouse': 0.5,
-      'school': 1.2,
-      'hospital': 1.0,
-      'hotel': 1.0,
-      'restaurant': 1.3,
-      'residential': 1.0
+      'office': 1.0, 'retail': 1.5, 'warehouse': 0.5, 'school': 1.2,
+      'hospital': 1.0, 'hotel': 1.0, 'restaurant': 1.3, 'residential': 1.0
     };
 
     const buildingTypeNames = {
@@ -446,7 +523,6 @@ function LightingCalculator({ isDarkMode = false }) {
       const watts = wattsPerSqFt[buildingType];
       const totalWatts = sqft * watts;
       const totalVA = totalWatts;
-      
       const amperage120V = totalVA / 120;
       const circuits20A = Math.ceil(amperage120V / 16);
 
@@ -463,9 +539,9 @@ function LightingCalculator({ isDarkMode = false }) {
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Area (square feet)
             </label>
             <input
@@ -473,18 +549,36 @@ function LightingCalculator({ isDarkMode = false }) {
               value={area}
               onChange={(e) => setArea(e.target.value)}
               placeholder="Enter area"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
               Building Type
             </label>
             <select
               value={buildingType}
               onChange={(e) => setBuildingType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{
+                width: '100%',
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               {Object.entries(buildingTypeNames).map(([key, name]) => (
                 <option key={key} value={key}>{name}</option>
@@ -495,77 +589,98 @@ function LightingCalculator({ isDarkMode = false }) {
         </div>
 
         {results && (
-          <div style={{ 
-            background: '#f0fdf4', 
-            border: '2px solid #22c55e', 
-            padding: '1.5rem', 
-            borderRadius: '0.5rem'
-          }}>
-            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-              Lighting Load Results
-            </h3>
-
-            <div style={{ 
-              background: colors.cardBg, 
-              padding: '1rem', 
-              borderRadius: '0.5rem',
-              marginBottom: '1rem'
-            }}>
-              <div style={{ fontSize: '0.875rem', color: colors.labelText }}>
-                <strong>Unit Load:</strong> {results.wattsPerSqFt} watts per sq ft
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ color: '#14532d', marginBottom: '0.5rem' }}>
-                <strong>Total Lighting Load:</strong>
-              </div>
-              <div style={{ 
-                fontSize: '2rem', 
-                fontWeight: 'bold', 
-                color: '#16a34a',
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                background: colors.sectionBg,
                 padding: '1rem',
-                background: 'white',
-                borderRadius: '0.5rem',
+                borderRadius: '8px',
                 textAlign: 'center'
               }}>
-                {results.totalWatts} watts
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Unit Load
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.wattsPerSqFt}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  W/sq ft
+                </div>
+              </div>
+              
+              <div style={{
+                background: '#dbeafe',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+                  Total Load
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                  {results.totalWatts}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
+                  watts
+                </div>
+              </div>
+
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  20A Circuits
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {results.circuits}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  needed
+                </div>
               </div>
             </div>
 
-            <div style={{ 
-              color: '#14532d',
-              paddingTop: '1rem',
-              borderTop: '1px solid #bbf7d0'
+            <div style={{
+              background: '#d1fae5',
+              border: '1px solid #6ee7b7',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1rem'
             }}>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <strong>Total VA:</strong> {results.totalVA} VA
-              </div>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <strong>Current @ 120V:</strong> {results.amperage} A
-              </div>
-              <div>
-                <strong>20A Circuits Needed:</strong> {results.circuits} circuits
+              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+                    Lighting Load Calculation
+                  </div>
+                  <div>Total VA: {results.totalVA} VA</div>
+                  <div>Current @ 120V: {results.amperage} A</div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
 
-        <div style={{ 
-          background: colors.cardBg,
-          padding: '1rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${colors.cardBorder}`,
-          marginTop: '1.5rem'
-        }}>
-          <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>NEC Requirements:</strong>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem', color: colors.subtleText, fontSize: '0.875rem' }}>
-            <li style={{ marginBottom: '0.25rem' }}>NEC 220.12 specifies unit lighting loads by occupancy type</li>
-            <li style={{ marginBottom: '0.25rem' }}>Calculate using building area, not just lit area</li>
-            <li style={{ marginBottom: '0.25rem' }}>Continuous loads require 125% conductor/OCPD sizing</li>
-            <li>Actual fixture wattage may differ; this is minimum code requirement</li>
-          </ul>
-        </div>
+            <div style={{
+              background: colors.sectionBg,
+              padding: '1rem',
+              borderRadius: '8px',
+              border: `1px solid ${colors.cardBorder}`,
+              fontSize: '0.875rem',
+              color: colors.labelText
+            }}>
+              <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+                NEC Requirements:
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                <li>NEC 220.12 specifies unit lighting loads by occupancy</li>
+                <li>Calculate using building area, not just lit area</li>
+                <li>Continuous loads require 125% conductor/OCPD sizing</li>
+              </ul>
+            </div>
+          </>
+        )}
       </div>
     );
   };
@@ -577,86 +692,85 @@ function LightingCalculator({ isDarkMode = false }) {
   };
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
-      {/* Modern Header */}
-      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      {/* Header Card */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
           <Lightbulb size={24} color="#3b82f6" />
-          <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Lighting Calculations</h1>
-            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>Professional Lighting Design</p>
-          </div>
+          <h2 style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '600', 
+            color: colors.cardText,
+            margin: 0 
+          }}>
+            Lighting Calculations
+          </h2>
         </div>
-      </div>
-
-      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
-        {/* Tab Navigation */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '0.5rem', 
-          marginBottom: '1.5rem',
-          flexWrap: 'wrap'
+        <p style={{ 
+          fontSize: '0.875rem', 
+          color: colors.labelText,
+          margin: 0 
         }}>
-          <button 
-            onClick={() => setActiveTab('lumens')}
-            style={{
-              padding: '0.75rem 1.25rem',
-              background: activeTab === 'lumens' ? '#3b82f6' : colors.inputBgAlt,
-              color: activeTab === 'lumens' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'lumens' ? '#3b82f6' : colors.inputBorder}`,
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            Room Lumens
-          </button>
-          <button 
-            onClick={() => setActiveTab('spacing')}
-            style={{
-              padding: '0.75rem 1.25rem',
-              background: activeTab === 'spacing' ? '#3b82f6' : colors.inputBgAlt,
-              color: activeTab === 'spacing' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'spacing' ? '#3b82f6' : colors.inputBorder}`,
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            Fixture Spacing
-          </button>
-          <button 
-            onClick={() => setActiveTab('watts')}
-            style={{
-              padding: '0.75rem 1.25rem',
-              background: activeTab === 'watts' ? '#3b82f6' : colors.inputBgAlt,
-              color: activeTab === 'watts' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'watts' ? '#3b82f6' : colors.inputBorder}`,
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            Watts/Sq Ft
-          </button>
-        </div>
-
-        {/* Active Tab Content */}
-        {tabComponents[activeTab]}
+          Professional Lighting Design
+        </p>
       </div>
 
-      {/* Footer */}
-      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>NEC Article 220 & 410:</p>
-        <p style={{ margin: 0 }}>
-          220.12: Lighting unit loads by occupancy • 210.19(A): Continuous loads require 125% conductor sizing • 410: Luminaires and lamps • Calculations provide code-minimum requirements
-        </p>
+      {/* Tab Navigation */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        display: 'flex',
+        gap: '0.5rem',
+        flexWrap: 'wrap'
+      }}>
+        {[
+          { id: 'lumens', label: 'Room Lumens' },
+          { id: 'spacing', label: 'Fixture Spacing' },
+          { id: 'watts', label: 'Watts/Sq Ft' }
+        ].map(tab => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              flex: '1 1 auto',
+              minWidth: '120px',
+              padding: '0.625rem 1rem',
+              background: activeTab === tab.id ? '#3b82f6' : colors.sectionBg,
+              color: activeTab === tab.id ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === tab.id ? '#3b82f6' : colors.cardBorder}`,
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              transition: 'all 0.2s'
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Active Tab Content */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        {tabComponents[activeTab]}
       </div>
     </div>
   );
