@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingDown, AlertTriangle } from 'lucide-react';
+import { TrendingDown, AlertTriangle, CheckCircle } from 'lucide-react';
 
 function VoltageDropCalculator({ isDarkMode = false }) {
   const [voltage, setVoltage] = useState('');
@@ -10,22 +10,16 @@ function VoltageDropCalculator({ isDarkMode = false }) {
   const [conductorType, setConductorType] = useState('copper');
   const [powerFactor, setPowerFactor] = useState('1.0');
 
-  // Dark mode color scheme
+  // Dark mode colors - matching ConduitFillCalculator
   const colors = {
-    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
-    headerBg: isDarkMode ? '#111827' : '#ffffff',
-    headerText: isDarkMode ? '#f9fafb' : '#111827',
-    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
-    contentBg: isDarkMode ? '#111827' : '#f9fafb',
+    cardBg: isDarkMode ? '#374151' : '#ffffff',
+    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
+    cardText: isDarkMode ? '#f9fafb' : '#111827',
     labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#374151' : 'white',
+    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
     inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    inputText: isDarkMode ? '#f9fafb' : '#111827',
-    cardBg: isDarkMode ? '#1f2937' : 'white',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBg: isDarkMode ? '#111827' : '#f9fafb',
-    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBorder: isDarkMode ? '#374151' : '#e5e7eb'
+    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
   };
 
   const circularMils = {
@@ -94,28 +88,81 @@ function VoltageDropCalculator({ isDarkMode = false }) {
   const result = calculateDrop();
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
-      {/* Modern Header */}
-      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      {/* Header Card */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
           <TrendingDown size={24} color="#3b82f6" />
-          <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Voltage Drop Calculator</h1>
-            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>NEC approved calculation method</p>
-          </div>
+          <h2 style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '600', 
+            color: colors.cardText,
+            margin: 0 
+          }}>
+            Voltage Drop Calculator
+          </h2>
         </div>
+        <p style={{ 
+          fontSize: '0.875rem', 
+          color: colors.labelText,
+          margin: 0 
+        }}>
+          NEC approved calculation method
+        </p>
       </div>
 
-      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+      {/* Input Card */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <h3 style={{ 
+          fontSize: '1rem', 
+          fontWeight: '600', 
+          color: colors.cardText,
+          marginTop: 0,
+          marginBottom: '1rem',
+          borderBottom: `1px solid ${colors.cardBorder}`,
+          paddingBottom: '0.5rem'
+        }}>
+          Circuit Parameters
+        </h3>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               System Type
             </label>
             <select 
               value={phaseType} 
               onChange={(e) => setPhaseType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="single">Single Phase</option>
               <option value="three">Three Phase</option>
@@ -123,13 +170,28 @@ function VoltageDropCalculator({ isDarkMode = false }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               Conductor Material
             </label>
             <select 
               value={conductorType} 
               onChange={(e) => setConductorType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="copper">Copper</option>
               <option value="aluminum">Aluminum</option>
@@ -137,52 +199,112 @@ function VoltageDropCalculator({ isDarkMode = false }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               System Voltage (V)
             </label>
             <input 
               type="number" 
               value={voltage} 
               onChange={(e) => setVoltage(e.target.value)}
-              placeholder="120, 240, 480, etc."
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="120, 240, 480"
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               Load Current (Amps)
             </label>
             <input 
               type="number" 
               value={current} 
               onChange={(e) => setCurrent(e.target.value)}
-              placeholder="15, 20, 30, etc."
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="15, 20, 30"
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               One-Way Distance (feet)
             </label>
             <input 
               type="number" 
               value={distance} 
               onChange={(e) => setDistance(e.target.value)}
-              placeholder="100, 200, 500, etc."
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              placeholder="100, 200, 500"
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               Wire Size (AWG/kcmil)
             </label>
             <select 
               value={wireSize} 
               onChange={(e) => setWireSize(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="14">14 AWG</option>
               <option value="12">12 AWG</option>
@@ -209,13 +331,28 @@ function VoltageDropCalculator({ isDarkMode = false }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
-              Power Factor (for AC loads)
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
+              Power Factor (AC loads)
             </label>
             <select 
               value={powerFactor} 
               onChange={(e) => setPowerFactor(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem',
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px',
+                backgroundColor: colors.inputBg,
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="1.0">1.0 (Resistive loads)</option>
               <option value="0.9">0.9 (Most motors)</option>
@@ -224,82 +361,142 @@ function VoltageDropCalculator({ isDarkMode = false }) {
             </select>
           </div>
         </div>
-
-        {/* Results Box */}
-        <div style={{ 
-          background: result.excessive ? '#fef2f2' : '#f0fdf4', 
-          border: `2px solid ${result.excessive ? '#dc2626' : '#22c55e'}`, 
-          padding: '1.5rem', 
-          borderRadius: '0.5rem'
-        }}>
-          <h3 style={{ fontWeight: 'bold', color: result.excessive ? '#991b1b' : '#166534', marginTop: 0, marginBottom: '1rem' }}>
-            Results
-          </h3>
-          
-          <div style={{ 
-            fontWeight: 'bold',
-            fontSize: '1.5rem',
-            marginBottom: '1rem',
-            color: result.excessive ? '#dc2626' : '#22c55e'
-          }}>
-            Voltage Drop: {result.drop}V ({result.percentage}%)
-          </div>
-          
-          {result.excessive && (
-            <div style={{ 
-              color: '#dc2626', 
-              fontWeight: 'bold', 
-              marginBottom: '1rem',
-              padding: '0.75rem',
-              background: '#fee2e2',
-              borderRadius: '0.375rem',
-              border: '1px solid #fecaca'
-            }}>
-              <div style={{ fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <AlertTriangle size={20} />
-                WARNING: Exceeds NEC 3% Limit
-              </div>
-              <div style={{ fontSize: '0.875rem', fontWeight: 'normal', marginTop: '0.5rem' }}>
-                Consider using larger wire size to reduce voltage drop
-              </div>
-            </div>
-          )}
-
-          {!result.excessive && voltage && current && distance && (
-            <div style={{ 
-              color: '#22c55e', 
-              marginBottom: '1rem',
-              fontSize: '1rem',
-              fontWeight: '600'
-            }}>
-              ✓ Voltage drop is within NEC recommended limits
-            </div>
-          )}
-
-          <div style={{ 
-            background: colors.cardBg, 
-            padding: '1rem', 
-            borderRadius: '0.375rem',
-            marginTop: '1rem'
-          }}>
-            <strong style={{ color: colors.labelText, display: 'block', marginBottom: '0.5rem' }}>Calculation Details:</strong>
-            <div style={{ fontSize: '0.875rem', color: colors.subtleText, display: 'grid', gap: '0.25rem' }}>
-              <div>• Formula: {phaseType === 'single' ? '2' : '1.732'} × K × I × L × PF ÷ CM</div>
-              <div>• K constant ({conductorType}): {kConstants[conductorType].ac}</div>
-              <div>• Circular mils: {circularMils[wireSize].toLocaleString()}</div>
-              <div>• Power factor: {powerFactor}</div>
-              <div>• System: {phaseType === 'single' ? 'Single' : 'Three'} phase</div>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* Footer */}
-      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>NEC Guidelines:</p>
-        <p style={{ margin: 0 }}>
-          Branch circuits: 3% max • Feeders: 3% max • Combined: 5% max
-        </p>
+      {/* Results Card */}
+      {voltage && current && distance && (
+        <div>
+          <div style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.cardBorder}`,
+            borderRadius: '12px',
+            padding: '1.5rem',
+            marginBottom: '1rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ 
+              fontSize: '1rem', 
+              fontWeight: '600', 
+              color: colors.cardText,
+              marginTop: 0,
+              marginBottom: '1rem'
+            }}>
+              Results
+            </h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Voltage Drop
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {result.drop}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  Volts
+                </div>
+              </div>
+              
+              <div style={{
+                background: result.excessive ? '#fee2e2' : '#dbeafe',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: result.excessive ? '#991b1b' : '#1e40af', marginBottom: '0.25rem' }}>
+                  Percentage Drop
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: result.excessive ? '#dc2626' : '#1e40af' }}>
+                  {result.percentage}%
+                </div>
+                <div style={{ fontSize: '0.75rem', color: result.excessive ? '#991b1b' : '#1e40af', marginTop: '0.25rem' }}>
+                  Max: 3%
+                </div>
+              </div>
+            </div>
+
+            <div style={{ 
+              background: colors.sectionBg,
+              padding: '1rem',
+              borderRadius: '8px',
+              border: `1px solid ${colors.cardBorder}`
+            }}>
+              <strong style={{ color: colors.cardText, display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+                Calculation Details:
+              </strong>
+              <div style={{ fontSize: '0.8125rem', color: colors.labelText, display: 'grid', gap: '0.25rem' }}>
+                <div>Formula: {phaseType === 'single' ? '2' : '1.732'} × K × I × L × PF ÷ CM</div>
+                <div>K constant ({conductorType}): {kConstants[conductorType].ac}</div>
+                <div>Circular mils: {circularMils[wireSize].toLocaleString()}</div>
+                <div>Power factor: {powerFactor}</div>
+                <div>System: {phaseType === 'single' ? 'Single' : 'Three'} phase</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Status Message */}
+          {result.excessive ? (
+            <div style={{
+              background: '#fef3c7',
+              border: '1px solid #fcd34d',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                <AlertTriangle size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                <div style={{ fontSize: '0.875rem', color: '#92400e', lineHeight: '1.5' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.25rem', fontSize: '0.9375rem' }}>
+                    WARNING: Exceeds NEC 3% Limit
+                  </div>
+                  <div style={{ fontSize: '0.8125rem' }}>
+                    Consider using larger wire size to reduce voltage drop. Excessive voltage drop can cause equipment malfunction and reduced efficiency.
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              background: '#d1fae5',
+              border: '1px solid #6ee7b7',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                    Voltage drop is within NEC limits
+                  </div>
+                  <div style={{ fontSize: '0.8125rem' }}>
+                    This circuit meets the NEC recommended 3% maximum voltage drop for branch circuits.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* NEC Guidelines */}
+      <div style={{
+        background: colors.sectionBg,
+        padding: '1rem',
+        borderRadius: '8px',
+        border: `1px solid ${colors.cardBorder}`,
+        fontSize: '0.8125rem',
+        color: colors.labelText
+      }}>
+        <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+          NEC Guidelines:
+        </div>
+        Branch circuits: 3% max • Feeders: 3% max • Combined: 5% max
       </div>
     </div>
   );
