@@ -1,25 +1,19 @@
 import React, { useState } from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, CheckCircle, AlertTriangle } from 'lucide-react';
 
 function MotorCalculations({ isDarkMode = false }) {
   const [activeCalculator, setActiveCalculator] = useState('flc');
 
-  // Dark mode colors
+  // Dark mode colors - matching ConduitFillCalculator
   const colors = {
-    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
-    headerBg: isDarkMode ? '#111827' : '#ffffff',
-    headerText: isDarkMode ? '#f9fafb' : '#111827',
-    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
-    contentBg: isDarkMode ? '#111827' : '#f9fafb',
+    cardBg: isDarkMode ? '#374151' : '#ffffff',
+    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
+    cardText: isDarkMode ? '#f9fafb' : '#111827',
     labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#374151' : 'white',
+    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
     inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    inputText: isDarkMode ? '#f9fafb' : '#111827',
-    cardBg: isDarkMode ? '#1f2937' : 'white',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBg: isDarkMode ? '#111827' : '#f9fafb',
-    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBorder: isDarkMode ? '#374151' : '#e5e7eb'
+    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
   };
   
   // Motor Full Load Current Calculator
@@ -63,18 +57,34 @@ function MotorCalculations({ isDarkMode = false }) {
     };
 
     const flc = calculateFLC();
+    const isNECValue = necFLCTable[phase]?.[parseInt(voltage)]?.[parseFloat(horsepower)];
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               Motor Horsepower
             </label>
             <select 
               value={horsepower} 
               onChange={(e) => setHorsepower(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem', 
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px', 
+                backgroundColor: colors.inputBg, 
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="">Select HP</option>
               <option value="0.25">1/4 HP</option>
@@ -100,13 +110,28 @@ function MotorCalculations({ isDarkMode = false }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               Voltage
             </label>
             <select 
               value={voltage} 
               onChange={(e) => setVoltage(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem', 
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px', 
+                backgroundColor: colors.inputBg, 
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="115">115V</option>
               <option value="230">230V</option>
@@ -119,13 +144,28 @@ function MotorCalculations({ isDarkMode = false }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               Phase
             </label>
             <select 
               value={phase} 
               onChange={(e) => setPhase(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem', 
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px', 
+                backgroundColor: colors.inputBg, 
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="single">Single Phase</option>
               <option value="three">Three Phase</option>
@@ -133,16 +173,31 @@ function MotorCalculations({ isDarkMode = false }) {
           </div>
         </div>
 
-        {horsepower && !necFLCTable[phase]?.[parseInt(voltage)]?.[parseFloat(horsepower)] && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        {horsepower && !isNECValue && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+              <label style={{ 
+                display: 'block', 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: colors.labelText, 
+                marginBottom: '0.5rem' 
+              }}>
                 Motor Efficiency
               </label>
               <select 
                 value={efficiency} 
                 onChange={(e) => setEfficiency(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.625rem', 
+                  fontSize: '0.9375rem',
+                  border: `1px solid ${colors.inputBorder}`, 
+                  borderRadius: '8px', 
+                  backgroundColor: colors.inputBg, 
+                  color: colors.cardText,
+                  boxSizing: 'border-box'
+                }}
               >
                 <option value="0.8">80% (Standard)</option>
                 <option value="0.85">85% (High Efficiency)</option>
@@ -152,13 +207,28 @@ function MotorCalculations({ isDarkMode = false }) {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+              <label style={{ 
+                display: 'block', 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: colors.labelText, 
+                marginBottom: '0.5rem' 
+              }}>
                 Power Factor
               </label>
               <select 
                 value={powerFactor} 
                 onChange={(e) => setPowerFactor(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.625rem', 
+                  fontSize: '0.9375rem',
+                  border: `1px solid ${colors.inputBorder}`, 
+                  borderRadius: '8px', 
+                  backgroundColor: colors.inputBg, 
+                  color: colors.cardText,
+                  boxSizing: 'border-box'
+                }}
               >
                 <option value="0.7">0.7 (Poor)</option>
                 <option value="0.8">0.8 (Typical)</option>
@@ -170,40 +240,77 @@ function MotorCalculations({ isDarkMode = false }) {
         )}
 
         <div style={{ 
-          background: '#f0fdf4', 
-          border: '2px solid #22c55e', 
-          padding: '1.5rem', 
-          borderRadius: '0.5rem'
+          background: colors.sectionBg,
+          padding: '1rem',
+          borderRadius: '8px',
+          marginBottom: '1rem',
+          border: `1px solid ${colors.cardBorder}`
         }}>
-          <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-            Results
-          </h3>
-          
           <div style={{ 
-            fontSize: '2rem', 
-            fontWeight: 'bold', 
-            color: '#22c55e',
-            marginBottom: '1rem',
-            padding: '1rem',
-            background: colors.cardBg,
-            borderRadius: '0.5rem',
+            fontSize: '0.75rem', 
+            color: colors.labelText, 
+            marginBottom: '0.5rem',
             textAlign: 'center'
           }}>
-            {flc ? flc.toFixed(1) : '0.0'} Amperes
+            Full Load Current
           </div>
-          
-          {necFLCTable[phase]?.[parseInt(voltage)]?.[parseFloat(horsepower)] && (
-            <div style={{ 
-              color: '#059669',
-              padding: '0.75rem',
-              background: '#ecfdf5',
-              borderRadius: '0.375rem',
-              border: '1px solid #10b981'
-            }}>
-              ✓ Value from NEC Table 430.250
-            </div>
-          )}
+          <div style={{ 
+            fontSize: '2rem', 
+            fontWeight: '700', 
+            color: colors.cardText,
+            textAlign: 'center'
+          }}>
+            {flc ? flc.toFixed(1) : '0.0'}
+          </div>
+          <div style={{ 
+            fontSize: '0.875rem', 
+            color: colors.labelText,
+            textAlign: 'center',
+            marginTop: '0.25rem'
+          }}>
+            Amperes
+          </div>
         </div>
+        
+        {isNECValue ? (
+          <div style={{
+            background: '#d1fae5',
+            border: '1px solid #6ee7b7',
+            borderRadius: '8px',
+            padding: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
+                <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                  Value from NEC Table 430.250
+                </div>
+                <div style={{ fontSize: '0.8125rem' }}>
+                  Standard full load current from NEC tables
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : horsepower ? (
+          <div style={{
+            background: '#fef3c7',
+            border: '1px solid #fcd34d',
+            borderRadius: '8px',
+            padding: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+              <AlertTriangle size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+              <div style={{ fontSize: '0.875rem', color: '#92400e', lineHeight: '1.5' }}>
+                <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                  Calculated Value
+                </div>
+                <div style={{ fontSize: '0.8125rem' }}>
+                  Not in NEC tables - calculated using efficiency and power factor
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     );
   };
@@ -232,7 +339,8 @@ function MotorCalculations({ isDarkMode = false }) {
       
       return {
         calculated: maxRating.toFixed(1),
-        standard: nextSize
+        standard: nextSize,
+        percentage
       };
     };
 
@@ -240,9 +348,15 @@ function MotorCalculations({ isDarkMode = false }) {
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               Motor Full Load Current (FLC)
             </label>
             <input 
@@ -250,18 +364,42 @@ function MotorCalculations({ isDarkMode = false }) {
               value={flc} 
               onChange={(e) => setFlc(e.target.value)}
               placeholder="Enter FLC in amps"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem', 
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px', 
+                backgroundColor: colors.inputBg, 
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               Protection Type
             </label>
             <select 
               value={protectionType} 
               onChange={(e) => setProtectionType(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem', 
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px', 
+                backgroundColor: colors.inputBg, 
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="inverse-time-breaker">Inverse Time Breaker</option>
               <option value="instantaneous-trip-breaker">Instantaneous Trip Breaker</option>
@@ -272,43 +410,61 @@ function MotorCalculations({ isDarkMode = false }) {
         </div>
 
         <div style={{ 
-          background: '#f0fdf4', 
-          border: '2px solid #22c55e', 
-          padding: '1.5rem', 
-          borderRadius: '0.5rem'
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(2, 1fr)', 
+          gap: '1rem', 
+          marginBottom: '1rem' 
         }}>
-          <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-            Results
-          </h3>
-          
-          <div style={{ color: '#14532d', marginBottom: '0.75rem' }}>
-            <strong>Calculated Maximum:</strong> {protection.calculated} Amps
-          </div>
-          
-          <div style={{ 
-            fontSize: '2rem', 
-            fontWeight: 'bold', 
-            color: '#22c55e',
-            marginBottom: '1rem',
+          <div style={{
+            background: colors.sectionBg,
             padding: '1rem',
-            background: colors.cardBg,
-            borderRadius: '0.5rem',
+            borderRadius: '8px',
             textAlign: 'center'
           }}>
-            {protection.standard} Amperes
+            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+              Calculated Maximum
+            </div>
+            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+              {protection.calculated}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+              Amperes
+            </div>
           </div>
           
-          <div style={{ 
-            color: '#14532d',
-            paddingTop: '1rem',
-            borderTop: '1px solid #bbf7d0'
+          <div style={{
+            background: '#dbeafe',
+            padding: '1rem',
+            borderRadius: '8px',
+            textAlign: 'center'
           }}>
-            <strong>NEC Reference:</strong>
-            <div style={{ marginTop: '0.5rem', color: '#15803d', fontSize: '0.875rem' }}>
-              Per NEC Table 430.52 ({protectionPercentages[protectionType]}% of FLC)
+            <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+              Standard Size
+            </div>
+            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+              {protection.standard}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
+              Amperes
             </div>
           </div>
         </div>
+
+        {flc && (
+          <div style={{
+            background: colors.sectionBg,
+            padding: '1rem',
+            borderRadius: '8px',
+            border: `1px solid ${colors.cardBorder}`,
+            fontSize: '0.8125rem',
+            color: colors.labelText
+          }}>
+            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+              NEC Reference:
+            </div>
+            Per NEC Table 430.52 ({protection.percentage}% of FLC)
+          </div>
+        )}
       </div>
     );
   };
@@ -371,9 +527,15 @@ function MotorCalculations({ isDarkMode = false }) {
 
     return (
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               Motor Full Load Current (FLC)
             </label>
             <input 
@@ -381,18 +543,42 @@ function MotorCalculations({ isDarkMode = false }) {
               value={flc} 
               onChange={(e) => setFlc(e.target.value)}
               placeholder="Enter FLC in amps"
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem', 
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px', 
+                backgroundColor: colors.inputBg, 
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '0.875rem', 
+              fontWeight: '500', 
+              color: colors.labelText, 
+              marginBottom: '0.5rem' 
+            }}>
               Temperature Rating
             </label>
             <select 
               value={tempRating} 
               onChange={(e) => setTempRating(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 1rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '1rem', background: colors.inputBg, color: colors.inputText }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem', 
+                fontSize: '0.9375rem',
+                border: `1px solid ${colors.inputBorder}`, 
+                borderRadius: '8px', 
+                backgroundColor: colors.inputBg, 
+                color: colors.cardText,
+                boxSizing: 'border-box'
+              }}
             >
               <option value="60C">60°C (140°F) - TW, UF</option>
               <option value="75C">75°C (167°F) - THWN, XHHW</option>
@@ -402,63 +588,87 @@ function MotorCalculations({ isDarkMode = false }) {
         </div>
 
         {wireCalc && (
-          <div style={{ 
-            background: '#f0fdf4', 
-            border: '2px solid #22c55e', 
-            padding: '1.5rem', 
-            borderRadius: '0.5rem'
-          }}>
-            <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-              Results
-            </h3>
-            
-            <div style={{ color: '#14532d', marginBottom: '0.75rem' }}>
-              <strong>Required Current Capacity:</strong> {wireCalc.requiredAmps} Amps (125% of FLC)
-            </div>
-            
+          <>
             <div style={{ 
-              fontSize: '2rem', 
-              fontWeight: 'bold', 
-              color: '#22c55e',
-              marginBottom: '1rem',
+              background: colors.sectionBg,
               padding: '1rem',
-              background: colors.cardBg,
-              borderRadius: '0.5rem',
-              textAlign: 'center'
+              borderRadius: '8px',
+              marginBottom: '1rem',
+              border: `1px solid ${colors.cardBorder}`
             }}>
-              {wireCalc.wireSize}
-            </div>
-            
-            {wireCalc.ampacity !== 'N/A' && (
-              <div style={{ color: '#14532d', marginBottom: '1rem' }}>
-                <strong>Ampacity:</strong> {wireCalc.ampacity} Amps
+              <div style={{ 
+                fontSize: '0.875rem', 
+                color: colors.labelText, 
+                marginBottom: '0.75rem' 
+              }}>
+                <strong style={{ color: colors.cardText }}>Required Current Capacity:</strong> {wireCalc.requiredAmps} Amps (125% of FLC)
               </div>
-            )}
+              
+              <div style={{ 
+                fontSize: '0.75rem', 
+                color: colors.labelText, 
+                marginBottom: '0.5rem',
+                textAlign: 'center'
+              }}>
+                Minimum Wire Size
+              </div>
+              <div style={{ 
+                fontSize: '2rem', 
+                fontWeight: '700', 
+                color: colors.cardText,
+                textAlign: 'center',
+                marginBottom: '0.5rem'
+              }}>
+                {wireCalc.wireSize}
+              </div>
+              
+              {wireCalc.ampacity !== 'N/A' && (
+                <div style={{ 
+                  fontSize: '0.875rem', 
+                  color: colors.labelText,
+                  textAlign: 'center'
+                }}>
+                  Ampacity: {wireCalc.ampacity} Amps
+                </div>
+              )}
+            </div>
             
             {wireCalc.ocpdLimit && (
               <div style={{ 
-                color: '#92400e', 
-                marginBottom: '1rem',
-                padding: '0.75rem',
                 background: '#fef3c7',
-                borderRadius: '0.375rem',
-                border: '1px solid #fbbf24'
+                border: '1px solid #fcd34d',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1rem'
               }}>
-                <strong>⚠ NEC 240.4(D):</strong> {wireCalc.ocpdLimit}A max overcurrent protection for {wireCalc.wireSize} wire
+                <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+                  <AlertTriangle size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+                  <div style={{ fontSize: '0.875rem', color: '#92400e', lineHeight: '1.5' }}>
+                    <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                      NEC 240.4(D) Limitation
+                    </div>
+                    <div style={{ fontSize: '0.8125rem' }}>
+                      {wireCalc.ocpdLimit}A maximum overcurrent protection for {wireCalc.wireSize} wire
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
             
-            <div style={{ 
-              color: '#14532d',
-              paddingTop: '1rem',
-              borderTop: '1px solid #bbf7d0'
+            <div style={{
+              background: colors.sectionBg,
+              padding: '1rem',
+              borderRadius: '8px',
+              border: `1px solid ${colors.cardBorder}`,
+              fontSize: '0.8125rem',
+              color: colors.labelText
             }}>
-              <strong>NEC Reference:</strong>
-              <div style={{ marginTop: '0.5rem', color: '#15803d', fontSize: '0.875rem' }}>
-                Per NEC 430.22 - Branch circuit conductors must carry 125% of motor FLC
+              <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+                NEC Reference:
               </div>
+              Per NEC 430.22 - Branch circuit conductors must carry 125% of motor FLC
             </div>
-          </div>
+          </>
         )}
       </div>
     );
@@ -471,34 +681,60 @@ function MotorCalculations({ isDarkMode = false }) {
   };
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
-      {/* Modern Header */}
-      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      {/* Header Card */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
           <Settings size={24} color="#3b82f6" />
-          <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Motor Calculations</h1>
-            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>NEC Article 430 - Motors and controllers</p>
-          </div>
+          <h2 style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '600', 
+            color: colors.cardText,
+            margin: 0 
+          }}>
+            Motor Calculations
+          </h2>
         </div>
+        <p style={{ 
+          fontSize: '0.875rem', 
+          color: colors.labelText,
+          margin: 0 
+        }}>
+          NEC Article 430 - Motors and controllers
+        </p>
       </div>
 
-      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
-        {/* Calculator Selection Tabs */}
+      {/* Calculator Selection Tabs */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
         <div style={{ 
           display: 'flex', 
-          gap: '0.5rem', 
-          marginBottom: '1.5rem',
+          gap: '0.5rem',
           flexWrap: 'wrap'
         }}>
           <button 
             onClick={() => setActiveCalculator('flc')}
             style={{
-              padding: '0.75rem 1.25rem',
-              background: activeCalculator === 'flc' ? '#3b82f6' : colors.cardBg,
-              color: activeCalculator === 'flc' ? 'white' : colors.subtleText,
-              border: `1px solid ${activeCalculator === 'flc' ? '#3b82f6' : colors.headerBorder}`,
-              borderRadius: '0.375rem',
+              flex: '1 1 auto',
+              minWidth: '120px',
+              padding: '0.75rem 1rem',
+              background: activeCalculator === 'flc' ? '#3b82f6' : 'transparent',
+              color: activeCalculator === 'flc' ? 'white' : colors.labelText,
+              border: `1px solid ${activeCalculator === 'flc' ? '#3b82f6' : colors.cardBorder}`,
+              borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
@@ -510,11 +746,13 @@ function MotorCalculations({ isDarkMode = false }) {
           <button 
             onClick={() => setActiveCalculator('protection')}
             style={{
-              padding: '0.75rem 1.25rem',
-              background: activeCalculator === 'protection' ? '#3b82f6' : colors.cardBg,
-              color: activeCalculator === 'protection' ? 'white' : colors.subtleText,
-              border: `1px solid ${activeCalculator === 'protection' ? '#3b82f6' : colors.headerBorder}`,
-              borderRadius: '0.375rem',
+              flex: '1 1 auto',
+              minWidth: '120px',
+              padding: '0.75rem 1rem',
+              background: activeCalculator === 'protection' ? '#3b82f6' : 'transparent',
+              color: activeCalculator === 'protection' ? 'white' : colors.labelText,
+              border: `1px solid ${activeCalculator === 'protection' ? '#3b82f6' : colors.cardBorder}`,
+              borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
@@ -526,11 +764,13 @@ function MotorCalculations({ isDarkMode = false }) {
           <button 
             onClick={() => setActiveCalculator('wiresize')}
             style={{
-              padding: '0.75rem 1.25rem',
-              background: activeCalculator === 'wiresize' ? '#3b82f6' : colors.cardBg,
-              color: activeCalculator === 'wiresize' ? 'white' : colors.subtleText,
-              border: `1px solid ${activeCalculator === 'wiresize' ? '#3b82f6' : colors.headerBorder}`,
-              borderRadius: '0.375rem',
+              flex: '1 1 auto',
+              minWidth: '120px',
+              padding: '0.75rem 1rem',
+              background: activeCalculator === 'wiresize' ? '#3b82f6' : 'transparent',
+              color: activeCalculator === 'wiresize' ? 'white' : colors.labelText,
+              border: `1px solid ${activeCalculator === 'wiresize' ? '#3b82f6' : colors.cardBorder}`,
+              borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
@@ -540,17 +780,33 @@ function MotorCalculations({ isDarkMode = false }) {
             Wire Sizing
           </button>
         </div>
+      </div>
 
-        {/* Active Calculator */}
+      {/* Active Calculator */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
         {calculatorComponents[activeCalculator]}
       </div>
 
-      {/* Footer */}
-      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>NEC References:</p>
-        <p style={{ margin: 0 }}>
-          430.22 - Conductors (125% FLC) • 430.52 - Circuit protection • 430.250 - FLC tables • 430.32 - Overload protection
-        </p>
+      {/* NEC Reference */}
+      <div style={{
+        background: colors.sectionBg,
+        padding: '1rem',
+        borderRadius: '8px',
+        border: `1px solid ${colors.cardBorder}`,
+        fontSize: '0.8125rem',
+        color: colors.labelText
+      }}>
+        <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+          NEC References:
+        </div>
+        430.22 - Conductors (125% FLC) • 430.52 - Circuit protection • 430.250 - FLC tables • 430.32 - Overload protection
       </div>
     </div>
   );
