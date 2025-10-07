@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Menu } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Menu, FileDown } from 'lucide-react';
 import CalculatorMenu from './CalculatorMenu.jsx';
 import VoltageDropCalculator from './VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './OhmsLawCalculator.jsx';
@@ -23,10 +23,21 @@ function App() {
   const [activeCalculator, setActiveCalculator] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  
+  // Ref to access calculator's export function
+  const calculatorRef = useRef(null);
 
   const handleNavigate = (view) => {
     if (view === 'home' || view === 'calculators') {
       setActiveCalculator(null);
+    }
+  };
+
+  // Handle PDF Export
+  const handleExportPDF = () => {
+    if (calculatorRef.current && calculatorRef.current.exportPDF) {
+      calculatorRef.current.exportPDF();
+      setShowMenu(false);
     }
   };
 
@@ -43,35 +54,35 @@ function App() {
   const renderCalculator = () => {
     switch(activeCalculator) {
       case 'voltage-drop':
-        return <VoltageDropCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <VoltageDropCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'ohms-law':
-        return <OhmsLawCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <OhmsLawCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'box-fill':
-        return <BoxFillCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <BoxFillCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'conduit-fill':
-        return <ConduitFillCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <ConduitFillCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'ampacity':
-        return <AmpacityLookupCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <AmpacityLookupCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'motor-calculations':
-        return <MotorCalculations isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <MotorCalculations ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'load-calculations':
-        return <LoadCalculations isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <LoadCalculations ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'transformer-sizing':
-        return <TransformerSizingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <TransformerSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'service-entrance':
-        return <ServiceEntranceSizing isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <ServiceEntranceSizing ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'grounding-bonding':
-        return <GroundingBondingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <GroundingBondingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'conduit-bending':
-        return <ConduitBendingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <ConduitBendingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'lighting':
-        return <LightingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <LightingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'vfd-sizing':
-        return <VFDSizingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <VFDSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'reactance-impedance':
-        return <ReactanceImpedanceCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <ReactanceImpedanceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'power-factor':
-        return <PowerFactorCorrection isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+        return <PowerFactorCorrection ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       default:
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -141,7 +152,7 @@ function App() {
               alignItems: 'center'
             }}
           >
-            <Menu size={24} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
+            <Menu size={24} color="white" />
           </button>
 
           {/* Dropdown Menu */}
@@ -174,6 +185,39 @@ function App() {
                 overflow: 'hidden'
               }}>
                 <div style={{ padding: '0.5rem 0' }}>
+                  {/* Export PDF Button - Only show when calculator is active */}
+                  {activeCalculator && (
+                    <>
+                      <button
+                        onClick={handleExportPDF}
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem 1rem',
+                          background: 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          color: colors.cardText,
+                          fontSize: '0.875rem',
+                          fontWeight: '500'
+                        }}
+                        onMouseEnter={(e) => e.target.style.background = isDarkMode ? '#374151' : '#f3f4f6'}
+                        onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                      >
+                        <FileDown size={16} />
+                        <span>Export to PDF</span>
+                      </button>
+                      <div style={{
+                        height: '1px',
+                        background: colors.cardBorder,
+                        margin: '0.5rem 0'
+                      }} />
+                    </>
+                  )}
+                  
+                  {/* Dark Mode Toggle */}
                   <button
                     onClick={() => {
                       setIsDarkMode(!isDarkMode);

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { TrendingDown, AlertTriangle, CheckCircle } from 'lucide-react';
+import { exportToPDF } from './pdfExport';
 
-function VoltageDropCalculator({ isDarkMode = false }) {
+const VoltageDropCalculator = forwardRef(({ isDarkMode = false }, ref) => {
   const [voltage, setVoltage] = useState('');
   const [current, setCurrent] = useState('');
   const [distance, setDistance] = useState('');
@@ -10,7 +11,7 @@ function VoltageDropCalculator({ isDarkMode = false }) {
   const [conductorType, setConductorType] = useState('copper');
   const [powerFactor, setPowerFactor] = useState('1.0');
 
-  // Dark mode colors - matching ConduitFillCalculator
+  // Dark mode colors
   const colors = {
     cardBg: isDarkMode ? '#374151' : '#ffffff',
     cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
@@ -86,6 +87,53 @@ function VoltageDropCalculator({ isDarkMode = false }) {
   };
 
   const result = calculateDrop();
+
+  // Expose exportPDF function to parent via ref
+  useImperativeHandle(ref, () => ({
+    exportPDF: () => {
+      // Check if we have enough data to export
+      if (!voltage || !current || !distance) {
+        alert('Please enter all required values before exporting to PDF');
+        return;
+      }
+
+      const pdfData = {
+        calculatorName: 'Voltage Drop Calculator',
+        inputs: {
+          systemType: phaseType === 'single' ? 'Single Phase' : 'Three Phase',
+          conductorMaterial: conductorType.charAt(0).toUpperCase() + conductorType.slice(1),
+          systemVoltage: `${voltage} V`,
+          loadCurrent: `${current} A`,
+          oneWayDistance: `${distance} ft`,
+          wireSize: wireSize.includes('/') ? `${wireSize} AWG` : `${wireSize} ${parseInt(wireSize) <= 4 ? 'AWG' : 'kcmil'}`,
+          powerFactor: powerFactor
+        },
+        results: {
+          voltageDrop: `${result.drop} V`,
+          percentageDrop: `${result.percentage}%`,
+          necCompliant: result.excessive ? 'NO - Exceeds 3% limit' : 'YES - Within 3% limit',
+          status: result.excessive ? '⚠️ WARNING: Exceeds NEC 3% Limit' : '✓ Within NEC limits'
+        },
+        additionalInfo: {
+          formula: phaseType === 'single' 
+            ? '2 × K × I × L × PF ÷ CM'
+            : '1.732 × K × I × L × PF ÷ CM',
+          kConstant: `${kConstants[conductorType].ac} (${conductorType} AC)`,
+          circularMils: circularMils[wireSize].toLocaleString(),
+          powerFactorUsed: powerFactor,
+          systemConfiguration: phaseType === 'single' ? 'Single phase' : 'Three phase'
+        },
+        necReferences: [
+          'NEC Guidelines: Branch circuits - 3% max',
+          'Feeders - 3% max',
+          'Combined branch circuit and feeder - 5% max',
+          'Note: Excessive voltage drop can cause equipment malfunction and reduced efficiency'
+        ]
+      };
+
+      exportToPDF(pdfData);
+    }
+  }));
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -500,6 +548,6 @@ function VoltageDropCalculator({ isDarkMode = false }) {
       </div>
     </div>
   );
-}
+});
 
 export default VoltageDropCalculator;
