@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { exportToPDF } from './pdfExport';
 
-function AmpacityLookupCalculator({ isDarkMode = false, onBack }) {
+const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [wireSize, setWireSize] = useState('12');
   const [wireType, setWireType] = useState('copper');
   const [tempRating, setTempRating] = useState('75C');
@@ -149,6 +150,69 @@ function AmpacityLookupCalculator({ isDarkMode = false, onBack }) {
   const ocpdLimit = getOCPDLimit(wireSize, wireType);
   const deratingResults = calculateDeratedAmpacity();
   const hasDerating = deratingResults.tempFactor !== 1.00 || deratingResults.conductorFactor !== 1.00 || continuousLoad;
+
+  // Expose exportPDF function to parent via ref
+  useImperativeHandle(ref, () => ({
+    exportPDF: () => {
+      const getTempLabel = (temp) => {
+        const labels = {
+          '60C': '60°C (140°F)',
+          '75C': '75°C (167°F)',
+          '90C': '90°C (194°F)'
+        };
+        return labels[temp] || temp;
+      };
+
+      const getAmbientTempLabel = (temp) => {
+        const temps = {
+          '10': '10°C (50°F)',
+          '15': '15°C (59°F)',
+          '20': '20°C (68°F)',
+          '25': '25°C (77°F)',
+          '30': '30°C (86°F)',
+          '35': '35°C (95°F)',
+          '40': '40°C (104°F)',
+          '45': '45°C (113°F)',
+          '50': '50°C (122°F)'
+        };
+        return temps[temp] || `${temp}°C`;
+      };
+
+      const pdfData = {
+        calculatorName: 'Ampacity Lookup Calculator',
+        inputs: {
+          wireSize: wireSize.includes('/') ? `${wireSize} AWG` : `${wireSize} ${parseInt(wireSize) <= 16 ? 'AWG' : 'kcmil'}`,
+          wireMaterial: wireType.charAt(0).toUpperCase() + wireType.slice(1),
+          temperatureRating: getTempLabel(tempRating),
+          ambientTemperature: getAmbientTempLabel(ambientTemp),
+          currentCarryingConductors: numConductors,
+          continuousLoad: continuousLoad ? 'Yes (3+ hours)' : 'No'
+        },
+        results: {
+          baseAmpacity: `${deratingResults.base} A`,
+          deratedAmpacity: hasDerating ? `${deratingResults.derated} A` : 'N/A (no derating applied)',
+          finalAmpacity: `${continuousLoad ? deratingResults.continuous : (hasDerating ? deratingResults.derated : deratingResults.base)} A`,
+          ocpdLimit: ocpdLimit ? `${ocpdLimit} A (NEC 240.4(D))` : 'No special limit',
+          commonApplications: getCommonApplications(currentAmpacity, wireSize)
+        },
+        additionalInfo: {
+          temperatureCorrectionFactor: `×${deratingResults.tempFactor.toFixed(2)}`,
+          conductorAdjustmentFactor: `×${deratingResults.conductorFactor.toFixed(2)}`,
+          continuousLoadFactor: continuousLoad ? '×0.80' : 'Not applied',
+          deratingApplied: hasDerating ? 'Yes' : 'No'
+        },
+        necReferences: [
+          'NEC Table 310.16 - Allowable Ampacities of Insulated Conductors',
+          'NEC 310.15(B)(2)(a) - Temperature Correction Factors',
+          'NEC 310.15(B)(3)(a) - Conductor Bundling Adjustment Factors',
+          ocpdLimit ? 'NEC 240.4(D) - Small Conductor Overcurrent Protection' : null,
+          continuousLoad ? 'NEC 210.19(A)(1) - Continuous Load Sizing (125% factor)' : null
+        ].filter(Boolean)
+      };
+
+      exportToPDF(pdfData);
+    }
+  }));
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -579,6 +643,6 @@ function AmpacityLookupCalculator({ isDarkMode = false, onBack }) {
       </div>
     </div>
   );
-}
+});
 
 export default AmpacityLookupCalculator;

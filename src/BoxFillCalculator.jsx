@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Package, Plus, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { exportToPDF } from './pdfExport';
 
-function BoxFillCalculator({ isDarkMode = false, onBack }) {
+const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [boxType, setBoxType] = useState('4x1.5-square');
   const [conductors, setConductors] = useState([
     { size: '12', count: '' }
@@ -145,6 +146,70 @@ function BoxFillCalculator({ isDarkMode = false, onBack }) {
   const boxCapacity = boxCapacities[boxType].capacity;
   const fillPercentage = boxCapacity > 0 ? ((results.totalFill / boxCapacity) * 100).toFixed(1) : 0;
   const isOverfilled = results.totalFill > boxCapacity;
+
+  // Expose exportPDF function to parent via ref
+  useImperativeHandle(ref, () => ({
+    exportPDF: () => {
+      // Build conductor list for inputs
+      const conductorInputs = {};
+      conductors.forEach((conductor, index) => {
+        const count = parseInt(conductor.count) || 0;
+        if (count > 0) {
+          conductorInputs[`Conductor ${index + 1}`] = `${count}× ${conductor.size} AWG`;
+        }
+      });
+
+      // Build conductor breakdown for additional info
+      const conductorBreakdown = {};
+      results.conductorDetails.forEach((detail, index) => {
+        if (detail.count > 0) {
+          conductorBreakdown[`${detail.count}× ${detail.size} AWG`] = 
+            `${detail.allowanceEach} cu.in. each = ${detail.subtotal.toFixed(2)} cu.in. total`;
+        }
+      });
+
+      const outlets = parseInt(devices.outlets) || 0;
+      const switches = parseInt(devices.switches) || 0;
+      const clamps = parseInt(devices.clamps) || 0;
+
+      const pdfData = {
+        calculatorName: 'Box Fill Calculator',
+        inputs: {
+          boxType: `${boxCapacities[boxType].name} (${boxCapacity} cu.in.)`,
+          ...conductorInputs,
+          receptaclesOutlets: outlets > 0 ? `${outlets} (counts as ${outlets * 2} conductors)` : '0',
+          switches: switches > 0 ? `${switches} (counts as ${switches * 2} conductors)` : '0',
+          cableClamps: clamps > 0 ? `${clamps} (counts as 1 conductor volume)` : '0',
+          equipmentGroundingConductors: devices.groundWires ? 'Yes (counts as 1 conductor volume)' : 'No'
+        },
+        results: {
+          boxCapacity: `${boxCapacity} cu.in.`,
+          calculatedFill: `${results.totalFill.toFixed(2)} cu.in.`,
+          fillPercentage: `${fillPercentage}%`,
+          status: isOverfilled ? '❌ OVERFILLED - Violates NEC 314.16' : '✓ Within NEC limits',
+          deviceFill: results.deviceFill > 0 ? `${results.deviceFill.toFixed(2)} cu.in.` : 'N/A',
+          clampFill: results.clampFill > 0 ? `${results.clampFill.toFixed(2)} cu.in.` : 'N/A',
+          groundFill: results.groundFill > 0 ? `${results.groundFill.toFixed(2)} cu.in.` : 'N/A'
+        },
+        additionalInfo: {
+          ...conductorBreakdown,
+          largestWireSize: `${results.largestWireSize} AWG (used for device/clamp/ground allowance)`,
+          deviceWireAllowance: `${results.deviceWireAllowance} cu.in. per conductor`
+        },
+        necReferences: [
+          'NEC 314.16 - Number of Conductors in Outlet, Device, and Junction Boxes',
+          'NEC 314.16(B) - Box Fill Calculations',
+          'Conductor volume allowances per NEC Table 314.16(B)',
+          'Each device (receptacle/switch) counts as 2 conductor volumes',
+          'All equipment grounding conductors combined count as 1 conductor volume',
+          'One or more cable clamps count as 1 conductor volume',
+          isOverfilled ? 'WARNING: This configuration exceeds the maximum allowable box fill' : null
+        ].filter(Boolean)
+      };
+
+      exportToPDF(pdfData);
+    }
+  }));
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -678,6 +743,6 @@ function BoxFillCalculator({ isDarkMode = false, onBack }) {
       </div>
     </div>
   );
-}
+});
 
 export default BoxFillCalculator;
