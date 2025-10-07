@@ -15,6 +15,7 @@ import ConduitBendingCalculator from './ConduitBendingCalculator.jsx';
 import LightingCalculator from './LightingCalculator.jsx';
 import BottomNavigation from './BottomNavigation.jsx';
 import VFDSizingCalculator from './VFDSizingCalculator.jsx';
+import ReactanceImpedanceCalculator from './ReactanceImpedanceCalculator.jsx';
 import './App.css';
 
 function App() {
@@ -66,6 +67,8 @@ function App() {
         return <LightingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'vfd-sizing':
         return <VFDSizingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+      case 'reactance-impedance':
+        return <ReactanceImpedanceCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       default:
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -75,26 +78,27 @@ function App() {
   };
 
   const getHeaderTitle = () => {
-  if (!activeCalculator) return 'Calculator Menu';
-  
-  const titles = {
-    'voltage-drop': 'Voltage Drop',
-    'ohms-law': "Ohm's Law",
-    'box-fill': 'Box Fill',
-    'conduit-fill': 'Conduit Fill',
-    'ampacity': 'Ampacity',
-    'motor-calculations': 'Motors',
-    'load-calculations': 'Load Calculations',
-    'transformer-sizing': 'Transformers',
-    'service-entrance': 'Service Entrance Sizing',
-    'grounding-bonding': 'Grounding & Bonding',
-    'conduit-bending': 'Conduit Bending',
-    'lighting': 'Lighting',
-    'vfd-sizing': 'VFD Sizing'
+    if (!activeCalculator) return 'Calculator Menu';
+    
+    const titles = {
+      'voltage-drop': 'Voltage Drop',
+      'ohms-law': "Ohm's Law",
+      'box-fill': 'Box Fill',
+      'conduit-fill': 'Conduit Fill',
+      'ampacity': 'Ampacity',
+      'motor-calculations': 'Motors',
+      'load-calculations': 'Load Calculations',
+      'transformer-sizing': 'Transformers',
+      'service-entrance': 'Service Entrance Sizing',
+      'grounding-bonding': 'Grounding & Bonding',
+      'conduit-bending': 'Conduit Bending',
+      'lighting': 'Lighting',
+      'vfd-sizing': 'VFD Sizing',
+      'reactance-impedance': 'Reactance & Impedance'
+    };
+    
+    return titles[activeCalculator] || 'Electrician\'s Toolkit';
   };
-  
-  return titles[activeCalculator] || 'Electrician\'s Toolkit';
-};
 
   return (
     <div className="App" style={{ background: isDarkMode ? '#1f2937' : '#ffffff' }}>
