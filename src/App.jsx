@@ -16,6 +16,7 @@ import LightingCalculator from './LightingCalculator.jsx';
 import BottomNavigation from './BottomNavigation.jsx';
 import VFDSizingCalculator from './VFDSizingCalculator.jsx';
 import ReactanceImpedanceCalculator from './ReactanceImpedanceCalculator.jsx';
+import PowerFactorCorrection from './PowerFactorCorrection.jsx';
 import './App.css';
 
 function App() {
@@ -69,6 +70,8 @@ function App() {
         return <VFDSizingCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'reactance-impedance':
         return <ReactanceImpedanceCalculator isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+      case 'power-factor':
+        return <PowerFactorCorrection isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       default:
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -94,7 +97,8 @@ function App() {
       'conduit-bending': 'Conduit Bending',
       'lighting': 'Lighting',
       'vfd-sizing': 'VFD Sizing',
-      'reactance-impedance': 'Reactance & Impedance'
+      'reactance-impedance': 'Reactance & Impedance',
+      'power-factor': 'Power Factor Correction'
     };
     
     return titles[activeCalculator] || 'Electrician\'s Toolkit';
