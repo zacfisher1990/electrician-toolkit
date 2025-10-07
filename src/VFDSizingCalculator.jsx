@@ -10,7 +10,7 @@ export default function VFDSizingCalculator({ isDarkMode, onBack }) {
   const [ambientTemp, setAmbientTemp] = useState('40');
   const [loadType, setLoadType] = useState('variable');
 
-  // Dark mode colors
+  // Dark mode colors - matching ConduitFillCalculator
   const colors = {
     cardBg: isDarkMode ? '#374151' : '#ffffff',
     cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
@@ -19,6 +19,7 @@ export default function VFDSizingCalculator({ isDarkMode, onBack }) {
     inputBg: isDarkMode ? '#1f2937' : '#ffffff',
     inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
     sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
   };
 
   // Calculate motor FLA based on HP and voltage
@@ -429,69 +430,133 @@ export default function VFDSizingCalculator({ isDarkMode, onBack }) {
 
       {/* Results */}
       {motorHP && (
-        <div style={{
-          background: colors.cardBg,
-          border: `1px solid ${colors.cardBorder}`,
-          borderRadius: '12px',
-          padding: '1.5rem',
-          marginBottom: '1rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ 
-            fontSize: '1.125rem', 
-            fontWeight: '600', 
-            color: colors.cardText,
-            marginTop: 0,
-            marginBottom: '1rem'
+        <div>
+          {/* Calculation Results */}
+          <div style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.cardBorder}`,
+            borderRadius: '12px',
+            padding: '1.5rem',
+            marginBottom: '1rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
           }}>
-            Results
-          </h3>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
+            <h3 style={{ 
+              fontSize: '1rem', 
+              fontWeight: '600', 
+              color: colors.cardText,
+              marginTop: 0,
+              marginBottom: '1rem'
             }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Motor FLA
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {motorFLA.toFixed(1)} A
-              </div>
-            </div>
+              Results
+            </h3>
             
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Required VFD Current
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Motor FLA
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {motorFLA.toFixed(1)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  Amperes
+                </div>
               </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {requiredVFDCurrent.toFixed(1)} A
+              
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Required VFD Current
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                  {requiredVFDCurrent.toFixed(1)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  Amperes
+                </div>
+              </div>
+              
+              <div style={{
+                background: '#dbeafe',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
+                  Recommended VFD
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                  {recommendedVFD ? recommendedVFD.amps : 'N/A'}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
+                  Amperes
+                </div>
               </div>
             </div>
-            
-            <div style={{
-              background: '#dbeafe',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                Recommended VFD
+
+            {recommendedVFD && (
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                border: `1px solid ${colors.cardBorder}`
+              }}>
+                <h4 style={{ 
+                  fontSize: '0.875rem', 
+                  fontWeight: '600', 
+                  color: colors.cardText,
+                  marginTop: 0,
+                  marginBottom: '0.75rem'
+                }}>
+                  VFD Specifications
+                </h4>
+                <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem', color: colors.labelText }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Current Rating:</span>
+                    <span style={{ fontWeight: '600', color: colors.cardText }}>
+                      {recommendedVFD.amps} Amperes
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Motor HP (460V):</span>
+                    <span style={{ fontWeight: '600', color: colors.cardText }}>
+                      {recommendedVFD.hp460V} HP
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Motor HP (230V):</span>
+                    <span style={{ fontWeight: '600', color: colors.cardText }}>
+                      {recommendedVFD.hp230V} HP
+                    </span>
+                  </div>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    paddingTop: '0.5rem',
+                    borderTop: `1px solid ${colors.cardBorder}`,
+                    marginTop: '0.25rem'
+                  }}>
+                    <span>Safety Margin:</span>
+                    <span style={{ fontWeight: '600', color: '#059669' }}>
+                      {((recommendedVFD.amps / requiredVFDCurrent - 1) * 100).toFixed(0)}%
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                {recommendedVFD ? `${recommendedVFD.amps} A` : 'N/A'}
-              </div>
-            </div>
+            )}
           </div>
 
-          {recommendedVFD && (
+          {/* Success Message */}
+          {recommendedVFD && !hasWarnings && (
             <div style={{
               background: '#d1fae5',
               border: '1px solid #6ee7b7',
@@ -501,66 +566,61 @@ export default function VFDSizingCalculator({ isDarkMode, onBack }) {
             }}>
               <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
                 <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-                <div>
-                  <h4 style={{ 
-                    fontSize: '0.9375rem', 
-                    fontWeight: '600', 
-                    color: '#065f46',
-                    marginTop: 0,
-                    marginBottom: '0.5rem'
-                  }}>
-                    Recommended VFD Size
-                  </h4>
-                  <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                    <div><strong>Current Rating:</strong> {recommendedVFD.amps} Amps</div>
-                    <div><strong>Motor HP Rating (460V):</strong> {recommendedVFD.hp460V} HP</div>
-                    <div><strong>Motor HP Rating (230V):</strong> {recommendedVFD.hp230V} HP</div>
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.8125rem' }}>
-                      Safety margin: {((recommendedVFD.amps / requiredVFDCurrent - 1) * 100).toFixed(0)}%
-                    </div>
+                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                    VFD Selection Complete
+                  </div>
+                  <div style={{ fontSize: '0.8125rem' }}>
+                    Selected VFD meets all requirements with adequate safety margin for reliable operation.
                   </div>
                 </div>
               </div>
             </div>
           )}
 
+          {/* Warnings */}
           {hasWarnings && (
             <div style={{
               background: '#fef3c7',
               border: '1px solid #fcd34d',
               borderRadius: '8px',
-              padding: '1rem'
+              padding: '1rem',
+              marginBottom: '1rem'
             }}>
               <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
                 <AlertCircle size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-                <div>
-                  <h4 style={{ 
+                <div style={{ lineHeight: '1.5' }}>
+                  <div style={{ 
                     fontSize: '0.9375rem', 
                     fontWeight: '600', 
                     color: '#78350f',
-                    marginTop: 0,
                     marginBottom: '0.5rem'
                   }}>
                     Important Considerations
-                  </h4>
+                  </div>
                   <ul style={{ 
-                    fontSize: '0.875rem', 
+                    fontSize: '0.8125rem', 
                     color: '#92400e',
-                    lineHeight: '1.5',
                     margin: 0,
                     paddingLeft: '1.25rem'
                   }}>
                     {altitudeFactor < 1.0 && (
-                      <li>High altitude installation requires derating ({(altitudeFactor * 100).toFixed(0)}% of rated capacity)</li>
+                      <li style={{ marginBottom: '0.25rem' }}>
+                        High altitude installation requires derating ({(altitudeFactor * 100).toFixed(0)}% of rated capacity)
+                      </li>
                     )}
                     {tempFactor < 1.0 && (
-                      <li>High ambient temperature requires derating ({(tempFactor * 100).toFixed(0)}% of rated capacity)</li>
+                      <li style={{ marginBottom: '0.25rem' }}>
+                        High ambient temperature requires derating ({(tempFactor * 100).toFixed(0)}% of rated capacity)
+                      </li>
                     )}
                     {dutyCycle === 'heavy' && (
-                      <li>Heavy duty cycle applications require oversizing for continuous operation</li>
+                      <li style={{ marginBottom: '0.25rem' }}>
+                        Heavy duty cycle applications require oversizing for continuous operation
+                      </li>
                     )}
-                    <li>Verify VFD voltage matches motor nameplate voltage</li>
-                    <li>Consider harmonic filtering for sensitive equipment</li>
+                    <li style={{ marginBottom: '0.25rem' }}>Verify VFD voltage matches motor nameplate voltage</li>
+                    <li style={{ marginBottom: '0.25rem' }}>Consider harmonic filtering for sensitive equipment</li>
                     <li>Ensure adequate cooling and ventilation</li>
                   </ul>
                 </div>
@@ -569,6 +629,21 @@ export default function VFDSizingCalculator({ isDarkMode, onBack }) {
           )}
         </div>
       )}
+
+      {/* Installation Notes */}
+      <div style={{
+        background: colors.sectionBg,
+        padding: '1rem',
+        borderRadius: '8px',
+        border: `1px solid ${colors.cardBorder}`,
+        fontSize: '0.8125rem',
+        color: colors.labelText
+      }}>
+        <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+          VFD Installation Notes:
+        </div>
+        Always follow manufacturer specifications • Use shielded cables for motor connections • Install line and load reactors when recommended • Ensure proper grounding and bonding • Consider bypass contactor for critical applications
+      </div>
     </div>
   );
 }
