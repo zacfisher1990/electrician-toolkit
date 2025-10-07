@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Zap, Plus, Trash2, Calculator } from 'lucide-react';
-
+import { Zap, Plus, Trash2, Calculator, Info } from 'lucide-react';
 
 const OhmsLawCalculator = ({ isDarkMode = false }) => {
   const [activeTab, setActiveTab] = useState('basic');
@@ -21,27 +20,16 @@ const OhmsLawCalculator = ({ isDarkMode = false }) => {
     { id: 1, R: '', V: '', I: '', P: '' }
   ]);
 
-  // Dark mode colors
+  // Dark mode colors - matching ConduitFillCalculator
   const colors = {
-    mainBg: isDarkMode ? '#1f2937' : '#ffffff',
-    headerBg: isDarkMode ? '#111827' : '#ffffff',
-    headerText: isDarkMode ? '#f9fafb' : '#111827',
-    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
-    contentBg: isDarkMode ? '#111827' : '#f9fafb',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#374151' : 'white',
-    inputBgAlt: isDarkMode ? '#1f2937' : '#f9fafb',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    inputText: isDarkMode ? '#f9fafb' : '#111827',
-    cardBg: isDarkMode ? '#1f2937' : 'white',
+    cardBg: isDarkMode ? '#374151' : '#ffffff',
     cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBg: isDarkMode ? '#111827' : '#f9fafb',
-    footerText: isDarkMode ? '#9ca3af' : '#6b7280',
-    footerBorder: isDarkMode ? '#374151' : '#e5e7eb',
-    infoBg: isDarkMode ? '#1e3a5f' : '#dbeafe',
-    infoText: isDarkMode ? '#93c5fd' : '#1e40af',
-    infoBorder: isDarkMode ? '#1e40af' : '#3b82f6'
+    cardText: isDarkMode ? '#f9fafb' : '#111827',
+    labelText: isDarkMode ? '#d1d5db' : '#374151',
+    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
+    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
+    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
+    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
   };
 
   // Auto-calculate when inputs change
@@ -480,41 +468,64 @@ const OhmsLawCalculator = ({ isDarkMode = false }) => {
   };
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto', background: colors.mainBg, borderRadius: '0.5rem', overflow: 'hidden' }}>
-      {/* Modern Header */}
-      <div style={{ background: colors.headerBg, color: colors.headerText, padding: '1rem 1.5rem', borderBottom: `1px solid ${colors.headerBorder}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      {/* Header Card */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
           <Zap size={24} color="#3b82f6" />
-          <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Ohm's Law Calculator</h1>
-            <p style={{ fontSize: '0.8125rem', margin: 0, color: colors.subtleText }}>Professional Electrical Calculations - V, I, R, P</p>
-          </div>
+          <h2 style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '600', 
+            color: colors.cardText,
+            margin: 0 
+          }}>
+            Ohm's Law Calculator
+          </h2>
         </div>
+        <p style={{ 
+          fontSize: '0.875rem', 
+          color: colors.labelText,
+          margin: 0 
+        }}>
+          Professional Electrical Calculations - V, I, R, P
+        </p>
       </div>
 
-      <div style={{ background: colors.contentBg, padding: '1.5rem' }}>
-        {/* Tab Navigation */}
+      {/* Tab Navigation */}
+      <div style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
+        borderRadius: '12px',
+        padding: '1rem',
+        marginBottom: '1rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
         <div style={{ 
           display: 'flex', 
-          gap: '0.5rem', 
-          marginBottom: '1.5rem',
-          overflowX: 'auto',
-          WebkitOverflowScrolling: 'touch'
+          gap: '0.5rem',
+          flexWrap: 'wrap'
         }}>
           <button
             onClick={() => setActiveTab('basic')}
             style={{
-              minWidth: 'fit-content',
+              flex: '1 1 auto',
+              minWidth: '80px',
               padding: '0.75rem 1rem',
-              background: activeTab === 'basic' ? '#3b82f6' : colors.cardBg,
-              color: activeTab === 'basic' ? 'white' : colors.subtleText,
-              border: `1px solid ${colors.cardBorder}`,
-              borderRadius: '0.375rem',
+              background: activeTab === 'basic' ? '#3b82f6' : 'transparent',
+              color: activeTab === 'basic' ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === 'basic' ? '#3b82f6' : colors.cardBorder}`,
+              borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
-              transition: 'all 0.2s',
-              whiteSpace: 'nowrap'
+              transition: 'all 0.2s'
             }}
           >
             Basic
@@ -522,17 +533,17 @@ const OhmsLawCalculator = ({ isDarkMode = false }) => {
           <button
             onClick={() => setActiveTab('series')}
             style={{
-              minWidth: 'fit-content',
+              flex: '1 1 auto',
+              minWidth: '80px',
               padding: '0.75rem 1rem',
-              background: activeTab === 'series' ? '#3b82f6' : colors.cardBg,
-              color: activeTab === 'series' ? 'white' : colors.subtleText,
-              border: `1px solid ${colors.cardBorder}`,
-              borderRadius: '0.375rem',
+              background: activeTab === 'series' ? '#3b82f6' : 'transparent',
+              color: activeTab === 'series' ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === 'series' ? '#3b82f6' : colors.cardBorder}`,
+              borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
-              transition: 'all 0.2s',
-              whiteSpace: 'nowrap'
+              transition: 'all 0.2s'
             }}
           >
             Series
@@ -540,42 +551,66 @@ const OhmsLawCalculator = ({ isDarkMode = false }) => {
           <button
             onClick={() => setActiveTab('parallel')}
             style={{
-              minWidth: 'fit-content',
+              flex: '1 1 auto',
+              minWidth: '80px',
               padding: '0.75rem 1rem',
-              background: activeTab === 'parallel' ? '#3b82f6' : colors.cardBg,
-              color: activeTab === 'parallel' ? 'white' : colors.subtleText,
-              border: `1px solid ${colors.cardBorder}`,
-              borderRadius: '0.375rem',
+              background: activeTab === 'parallel' ? '#3b82f6' : 'transparent',
+              color: activeTab === 'parallel' ? 'white' : colors.labelText,
+              border: `1px solid ${activeTab === 'parallel' ? '#3b82f6' : colors.cardBorder}`,
+              borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '600',
-              transition: 'all 0.2s',
-              whiteSpace: 'nowrap'
+              transition: 'all 0.2s'
             }}
           >
             Parallel
           </button>
         </div>
+      </div>
 
-        {/* Basic Tab */}
-        {activeTab === 'basic' && (
-          <div>
-            <div style={{ 
-              background: colors.infoBg, 
-              border: `1px solid ${colors.infoBorder}`, 
-              padding: '0.75rem', 
-              borderRadius: '0.5rem', 
-              marginBottom: '1rem',
-              textAlign: 'center'
-            }}>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: colors.infoText, fontWeight: '600' }}>
+      {/* Basic Tab */}
+      {activeTab === 'basic' && (
+        <div>
+          {/* Info Box */}
+          <div style={{
+            background: '#dbeafe',
+            border: '1px solid #3b82f6',
+            borderRadius: '8px',
+            padding: '1rem',
+            marginBottom: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+              <Info size={20} color="#1e40af" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+              <p style={{ 
+                margin: 0, 
+                fontSize: '0.875rem', 
+                color: '#1e40af',
+                lineHeight: '1.5'
+              }}>
                 Enter any 2 known values to calculate the remaining values
               </p>
             </div>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+          </div>
+
+          {/* Input Card */}
+          <div style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.cardBorder}`,
+            borderRadius: '12px',
+            padding: '1.5rem',
+            marginBottom: '1rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+                <label style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: '500', 
+                  color: colors.labelText, 
+                  marginBottom: '0.5rem' 
+                }}>
                   Voltage (V)
                 </label>
                 <input
@@ -590,18 +625,25 @@ const OhmsLawCalculator = ({ isDarkMode = false }) => {
                   }
                   style={{ 
                     width: '100%', 
-                    padding: '0.5rem 1rem', 
+                    padding: '0.625rem',
+                    fontSize: '0.9375rem',
                     border: `1px solid ${colors.inputBorder}`, 
-                    borderRadius: '0.375rem', 
-                    fontSize: '1rem',
-                    background: ((current && resistance) || (current && power) || (resistance && power)) ? colors.inputBgAlt : colors.inputBg,
-                    color: colors.inputText,
+                    borderRadius: '8px',
+                    backgroundColor: ((current && resistance) || (current && power) || (resistance && power)) ? colors.sectionBg : colors.inputBg,
+                    color: colors.cardText,
+                    boxSizing: 'border-box',
                     cursor: ((current && resistance) || (current && power) || (resistance && power)) ? 'not-allowed' : 'text'
                   }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+                <label style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: '500', 
+                  color: colors.labelText, 
+                  marginBottom: '0.5rem' 
+                }}>
                   Current (A)
                 </label>
                 <input
@@ -616,18 +658,25 @@ const OhmsLawCalculator = ({ isDarkMode = false }) => {
                   }
                   style={{ 
                     width: '100%', 
-                    padding: '0.5rem 1rem', 
+                    padding: '0.625rem',
+                    fontSize: '0.9375rem',
                     border: `1px solid ${colors.inputBorder}`, 
-                    borderRadius: '0.375rem', 
-                    fontSize: '1rem',
-                    background: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? colors.inputBgAlt : colors.inputBg,
-                    color: colors.inputText,
+                    borderRadius: '8px',
+                    backgroundColor: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? colors.sectionBg : colors.inputBg,
+                    color: colors.cardText,
+                    boxSizing: 'border-box',
                     cursor: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? 'not-allowed' : 'text'
                   }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+                <label style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: '500', 
+                  color: colors.labelText, 
+                  marginBottom: '0.5rem' 
+                }}>
                   Resistance (Ω)
                 </label>
                 <input
@@ -642,18 +691,25 @@ const OhmsLawCalculator = ({ isDarkMode = false }) => {
                   }
                   style={{ 
                     width: '100%', 
-                    padding: '0.5rem 1rem', 
+                    padding: '0.625rem',
+                    fontSize: '0.9375rem',
                     border: `1px solid ${colors.inputBorder}`, 
-                    borderRadius: '0.375rem', 
-                    fontSize: '1rem',
-                    background: ((voltage && current) || (voltage && power) || (current && power)) ? colors.inputBgAlt : colors.inputBg,
-                    color: colors.inputText,
+                    borderRadius: '8px',
+                    backgroundColor: ((voltage && current) || (voltage && power) || (current && power)) ? colors.sectionBg : colors.inputBg,
+                    color: colors.cardText,
+                    boxSizing: 'border-box',
                     cursor: ((voltage && current) || (voltage && power) || (current && power)) ? 'not-allowed' : 'text'
                   }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: colors.labelText, marginBottom: '0.5rem' }}>
+                <label style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: '500', 
+                  color: colors.labelText, 
+                  marginBottom: '0.5rem' 
+                }}>
                   Power (W)
                 </label>
                 <input
@@ -668,12 +724,13 @@ const OhmsLawCalculator = ({ isDarkMode = false }) => {
                   }
                   style={{ 
                     width: '100%', 
-                    padding: '0.5rem 1rem', 
+                    padding: '0.625rem',
+                    fontSize: '0.9375rem',
                     border: `1px solid ${colors.inputBorder}`, 
-                    borderRadius: '0.375rem', 
-                    fontSize: '1rem',
-                    background: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? colors.inputBgAlt : colors.inputBg,
-                    color: colors.inputText,
+                    borderRadius: '8px',
+                    backgroundColor: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? colors.sectionBg : colors.inputBg,
+                    color: colors.cardText,
+                    boxSizing: 'border-box',
                     cursor: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? 'not-allowed' : 'text'
                   }}
                 />
@@ -687,427 +744,738 @@ const OhmsLawCalculator = ({ isDarkMode = false }) => {
                 background: '#6b7280',
                 color: 'white',
                 fontWeight: '600',
-                padding: '0.5rem',
-                borderRadius: '0.375rem',
+                padding: '0.75rem',
+                borderRadius: '8px',
                 border: 'none',
                 cursor: 'pointer',
-                fontSize: '0.875rem',
-                marginBottom: '1rem'
+                fontSize: '0.875rem'
               }}
             >
               Clear All
             </button>
-
-            {(basicResults.V || basicResults.I || basicResults.R || basicResults.P) && (
-              <div style={{ 
-                background: '#f0fdf4', 
-                border: '2px solid #22c55e', 
-                padding: '1.5rem', 
-                borderRadius: '0.5rem'
-              }}>
-                <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '1rem' }}>
-                  Results
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-                  {basicResults.V && (
-                    <div>
-                      <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Voltage:</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#22c55e' }}>
-                        {basicResults.V} V
-                      </div>
-                    </div>
-                  )}
-                  {basicResults.I && (
-                    <div>
-                      <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Current:</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#22c55e' }}>
-                        {basicResults.I} A
-                      </div>
-                    </div>
-                  )}
-                  {basicResults.R && (
-                    <div>
-                      <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Resistance:</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#22c55e' }}>
-                        {basicResults.R} Ω
-                      </div>
-                    </div>
-                  )}
-                  {basicResults.P && (
-                    <div>
-                      <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Power:</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#22c55e' }}>
-                        {basicResults.P} W
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
-        )}
 
-        {/* Series Tab */}
-        {activeTab === 'series' && (
-          <div>
-            <div style={{ background: colors.infoBg, borderLeft: `4px solid ${colors.infoBorder}`, padding: '1rem', marginBottom: '1rem', borderRadius: '0.375rem' }}>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: colors.infoText, fontWeight: '600' }}>
+          {/* Results */}
+          {(basicResults.V || basicResults.I || basicResults.R || basicResults.P) && (
+            <div style={{
+              background: colors.cardBg,
+              border: `1px solid ${colors.cardBorder}`,
+              borderRadius: '12px',
+              padding: '1.5rem',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+            }}>
+              <h3 style={{ 
+                fontSize: '1rem', 
+                fontWeight: '600', 
+                color: colors.cardText,
+                marginTop: 0,
+                marginBottom: '1rem'
+              }}>
+                Results
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                {basicResults.V && (
+                  <div style={{
+                    background: colors.sectionBg,
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                      Voltage
+                    </div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                      {basicResults.V}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                      Volts
+                    </div>
+                  </div>
+                )}
+                {basicResults.I && (
+                  <div style={{
+                    background: colors.sectionBg,
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                      Current
+                    </div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                      {basicResults.I}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                      Amperes
+                    </div>
+                  </div>
+                )}
+                {basicResults.R && (
+                  <div style={{
+                    background: colors.sectionBg,
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                      Resistance
+                    </div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                      {basicResults.R}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                      Ohms
+                    </div>
+                  </div>
+                )}
+                {basicResults.P && (
+                  <div style={{
+                    background: colors.sectionBg,
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                      Power
+                    </div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
+                      {basicResults.P}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                      Watts
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Series Tab */}
+      {activeTab === 'series' && (
+        <div>
+          {/* Info Box */}
+          <div style={{
+            background: '#dbeafe',
+            border: '1px solid #3b82f6',
+            borderRadius: '8px',
+            padding: '1rem',
+            marginBottom: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+              <Info size={20} color="#1e40af" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+              <p style={{ 
+                margin: 0, 
+                fontSize: '0.875rem', 
+                color: '#1e40af',
+                lineHeight: '1.5'
+              }}>
                 Series Circuit: Current is constant across all components
               </p>
             </div>
+          </div>
 
-            <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
-              <h3 style={{ fontWeight: 'bold', color: colors.labelText, marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
-                Circuit Totals (Optional)
-              </h3>
+          {/* Circuit Totals */}
+          <div style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.cardBorder}`,
+            borderRadius: '12px',
+            padding: '1.5rem',
+            marginBottom: '1rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ 
+              fontSize: '1rem', 
+              fontWeight: '600', 
+              color: colors.cardText,
+              marginTop: 0,
+              marginBottom: '1rem',
+              borderBottom: `1px solid ${colors.cardBorder}`,
+              paddingBottom: '0.5rem'
+            }}>
+              Circuit Totals (Optional)
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              {['R', 'V', 'I', 'P'].map(field => (
+                <div key={field}>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '0.8125rem', 
+                    fontWeight: '500', 
+                    color: colors.labelText, 
+                    marginBottom: '0.5rem' 
+                  }}>
+                    {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
+                  </label>
+                  <input
+                    type="number"
+                    value={seriesTotals[field]}
+                    onChange={(e) => setSeriesTotals({...seriesTotals, [field]: e.target.value})}
+                    placeholder="Optional"
+                    disabled={isTotalFieldDisabled(seriesTotals, field)}
+                    style={{ 
+                      width: '100%', 
+                      padding: '0.625rem',
+                      fontSize: '0.9375rem',
+                      border: `1px solid ${colors.inputBorder}`, 
+                      borderRadius: '8px',
+                      backgroundColor: isTotalFieldDisabled(seriesTotals, field) ? colors.sectionBg : colors.inputBg,
+                      color: colors.cardText,
+                      boxSizing: 'border-box',
+                      cursor: isTotalFieldDisabled(seriesTotals, field) ? 'not-allowed' : 'text'
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+            <p style={{ 
+              fontSize: '0.8125rem', 
+              color: colors.subtleText, 
+              margin: 0,
+              fontStyle: 'italic'
+            }}>
+              Enter known total values to help solve the circuit. Current is constant in series.
+            </p>
+          </div>
+
+          {/* Components */}
+          {seriesComponents.map((comp, index) => (
+            <div key={comp.id} style={{ 
+              background: colors.sectionBg,
+              padding: '1rem',
+              borderRadius: '8px',
+              marginBottom: '0.75rem',
+              border: `1px solid ${colors.cardBorder}`
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <h4 style={{ fontWeight: '600', color: colors.labelText, margin: 0, fontSize: '0.875rem' }}>
+                  Component {index + 1}
+                </h4>
+                {seriesComponents.length > 1 && (
+                  <button
+                    onClick={() => removeSeriesComponent(comp.id)}
+                    style={{ 
+                      color: '#dc2626', 
+                      background: 'none', 
+                      border: 'none', 
+                      cursor: 'pointer', 
+                      padding: '0.25rem',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                )}
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-                {['R', 'V', 'I', 'P'].map(field => (
+                {[
+                  { field: 'R', label: 'R (Ω)' },
+                  { field: 'V', label: 'V (V)' },
+                  { field: 'I', label: 'I (A)' },
+                  { field: 'P', label: 'P (W)' }
+                ].map(({ field, label }) => (
                   <div key={field}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: colors.subtleText, marginBottom: '0.25rem' }}>
-                      Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '0.75rem', 
+                      fontWeight: '500', 
+                      color: colors.subtleText, 
+                      marginBottom: '0.25rem' 
+                    }}>
+                      {label}
                     </label>
                     <input
                       type="number"
-                      value={seriesTotals[field]}
-                      onChange={(e) => setSeriesTotals({...seriesTotals, [field]: e.target.value})}
-                      placeholder="Optional"
-                      disabled={isTotalFieldDisabled(seriesTotals, field)}
+                      value={comp[field]}
+                      onChange={(e) => updateSeriesComponent(comp.id, field, e.target.value)}
                       style={{ 
                         width: '100%', 
-                        padding: '0.5rem', 
-                        border: `1px solid ${colors.inputBorder}`, 
-                        borderRadius: '0.375rem', 
+                        padding: '0.5rem',
                         fontSize: '0.875rem',
-                        background: isTotalFieldDisabled(seriesTotals, field) ? colors.inputBgAlt : colors.inputBg,
-                        color: colors.inputText,
-                        cursor: isTotalFieldDisabled(seriesTotals, field) ? 'not-allowed' : 'text'
+                        border: `1px solid ${colors.inputBorder}`, 
+                        borderRadius: '8px',
+                        backgroundColor: colors.inputBg,
+                        color: colors.cardText,
+                        boxSizing: 'border-box'
                       }}
                     />
                   </div>
                 ))}
               </div>
-              <p style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.5rem', marginBottom: 0 }}>
-                Enter known total values to help solve the circuit. Series: Current is constant.
-              </p>
             </div>
+          ))}
 
-            {seriesComponents.map((comp, index) => (
-              <div key={comp.id} style={{ background: colors.cardBg, padding: '1rem', borderRadius: '0.5rem', border: `1px solid ${colors.cardBorder}`, marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <h3 style={{ fontWeight: 'bold', color: colors.labelText, margin: 0, fontSize: '0.875rem' }}>Component {index + 1}</h3>
-                  {seriesComponents.length > 1 && (
-                    <button
-                      onClick={() => removeSeriesComponent(comp.id)}
-                      style={{ color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  )}
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-                  {[
-                    { field: 'R', label: 'R (Ω)' },
-                    { field: 'V', label: 'V (V)' },
-                    { field: 'I', label: 'I (A)' },
-                    { field: 'P', label: 'P (W)' }
-                  ].map(({ field, label }) => (
-                    <div key={field}>
-                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: colors.subtleText, marginBottom: '0.25rem' }}>
-                        {label}
-                      </label>
-                      <input
-                        type="number"
-                        value={comp[field]}
-                        onChange={(e) => updateSeriesComponent(comp.id, field, e.target.value)}
-                        style={{ width: '100%', padding: '0.5rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '0.875rem', background: colors.inputBgAlt, color: colors.inputText }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+          <button
+            onClick={addSeriesComponent}
+            style={{
+              width: '100%',
+              background: '#3b82f6',
+              color: 'white',
+              fontWeight: '600',
+              padding: '0.75rem',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              marginBottom: '1rem'
+            }}
+          >
+            <Plus size={16} />
+            Add Component
+          </button>
 
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
             <button
-              onClick={addSeriesComponent}
+              onClick={calculateSeries}
               style={{
-                width: '100%',
+                flex: 1,
                 background: '#3b82f6',
                 color: 'white',
                 fontWeight: '600',
                 padding: '0.75rem',
-                borderRadius: '0.375rem',
+                borderRadius: '8px',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '0.875rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.5rem',
-                marginBottom: '1rem'
+                gap: '0.5rem'
               }}
             >
-              <Plus size={16} />
-              Add Component
+              <Calculator size={20} />
+              Calculate
             </button>
+            <button
+              onClick={clearSeries}
+              style={{
+                flex: 1,
+                background: '#6b7280',
+                color: 'white',
+                fontWeight: '600',
+                padding: '0.75rem',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.875rem'
+              }}
+            >
+              Clear All
+            </button>
+          </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-              <button
-                onClick={calculateSeries}
-                style={{
-                  flex: 1,
-                  background: '#3b82f6',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  padding: '0.75rem',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem'
-                }}
-              >
-                <Calculator size={20} />
-                Calculate
-              </button>
-              <button
-                onClick={clearSeries}
-                style={{
-                  flex: 1,
-                  background: '#6b7280',
-                  color: 'white',
-                  fontWeight: '600',
-                  padding: '0.75rem',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem'
-                }}
-              >
-                Clear All
-              </button>
-            </div>
-
-            <div style={{ background: '#f0fdf4', border: '2px solid #22c55e', padding: '1rem', borderRadius: '0.5rem' }}>
-              <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
-                Circuit Totals
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', fontSize: '0.875rem' }}>
-                <div>
-                  <span style={{ fontWeight: '600', color: '#374151' }}>Total R:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsSeries().totalR.toFixed(1)} Ω
-                  </p>
+          {/* Results */}
+          <div style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.cardBorder}`,
+            borderRadius: '12px',
+            padding: '1.5rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ 
+              fontSize: '1rem', 
+              fontWeight: '600', 
+              color: colors.cardText,
+              marginTop: 0,
+              marginBottom: '1rem'
+            }}>
+              Circuit Totals
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Total R
                 </div>
-                <div>
-                  <span style={{ fontWeight: '600', color: '#374151' }}>Total V:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsSeries().totalV.toFixed(1)} V
-                  </p>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
+                  {getTotalsSeries().totalR.toFixed(1)}
                 </div>
-                <div>
-                  <span style={{ fontWeight: '600', color: '#374151' }}>Current:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsSeries().totalI.toFixed(1)} A
-                  </p>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  Ω
                 </div>
-                <div>
-                  <span style={{ fontWeight: '600', color: '#374151' }}>Total P:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsSeries().totalP.toFixed(1)} W
-                  </p>
+              </div>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Total V
+                </div>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
+                  {getTotalsSeries().totalV.toFixed(1)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  V
+                </div>
+              </div>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Current
+                </div>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
+                  {getTotalsSeries().totalI.toFixed(1)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  A
+                </div>
+              </div>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Total P
+                </div>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
+                  {getTotalsSeries().totalP.toFixed(1)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  W
                 </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Parallel Tab */}
-        {activeTab === 'parallel' && (
-          <div>
-            <div style={{ background: '#faf5ff', borderLeft: '4px solid #a855f7', padding: '1rem', marginBottom: '1rem', borderRadius: '0.375rem' }}>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#7e22ce', fontWeight: '600' }}>
+      {/* Parallel Tab */}
+      {activeTab === 'parallel' && (
+        <div>
+          {/* Info Box */}
+          <div style={{
+            background: '#faf5ff',
+            border: '1px solid #a855f7',
+            borderRadius: '8px',
+            padding: '1rem',
+            marginBottom: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
+              <Info size={20} color="#7e22ce" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+              <p style={{ 
+                margin: 0, 
+                fontSize: '0.875rem', 
+                color: '#7e22ce',
+                lineHeight: '1.5'
+              }}>
                 Parallel Circuit: Voltage is constant across all components
               </p>
             </div>
+          </div>
 
-            <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
-              <h3 style={{ fontWeight: 'bold', color: colors.labelText, marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
-                Circuit Totals (Optional)
-              </h3>
+          {/* Circuit Totals */}
+          <div style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.cardBorder}`,
+            borderRadius: '12px',
+            padding: '1.5rem',
+            marginBottom: '1rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ 
+              fontSize: '1rem', 
+              fontWeight: '600', 
+              color: colors.cardText,
+              marginTop: 0,
+              marginBottom: '1rem',
+              borderBottom: `1px solid ${colors.cardBorder}`,
+              paddingBottom: '0.5rem'
+            }}>
+              Circuit Totals (Optional)
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              {['R', 'V', 'I', 'P'].map(field => (
+                <div key={field}>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '0.8125rem', 
+                    fontWeight: '500', 
+                    color: colors.labelText, 
+                    marginBottom: '0.5rem' 
+                  }}>
+                    {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
+                  </label>
+                  <input
+                    type="number"
+                    value={parallelTotals[field]}
+                    onChange={(e) => setParallelTotals({...parallelTotals, [field]: e.target.value})}
+                    placeholder="Optional"
+                    disabled={isTotalFieldDisabled(parallelTotals, field)}
+                    style={{ 
+                      width: '100%', 
+                      padding: '0.625rem',
+                      fontSize: '0.9375rem',
+                      border: `1px solid ${colors.inputBorder}`, 
+                      borderRadius: '8px',
+                      backgroundColor: isTotalFieldDisabled(parallelTotals, field) ? colors.sectionBg : colors.inputBg,
+                      color: colors.cardText,
+                      boxSizing: 'border-box',
+                      cursor: isTotalFieldDisabled(parallelTotals, field) ? 'not-allowed' : 'text'
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+            <p style={{ 
+              fontSize: '0.8125rem', 
+              color: colors.subtleText, 
+              margin: 0,
+              fontStyle: 'italic'
+            }}>
+              Enter known total values to help solve the circuit. Voltage is constant in parallel.
+            </p>
+          </div>
+
+          {/* Components */}
+          {parallelComponents.map((comp, index) => (
+            <div key={comp.id} style={{ 
+              background: colors.sectionBg,
+              padding: '1rem',
+              borderRadius: '8px',
+              marginBottom: '0.75rem',
+              border: `1px solid ${colors.cardBorder}`
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <h4 style={{ fontWeight: '600', color: colors.labelText, margin: 0, fontSize: '0.875rem' }}>
+                  Component {index + 1}
+                </h4>
+                {parallelComponents.length > 1 && (
+                  <button
+                    onClick={() => removeParallelComponent(comp.id)}
+                    style={{ 
+                      color: '#dc2626', 
+                      background: 'none', 
+                      border: 'none', 
+                      cursor: 'pointer', 
+                      padding: '0.25rem',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                )}
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-                {['R', 'V', 'I', 'P'].map(field => (
+                {[
+                  { field: 'R', label: 'R (Ω)' },
+                  { field: 'V', label: 'V (V)' },
+                  { field: 'I', label: 'I (A)' },
+                  { field: 'P', label: 'P (W)' }
+                ].map(({ field, label }) => (
                   <div key={field}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: colors.subtleText, marginBottom: '0.25rem' }}>
-                      Total {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '0.75rem', 
+                      fontWeight: '500', 
+                      color: colors.subtleText, 
+                      marginBottom: '0.25rem' 
+                    }}>
+                      {label}
                     </label>
                     <input
                       type="number"
-                      value={parallelTotals[field]}
-                      onChange={(e) => setParallelTotals({...parallelTotals, [field]: e.target.value})}
-                      placeholder="Optional"
-                      disabled={isTotalFieldDisabled(parallelTotals, field)}
+                      value={comp[field]}
+                      onChange={(e) => updateParallelComponent(comp.id, field, e.target.value)}
                       style={{ 
                         width: '100%', 
-                        padding: '0.5rem', 
-                        border: `1px solid ${colors.inputBorder}`, 
-                        borderRadius: '0.375rem', 
+                        padding: '0.5rem',
                         fontSize: '0.875rem',
-                        background: isTotalFieldDisabled(parallelTotals, field) ? colors.inputBgAlt : colors.inputBg,
-                        color: colors.inputText,
-                        cursor: isTotalFieldDisabled(parallelTotals, field) ? 'not-allowed' : 'text'
+                        border: `1px solid ${colors.inputBorder}`, 
+                        borderRadius: '8px',
+                        backgroundColor: colors.inputBg,
+                        color: colors.cardText,
+                        boxSizing: 'border-box'
                       }}
                     />
                   </div>
                 ))}
               </div>
-              <p style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.5rem', marginBottom: 0 }}>
-                Enter known total values to help solve the circuit. Parallel: Voltage is constant.
-              </p>
             </div>
+          ))}
 
-            {parallelComponents.map((comp, index) => (
-              <div key={comp.id} style={{ background: colors.cardBg, padding: '1rem', borderRadius: '0.5rem', border: `1px solid ${colors.cardBorder}`, marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <h3 style={{ fontWeight: 'bold', color: colors.labelText, margin: 0, fontSize: '0.875rem' }}>Component {index + 1}</h3>
-                  {parallelComponents.length > 1 && (
-                    <button
-                      onClick={() => removeParallelComponent(comp.id)}
-                      style={{ color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  )}
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-                  {[
-                    { field: 'R', label: 'R (Ω)' },
-                    { field: 'V', label: 'V (V)' },
-                    { field: 'I', label: 'I (A)' },
-                    { field: 'P', label: 'P (W)' }
-                  ].map(({ field, label }) => (
-                    <div key={field}>
-                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: colors.subtleText, marginBottom: '0.25rem' }}>
-                        {label}
-                      </label>
-                      <input
-                        type="number"
-                        value={comp[field]}
-                        onChange={(e) => updateParallelComponent(comp.id, field, e.target.value)}
-                        style={{ width: '100%', padding: '0.5rem', border: `1px solid ${colors.inputBorder}`, borderRadius: '0.375rem', fontSize: '0.875rem', background: colors.inputBgAlt, color: colors.inputText }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+          <button
+            onClick={addParallelComponent}
+            style={{
+              width: '100%',
+              background: '#3b82f6',
+              color: 'white',
+              fontWeight: '600',
+              padding: '0.75rem',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              marginBottom: '1rem'
+            }}
+          >
+            <Plus size={16} />
+            Add Component
+          </button>
 
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
             <button
-              onClick={addParallelComponent}
+              onClick={calculateParallel}
               style={{
-                width: '100%',
+                flex: 1,
                 background: '#3b82f6',
                 color: 'white',
                 fontWeight: '600',
                 padding: '0.75rem',
-                borderRadius: '0.375rem',
+                borderRadius: '8px',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '0.875rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.5rem',
-                marginBottom: '1rem'
+                gap: '0.5rem'
               }}
             >
-              <Plus size={16} />
-              Add Component
+              <Calculator size={20} />
+              Calculate
             </button>
+            <button
+              onClick={clearParallel}
+              style={{
+                flex: 1,
+                background: '#6b7280',
+                color: 'white',
+                fontWeight: '600',
+                padding: '0.75rem',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.875rem'
+              }}
+            >
+              Clear All
+            </button>
+          </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-              <button
-                onClick={calculateParallel}
-                style={{
-                  flex: 1,
-                  background: '#3b82f6',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  padding: '0.75rem',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem'
-                }}
-              >
-                <Calculator size={20} />
-                Calculate
-              </button>
-              <button
-                onClick={clearParallel}
-                style={{
-                  flex: 1,
-                  background: '#6b7280',
-                  color: 'white',
-                  fontWeight: '600',
-                  padding: '0.75rem',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem'
-                }}
-              >
-                Clear All
-              </button>
-            </div>
-
-            <div style={{ background: '#f0fdf4', border: '2px solid #22c55e', padding: '1rem', borderRadius: '0.5rem' }}>
-              <h3 style={{ fontWeight: 'bold', color: '#166534', marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
-                Circuit Totals
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', fontSize: '0.875rem' }}>
-                <div>
-                  <span style={{ fontWeight: '600', color: '#374151' }}>Total R:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsParallel().totalR.toFixed(1)} Ω
-                  </p>
+          {/* Results */}
+          <div style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.cardBorder}`,
+            borderRadius: '12px',
+            padding: '1.5rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ 
+              fontSize: '1rem', 
+              fontWeight: '600', 
+              color: colors.cardText,
+              marginTop: 0,
+              marginBottom: '1rem'
+            }}>
+              Circuit Totals
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Total R
                 </div>
-                <div>
-                  <span style={{ fontWeight: '600', color: '#374151' }}>Voltage:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsParallel().totalV.toFixed(1)} V
-                  </p>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
+                  {getTotalsParallel().totalR.toFixed(1)}
                 </div>
-                <div>
-                  <span style={{ fontWeight: '600', color: '#374151' }}>Total I:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsParallel().totalI.toFixed(1)} A
-                  </p>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  Ω
                 </div>
-                <div>
-                  <span style={{ fontWeight: '600', color: '#374151' }}>Total P:</span>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#22c55e', margin: '0.25rem 0 0 0' }}>
-                    {getTotalsParallel().totalP.toFixed(1)} W
-                  </p>
+              </div>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Voltage
+                </div>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
+                  {getTotalsParallel().totalV.toFixed(1)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  V
+                </div>
+              </div>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Total I
+                </div>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
+                  {getTotalsParallel().totalI.toFixed(1)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  A
+                </div>
+              </div>
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Total P
+                </div>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
+                  {getTotalsParallel().totalP.toFixed(1)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  W
                 </div>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Footer */}
-      <div style={{ background: colors.footerBg, color: colors.footerText, padding: '1rem 1.5rem', borderTop: `1px solid ${colors.footerBorder}`, fontSize: '0.75rem' }}>
-        <p style={{ fontWeight: '600', marginTop: 0, marginBottom: '0.5rem', color: colors.labelText }}>Formulas:</p>
-        <p style={{ margin: 0 }}>
-          V = I × R • P = V × I • I = V ÷ R • P = I² × R • R = V ÷ I • P = V² ÷ R
-        </p>
+      {/* Formula Reference Footer */}
+      <div style={{
+        background: colors.sectionBg,
+        padding: '1rem',
+        borderRadius: '8px',
+        border: `1px solid ${colors.cardBorder}`,
+        fontSize: '0.8125rem',
+        color: colors.labelText,
+        marginTop: '1rem'
+      }}>
+        <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+          Formulas:
+        </div>
+        V = I × R • P = V × I • I = V ÷ R • P = I² × R • R = V ÷ I • P = V² ÷ R
       </div>
     </div>
   );
