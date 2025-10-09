@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Menu, FileDown, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase } from 'lucide-react';
+import { Menu, FileDown, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle } from 'lucide-react';
 import CalculatorMenu from './CalculatorMenu.jsx';
 import VoltageDropCalculator from './VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './OhmsLawCalculator.jsx';
@@ -17,6 +17,7 @@ import BottomNavigation from './BottomNavigation.jsx';
 import VFDSizingCalculator from './VFDSizingCalculator.jsx';
 import ReactanceImpedanceCalculator from './ReactanceImpedanceCalculator.jsx';
 import PowerFactorCorrection from './PowerFactorCorrection.jsx';
+import PowerTriangleCalculator from './PowerTriangleCalculator.jsx';
 import Profile from './Profile.jsx';
 import Jobs from './Jobs.jsx';
 import './App.css';
@@ -99,6 +100,8 @@ function App() {
         return <ReactanceImpedanceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'power-factor':
         return <PowerFactorCorrection ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+      case 'power-triangle':
+        return <PowerTriangleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'profile':
         return <Profile isDarkMode={isDarkMode} />;
       case 'jobs':
@@ -137,7 +140,8 @@ function App() {
       'grounding-bonding': { title: 'Grounding & Bonding', icon: Shield },
       'conduit-bending': { title: 'Conduit Bending', icon: Maximize2 },
       'lighting': { title: 'Lighting', icon: Lightbulb },
-      'vfd-sizing': { title: 'VFD Sizing', icon: Gauge }
+      'vfd-sizing': { title: 'VFD Sizing', icon: Gauge },
+      'power-triangle': { title: 'Power Triangle', icon: Triangle }
     };
     
     return headerMap[activeCalculator] || { title: 'Electrician\'s Toolkit', icon: Calculator };

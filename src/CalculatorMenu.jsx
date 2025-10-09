@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity } from 'lucide-react';
+import { Search, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Triangle, Activity } from 'lucide-react';
 
 function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,7 +11,8 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
         { id: 'voltage-drop', name: 'Voltage Drop', icon: Zap, keywords: 'voltage drop vd wire circuit' },
         { id: 'ohms-law', name: "Ohm's Law", icon: Plug, keywords: 'ohms law voltage current resistance power series parallel circuit' },
         { id: 'reactance-impedance', name: 'Reactance', icon: Waves, keywords: 'reactance impedance xl xc capacitive inductive resonance frequency ac circuit' },
-        { id: 'power-factor', name: 'Power Factor', icon: Activity, keywords: 'power factor correction pf capacitor kvar cos phi efficiency demand charge penalty savings' }
+        { id: 'power-factor', name: 'Power Factor', icon: Activity, keywords: 'power factor correction pf capacitor kvar cos phi efficiency demand charge penalty savings' },
+        { id: 'power-triangle', name: 'Power Triangle', icon: Triangle, keywords: 'power triangle kva kw kvar apparent real reactive power factor angle phase' }
       ]
     },
     {
@@ -167,7 +168,10 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                     return (
                       <button
                         key={calc.id}
-                        onClick={() => onSelectCalculator(calc.id)}
+                        onClick={() => {
+                          console.log('Clicked calculator:', calc.id);
+                          onSelectCalculator(calc.id);
+                        }}
                         style={{
                           backgroundColor: colors.cardBg,
                           border: `1px solid ${colors.cardBorder}`,
@@ -292,7 +296,10 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                     return (
                       <button
                         key={calc.id}
-                        onClick={() => onSelectCalculator(calc.id)}
+                        onClick={() => {
+                          console.log('Clicked calculator:', calc.id);
+                          onSelectCalculator(calc.id);
+                        }}
                         style={{
                           backgroundColor: colors.cardBg,
                           border: `1px solid ${colors.cardBorder}`,
