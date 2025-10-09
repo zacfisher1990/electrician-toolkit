@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
+import { exportToPDF } from './pdfExport';
 import { Zap, Plus, Trash2, Calculator, Info } from 'lucide-react';
 
-const OhmsLawCalculator = ({ isDarkMode = false }) => {
+const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
   const [activeTab, setActiveTab] = useState('basic');
   
   // Basic calculator state
@@ -466,6 +467,141 @@ const OhmsLawCalculator = ({ isDarkMode = false }) => {
     
     return { totalR, totalV, totalI, totalP };
   };
+
+  // Expose exportPDF function
+  useImperativeHandle(ref, () => ({
+    exportPDF: () => {
+      let pdfData;
+
+      if (activeTab === 'basic') {
+        const hasData = voltage || current || resistance || power || 
+                        basicResults.V || basicResults.I || basicResults.R || basicResults.P;
+        
+        if (!hasData) {
+          alert('Please enter at least 2 values before exporting');
+          return;
+        }
+
+        const inputs = {};
+        const results = {};
+        
+        if (voltage) inputs.voltage = `${voltage} V`;
+        if (current) inputs.current = `${current} A`;
+        if (resistance) inputs.resistance = `${resistance} Ω`;
+        if (power) inputs.power = `${power} W`;
+
+        if (basicResults.V) results.voltage = `${basicResults.V} V`;
+        if (basicResults.I) results.current = `${basicResults.I} A`;
+        if (basicResults.R) results.resistance = `${basicResults.R} Ω`;
+        if (basicResults.P) results.power = `${basicResults.P} W`;
+
+        pdfData = {
+          calculatorName: "Ohm's Law Calculator - Basic",
+          inputs,
+          results,
+          additionalInfo: {
+            note: 'Calculations based on fundamental electrical formulas'
+          },
+          necReferences: [
+            "Ohm's Law: V = I × R",
+            'Power formulas: P = V × I, P = I² × R, P = V² ÷ R',
+            'Current: I = V ÷ R, I = P ÷ V, I = √(P ÷ R)',
+            'Resistance: R = V ÷ I, R = V² ÷ P, R = P ÷ I²'
+          ]
+        };
+
+      } else if (activeTab === 'series') {
+        const hasData = seriesComponents.some(c => c.R || c.V || c.I || c.P);
+        
+        if (!hasData) {
+          alert('Please enter component values before exporting');
+          return;
+        }
+
+        const totals = getTotalsSeries();
+        const inputs = {};
+        seriesComponents.forEach((comp, idx) => {
+          const values = [];
+          if (comp.R) values.push(`R=${comp.R}Ω`);
+          if (comp.V) values.push(`V=${comp.V}V`);
+          if (comp.I) values.push(`I=${comp.I}A`);
+          if (comp.P) values.push(`P=${comp.P}W`);
+          if (values.length > 0) {
+            inputs[`component${idx + 1}`] = values.join(', ');
+          }
+        });
+
+        pdfData = {
+          calculatorName: "Ohm's Law Calculator - Series Circuit",
+          inputs,
+          results: {
+            totalResistance: `${totals.totalR.toFixed(1)} Ω`,
+            totalVoltage: `${totals.totalV.toFixed(1)} V`,
+            current: `${totals.totalI.toFixed(1)} A (constant)`,
+            totalPower: `${totals.totalP.toFixed(1)} W`
+          },
+          additionalInfo: {
+            circuitType: 'Series Circuit',
+            principle: 'Current is constant across all components',
+            totalResistanceFormula: 'R_total = R1 + R2 + R3 + ...',
+            totalVoltageFormula: 'V_total = V1 + V2 + V3 + ...'
+          },
+          necReferences: [
+            'Series circuits: Current is the same through all components',
+            'Total resistance = Sum of all resistances',
+            'Total voltage = Sum of voltage drops across components',
+            'Total power = Sum of power dissipated in each component'
+          ]
+        };
+
+      } else if (activeTab === 'parallel') {
+        const hasData = parallelComponents.some(c => c.R || c.V || c.I || c.P);
+        
+        if (!hasData) {
+          alert('Please enter component values before exporting');
+          return;
+        }
+
+        const totals = getTotalsParallel();
+        const inputs = {};
+        parallelComponents.forEach((comp, idx) => {
+          const values = [];
+          if (comp.R) values.push(`R=${comp.R}Ω`);
+          if (comp.V) values.push(`V=${comp.V}V`);
+          if (comp.I) values.push(`I=${comp.I}A`);
+          if (comp.P) values.push(`P=${comp.P}W`);
+          if (values.length > 0) {
+            inputs[`component${idx + 1}`] = values.join(', ');
+          }
+        });
+
+        pdfData = {
+          calculatorName: "Ohm's Law Calculator - Parallel Circuit",
+          inputs,
+          results: {
+            totalResistance: `${totals.totalR.toFixed(1)} Ω`,
+            voltage: `${totals.totalV.toFixed(1)} V (constant)`,
+            totalCurrent: `${totals.totalI.toFixed(1)} A`,
+            totalPower: `${totals.totalP.toFixed(1)} W`
+          },
+          additionalInfo: {
+            circuitType: 'Parallel Circuit',
+            principle: 'Voltage is constant across all components',
+            totalResistanceFormula: '1/R_total = 1/R1 + 1/R2 + 1/R3 + ...',
+            totalCurrentFormula: 'I_total = I1 + I2 + I3 + ...'
+          },
+          necReferences: [
+            'Parallel circuits: Voltage is the same across all components',
+            'Total resistance = 1 ÷ (1/R1 + 1/R2 + 1/R3 + ...)',
+            'Total current = Sum of currents through each branch',
+            'Total power = Sum of power dissipated in each component'
+          ]
+        };
+      }
+
+      exportToPDF(pdfData);
+    }
+  }));
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -1479,6 +1615,7 @@ const OhmsLawCalculator = ({ isDarkMode = false }) => {
       </div>
     </div>
   );
-};
+});
+
 
 export default OhmsLawCalculator;
