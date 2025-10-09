@@ -213,34 +213,7 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      {/* Header Card */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-          <Package size={24} color="#3b82f6" />
-          <h2 style={{ 
-            fontSize: '1.25rem', 
-            fontWeight: '600', 
-            color: colors.cardText,
-            margin: 0 
-          }}>
-            Box Fill Calculator
-          </h2>
-        </div>
-        <p style={{ 
-          fontSize: '0.875rem', 
-          color: colors.labelText,
-          margin: 0 
-        }}>
-          NEC 314.16 - Cubic inch calculations
-        </p>
-      </div>
+      
 
       {/* Box Selection */}
       <div style={{
