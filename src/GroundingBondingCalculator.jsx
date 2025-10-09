@@ -1,8 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Shield, CheckCircle, Info } from 'lucide-react';
+import { exportToPDF } from './pdfExport';
 
-function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
+const GroundingBondingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [activeTab, setActiveTab] = useState('gec');
+
+  // Lifted state for all calculators
+  const [gecData, setGecData] = useState({
+    serviceSize: '',
+    conductorMaterial: 'copper'
+  });
+
+  const [egcData, setEgcData] = useState({
+    ocpdRating: '',
+    conductorMaterial: 'copper'
+  });
+
+  const [bondingData, setBondingData] = useState({
+    serviceSize: '',
+    conductorMaterial: 'copper',
+    jumperType: 'main'
+  });
 
   // Dark mode colors
   const colors = {
@@ -18,9 +36,6 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
 
   // Grounding Electrode Conductor Calculator
   const GECCalculator = () => {
-    const [serviceSize, setServiceSize] = useState('');
-    const [conductorMaterial, setConductorMaterial] = useState('copper');
-
     const gecTable = {
       copper: {
         '2 or smaller': '8', '1 or 1/0': '6', '2/0 or 3/0': '4',
@@ -33,8 +48,8 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
     };
 
     const determineGEC = () => {
-      if (!serviceSize) return null;
-      const size = serviceSize;
+      if (!gecData.serviceSize) return null;
+      const size = gecData.serviceSize;
       let category = '';
       const awgSizes = ['14', '12', '10', '8', '6', '4', '3', '2', '1'];
       const oughtSizes = ['1/0', '2/0', '3/0', '4/0'];
@@ -58,7 +73,7 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
       return {
         serviceSize: size,
         category,
-        gecSize: gecTable[conductorMaterial][category] || 'N/A'
+        gecSize: gecTable[gecData.conductorMaterial][category] || 'N/A'
       };
     };
 
@@ -72,8 +87,8 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
               Service Conductor Size
             </label>
             <select 
-              value={serviceSize} 
-              onChange={(e) => setServiceSize(e.target.value)}
+              value={gecData.serviceSize} 
+              onChange={(e) => setGecData({...gecData, serviceSize: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -112,8 +127,8 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
               GEC Material
             </label>
             <select 
-              value={conductorMaterial} 
-              onChange={(e) => setConductorMaterial(e.target.value)}
+              value={gecData.conductorMaterial} 
+              onChange={(e) => setGecData({...gecData, conductorMaterial: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -147,7 +162,7 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
                 {results.gecSize} AWG
               </div>
               <div style={{ fontSize: '0.875rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                {conductorMaterial.charAt(0).toUpperCase() + conductorMaterial.slice(1)}
+                {gecData.conductorMaterial.charAt(0).toUpperCase() + gecData.conductorMaterial.slice(1)}
               </div>
             </div>
 
@@ -164,7 +179,7 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
                   <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
                     Per NEC Table 250.66
                   </div>
-                  <div>Service conductor: {results.serviceSize} AWG {conductorMaterial}</div>
+                  <div>Service conductor: {results.serviceSize} AWG {gecData.conductorMaterial}</div>
                 </div>
               </div>
             </div>
@@ -194,9 +209,6 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
 
   // Equipment Grounding Conductor Calculator
   const EGCCalculator = () => {
-    const [ocpdRating, setOcpdRating] = useState('');
-    const [conductorMaterial, setConductorMaterial] = useState('copper');
-
     const egcTable = {
       copper: {
         15: '14', 20: '12', 30: '10', 40: '10', 60: '10',
@@ -215,16 +227,16 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
     };
 
     const determineEGC = () => {
-      const rating = parseInt(ocpdRating);
+      const rating = parseInt(egcData.ocpdRating);
       if (!rating) return null;
 
-      const ratings = Object.keys(egcTable[conductorMaterial]).map(Number).sort((a, b) => a - b);
+      const ratings = Object.keys(egcTable[egcData.conductorMaterial]).map(Number).sort((a, b) => a - b);
       const applicableRating = ratings.find(r => r >= rating) || ratings[ratings.length - 1];
       
       return {
         ocpdRating: rating,
         applicableRating,
-        egcSize: egcTable[conductorMaterial][applicableRating]
+        egcSize: egcTable[egcData.conductorMaterial][applicableRating]
       };
     };
 
@@ -239,8 +251,8 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={ocpdRating} 
-              onChange={(e) => setOcpdRating(e.target.value)}
+              value={egcData.ocpdRating} 
+              onChange={(e) => setEgcData({...egcData, ocpdRating: e.target.value})}
               placeholder="Enter rating"
               style={{
                 width: '100%',
@@ -263,8 +275,8 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
               EGC Material
             </label>
             <select 
-              value={conductorMaterial} 
-              onChange={(e) => setConductorMaterial(e.target.value)}
+              value={egcData.conductorMaterial} 
+              onChange={(e) => setEgcData({...egcData, conductorMaterial: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -298,7 +310,7 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
                 {results.egcSize} AWG
               </div>
               <div style={{ fontSize: '0.875rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                {conductorMaterial.charAt(0).toUpperCase() + conductorMaterial.slice(1)}
+                {egcData.conductorMaterial.charAt(0).toUpperCase() + egcData.conductorMaterial.slice(1)}
               </div>
             </div>
 
@@ -343,12 +355,8 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
     );
   };
 
-  // Bonding Jumper Calculator (combining main and system)
+  // Bonding Jumper Calculator
   const BondingJumperCalculator = () => {
-    const [serviceSize, setServiceSize] = useState('');
-    const [conductorMaterial, setConductorMaterial] = useState('copper');
-    const [jumperType, setJumperType] = useState('main');
-
     const bondingTable = {
       copper: {
         '2 or smaller': '8', '1 or 1/0': '6', '2/0 or 3/0': '4',
@@ -361,8 +369,8 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
     };
 
     const determineBondingJumper = () => {
-      if (!serviceSize) return null;
-      const size = serviceSize;
+      if (!bondingData.serviceSize) return null;
+      const size = bondingData.serviceSize;
       let category = '';
       const awgSizes = ['14', '12', '10', '8', '6', '4', '3', '2', '1'];
       const oughtSizes = ['1/0', '2/0', '3/0', '4/0'];
@@ -385,8 +393,8 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
 
       return {
         serviceSize: size,
-        jumperSize: bondingTable[conductorMaterial][category] || 'N/A',
-        jumperType
+        jumperSize: bondingTable[bondingData.conductorMaterial][category] || 'N/A',
+        jumperType: bondingData.jumperType
       };
     };
 
@@ -400,8 +408,8 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
               Bonding Jumper Type
             </label>
             <select 
-              value={jumperType} 
-              onChange={(e) => setJumperType(e.target.value)}
+              value={bondingData.jumperType} 
+              onChange={(e) => setBondingData({...bondingData, jumperType: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -424,8 +432,8 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
                 Conductor Size
               </label>
               <select 
-                value={serviceSize} 
-                onChange={(e) => setServiceSize(e.target.value)}
+                value={bondingData.serviceSize} 
+                onChange={(e) => setBondingData({...bondingData, serviceSize: e.target.value})}
                 style={{
                   width: '100%',
                   padding: '0.625rem',
@@ -459,8 +467,8 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
                 Material
               </label>
               <select 
-                value={conductorMaterial} 
-                onChange={(e) => setConductorMaterial(e.target.value)}
+                value={bondingData.conductorMaterial} 
+                onChange={(e) => setBondingData({...bondingData, conductorMaterial: e.target.value})}
                 style={{
                   width: '100%',
                   padding: '0.625rem',
@@ -489,13 +497,13 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
               marginBottom: '1rem'
             }}>
               <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                {jumperType === 'main' ? 'Main' : 'System'} Bonding Jumper
+                {bondingData.jumperType === 'main' ? 'Main' : 'System'} Bonding Jumper
               </div>
               <div style={{ fontSize: '2rem', fontWeight: '700', color: '#1e40af' }}>
                 {results.jumperSize} AWG
               </div>
               <div style={{ fontSize: '0.875rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                {conductorMaterial.charAt(0).toUpperCase() + conductorMaterial.slice(1)}
+                {bondingData.conductorMaterial.charAt(0).toUpperCase() + bondingData.conductorMaterial.slice(1)}
               </div>
             </div>
 
@@ -510,9 +518,9 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
                 <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
                 <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
                   <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                    Per NEC {jumperType === 'main' ? '250.28(D)' : '250.30(A)(1)'}
+                    Per NEC {bondingData.jumperType === 'main' ? '250.28(D)' : '250.30(A)(1)'}
                   </div>
-                  <div>Conductor size: {results.serviceSize} AWG {conductorMaterial}</div>
+                  <div>Conductor size: {results.serviceSize} AWG {bondingData.conductorMaterial}</div>
                 </div>
               </div>
             </div>
@@ -526,10 +534,10 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
               color: colors.labelText
             }}>
               <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-                {jumperType === 'main' ? 'Main' : 'System'} Bonding Jumper Requirements:
+                {bondingData.jumperType === 'main' ? 'Main' : 'System'} Bonding Jumper Requirements:
               </div>
               <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                {jumperType === 'main' ? (
+                {bondingData.jumperType === 'main' ? (
                   <>
                     <li>Connects grounded conductor to equipment grounding conductor</li>
                     <li>Sized per Table 250.66 based on service conductor</li>
@@ -549,6 +557,198 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
       </div>
     );
   };
+
+  // Expose exportPDF function to parent via ref
+  useImperativeHandle(ref, () => ({
+    exportPDF: () => {
+      let pdfData;
+
+      if (activeTab === 'gec') {
+        if (!gecData.serviceSize) {
+          alert('Please select a service conductor size before exporting');
+          return;
+        }
+
+        const gecTable = {
+          copper: {
+            '2 or smaller': '8', '1 or 1/0': '6', '2/0 or 3/0': '4',
+            '4/0 to 350': '2', '400 to 600': '1/0', '650 to 1100': '2/0', 'over 1100': '3/0'
+          },
+          aluminum: {
+            '2 or smaller': '6', '1 or 1/0': '4', '2/0 or 3/0': '2',
+            '4/0 to 350': '1/0', '400 to 600': '3/0', '650 to 1100': '4/0', 'over 1100': '250'
+          }
+        };
+
+        let category = '';
+        const size = gecData.serviceSize;
+        const awgSizes = ['14', '12', '10', '8', '6', '4', '3', '2', '1'];
+        const oughtSizes = ['1/0', '2/0', '3/0', '4/0'];
+        const kcmilValue = parseInt(size);
+
+        if (awgSizes.includes(size)) {
+          const sizeNum = parseInt(size);
+          if (sizeNum >= 2) category = '2 or smaller';
+          else if (size === '1') category = '1 or 1/0';
+        } else if (oughtSizes.includes(size)) {
+          if (size === '1/0') category = '1 or 1/0';
+          else if (size === '2/0' || size === '3/0') category = '2/0 or 3/0';
+          else if (size === '4/0') category = '4/0 to 350';
+        } else if (!isNaN(kcmilValue)) {
+          if (kcmilValue >= 250 && kcmilValue <= 350) category = '4/0 to 350';
+          else if (kcmilValue >= 400 && kcmilValue <= 600) category = '400 to 600';
+          else if (kcmilValue >= 650 && kcmilValue <= 1100) category = '650 to 1100';
+          else if (kcmilValue > 1100) category = 'over 1100';
+        }
+
+        const gecSize = gecTable[gecData.conductorMaterial][category];
+
+        pdfData = {
+          calculatorName: 'Grounding & Bonding - Grounding Electrode Conductor',
+          inputs: {
+            serviceConductorSize: `${gecData.serviceSize} AWG`,
+            material: gecData.conductorMaterial.charAt(0).toUpperCase() + gecData.conductorMaterial.slice(1)
+          },
+          results: {
+            groundingElectrodeConductor: `${gecSize} AWG ${gecData.conductorMaterial}`
+          },
+          additionalInfo: {
+            note1: 'GEC to rod/pipe/plate need not be larger than 6 AWG copper',
+            note2: 'GEC to concrete-encased electrode need not be larger than 4 AWG copper',
+            note3: 'Must be continuous without splices (except as permitted)'
+          },
+          necReferences: [
+            'NEC Table 250.66 - Grounding Electrode Conductor for Alternating-Current Systems',
+            'NEC 250.64 - Grounding Electrode Conductor Installation',
+            'NEC 250.52 - Grounding Electrodes'
+          ]
+        };
+
+      } else if (activeTab === 'egc') {
+        if (!egcData.ocpdRating) {
+          alert('Please enter an overcurrent device rating before exporting');
+          return;
+        }
+
+        const egcTable = {
+          copper: {
+            15: '14', 20: '12', 30: '10', 40: '10', 60: '10',
+            100: '8', 200: '6', 300: '4', 400: '3', 500: '2',
+            600: '1', 800: '1/0', 1000: '2/0', 1200: '3/0',
+            1600: '4/0', 2000: '250', 2500: '350', 3000: '400',
+            4000: '500', 5000: '700', 6000: '800'
+          },
+          aluminum: {
+            15: '12', 20: '10', 30: '8', 40: '8', 60: '8',
+            100: '6', 200: '4', 300: '2', 400: '1', 500: '1/0',
+            600: '2/0', 800: '3/0', 1000: '4/0', 1200: '250',
+            1600: '350', 2000: '400', 2500: '500', 3000: '600',
+            4000: '750', 5000: '1000', 6000: '1200'
+          }
+        };
+
+        const rating = parseInt(egcData.ocpdRating);
+        const ratings = Object.keys(egcTable[egcData.conductorMaterial]).map(Number).sort((a, b) => a - b);
+        const applicableRating = ratings.find(r => r >= rating) || ratings[ratings.length - 1];
+        const egcSize = egcTable[egcData.conductorMaterial][applicableRating];
+
+        pdfData = {
+          calculatorName: 'Grounding & Bonding - Equipment Grounding Conductor',
+          inputs: {
+            overcurrentDeviceRating: `${rating} Amps`,
+            material: egcData.conductorMaterial.charAt(0).toUpperCase() + egcData.conductorMaterial.slice(1)
+          },
+          results: {
+            equipmentGroundingConductor: `${egcSize} AWG ${egcData.conductorMaterial}`,
+            basedOnOCPDRating: `${applicableRating} Amps`
+          },
+          additionalInfo: {
+            note1: 'Increase proportionally if conductors upsized for voltage drop',
+            note2: 'Size per each raceway if conductors run in parallel',
+            note3: 'Based on rating of OCPD ahead of circuit'
+          },
+          necReferences: [
+            'NEC Table 250.122 - Minimum Size Equipment Grounding Conductors for Grounding Raceway and Equipment',
+            'NEC 250.122(B) - Increased in Size',
+            'NEC 250.122(F) - Conductors in Parallel'
+          ]
+        };
+
+      } else if (activeTab === 'bonding') {
+        if (!bondingData.serviceSize) {
+          alert('Please select a conductor size before exporting');
+          return;
+        }
+
+        const bondingTable = {
+          copper: {
+            '2 or smaller': '8', '1 or 1/0': '6', '2/0 or 3/0': '4',
+            '4/0 to 350': '2', '400 to 600': '1/0', '650 to 1100': '2/0', 'over 1100': '3/0'
+          },
+          aluminum: {
+            '2 or smaller': '6', '1 or 1/0': '4', '2/0 or 3/0': '2',
+            '4/0 to 350': '1/0', '400 to 600': '3/0', '650 to 1100': '4/0', 'over 1100': '250'
+          }
+        };
+
+        let category = '';
+        const size = bondingData.serviceSize;
+        const awgSizes = ['14', '12', '10', '8', '6', '4', '3', '2', '1'];
+        const oughtSizes = ['1/0', '2/0', '3/0', '4/0'];
+        const kcmilValue = parseInt(size);
+
+        if (awgSizes.includes(size)) {
+          const sizeNum = parseInt(size);
+          if (sizeNum >= 2) category = '2 or smaller';
+          else if (size === '1') category = '1 or 1/0';
+        } else if (oughtSizes.includes(size)) {
+          if (size === '1/0') category = '1 or 1/0';
+          else if (size === '2/0' || size === '3/0') category = '2/0 or 3/0';
+          else if (size === '4/0') category = '4/0 to 350';
+        } else if (!isNaN(kcmilValue)) {
+          if (kcmilValue >= 250 && kcmilValue <= 350) category = '4/0 to 350';
+          else if (kcmilValue >= 400 && kcmilValue <= 600) category = '400 to 600';
+          else if (kcmilValue >= 650 && kcmilValue <= 1100) category = '650 to 1100';
+          else if (kcmilValue > 1100) category = 'over 1100';
+        }
+
+        const jumperSize = bondingTable[bondingData.conductorMaterial][category];
+        const jumperTypeName = bondingData.jumperType === 'main' ? 'Main Bonding Jumper' : 'System Bonding Jumper';
+
+        pdfData = {
+          calculatorName: `Grounding & Bonding - ${jumperTypeName}`,
+          inputs: {
+            jumperType: jumperTypeName,
+            conductorSize: `${bondingData.serviceSize} AWG`,
+            material: bondingData.conductorMaterial.charAt(0).toUpperCase() + bondingData.conductorMaterial.slice(1)
+          },
+          results: {
+            bondingJumperSize: `${jumperSize} AWG ${bondingData.conductorMaterial}`
+          },
+          additionalInfo: bondingData.jumperType === 'main' ? {
+            purpose: 'Connects grounded conductor to equipment grounding conductor',
+            sizing: 'Sized per Table 250.66 based on service conductor',
+            forms: 'Can be wire, bus, screw, or similar conductor'
+          } : {
+            purpose: 'Required for separately derived systems',
+            connection: 'Connects grounded to equipment grounding conductor',
+            location: 'Installed at same location as GEC connection'
+          },
+          necReferences: bondingData.jumperType === 'main' ? [
+            'NEC 250.28 - Main Bonding Jumper and System Bonding Jumper',
+            'NEC 250.28(D) - Size',
+            'NEC Table 250.66 - Sizing Reference'
+          ] : [
+            'NEC 250.30 - Grounding Separately Derived Alternating-Current Systems',
+            'NEC 250.30(A)(1) - System Bonding Jumper',
+            'NEC Table 250.66 - Sizing Reference'
+          ]
+        };
+      }
+
+      exportToPDF(pdfData);
+    }
+  }));
 
   const tabComponents = {
     gec: <GECCalculator />,
@@ -639,6 +839,6 @@ function GroundingBondingCalculator({ isDarkMode = false, onBack }) {
       </div>
     </div>
   );
-}
+});
 
 export default GroundingBondingCalculator;

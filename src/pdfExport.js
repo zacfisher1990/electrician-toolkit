@@ -91,9 +91,13 @@ export const exportToPDF = (data) => {
     const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
     
     doc.setFont('helvetica', 'bold');
-    doc.text(`${capitalizedLabel}:`, margin + 5, yPosition);
+    const labelText = `${capitalizedLabel}:`;
+    doc.text(labelText, margin + 5, yPosition);
+    
+    // Calculate width of label to position value appropriately
+    const labelWidth = doc.getTextWidth(labelText);
     doc.setFont('helvetica', 'normal');
-    doc.text(String(value), margin + 60, yPosition);
+    doc.text(String(value), margin + 5 + labelWidth + 3, yPosition);
     yPosition += 6;
   });
 
@@ -120,8 +124,8 @@ export const exportToPDF = (data) => {
     const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
     
     doc.setFont('helvetica', 'bold');
-    doc.text(`${capitalizedLabel}:`, margin + 5, yPosition);
-    doc.setFont('helvetica', 'normal');
+    const labelText = `${capitalizedLabel}:`;
+    doc.text(labelText, margin + 5, yPosition);
     
     // Handle different value types
     let displayValue = String(value);
@@ -129,7 +133,10 @@ export const exportToPDF = (data) => {
       displayValue = value ? 'Yes' : 'No';
     }
     
-    doc.text(displayValue, margin + 60, yPosition);
+    // Calculate width of label to position value appropriately
+    const labelWidth = doc.getTextWidth(labelText);
+    doc.setFont('helvetica', 'normal');
+    doc.text(displayValue, margin + 5 + labelWidth + 3, yPosition);
     yPosition += 6;
   });
 
