@@ -20,7 +20,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       borderTop: `1px solid ${colors.border}`,
       display: 'flex',
       justifyContent: 'space-around',
-      padding: '0.5rem 0',
+      padding: '0.375rem 0',
       zIndex: 1000,
       boxShadow: isDarkMode ? '0 -1px 3px rgba(0, 0, 0, 0.3)' : '0 -1px 3px rgba(0, 0, 0, 0.1)'
     }}>
@@ -35,14 +35,15 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '0.125rem',
-          fontSize: '0.625rem',
+          fontSize: '0.5625rem',
           fontWeight: '500',
           flex: 1,
-          padding: '0.25rem',
-          transition: 'color 0.2s'
+          padding: '0.125rem',
+          transition: 'color 0.2s',
+          minWidth: 0
         }}
       >
-        <Home size={20} strokeWidth={2} />
+        <Home size={18} strokeWidth={2} />
         <span>Home</span>
       </button>
       
@@ -57,14 +58,15 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '0.125rem',
-          fontSize: '0.625rem',
+          fontSize: '0.5625rem',
           fontWeight: '500',
           flex: 1,
-          padding: '0.25rem',
-          transition: 'color 0.2s'
+          padding: '0.125rem',
+          transition: 'color 0.2s',
+          minWidth: 0
         }}
       >
-        <Calculator size={20} strokeWidth={2} />
+        <Calculator size={18} strokeWidth={2} />
         <span>Calculators</span>
       </button>
 
@@ -79,14 +81,15 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '0.125rem',
-          fontSize: '0.625rem',
+          fontSize: '0.5625rem',
           fontWeight: '500',
           flex: 1,
-          padding: '0.25rem',
-          transition: 'color 0.2s'
+          padding: '0.125rem',
+          transition: 'color 0.2s',
+          minWidth: 0
         }}
       >
-        <Briefcase size={20} strokeWidth={2} />
+        <Briefcase size={18} strokeWidth={2} />
         <span>Jobs</span>
       </button>
 
@@ -101,14 +104,15 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '0.125rem',
-          fontSize: '0.625rem',
+          fontSize: '0.5625rem',
           fontWeight: '500',
           flex: 1,
-          padding: '0.25rem',
-          transition: 'color 0.2s'
+          padding: '0.125rem',
+          transition: 'color 0.2s',
+          minWidth: 0
         }}
       >
-        <User size={20} strokeWidth={2} />
+        <User size={18} strokeWidth={2} />
         <span>Profile</span>
       </button>
     </div>
