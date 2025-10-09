@@ -18,6 +18,7 @@ import VFDSizingCalculator from './VFDSizingCalculator.jsx';
 import ReactanceImpedanceCalculator from './ReactanceImpedanceCalculator.jsx';
 import PowerFactorCorrection from './PowerFactorCorrection.jsx';
 import PowerTriangleCalculator from './PowerTriangleCalculator.jsx';
+import ThreePhasePowerCalculator from './ThreePhasePowerCalculator.jsx';
 import Profile from './Profile.jsx';
 import Jobs from './Jobs.jsx';
 import './App.css';
@@ -102,6 +103,8 @@ function App() {
         return <PowerFactorCorrection ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'power-triangle':
         return <PowerTriangleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+      case 'three-phase-power':
+        return <ThreePhasePowerCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'profile':
         return <Profile isDarkMode={isDarkMode} />;
       case 'jobs':
@@ -141,7 +144,8 @@ function App() {
       'conduit-bending': { title: 'Conduit Bending', icon: Maximize2 },
       'lighting': { title: 'Lighting', icon: Lightbulb },
       'vfd-sizing': { title: 'VFD Sizing', icon: Gauge },
-      'power-triangle': { title: 'Power Triangle', icon: Triangle }
+      'power-triangle': { title: 'Power Triangle', icon: Triangle },
+      'three-phase-power': { title: 'Three-Phase Power', icon: Zap }
     };
     
     return headerMap[activeCalculator] || { title: 'Electrician\'s Toolkit', icon: Calculator };

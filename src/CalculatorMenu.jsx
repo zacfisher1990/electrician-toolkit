@@ -20,7 +20,8 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
       calculators: [
         { id: 'ampacity', name: 'Ampacity', icon: AlertTriangle, keywords: 'ampacity current rating 310 temperature' },
         { id: 'load-calculations', name: 'Load', icon: BarChart3, keywords: 'load calculation service size residential commercial demand' },
-        { id: 'service-entrance', name: 'Service', icon: Building, keywords: 'service entrance sizing panel main 230' }
+        { id: 'service-entrance', name: 'Service', icon: Building, keywords: 'service entrance sizing panel main 230' },
+        { id: 'grounding-bonding', name: 'Grounding', icon: Shield, keywords: 'grounding bonding ground electrode equipment gec egc jumper 250' }
       ]
     },
     {
@@ -38,12 +39,6 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
         { id: 'box-fill', name: 'Box Fill', icon: Package, keywords: 'box fill junction cubic inch volume 314' },
         { id: 'conduit-fill', name: 'Conduit Fill', icon: Wrench, keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
         { id: 'conduit-bending', name: 'Bending', icon: Maximize2, keywords: 'conduit bending offset saddle stub bend emt' }
-      ]
-    },
-    {
-      name: 'Safety',
-      calculators: [
-        { id: 'grounding-bonding', name: 'Grounding', icon: Shield, keywords: 'grounding bonding ground electrode equipment gec egc jumper 250' }
       ]
     }
   ];
