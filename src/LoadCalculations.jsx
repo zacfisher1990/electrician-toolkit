@@ -1,8 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { BarChart3, CheckCircle, Info } from 'lucide-react';
+import { exportToPDF } from './pdfExport';
 
-function LoadCalculations({ isDarkMode = false, onBack }) {
+const LoadCalculations = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [activeTab, setActiveTab] = useState('residential');
+
+  // Lifted state for both calculators
+  const [residentialData, setResidentialData] = useState({
+    squareFootage: '',
+    smallApplianceCircuits: '2',
+    laundryCircuits: '1',
+    rangeKW: '',
+    dryerKW: '5',
+    waterHeaterKW: '',
+    hvacKW: '',
+    otherLoadsKW: '',
+    voltage: '240'
+  });
+
+  const [commercialData, setCommercialData] = useState({
+    squareFootage: '',
+    occupancyType: 'office',
+    hvacLoad: '',
+    receptacleLoad: '',
+    motorLoads: '',
+    otherLoads: '',
+    demandFactor: '100',
+    voltage: '480',
+    phase: 'three'
+  });
 
   // Dark mode colors
   const colors = {
@@ -18,26 +44,16 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
 
   // Residential Load Calculator (NEC 220.82 Standard Method)
   const ResidentialLoadCalculator = () => {
-    const [squareFootage, setSquareFootage] = useState('');
-    const [smallApplianceCircuits, setSmallApplianceCircuits] = useState('2');
-    const [laundryCircuits, setLaundryCircuits] = useState('1');
-    const [rangeKW, setRangeKW] = useState('');
-    const [dryerKW, setDryerKW] = useState('5');
-    const [waterHeaterKW, setWaterHeaterKW] = useState('');
-    const [hvacKW, setHvacKW] = useState('');
-    const [otherLoadsKW, setOtherLoadsKW] = useState('');
-    const [voltage, setVoltage] = useState('240');
-
     const calculateResidentialLoad = () => {
-      const sqft = parseFloat(squareFootage) || 0;
-      const sac = parseFloat(smallApplianceCircuits) || 0;
-      const laundry = parseFloat(laundryCircuits) || 0;
-      const range = parseFloat(rangeKW) || 0;
-      const dryer = parseFloat(dryerKW) || 0;
-      const waterHeater = parseFloat(waterHeaterKW) || 0;
-      const hvac = parseFloat(hvacKW) || 0;
-      const other = parseFloat(otherLoadsKW) || 0;
-      const volts = parseFloat(voltage);
+      const sqft = parseFloat(residentialData.squareFootage) || 0;
+      const sac = parseFloat(residentialData.smallApplianceCircuits) || 0;
+      const laundry = parseFloat(residentialData.laundryCircuits) || 0;
+      const range = parseFloat(residentialData.rangeKW) || 0;
+      const dryer = parseFloat(residentialData.dryerKW) || 0;
+      const waterHeater = parseFloat(residentialData.waterHeaterKW) || 0;
+      const hvac = parseFloat(residentialData.hvacKW) || 0;
+      const other = parseFloat(residentialData.otherLoadsKW) || 0;
+      const volts = parseFloat(residentialData.voltage);
 
       const generalLighting = sqft * 3;
       const smallApplianceLoad = sac * 1500;
@@ -105,8 +121,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={squareFootage} 
-              onChange={(e) => setSquareFootage(e.target.value)}
+              value={residentialData.squareFootage} 
+              onChange={(e) => setResidentialData({...residentialData, squareFootage: e.target.value})}
               placeholder="Living area"
               style={{
                 width: '100%',
@@ -127,8 +143,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={smallApplianceCircuits} 
-              onChange={(e) => setSmallApplianceCircuits(e.target.value)}
+              value={residentialData.smallApplianceCircuits} 
+              onChange={(e) => setResidentialData({...residentialData, smallApplianceCircuits: e.target.value})}
               placeholder="Min 2"
               style={{
                 width: '100%',
@@ -150,8 +166,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={laundryCircuits} 
-              onChange={(e) => setLaundryCircuits(e.target.value)}
+              value={residentialData.laundryCircuits} 
+              onChange={(e) => setResidentialData({...residentialData, laundryCircuits: e.target.value})}
               placeholder="Typically 1"
               style={{
                 width: '100%',
@@ -173,8 +189,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={rangeKW} 
-              onChange={(e) => setRangeKW(e.target.value)}
+              value={residentialData.rangeKW} 
+              onChange={(e) => setResidentialData({...residentialData, rangeKW: e.target.value})}
               placeholder="Nameplate rating"
               style={{
                 width: '100%',
@@ -195,8 +211,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={dryerKW} 
-              onChange={(e) => setDryerKW(e.target.value)}
+              value={residentialData.dryerKW} 
+              onChange={(e) => setResidentialData({...residentialData, dryerKW: e.target.value})}
               placeholder="Min 5 kW"
               style={{
                 width: '100%',
@@ -217,8 +233,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={waterHeaterKW} 
-              onChange={(e) => setWaterHeaterKW(e.target.value)}
+              value={residentialData.waterHeaterKW} 
+              onChange={(e) => setResidentialData({...residentialData, waterHeaterKW: e.target.value})}
               placeholder="Rating"
               style={{
                 width: '100%',
@@ -239,8 +255,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={hvacKW} 
-              onChange={(e) => setHvacKW(e.target.value)}
+              value={residentialData.hvacKW} 
+              onChange={(e) => setResidentialData({...residentialData, hvacKW: e.target.value})}
               placeholder="Largest load"
               style={{
                 width: '100%',
@@ -261,8 +277,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={otherLoadsKW} 
-              onChange={(e) => setOtherLoadsKW(e.target.value)}
+              value={residentialData.otherLoadsKW} 
+              onChange={(e) => setResidentialData({...residentialData, otherLoadsKW: e.target.value})}
               placeholder="Pool, spa, etc"
               style={{
                 width: '100%',
@@ -282,8 +298,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
               Service Voltage
             </label>
             <select 
-              value={voltage} 
-              onChange={(e) => setVoltage(e.target.value)}
+              value={residentialData.voltage} 
+              onChange={(e) => setResidentialData({...residentialData, voltage: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -301,7 +317,7 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
           </div>
         </div>
 
-        {squareFootage && (
+        {residentialData.squareFootage && (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
               <div style={{
@@ -389,11 +405,11 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
                     Demand Loads (with factors applied):
                   </div>
                   <div>Lighting: {results.demandLighting.toFixed(0)} VA</div>
-                  {rangeKW > 0 && <div>Range: {results.rangeDemand.toLocaleString()} W</div>}
-                  {dryerKW > 0 && <div>Dryer: {results.dryerDemand.toLocaleString()} W</div>}
-                  {waterHeaterKW > 0 && <div>Water Heater: {results.waterHeaterDemand.toLocaleString()} W</div>}
-                  {hvacKW > 0 && <div>HVAC: {results.hvacDemand.toLocaleString()} W</div>}
-                  {otherLoadsKW > 0 && <div>Other: {results.otherDemand.toLocaleString()} W</div>}
+                  {residentialData.rangeKW > 0 && <div>Range: {results.rangeDemand.toLocaleString()} W</div>}
+                  {residentialData.dryerKW > 0 && <div>Dryer: {results.dryerDemand.toLocaleString()} W</div>}
+                  {residentialData.waterHeaterKW > 0 && <div>Water Heater: {results.waterHeaterDemand.toLocaleString()} W</div>}
+                  {residentialData.hvacKW > 0 && <div>HVAC: {results.hvacDemand.toLocaleString()} W</div>}
+                  {residentialData.otherLoadsKW > 0 && <div>Other: {results.otherDemand.toLocaleString()} W</div>}
                 </div>
               </div>
             </div>
@@ -405,36 +421,26 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
 
   // Commercial Load Calculator (Basic)
   const CommercialLoadCalculator = () => {
-    const [squareFootage, setSquareFootage] = useState('');
-    const [occupancyType, setOccupancyType] = useState('office');
-    const [hvacLoad, setHvacLoad] = useState('');
-    const [receptacleLoad, setReceptacleLoad] = useState('');
-    const [motorLoads, setMotorLoads] = useState('');
-    const [otherLoads, setOtherLoads] = useState('');
-    const [demandFactor, setDemandFactor] = useState('100');
-    const [voltage, setVoltage] = useState('480');
-    const [phase, setPhase] = useState('three');
-
     const lightingVAPerSqFt = {
       'office': 3.5, 'warehouse': 0.25, 'retail': 3.0, 'school': 3.0,
       'restaurant': 2.0, 'hotel': 2.0, 'hospital': 2.0, 'industrial': 2.0
     };
 
     const calculateCommercialLoad = () => {
-      const sqft = parseFloat(squareFootage) || 0;
-      const hvac = parseFloat(hvacLoad) || 0;
-      const receptacles = parseFloat(receptacleLoad) || 0;
-      const motors = parseFloat(motorLoads) || 0;
-      const other = parseFloat(otherLoads) || 0;
-      const demand = parseFloat(demandFactor) / 100;
-      const volts = parseFloat(voltage);
+      const sqft = parseFloat(commercialData.squareFootage) || 0;
+      const hvac = parseFloat(commercialData.hvacLoad) || 0;
+      const receptacles = parseFloat(commercialData.receptacleLoad) || 0;
+      const motors = parseFloat(commercialData.motorLoads) || 0;
+      const other = parseFloat(commercialData.otherLoads) || 0;
+      const demand = parseFloat(commercialData.demandFactor) / 100;
+      const volts = parseFloat(commercialData.voltage);
 
-      const lightingVA = sqft * lightingVAPerSqFt[occupancyType];
+      const lightingVA = sqft * lightingVAPerSqFt[commercialData.occupancyType];
       const totalConnectedKW = (lightingVA / 1000) + hvac + receptacles + motors + other;
       const demandLoadKW = totalConnectedKW * demand;
 
       let amperage;
-      if (phase === 'single') {
+      if (commercialData.phase === 'single') {
         amperage = (demandLoadKW * 1000) / volts;
       } else {
         amperage = (demandLoadKW * 1000) / (1.732 * volts);
@@ -464,8 +470,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={squareFootage} 
-              onChange={(e) => setSquareFootage(e.target.value)}
+              value={commercialData.squareFootage} 
+              onChange={(e) => setCommercialData({...commercialData, squareFootage: e.target.value})}
               placeholder="Building area"
               style={{
                 width: '100%',
@@ -485,8 +491,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
               Occupancy Type
             </label>
             <select 
-              value={occupancyType} 
-              onChange={(e) => setOccupancyType(e.target.value)}
+              value={commercialData.occupancyType} 
+              onChange={(e) => setCommercialData({...commercialData, occupancyType: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -515,8 +521,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={hvacLoad} 
-              onChange={(e) => setHvacLoad(e.target.value)}
+              value={commercialData.hvacLoad} 
+              onChange={(e) => setCommercialData({...commercialData, hvacLoad: e.target.value})}
               placeholder="Total HVAC"
               style={{
                 width: '100%',
@@ -537,8 +543,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={receptacleLoad} 
-              onChange={(e) => setReceptacleLoad(e.target.value)}
+              value={commercialData.receptacleLoad} 
+              onChange={(e) => setCommercialData({...commercialData, receptacleLoad: e.target.value})}
               placeholder="Receptacles"
               style={{
                 width: '100%',
@@ -559,8 +565,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={motorLoads} 
-              onChange={(e) => setMotorLoads(e.target.value)}
+              value={commercialData.motorLoads} 
+              onChange={(e) => setCommercialData({...commercialData, motorLoads: e.target.value})}
               placeholder="Total motors"
               style={{
                 width: '100%',
@@ -581,8 +587,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={otherLoads} 
-              onChange={(e) => setOtherLoads(e.target.value)}
+              value={commercialData.otherLoads} 
+              onChange={(e) => setCommercialData({...commercialData, otherLoads: e.target.value})}
               placeholder="Additional"
               style={{
                 width: '100%',
@@ -603,8 +609,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
             </label>
             <input 
               type="number" 
-              value={demandFactor} 
-              onChange={(e) => setDemandFactor(e.target.value)}
+              value={commercialData.demandFactor} 
+              onChange={(e) => setCommercialData({...commercialData, demandFactor: e.target.value})}
               placeholder="80-100%"
               style={{
                 width: '100%',
@@ -625,8 +631,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
               System Voltage
             </label>
             <select 
-              value={voltage} 
-              onChange={(e) => setVoltage(e.target.value)}
+              value={commercialData.voltage} 
+              onChange={(e) => setCommercialData({...commercialData, voltage: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -651,8 +657,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
               System Phase
             </label>
             <select 
-              value={phase} 
-              onChange={(e) => setPhase(e.target.value)}
+              value={commercialData.phase} 
+              onChange={(e) => setCommercialData({...commercialData, phase: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -670,7 +676,7 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
           </div>
         </div>
 
-        {squareFootage && (
+        {commercialData.squareFootage && (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
               <div style={{
@@ -737,10 +743,10 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
               </div>
               <div style={{ fontSize: '0.875rem', color: colors.labelText, display: 'grid', gap: '0.25rem' }}>
                 <div>Lighting: {results.lightingKW.toFixed(2)} kW ({results.lightingVA.toFixed(0)} VA)</div>
-                {hvacLoad > 0 && <div>HVAC: {results.hvac.toFixed(2)} kW</div>}
-                {receptacleLoad > 0 && <div>Receptacles: {results.receptacles.toFixed(2)} kW</div>}
-                {motorLoads > 0 && <div>Motors: {results.motors.toFixed(2)} kW</div>}
-                {otherLoads > 0 && <div>Other: {results.other.toFixed(2)} kW</div>}
+                {commercialData.hvacLoad > 0 && <div>HVAC: {results.hvac.toFixed(2)} kW</div>}
+                {commercialData.receptacleLoad > 0 && <div>Receptacles: {results.receptacles.toFixed(2)} kW</div>}
+                {commercialData.motorLoads > 0 && <div>Motors: {results.motors.toFixed(2)} kW</div>}
+                {commercialData.otherLoads > 0 && <div>Other: {results.other.toFixed(2)} kW</div>}
               </div>
             </div>
 
@@ -756,8 +762,8 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
                   <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
                     System Configuration
                   </div>
-                  <div>{voltage}V {phase === 'single' ? 'Single' : 'Three'} Phase</div>
-                  <div>{demandFactor}% demand factor applied</div>
+                  <div>{commercialData.voltage}V {commercialData.phase === 'single' ? 'Single' : 'Three'} Phase</div>
+                  <div>{commercialData.demandFactor}% demand factor applied</div>
                 </div>
               </div>
             </div>
@@ -766,6 +772,180 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
       </div>
     );
   };
+
+  // Expose exportPDF function to parent via ref
+  useImperativeHandle(ref, () => ({
+    exportPDF: () => {
+      let pdfData;
+
+      if (activeTab === 'residential') {
+        if (!residentialData.squareFootage) {
+          alert('Please enter square footage before exporting');
+          return;
+        }
+
+        const sqft = parseFloat(residentialData.squareFootage);
+        const sac = parseFloat(residentialData.smallApplianceCircuits) || 0;
+        const laundry = parseFloat(residentialData.laundryCircuits) || 0;
+        const range = parseFloat(residentialData.rangeKW) || 0;
+        const dryer = parseFloat(residentialData.dryerKW) || 0;
+        const waterHeater = parseFloat(residentialData.waterHeaterKW) || 0;
+        const hvac = parseFloat(residentialData.hvacKW) || 0;
+        const other = parseFloat(residentialData.otherLoadsKW) || 0;
+        const volts = parseFloat(residentialData.voltage);
+
+        const generalLighting = sqft * 3;
+        const smallApplianceLoad = sac * 1500;
+        const laundryLoad = laundry * 1500;
+        const subtotalVA = generalLighting + smallApplianceLoad + laundryLoad;
+
+        let demandLighting = 0;
+        if (subtotalVA <= 3000) {
+          demandLighting = subtotalVA;
+        } else if (subtotalVA <= 120000) {
+          demandLighting = 3000 + ((subtotalVA - 3000) * 0.35);
+        } else {
+          demandLighting = 3000 + (117000 * 0.35) + ((subtotalVA - 120000) * 0.25);
+        }
+
+        let rangeDemand = 0;
+        if (range > 0) {
+          rangeDemand = range <= 12 ? 8000 : 8000 + ((range - 12) * 400);
+        }
+
+        const dryerDemand = Math.max(dryer * 1000, 5000);
+        const waterHeaterDemand = waterHeater * 1000;
+        const hvacDemand = hvac * 1000;
+        const otherDemand = other * 1000;
+
+        const totalDemandVA = demandLighting + rangeDemand + dryerDemand + waterHeaterDemand + hvacDemand + otherDemand;
+        const totalDemandKW = (totalDemandVA / 1000).toFixed(2);
+        const totalAmperage = (totalDemandVA / volts).toFixed(1);
+
+        let recommendedService = 100;
+        if (parseFloat(totalAmperage) > 200) recommendedService = 400;
+        else if (parseFloat(totalAmperage) > 150) recommendedService = 200;
+        else if (parseFloat(totalAmperage) > 100) recommendedService = 150;
+
+        const inputs = {
+          squareFootage: `${residentialData.squareFootage} sq ft`,
+          smallApplianceCircuits: `${sac} circuits @ 1500 VA each`,
+          laundryCircuits: `${laundry} circuit @ 1500 VA`,
+          serviceVoltage: `${residentialData.voltage}V`
+        };
+
+        if (range > 0) inputs.electricRange = `${range} kW`;
+        if (dryer > 0) inputs.electricDryer = `${dryer} kW`;
+        if (waterHeater > 0) inputs.waterHeater = `${waterHeater} kW`;
+        if (hvac > 0) inputs.hvacHeat = `${hvac} kW`;
+        if (other > 0) inputs.otherLoads = `${other} kW`;
+
+        pdfData = {
+          calculatorName: 'Load Calculations - Residential (NEC 220.82)',
+          inputs,
+          results: {
+            totalDemandLoad: `${totalDemandKW} kW (${totalDemandVA.toLocaleString()} VA)`,
+            totalAmperage: `${totalAmperage} Amps`,
+            recommendedService: `${recommendedService} Amp Service`
+          },
+          additionalInfo: {
+            generalLighting: `${generalLighting.toLocaleString()} VA (${sqft} sq ft × 3 VA/sq ft)`,
+            smallAppliance: `${smallApplianceLoad.toLocaleString()} VA`,
+            laundry: `${laundryLoad.toLocaleString()} VA`,
+            lightingSubtotal: `${subtotalVA.toLocaleString()} VA`,
+            demandLightingAfterFactors: `${demandLighting.toFixed(0)} VA`,
+            ...(range > 0 && { rangeDemand: `${rangeDemand.toLocaleString()} W` }),
+            ...(dryer > 0 && { dryerDemand: `${dryerDemand.toLocaleString()} W (min 5000 W)` }),
+            ...(waterHeater > 0 && { waterHeaterDemand: `${waterHeaterDemand.toLocaleString()} W` }),
+            ...(hvac > 0 && { hvacDemand: `${hvacDemand.toLocaleString()} W` }),
+            ...(other > 0 && { otherDemand: `${otherDemand.toLocaleString()} W` })
+          },
+          necReferences: [
+            'NEC 220.82 - Dwelling Unit Optional Calculation',
+            'NEC 220.83 - Existing Dwelling Unit',
+            'NEC Table 220.55 - Demand Factors for Electric Ranges',
+            'General lighting: 3 VA per square foot (NEC 220.12)',
+            'Demand factors: First 3000 VA @ 100%, Next 117000 VA @ 35%, Remainder @ 25%'
+          ]
+        };
+
+      } else if (activeTab === 'commercial') {
+        if (!commercialData.squareFootage) {
+          alert('Please enter square footage before exporting');
+          return;
+        }
+
+        const lightingVAPerSqFt = {
+          'office': 3.5, 'warehouse': 0.25, 'retail': 3.0, 'school': 3.0,
+          'restaurant': 2.0, 'hotel': 2.0, 'hospital': 2.0, 'industrial': 2.0
+        };
+
+        const occupancyNames = {
+          'office': 'Office', 'warehouse': 'Warehouse', 'retail': 'Retail', 
+          'school': 'School', 'restaurant': 'Restaurant', 'hotel': 'Hotel',
+          'hospital': 'Hospital', 'industrial': 'Industrial'
+        };
+
+        const sqft = parseFloat(commercialData.squareFootage);
+        const hvac = parseFloat(commercialData.hvacLoad) || 0;
+        const receptacles = parseFloat(commercialData.receptacleLoad) || 0;
+        const motors = parseFloat(commercialData.motorLoads) || 0;
+        const other = parseFloat(commercialData.otherLoads) || 0;
+        const demand = parseFloat(commercialData.demandFactor) / 100;
+        const volts = parseFloat(commercialData.voltage);
+
+        const lightingVA = sqft * lightingVAPerSqFt[commercialData.occupancyType];
+        const lightingKW = (lightingVA / 1000).toFixed(2);
+        const totalConnectedKW = ((lightingVA / 1000) + hvac + receptacles + motors + other).toFixed(2);
+        const demandLoadKW = (parseFloat(totalConnectedKW) * demand).toFixed(2);
+
+        let amperage;
+        if (commercialData.phase === 'single') {
+          amperage = ((parseFloat(demandLoadKW) * 1000) / volts).toFixed(1);
+        } else {
+          amperage = ((parseFloat(demandLoadKW) * 1000) / (1.732 * volts)).toFixed(1);
+        }
+
+        const inputs = {
+          squareFootage: `${commercialData.squareFootage} sq ft`,
+          occupancyType: `${occupancyNames[commercialData.occupancyType]} (${lightingVAPerSqFt[commercialData.occupancyType]} VA/sq ft)`,
+          demandFactor: `${commercialData.demandFactor}%`,
+          systemConfiguration: `${commercialData.voltage}V ${commercialData.phase === 'single' ? 'Single' : 'Three'} Phase`
+        };
+
+        if (hvac > 0) inputs.hvacLoad = `${hvac} kW`;
+        if (receptacles > 0) inputs.receptacleLoad = `${receptacles} kW`;
+        if (motors > 0) inputs.motorLoads = `${motors} kW`;
+        if (other > 0) inputs.otherLoads = `${other} kW`;
+
+        pdfData = {
+          calculatorName: 'Load Calculations - Commercial',
+          inputs,
+          results: {
+            connectedLoad: `${totalConnectedKW} kW`,
+            demandLoad: `${demandLoadKW} kW`,
+            totalAmperage: `${amperage} Amps`
+          },
+          additionalInfo: {
+            lighting: `${lightingKW} kW (${lightingVA.toFixed(0)} VA)`,
+            calculationMethod: commercialData.phase === 'single' ? 
+              `Amperage = (${demandLoadKW} kW × 1000) ÷ ${volts}V = ${amperage} A` :
+              `Amperage = (${demandLoadKW} kW × 1000) ÷ (1.732 × ${volts}V) = ${amperage} A`,
+            demandFactorNote: `${commercialData.demandFactor}% demand factor applied to total connected load`
+          },
+          necReferences: [
+            'NEC Article 220 - Branch-Circuit, Feeder, and Service Load Calculations',
+            'NEC Table 220.12 - General Lighting Loads by Occupancy',
+            'NEC 220.42 - General Lighting',
+            'NEC 220.50 - Motors',
+            'Always verify with actual connected loads and local codes'
+          ]
+        };
+      }
+
+      exportToPDF(pdfData);
+    }
+  }));
 
   const tabComponents = {
     residential: <ResidentialLoadCalculator />,
@@ -854,6 +1034,6 @@ function LoadCalculations({ isDarkMode = false, onBack }) {
       </div>
     </div>
   );
-}
+});
 
 export default LoadCalculations;
