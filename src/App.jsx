@@ -18,6 +18,7 @@ import VFDSizingCalculator from './VFDSizingCalculator.jsx';
 import ReactanceImpedanceCalculator from './ReactanceImpedanceCalculator.jsx';
 import PowerFactorCorrection from './PowerFactorCorrection.jsx';
 import Profile from './Profile.jsx';
+import Jobs from './Jobs.jsx';
 import './App.css';
 
 function App() {
@@ -30,12 +31,14 @@ function App() {
   const calculatorRef = useRef(null);
 
   const handleNavigate = (view) => {
-    if (view === 'home' || view === 'calculators') {
-      setActiveCalculator(null);
-    } else if (view === 'profile') {
-      setActiveCalculator('profile');
-    }
-  };
+  if (view === 'home' || view === 'calculators') {
+    setActiveCalculator(null);
+  } else if (view === 'profile') {
+    setActiveCalculator('profile');
+  } else if (view === 'jobs') {
+    setActiveCalculator('jobs');
+  }
+};
 
   // Handle PDF Export
   const handleExportPDF = () => {
@@ -98,6 +101,8 @@ function App() {
         return <PowerFactorCorrection ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'profile':
         return <Profile isDarkMode={isDarkMode} />;
+      case 'jobs':
+        return <Jobs isDarkMode={isDarkMode} />;
       default:
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -107,8 +112,9 @@ function App() {
   };
 
   const getHeaderTitle = () => {
-    if (!activeCalculator) return 'Calculator Menu';
-    if (activeCalculator === 'profile') return 'Profile';
+  if (!activeCalculator) return 'Calculator Menu';
+  if (activeCalculator === 'profile') return 'Profile';
+  if (activeCalculator === 'jobs') return 'Job Log';
     
     const titles = {
       'voltage-drop': 'Voltage Drop',
@@ -312,16 +318,18 @@ function App() {
       )}
       
       <BottomNavigation 
-        onNavigate={handleNavigate}
-        currentView={
-          activeCalculator === 'profile' 
-            ? 'profile' 
-            : activeCalculator 
-            ? 'calculators' 
-            : 'home'
-        }
-        isDarkMode={isDarkMode}
-      />
+  onNavigate={handleNavigate}
+  currentView={
+    activeCalculator === 'profile' 
+      ? 'profile'
+      : activeCalculator === 'jobs'
+      ? 'jobs'
+      : activeCalculator 
+      ? 'calculators' 
+      : 'home'
+  }
+  isDarkMode={isDarkMode}
+/>
     </div>
   );
 }
