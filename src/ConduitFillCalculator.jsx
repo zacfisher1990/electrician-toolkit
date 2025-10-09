@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Wrench, Plus, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { exportToPDF } from './pdfExport';
 
-function ConduitFillCalculator({ isDarkMode = false, onBack }) {
+const ConduitFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [conduitType, setConduitType] = useState('emt-0.5');
   const [wireType, setWireType] = useState('thwn');
   const [conductors, setConductors] = useState([
@@ -124,6 +125,63 @@ function ConduitFillCalculator({ isDarkMode = false, onBack }) {
       isOverfilled: parseFloat(fillPercentage) > maxFill
     };
   };
+
+  // Expose exportPDF function to parent via ref
+  useImperativeHandle(ref, () => ({
+    exportPDF: () => {
+      const results = calculateFill();
+      
+      // Check if any conductors have been entered
+      if (results.totalWireCount === 0) {
+        alert('Please enter at least one conductor with a quantity before exporting');
+        return;
+      }
+
+      // Build conductor breakdown for additional info
+      const conductorBreakdown = results.conductorDetails
+        .filter(detail => detail.count > 0)
+        .map(detail => 
+          `${detail.count}× ${detail.size} AWG ${wireType.toUpperCase()}: ${detail.areaEach.toFixed(4)} sq.in. each = ${detail.subtotal.toFixed(4)} sq.in. total`
+        )
+        .join('; ');
+
+      const pdfData = {
+        calculatorName: 'Conduit Fill Calculator',
+        inputs: {
+          conduitType: conduitData[conduitType].name,
+          wireType: wireType.toUpperCase() + '-2',
+          totalConductors: results.totalWireCount
+        },
+        results: {
+          conduitArea: `${results.conduitArea} sq.in.`,
+          totalWireArea: `${results.totalWireArea} sq.in.`,
+          fillPercentage: `${results.fillPercentage}%`,
+          maximumAllowedFill: `${results.maxFill}%`,
+          complianceStatus: results.isOverfilled ? 'OVERFILLED - Violates NEC' : 'Within NEC Limits'
+        },
+        additionalInfo: {
+          conductorBreakdown: conductorBreakdown,
+          fillRule: results.totalWireCount === 1 ? '1 conductor: 53% max fill' :
+                    results.totalWireCount === 2 ? '2 conductors: 31% max fill' :
+                    '3+ conductors: 40% max fill',
+          recommendation: results.isOverfilled ? 
+            'Reduce number of conductors or use larger conduit' : 
+            'Installation meets NEC requirements'
+        },
+        necReferences: [
+          'NEC Chapter 9, Table 1 - Percent of Cross Section of Conduit and Tubing for Conductors',
+          'NEC Chapter 9, Table 4 - Dimensions and Percent Area of Conduit and Tubing',
+          'NEC Chapter 9, Table 5 - Dimensions of Insulated Conductors and Fixture Wires',
+          '1 conductor: 53% max fill',
+          '2 conductors: 31% max fill',
+          '3+ conductors: 40% max fill',
+          'Nipples (24 inches or less): 60% max fill'
+        ]
+      };
+
+      exportToPDF(pdfData);
+    }
+  }));
 
   const results = calculateFill();
 
@@ -531,6 +589,6 @@ function ConduitFillCalculator({ isDarkMode = false, onBack }) {
       </div>
     </div>
   );
-}
+});
 
 export default ConduitFillCalculator;
