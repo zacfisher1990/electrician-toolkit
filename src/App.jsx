@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Menu, FileDown } from 'lucide-react';
+import { Menu, FileDown, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase } from 'lucide-react';
 import CalculatorMenu from './CalculatorMenu.jsx';
 import VoltageDropCalculator from './VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './OhmsLawCalculator.jsx';
@@ -31,14 +31,14 @@ function App() {
   const calculatorRef = useRef(null);
 
   const handleNavigate = (view) => {
-  if (view === 'home' || view === 'calculators') {
-    setActiveCalculator(null);
-  } else if (view === 'profile') {
-    setActiveCalculator('profile');
-  } else if (view === 'jobs') {
-    setActiveCalculator('jobs');
-  }
-};
+    if (view === 'home' || view === 'calculators') {
+      setActiveCalculator(null);
+    } else if (view === 'profile') {
+      setActiveCalculator('profile');
+    } else if (view === 'jobs') {
+      setActiveCalculator('jobs');
+    }
+  };
 
   // Handle PDF Export
   const handleExportPDF = () => {
@@ -111,31 +111,40 @@ function App() {
     }
   };
 
-  const getHeaderTitle = () => {
-  if (!activeCalculator) return 'Calculator Menu';
-  if (activeCalculator === 'profile') return 'Profile';
-  if (activeCalculator === 'jobs') return 'Job Log';
+  const getHeaderInfo = () => {
+    if (!activeCalculator) {
+      return { title: 'Calculator Menu', icon: Calculator };
+    }
+    if (activeCalculator === 'profile') {
+      return { title: 'Profile', icon: User };
+    }
+    if (activeCalculator === 'jobs') {
+      return { title: 'Job Log', icon: Briefcase };
+    }
     
-    const titles = {
-      'voltage-drop': 'Voltage Drop',
-      'ohms-law': "Ohm's Law",
-      'box-fill': 'Box Fill',
-      'conduit-fill': 'Conduit Fill',
-      'ampacity': 'Ampacity',
-      'motor-calculations': 'Motors',
-      'load-calculations': 'Load Calculations',
-      'transformer-sizing': 'Transformers',
-      'service-entrance': 'Service Entrance Sizing',
-      'grounding-bonding': 'Grounding & Bonding',
-      'conduit-bending': 'Conduit Bending',
-      'lighting': 'Lighting',
-      'vfd-sizing': 'VFD Sizing',
-      'reactance-impedance': 'Reactance & Impedance',
-      'power-factor': 'Power Factor Correction'
+    const headerMap = {
+      'voltage-drop': { title: 'Voltage Drop', icon: Zap },
+      'ohms-law': { title: "Ohm's Law", icon: Plug },
+      'reactance-impedance': { title: 'Reactance & Impedance', icon: Waves },
+      'power-factor': { title: 'Power Factor Correction', icon: Activity },
+      'box-fill': { title: 'Box Fill', icon: Package },
+      'conduit-fill': { title: 'Conduit Fill', icon: Wrench },
+      'ampacity': { title: 'Ampacity', icon: AlertTriangle },
+      'motor-calculations': { title: 'Motors', icon: Settings },
+      'load-calculations': { title: 'Load Calculations', icon: BarChart3 },
+      'transformer-sizing': { title: 'Transformers', icon: Cpu },
+      'service-entrance': { title: 'Service Entrance Sizing', icon: Building },
+      'grounding-bonding': { title: 'Grounding & Bonding', icon: Shield },
+      'conduit-bending': { title: 'Conduit Bending', icon: Maximize2 },
+      'lighting': { title: 'Lighting', icon: Lightbulb },
+      'vfd-sizing': { title: 'VFD Sizing', icon: Gauge }
     };
     
-    return titles[activeCalculator] || 'Electrician\'s Toolkit';
+    return headerMap[activeCalculator] || { title: 'Electrician\'s Toolkit', icon: Calculator };
   };
+
+  const headerInfo = getHeaderInfo();
+  const HeaderIcon = headerInfo.icon;
 
   return (
     <div className="App" style={{ background: isDarkMode ? '#1f2937' : '#ffffff' }}>
@@ -151,15 +160,22 @@ function App() {
         justifyContent: 'space-between',
         alignItems: 'center'
       }}>
-        <h1 style={{ 
-          fontSize: '1.125rem', 
-          fontWeight: '600',
-          color: 'white',
-          margin: 0,
-          letterSpacing: '-0.01em'
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.75rem' 
         }}>
-          {getHeaderTitle()}
-        </h1>
+          <HeaderIcon size={24} color="white" strokeWidth={2} />
+          <h1 style={{ 
+            fontSize: '1.125rem', 
+            fontWeight: '600',
+            color: 'white',
+            margin: 0,
+            letterSpacing: '-0.01em'
+          }}>
+            {headerInfo.title}
+          </h1>
+        </div>
         
         {/* Menu Button */}
         <div style={{ position: 'relative' }}>
@@ -212,7 +228,7 @@ function App() {
               }}>
                 <div style={{ padding: '0.5rem 0' }}>
                   {/* Export PDF Button - Only show when calculator is active */}
-                  {activeCalculator && (
+                  {activeCalculator && activeCalculator !== 'profile' && activeCalculator !== 'jobs' && (
                     <>
                       <button
                         onClick={handleExportPDF}
@@ -318,18 +334,18 @@ function App() {
       )}
       
       <BottomNavigation 
-  onNavigate={handleNavigate}
-  currentView={
-    activeCalculator === 'profile' 
-      ? 'profile'
-      : activeCalculator === 'jobs'
-      ? 'jobs'
-      : activeCalculator 
-      ? 'calculators' 
-      : 'home'
-  }
-  isDarkMode={isDarkMode}
-/>
+        onNavigate={handleNavigate}
+        currentView={
+          activeCalculator === 'profile' 
+            ? 'profile'
+            : activeCalculator === 'jobs'
+            ? 'jobs'
+            : activeCalculator 
+            ? 'calculators' 
+            : 'home'
+        }
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 }
