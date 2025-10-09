@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Menu, FileDown, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle } from 'lucide-react';
+import { Menu, FileDown, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon } from 'lucide-react';
 import CalculatorMenu from './CalculatorMenu.jsx';
 import VoltageDropCalculator from './VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './OhmsLawCalculator.jsx';
@@ -19,6 +19,7 @@ import ReactanceImpedanceCalculator from './ReactanceImpedanceCalculator.jsx';
 import PowerFactorCorrection from './PowerFactorCorrection.jsx';
 import PowerTriangleCalculator from './PowerTriangleCalculator.jsx';
 import ThreePhasePowerCalculator from './ThreePhasePowerCalculator.jsx';
+import Home from './Home.jsx';
 import Profile from './Profile.jsx';
 import Jobs from './Jobs.jsx';
 import './App.css';
@@ -33,8 +34,10 @@ function App() {
   const calculatorRef = useRef(null);
 
   const handleNavigate = (view) => {
-    if (view === 'home' || view === 'calculators') {
-      setActiveCalculator(null);
+    if (view === 'home') {
+      setActiveCalculator(null); // null = Home page
+    } else if (view === 'calculators') {
+      setActiveCalculator('calculators'); // Show calculator menu
     } else if (view === 'profile') {
       setActiveCalculator('profile');
     } else if (view === 'jobs') {
@@ -105,20 +108,25 @@ function App() {
         return <PowerTriangleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'three-phase-power':
         return <ThreePhasePowerCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+      case 'calculators':
+        return <CalculatorMenu 
+          isDarkMode={isDarkMode} 
+          onSelectCalculator={setActiveCalculator}
+        />;
       case 'profile':
         return <Profile isDarkMode={isDarkMode} />;
       case 'jobs':
         return <Jobs isDarkMode={isDarkMode} />;
       default:
-        return <CalculatorMenu 
-          isDarkMode={isDarkMode} 
-          onSelectCalculator={setActiveCalculator}
-        />;
+        return <Home isDarkMode={isDarkMode} />;
     }
   };
 
   const getHeaderInfo = () => {
     if (!activeCalculator) {
+      return { title: 'Home', icon: HomeIcon };
+    }
+    if (activeCalculator === 'calculators') {
       return { title: 'Calculator Menu', icon: Calculator };
     }
     if (activeCalculator === 'profile') {
@@ -236,7 +244,7 @@ function App() {
               }}>
                 <div style={{ padding: '0.5rem 0' }}>
                   {/* Export PDF Button - Only show when calculator is active */}
-                  {activeCalculator && activeCalculator !== 'profile' && activeCalculator !== 'jobs' && (
+                  {activeCalculator && activeCalculator !== 'profile' && activeCalculator !== 'jobs' && activeCalculator !== 'calculators' && (
                     <>
                       <button
                         onClick={handleExportPDF}
@@ -306,7 +314,7 @@ function App() {
         ) : (
           <div style={{ 
             minHeight: 'calc(100vh - 3.5rem)', 
-            padding: '1rem',
+            padding: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' ? '0' : '1rem',
             paddingBottom: '5rem'
           }}>
             {renderCalculator()}
@@ -348,6 +356,8 @@ function App() {
             ? 'profile'
             : activeCalculator === 'jobs'
             ? 'jobs'
+            : activeCalculator === 'calculators'
+            ? 'calculators'
             : activeCalculator 
             ? 'calculators' 
             : 'home'

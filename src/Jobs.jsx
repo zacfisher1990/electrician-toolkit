@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Clock, CheckCircle, AlertCircle, MapPin, Calendar, DollarSign, Edit, Trash2 } from 'lucide-react';
+import { Plus, Clock, CheckCircle, AlertCircle, MapPin, Calendar, DollarSign, Edit, Trash2, Briefcase } from 'lucide-react';
 
 const Jobs = ({ isDarkMode }) => {
   const [jobs, setJobs] = useState([
@@ -36,7 +36,8 @@ const Jobs = ({ isDarkMode }) => {
   ]);
 
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newJob, setNewJob] = useState({
+  const [editingJob, setEditingJob] = useState(null);
+  const [formData, setFormData] = useState({
     title: '',
     client: '',
     location: '',
@@ -60,25 +61,57 @@ const Jobs = ({ isDarkMode }) => {
     'completed': { color: '#10b981', icon: CheckCircle, label: 'Completed' }
   };
 
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      client: '',
+      location: '',
+      status: 'scheduled',
+      date: '',
+      estimatedCost: '',
+      notes: ''
+    });
+    setShowAddForm(false);
+    setEditingJob(null);
+  };
+
   const handleAddJob = () => {
-    if (newJob.title && newJob.client) {
-      setJobs([...jobs, { ...newJob, id: Date.now() }]);
-      setNewJob({
-        title: '',
-        client: '',
-        location: '',
-        status: 'scheduled',
-        date: '',
-        estimatedCost: '',
-        notes: ''
-      });
-      setShowAddForm(false);
+    if (formData.title && formData.client) {
+      setJobs([...jobs, { ...formData, id: Date.now() }]);
+      resetForm();
     }
   };
 
-  const handleDeleteJob = (id) => {
-    setJobs(jobs.filter(job => job.id !== id));
+  const handleEditJob = () => {
+    if (formData.title && formData.client) {
+      setJobs(jobs.map(job => 
+        job.id === editingJob.id ? { ...formData, id: job.id } : job
+      ));
+      resetForm();
+    }
   };
+
+  const startEdit = (job) => {
+    setEditingJob(job);
+    setFormData({
+      title: job.title,
+      client: job.client,
+      location: job.location,
+      status: job.status,
+      date: job.date,
+      estimatedCost: job.estimatedCost,
+      notes: job.notes
+    });
+    setShowAddForm(false);
+  };
+
+  const handleDeleteJob = (id) => {
+    if (window.confirm('Are you sure you want to delete this job?')) {
+      setJobs(jobs.filter(job => job.id !== id));
+    }
+  };
+
+  const showForm = showAddForm || editingJob;
 
   return (
     <div style={{ 
@@ -106,7 +139,13 @@ const Jobs = ({ isDarkMode }) => {
             </p>
           </div>
           <button
-            onClick={() => setShowAddForm(!showAddForm)}
+            onClick={() => {
+              if (showForm) {
+                resetForm();
+              } else {
+                setShowAddForm(true);
+              }
+            }}
             style={{
               background: 'white',
               color: '#2563eb',
@@ -119,18 +158,23 @@ const Jobs = ({ isDarkMode }) => {
               justifyContent: 'center',
               cursor: 'pointer',
               boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-              transition: 'transform 0.2s'
+              transition: 'transform 0.2s',
+              transform: showForm ? 'rotate(45deg)' : 'rotate(0deg)'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            onMouseEnter={(e) => {
+              if (!showForm) e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = showForm ? 'rotate(45deg)' : 'scale(1)';
+            }}
           >
             <Plus size={24} strokeWidth={2} />
           </button>
         </div>
       </div>
 
-      {/* Add Job Form */}
-      {showAddForm && (
+      {/* Add/Edit Job Form */}
+      {showForm && (
         <div style={{
           background: colors.cardBg,
           margin: '1rem',
@@ -140,14 +184,14 @@ const Jobs = ({ isDarkMode }) => {
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
           <h3 style={{ margin: '0 0 1rem 0', color: colors.text, fontSize: '1.125rem' }}>
-            New Job
+            {editingJob ? 'Edit Job' : 'New Job'}
           </h3>
           
           <input
             type="text"
             placeholder="Job Title *"
-            value={newJob.title}
-            onChange={(e) => setNewJob({...newJob, title: e.target.value})}
+            value={formData.title}
+            onChange={(e) => setFormData(prev => ({...prev, title: e.target.value}))}
             style={{
               width: '100%',
               padding: '0.75rem',
@@ -164,8 +208,8 @@ const Jobs = ({ isDarkMode }) => {
           <input
             type="text"
             placeholder="Client Name *"
-            value={newJob.client}
-            onChange={(e) => setNewJob({...newJob, client: e.target.value})}
+            value={formData.client}
+            onChange={(e) => setFormData(prev => ({...prev, client: e.target.value}))}
             style={{
               width: '100%',
               padding: '0.75rem',
@@ -182,8 +226,8 @@ const Jobs = ({ isDarkMode }) => {
           <input
             type="text"
             placeholder="Location"
-            value={newJob.location}
-            onChange={(e) => setNewJob({...newJob, location: e.target.value})}
+            value={formData.location}
+            onChange={(e) => setFormData(prev => ({...prev, location: e.target.value}))}
             style={{
               width: '100%',
               padding: '0.75rem',
@@ -199,8 +243,8 @@ const Jobs = ({ isDarkMode }) => {
 
           <input
             type="date"
-            value={newJob.date}
-            onChange={(e) => setNewJob({...newJob, date: e.target.value})}
+            value={formData.date}
+            onChange={(e) => setFormData(prev => ({...prev, date: e.target.value}))}
             style={{
               width: '100%',
               padding: '0.75rem',
@@ -217,8 +261,8 @@ const Jobs = ({ isDarkMode }) => {
           <input
             type="number"
             placeholder="Estimated Cost ($)"
-            value={newJob.estimatedCost}
-            onChange={(e) => setNewJob({...newJob, estimatedCost: e.target.value})}
+            value={formData.estimatedCost}
+            onChange={(e) => setFormData(prev => ({...prev, estimatedCost: e.target.value}))}
             style={{
               width: '100%',
               padding: '0.75rem',
@@ -233,8 +277,8 @@ const Jobs = ({ isDarkMode }) => {
           />
 
           <select
-            value={newJob.status}
-            onChange={(e) => setNewJob({...newJob, status: e.target.value})}
+            value={formData.status}
+            onChange={(e) => setFormData(prev => ({...prev, status: e.target.value}))}
             style={{
               width: '100%',
               padding: '0.75rem',
@@ -254,8 +298,8 @@ const Jobs = ({ isDarkMode }) => {
 
           <textarea
             placeholder="Notes"
-            value={newJob.notes}
-            onChange={(e) => setNewJob({...newJob, notes: e.target.value})}
+            value={formData.notes}
+            onChange={(e) => setFormData(prev => ({...prev, notes: e.target.value}))}
             rows="3"
             style={{
               width: '100%',
@@ -273,7 +317,7 @@ const Jobs = ({ isDarkMode }) => {
 
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
-              onClick={handleAddJob}
+              onClick={editingJob ? handleEditJob : handleAddJob}
               style={{
                 flex: 1,
                 padding: '0.75rem',
@@ -286,10 +330,10 @@ const Jobs = ({ isDarkMode }) => {
                 cursor: 'pointer'
               }}
             >
-              Add Job
+              {editingJob ? 'Update Job' : 'Add Job'}
             </button>
             <button
-              onClick={() => setShowAddForm(false)}
+              onClick={resetForm}
               style={{
                 flex: 1,
                 padding: '0.75rem',
@@ -322,16 +366,19 @@ const Jobs = ({ isDarkMode }) => {
         ) : (
           jobs.map((job) => {
             const StatusIcon = statusConfig[job.status].icon;
+            const isEditing = editingJob && editingJob.id === job.id;
+            
             return (
               <div
                 key={job.id}
                 style={{
                   background: colors.cardBg,
-                  border: `1px solid ${colors.border}`,
+                  border: `1px solid ${isEditing ? '#3b82f6' : colors.border}`,
                   borderRadius: '0.75rem',
                   padding: '1rem',
                   marginBottom: '0.75rem',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                  boxShadow: isEditing ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : '0 1px 3px rgba(0,0,0,0.1)',
+                  transition: 'all 0.2s'
                 }}
               >
                 <div style={{
@@ -435,23 +482,25 @@ const Jobs = ({ isDarkMode }) => {
                   marginTop: '0.75rem'
                 }}>
                   <button
+                    onClick={() => startEdit(job)}
                     style={{
                       flex: 1,
                       padding: '0.5rem',
-                      background: 'transparent',
-                      border: `1px solid ${colors.border}`,
+                      background: isEditing ? '#3b82f6' : 'transparent',
+                      border: `1px solid ${isEditing ? '#3b82f6' : colors.border}`,
                       borderRadius: '0.5rem',
-                      color: colors.text,
+                      color: isEditing ? 'white' : colors.text,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '0.25rem',
-                      fontSize: '0.875rem'
+                      fontSize: '0.875rem',
+                      fontWeight: isEditing ? '600' : '400'
                     }}
                   >
                     <Edit size={16} />
-                    Edit
+                    {isEditing ? 'Editing...' : 'Edit'}
                   </button>
                   <button
                     onClick={() => handleDeleteJob(job.id)}
