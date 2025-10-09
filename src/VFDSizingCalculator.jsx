@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Settings, AlertCircle, CheckCircle } from 'lucide-react';
+import { exportToPDF } from './pdfExport';
 
-export default function VFDSizingCalculator({ isDarkMode, onBack }) {
+const VFDSizingCalculator = forwardRef(({ isDarkMode, onBack }, ref) => {
   const [motorHP, setMotorHP] = useState('');
   const [voltage, setVoltage] = useState('460');
   const [phases, setPhases] = useState('3');
@@ -10,7 +11,7 @@ export default function VFDSizingCalculator({ isDarkMode, onBack }) {
   const [ambientTemp, setAmbientTemp] = useState('40');
   const [loadType, setLoadType] = useState('variable');
 
-  // Dark mode colors - matching ConduitFillCalculator
+  // Dark mode colors
   const colors = {
     cardBg: isDarkMode ? '#374151' : '#ffffff',
     cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
@@ -29,12 +30,9 @@ export default function VFDSizingCalculator({ isDarkMode, onBack }) {
     const hpNum = parseFloat(hp);
     const voltNum = parseFloat(volts);
     
-    // Approximate FLA calculations
     if (ph === '3') {
-      // Three phase: HP * 746 / (V * 1.732 * 0.85 efficiency * 0.9 PF)
       return (hpNum * 746) / (voltNum * 1.732 * 0.85 * 0.9);
     } else {
-      // Single phase: HP * 746 / (V * 0.85 efficiency * 0.9 PF)
       return (hpNum * 746) / (voltNum * 0.85 * 0.9);
     }
   };
@@ -75,7 +73,7 @@ export default function VFDSizingCalculator({ isDarkMode, onBack }) {
   // Calculate required VFD current
   const requiredVFDCurrent = motorFLA * dutyCycleFactor / (altitudeFactor * tempFactor);
 
-  // Standard VFD sizes (amperage ratings)
+  // Standard VFD sizes
   const standardVFDSizes = [
     { amps: 2, hp460V: 1, hp230V: 0.5 },
     { amps: 3, hp460V: 1.5, hp230V: 1 },
@@ -98,10 +96,73 @@ export default function VFDSizingCalculator({ isDarkMode, onBack }) {
     { amps: 302, hp460V: 200, hp230V: 150 },
   ];
 
-  // Find recommended VFD size
   const recommendedVFD = standardVFDSizes.find(vfd => vfd.amps >= requiredVFDCurrent);
-
   const hasWarnings = altitudeFactor < 1.0 || tempFactor < 1.0 || dutyCycle === 'heavy';
+
+  // Expose exportPDF function to parent via ref
+  useImperativeHandle(ref, () => ({
+    exportPDF: () => {
+      if (!motorHP) {
+        alert('Please enter motor horsepower before exporting to PDF');
+        return;
+      }
+
+      const loadTypeText = loadType === 'variable' ? 'Variable Torque (Fans, Pumps)' :
+                          loadType === 'constant' ? 'Constant Torque (Conveyors)' :
+                          'High Starting Torque';
+
+      const dutyCycleText = dutyCycle === 'light' ? 'Light Duty (Intermittent)' :
+                           dutyCycle === 'normal' ? 'Normal Duty' :
+                           'Heavy Duty (Continuous)';
+
+      const pdfData = {
+        calculatorName: 'VFD Sizing Calculator',
+        inputs: {
+          'Motor Horsepower': `${motorHP} HP`,
+          'Voltage': `${voltage}V`,
+          'Phases': phases === '1' ? 'Single Phase' : 'Three Phase',
+          'Load Type': loadTypeText,
+          'Duty Cycle': dutyCycleText,
+          'Altitude': `${altitude} feet`,
+          'Ambient Temperature': `${ambientTemp}°C`
+        },
+        results: {
+          'Motor Full Load Amperes (FLA)': `${motorFLA.toFixed(1)} A`,
+          'Required VFD Current': `${requiredVFDCurrent.toFixed(1)} A`,
+          'Recommended VFD Rating': recommendedVFD ? `${recommendedVFD.amps} A` : 'N/A',
+          'VFD Motor HP (460V)': recommendedVFD ? `${recommendedVFD.hp460V} HP` : 'N/A',
+          'VFD Motor HP (230V)': recommendedVFD ? `${recommendedVFD.hp230V} HP` : 'N/A',
+          'Safety Margin': recommendedVFD ? `${((recommendedVFD.amps / requiredVFDCurrent - 1) * 100).toFixed(0)}%` : 'N/A'
+        },
+        additionalInfo: {
+          'Altitude Derating Factor': `${(altitudeFactor * 100).toFixed(0)}%`,
+          'Temperature Derating Factor': `${(tempFactor * 100).toFixed(0)}%`,
+          'Duty Cycle Factor': `${(dutyCycleFactor * 100).toFixed(0)}%`,
+          'Calculation Method': phases === '3' 
+            ? 'Three Phase: (HP × 746) ÷ (V × 1.732 × 0.85 × 0.9)'
+            : 'Single Phase: (HP × 746) ÷ (V × 0.85 × 0.9)',
+          'Required VFD Current Formula': 'Motor FLA × Duty Cycle Factor ÷ (Altitude Factor × Temperature Factor)'
+        },
+        necReferences: [
+          'NEC Article 430 - Motors, Motor Circuits, and Controllers',
+          'NEC 430.122 - Rating of Motor Control Circuit Overcurrent Protective Device',
+          'Always follow VFD manufacturer specifications',
+          'Use shielded cables for motor connections to reduce EMI',
+          'Install line and load reactors when recommended by manufacturer',
+          'Ensure proper grounding and bonding per NEC Article 250',
+          'Consider bypass contactor for critical applications',
+          'Verify VFD voltage matches motor nameplate voltage',
+          'Consider harmonic filtering for sensitive equipment',
+          'Ensure adequate cooling and ventilation for VFD enclosure',
+          altitudeFactor < 1.0 ? `WARNING: High altitude derating applied (${(altitudeFactor * 100).toFixed(0)}%)` : '',
+          tempFactor < 1.0 ? `WARNING: High temperature derating applied (${(tempFactor * 100).toFixed(0)}%)` : '',
+          dutyCycle === 'heavy' ? 'WARNING: Heavy duty cycle requires oversizing for continuous operation' : ''
+        ].filter(ref => ref !== '')
+      };
+
+      exportToPDF(pdfData);
+    }
+  }));
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -646,4 +707,6 @@ export default function VFDSizingCalculator({ isDarkMode, onBack }) {
       </div>
     </div>
   );
-}
+});
+
+export default VFDSizingCalculator;
