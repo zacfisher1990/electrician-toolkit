@@ -12,7 +12,8 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
         { id: 'ohms-law', name: "Ohm's Law", icon: Plug, keywords: 'ohms law voltage current resistance power series parallel circuit' },
         { id: 'reactance-impedance', name: 'Reactance', icon: Waves, keywords: 'reactance impedance xl xc capacitive inductive resonance frequency ac circuit' },
         { id: 'power-factor', name: 'Power Factor', icon: Activity, keywords: 'power factor correction pf capacitor kvar cos phi efficiency demand charge penalty savings' },
-        { id: 'power-triangle', name: 'Power Triangle', icon: Triangle, keywords: 'power triangle kva kw kvar apparent real reactive power factor angle phase' }
+        { id: 'power-triangle', name: 'Power Triangle', icon: Triangle, keywords: 'power triangle kva kw kvar apparent real reactive power factor angle phase' },
+        { id: 'three-phase-power', name: 'Three-Phase', icon: Zap, keywords: 'three phase power 3 phase current voltage kw kva motor industrial commercial wye delta line' }
       ]
     },
     {
