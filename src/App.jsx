@@ -17,6 +17,7 @@ import BottomNavigation from './BottomNavigation.jsx';
 import VFDSizingCalculator from './VFDSizingCalculator.jsx';
 import ReactanceImpedanceCalculator from './ReactanceImpedanceCalculator.jsx';
 import PowerFactorCorrection from './PowerFactorCorrection.jsx';
+import Profile from './Profile.jsx';
 import './App.css';
 
 function App() {
@@ -31,6 +32,8 @@ function App() {
   const handleNavigate = (view) => {
     if (view === 'home' || view === 'calculators') {
       setActiveCalculator(null);
+    } else if (view === 'profile') {
+      setActiveCalculator('profile');
     }
   };
 
@@ -93,6 +96,8 @@ function App() {
         return <ReactanceImpedanceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
       case 'power-factor':
         return <PowerFactorCorrection ref={calculatorRef} isDarkMode={isDarkMode} onBack={() => setActiveCalculator(null)} />;
+      case 'profile':
+        return <Profile isDarkMode={isDarkMode} />;
       default:
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -103,6 +108,7 @@ function App() {
 
   const getHeaderTitle = () => {
     if (!activeCalculator) return 'Calculator Menu';
+    if (activeCalculator === 'profile') return 'Profile';
     
     const titles = {
       'voltage-drop': 'Voltage Drop',
@@ -307,7 +313,13 @@ function App() {
       
       <BottomNavigation 
         onNavigate={handleNavigate}
-        currentView={activeCalculator ? 'calculators' : 'home'}
+        currentView={
+          activeCalculator === 'profile' 
+            ? 'profile' 
+            : activeCalculator 
+            ? 'calculators' 
+            : 'home'
+        }
         isDarkMode={isDarkMode}
       />
     </div>
