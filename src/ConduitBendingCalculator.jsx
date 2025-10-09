@@ -5,6 +5,27 @@ import { exportToPDF } from './pdfExport';
 const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [activeTab, setActiveTab] = useState('offset');
 
+  // Lifted state for all calculators
+  const [offsetData, setOffsetData] = useState({
+    obstacleHeight: '',
+    bendAngle: '30'
+  });
+
+  const [stubUpData, setStubUpData] = useState({
+    stubHeight: '',
+    conduitSize: '3/4'
+  });
+
+  const [saddleData, setSaddleData] = useState({
+    obstacleHeight: '',
+    obstacleWidth: ''
+  });
+
+  const [fourPointData, setFourPointData] = useState({
+    obstacleHeight: '',
+    obstacleWidth: ''
+  });
+
   // Dark mode colors
   const colors = {
     cardBg: isDarkMode ? '#374151' : '#ffffff',
@@ -19,9 +40,6 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
 
   // Offset Bend Calculator
   const OffsetBendCalculator = () => {
-    const [obstacleHeight, setObstacleHeight] = useState('');
-    const [bendAngle, setBendAngle] = useState('30');
-
     const multipliers = {
       '10': { distance: 6.0, shrink: 0.01 },
       '22.5': { distance: 2.6, shrink: 0.06 },
@@ -31,14 +49,14 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
     };
 
     const calculateOffset = () => {
-      if (!obstacleHeight) return null;
-      const height = parseFloat(obstacleHeight);
-      const mult = multipliers[bendAngle];
+      if (!offsetData.obstacleHeight) return null;
+      const height = parseFloat(offsetData.obstacleHeight);
+      const mult = multipliers[offsetData.bendAngle];
       
       return {
         distanceBetweenBends: (height * mult.distance).toFixed(2),
         shrinkage: (height * mult.shrink).toFixed(2),
-        angle: bendAngle
+        angle: offsetData.bendAngle
       };
     };
 
@@ -53,8 +71,8 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
             </label>
             <input
               type="number"
-              value={obstacleHeight}
-              onChange={(e) => setObstacleHeight(e.target.value)}
+              value={offsetData.obstacleHeight}
+              onChange={(e) => setOffsetData({...offsetData, obstacleHeight: e.target.value})}
               placeholder="Enter height"
               style={{
                 width: '100%',
@@ -75,8 +93,8 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
               Bend Angle
             </label>
             <select
-              value={bendAngle}
-              onChange={(e) => setBendAngle(e.target.value)}
+              value={offsetData.bendAngle}
+              onChange={(e) => setOffsetData({...offsetData, bendAngle: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -173,18 +191,15 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
 
   // Stub-Up (90°) Calculator
   const StubUpCalculator = () => {
-    const [stubHeight, setStubHeight] = useState('');
-    const [conduitSize, setConduitSize] = useState('3/4');
-
     const deductions = {
       '1/2': 5, '3/4': 6, '1': 8, '1-1/4': 11, '1-1/2': 14,
       '2': 16, '2-1/2': 21, '3': 26, '3-1/2': 30, '4': 34
     };
 
     const calculateStubUp = () => {
-      if (!stubHeight) return null;
-      const height = parseFloat(stubHeight);
-      const deduct = deductions[conduitSize];
+      if (!stubUpData.stubHeight) return null;
+      const height = parseFloat(stubUpData.stubHeight);
+      const deduct = deductions[stubUpData.conduitSize];
       
       return {
         markDistance: (height - deduct).toFixed(2),
@@ -204,8 +219,8 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
             </label>
             <input
               type="number"
-              value={stubHeight}
-              onChange={(e) => setStubHeight(e.target.value)}
+              value={stubUpData.stubHeight}
+              onChange={(e) => setStubUpData({...stubUpData, stubHeight: e.target.value})}
               placeholder="Enter stub height"
               style={{
                 width: '100%',
@@ -226,8 +241,8 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
               Conduit Size
             </label>
             <select
-              value={conduitSize}
-              onChange={(e) => setConduitSize(e.target.value)}
+              value={stubUpData.conduitSize}
+              onChange={(e) => setStubUpData({...stubUpData, conduitSize: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -287,7 +302,7 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
                   Conduit Size
                 </div>
                 <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                  {conduitSize}"
+                  {stubUpData.conduitSize}"
                 </div>
               </div>
             </div>
@@ -335,13 +350,10 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
 
   // 3-Point Saddle Calculator
   const SaddleBendCalculator = () => {
-    const [obstacleHeight, setObstacleHeight] = useState('');
-    const [obstacleWidth, setObstacleWidth] = useState('');
-
     const calculateSaddle = () => {
-      if (!obstacleHeight) return null;
-      const height = parseFloat(obstacleHeight);
-      const width = parseFloat(obstacleWidth) || (height * 4);
+      if (!saddleData.obstacleHeight) return null;
+      const height = parseFloat(saddleData.obstacleHeight);
+      const width = parseFloat(saddleData.obstacleWidth) || (height * 4);
       
       const shrinkage = height * 0.3;
       const distanceToOuterBends = width / 2;
@@ -366,8 +378,8 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
             </label>
             <input
               type="number"
-              value={obstacleHeight}
-              onChange={(e) => setObstacleHeight(e.target.value)}
+              value={saddleData.obstacleHeight}
+              onChange={(e) => setSaddleData({...saddleData, obstacleHeight: e.target.value})}
               placeholder="Enter height"
               style={{
                 width: '100%',
@@ -388,8 +400,8 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
             </label>
             <input
               type="number"
-              value={obstacleWidth}
-              onChange={(e) => setObstacleWidth(e.target.value)}
+              value={saddleData.obstacleWidth}
+              onChange={(e) => setSaddleData({...saddleData, obstacleWidth: e.target.value})}
               placeholder="Auto: 4x height"
               style={{
                 width: '100%',
@@ -499,14 +511,11 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
 
   // 4-Point Saddle Calculator
   const FourPointSaddleCalculator = () => {
-    const [obstacleHeight, setObstacleHeight] = useState('');
-    const [obstacleWidth, setObstacleWidth] = useState('');
-
     const calculateFourPointSaddle = () => {
-      if (!obstacleHeight || !obstacleWidth) return null;
+      if (!fourPointData.obstacleHeight || !fourPointData.obstacleWidth) return null;
       
-      const height = parseFloat(obstacleHeight);
-      const width = parseFloat(obstacleWidth);
+      const height = parseFloat(fourPointData.obstacleHeight);
+      const width = parseFloat(fourPointData.obstacleWidth);
       
       const distanceToOuter = width / 2;
       const innerSpacing = width / 4;
@@ -531,8 +540,8 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
             </label>
             <input
               type="number"
-              value={obstacleHeight}
-              onChange={(e) => setObstacleHeight(e.target.value)}
+              value={fourPointData.obstacleHeight}
+              onChange={(e) => setFourPointData({...fourPointData, obstacleHeight: e.target.value})}
               placeholder="Enter height"
               style={{
                 width: '100%',
@@ -553,8 +562,8 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
             </label>
             <input
               type="number"
-              value={obstacleWidth}
-              onChange={(e) => setObstacleWidth(e.target.value)}
+              value={fourPointData.obstacleWidth}
+              onChange={(e) => setFourPointData({...fourPointData, obstacleWidth: e.target.value})}
               placeholder="Enter width"
               style={{
                 width: '100%',
@@ -669,45 +678,152 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
 
       // Generate PDF based on active tab
       if (activeTab === 'offset') {
-        // Get current offset values - we need to access the state within the child component
-        // Since we can't directly access child state, we'll inform the user to enter values
-        alert('Please ensure you have entered values in the Offset Bends calculator');
-        // Note: In a production app, you'd lift state up or use a different pattern
-        return;
-      } else if (activeTab === 'stubup') {
-        alert('Please ensure you have entered values in the 90° Stub-Up calculator');
-        return;
-      } else if (activeTab === 'saddle') {
-        alert('Please ensure you have entered values in the 3-Point Saddle calculator');
-        return;
-      } else if (activeTab === 'fourpoint') {
-        alert('Please ensure you have entered values in the 4-Point Saddle calculator');
-        return;
-      }
+        if (!offsetData.obstacleHeight) {
+          alert('Please enter obstacle height for Offset Bends before exporting');
+          return;
+        }
 
-      // This is a simplified version - in production you'd want to lift state up
-      // For now, we'll create a generic export message
-      pdfData = {
-        calculatorName: 'Conduit Bending Calculator',
-        inputs: {
-          bendType: activeTab === 'offset' ? 'Offset Bends' : 
-                    activeTab === 'stubup' ? '90° Stub-Up' :
-                    activeTab === 'saddle' ? '3-Point Saddle' : '4-Point Saddle',
-          note: 'Please refer to your measurements and calculations'
-        },
-        results: {
-          note: 'Export function requires calculator state management update'
-        },
-        additionalInfo: {
-          recommendation: 'Consider lifting state to parent component for full PDF export functionality'
-        },
-        necReferences: [
-          'NEC Article 358 - Electrical Metallic Tubing (EMT)',
-          'NEC Article 344 - Rigid Metal Conduit (RMC)',
-          'Standard bending deductions vary by manufacturer',
-          'Always verify measurements before making bends'
-        ]
-      };
+        const multipliers = {
+          '10': { distance: 6.0, shrink: 0.01 },
+          '22.5': { distance: 2.6, shrink: 0.06 },
+          '30': { distance: 2.0, shrink: 0.25 },
+          '45': { distance: 1.4, shrink: 0.41 },
+          '60': { distance: 1.2, shrink: 0.58 }
+        };
+
+        const height = parseFloat(offsetData.obstacleHeight);
+        const mult = multipliers[offsetData.bendAngle];
+        const distanceBetweenBends = (height * mult.distance).toFixed(2);
+        const shrinkage = (height * mult.shrink).toFixed(2);
+
+        pdfData = {
+          calculatorName: 'Conduit Bending - Offset Bends',
+          inputs: {
+            obstacleHeight: `${offsetData.obstacleHeight} inches`,
+            bendAngle: `${offsetData.bendAngle}°`
+          },
+          results: {
+            distanceBetweenBends: `${distanceBetweenBends} inches`,
+            shrinkage: `${shrinkage} inches`
+          },
+          additionalInfo: {
+            instructions: `Mark first bend, measure ${distanceBetweenBends}" from center of first bend, then make second bend at ${offsetData.bendAngle}°`,
+            multiplierUsed: `Distance: ${mult.distance}, Shrink: ${mult.shrink}`
+          },
+          necReferences: [
+            'NEC Article 358 - Electrical Metallic Tubing (EMT)',
+            'NEC Article 344 - Rigid Metal Conduit (RMC)',
+            '30° bends are most common for typical offsets',
+            '45° bends create shorter, steeper offsets'
+          ]
+        };
+
+      } else if (activeTab === 'stubup') {
+        if (!stubUpData.stubHeight) {
+          alert('Please enter stub height for 90° Stub-Up before exporting');
+          return;
+        }
+
+        const deductions = {
+          '1/2': 5, '3/4': 6, '1': 8, '1-1/4': 11, '1-1/2': 14,
+          '2': 16, '2-1/2': 21, '3': 26, '3-1/2': 30, '4': 34
+        };
+
+        const height = parseFloat(stubUpData.stubHeight);
+        const deduct = deductions[stubUpData.conduitSize];
+        const markDistance = (height - deduct).toFixed(2);
+
+        pdfData = {
+          calculatorName: 'Conduit Bending - 90° Stub-Up',
+          inputs: {
+            desiredStubHeight: `${stubUpData.stubHeight} inches`,
+            conduitSize: `${stubUpData.conduitSize}"`
+          },
+          results: {
+            markAt: `${markDistance} inches`,
+            deduction: `${deduct} inches`
+          },
+          additionalInfo: {
+            instructions: `Measure from end of conduit, mark at ${markDistance}", line up mark with arrow on bender, make 90° bend`,
+            note: 'Deduction accounts for the radius of the bend - larger conduit requires larger deduction'
+          },
+          necReferences: [
+            'NEC Article 358 - Electrical Metallic Tubing (EMT)',
+            'NEC Article 344 - Rigid Metal Conduit (RMC)',
+            'Always check your bender - deductions vary by manufacturer'
+          ]
+        };
+
+      } else if (activeTab === 'saddle') {
+        if (!saddleData.obstacleHeight) {
+          alert('Please enter obstacle height for 3-Point Saddle before exporting');
+          return;
+        }
+
+        const height = parseFloat(saddleData.obstacleHeight);
+        const width = parseFloat(saddleData.obstacleWidth) || (height * 4);
+        const shrinkage = (height * 0.3).toFixed(2);
+        const distanceToOuter = (width / 2).toFixed(2);
+
+        pdfData = {
+          calculatorName: 'Conduit Bending - 3-Point Saddle',
+          inputs: {
+            obstacleHeight: `${saddleData.obstacleHeight} inches`,
+            obstacleWidth: saddleData.obstacleWidth ? `${saddleData.obstacleWidth} inches` : `${width} inches (Auto: 4x height)`
+          },
+          results: {
+            centerBend: '45°',
+            outerBends: '22.5°',
+            distanceToOuter: `${distanceToOuter} inches`,
+            shrinkage: `${shrinkage} inches`
+          },
+          additionalInfo: {
+            bendingSequence: `1) Mark center of obstacle on conduit 2) Make 45° center bend at mark 3) Measure ${distanceToOuter}" from center each direction 4) Make 22.5° bends on each side (opposite direction)`,
+            tip: 'Center bend goes up, outer bends go down'
+          },
+          necReferences: [
+            'NEC Article 358 - Electrical Metallic Tubing (EMT)',
+            'NEC Article 344 - Rigid Metal Conduit (RMC)',
+            'Most common for going over pipes or other conduits',
+            'Mark all three bend locations before starting'
+          ]
+        };
+
+      } else if (activeTab === 'fourpoint') {
+        if (!fourPointData.obstacleHeight || !fourPointData.obstacleWidth) {
+          alert('Please enter both obstacle height and width for 4-Point Saddle before exporting');
+          return;
+        }
+
+        const height = parseFloat(fourPointData.obstacleHeight);
+        const width = parseFloat(fourPointData.obstacleWidth);
+        const distanceToOuter = (width / 2).toFixed(2);
+        const innerSpacing = (width / 4).toFixed(2);
+        const shrinkage = (height * 0.15).toFixed(2);
+
+        pdfData = {
+          calculatorName: 'Conduit Bending - 4-Point Saddle',
+          inputs: {
+            obstacleHeight: `${fourPointData.obstacleHeight} inches`,
+            obstacleWidth: `${fourPointData.obstacleWidth} inches`
+          },
+          results: {
+            allBends: '22.5°',
+            outerDistance: `${distanceToOuter} inches`,
+            innerSpacing: `${innerSpacing} inches`,
+            shrinkage: `${shrinkage} inches`
+          },
+          additionalInfo: {
+            bendingSequence: `1) Mark center of obstacle on conduit 2) Measure ${distanceToOuter}" from center (outer bends) 3) Measure ${innerSpacing}" from center (inner bends) 4) Make all four 22.5° bends: outer up, inner down`,
+            tip: 'Used for larger obstacles where 3-point saddle will not work'
+          },
+          necReferences: [
+            'NEC Article 358 - Electrical Metallic Tubing (EMT)',
+            'NEC Article 344 - Rigid Metal Conduit (RMC)',
+            'Creates a flatter top for better clearance over wide obstacles'
+          ]
+        };
+      }
 
       exportToPDF(pdfData);
     }

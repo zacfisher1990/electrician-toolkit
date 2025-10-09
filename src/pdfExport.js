@@ -1,6 +1,3 @@
-// pdfExport.js
-// Save this file in your src folder
-
 import jsPDF from 'jspdf';
 
 /**
