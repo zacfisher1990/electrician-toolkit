@@ -23,6 +23,7 @@ function App() {
   const [activeCalculator, setActiveCalculator] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showExportToast, setShowExportToast] = useState(false);
   
   // Ref to access calculator's export function
   const calculatorRef = useRef(null);
@@ -36,8 +37,17 @@ function App() {
   // Handle PDF Export
   const handleExportPDF = () => {
     if (calculatorRef.current && calculatorRef.current.exportPDF) {
-      calculatorRef.current.exportPDF();
-      setShowMenu(false);
+      try {
+        calculatorRef.current.exportPDF();
+        setShowMenu(false);
+        
+        // Show success toast
+        setShowExportToast(true);
+        setTimeout(() => setShowExportToast(false), 3000);
+      } catch (error) {
+        console.error('PDF export failed:', error);
+        alert('Failed to export PDF. Please try again.');
+      }
     }
   };
 
@@ -142,22 +152,22 @@ function App() {
         {/* Menu Button */}
         <div style={{ position: 'relative' }}>
           <button 
-  onClick={() => setShowMenu(!showMenu)}
-  style={{ 
-    background: 'none', 
-    border: 'none', 
-    cursor: 'pointer',
-    padding: '0.5rem',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: '40px',
-    minHeight: '40px',
-    lineHeight: 1
-  }}
->
-  <Menu size={24} color="white" style={{ display: 'block', flexShrink: 0 }} />
-</button>
+            onClick={() => setShowMenu(!showMenu)}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer',
+              padding: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: '40px',
+              minHeight: '40px',
+              lineHeight: 1
+            }}
+          >
+            <Menu size={24} color="white" style={{ display: 'block', flexShrink: 0 }} />
+          </button>
 
           {/* Dropdown Menu */}
           {showMenu && (
@@ -267,6 +277,33 @@ function App() {
           </div>
         )}
       </div>
+
+      {/* Export Success Toast */}
+      {showExportToast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '6rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: '#10b981',
+          color: 'white',
+          padding: '0.75rem 1.5rem',
+          borderRadius: '0.5rem',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '0.875rem',
+          fontWeight: '500',
+          animation: 'slideUp 0.3s ease-out',
+          maxWidth: '90%',
+          textAlign: 'center'
+        }}>
+          <span style={{ fontSize: '1.25rem' }}>✓</span>
+          <span>PDF saved to Downloads</span>
+        </div>
+      )}
       
       <BottomNavigation 
         onNavigate={handleNavigate}
