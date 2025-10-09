@@ -1,10 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Settings, CheckCircle, AlertTriangle } from 'lucide-react';
+import { exportToPDF } from './pdfExport';
 
-function MotorCalculations({ isDarkMode = false }) {
+const MotorCalculations = forwardRef(({ isDarkMode = false }, ref) => {
   const [activeCalculator, setActiveCalculator] = useState('flc');
 
-  // Dark mode colors - matching ConduitFillCalculator
+  // Lifted state for all calculators
+  const [flcData, setFlcData] = useState({
+    horsepower: '',
+    voltage: '480',
+    phase: 'three',
+    efficiency: '0.85',
+    powerFactor: '0.8'
+  });
+
+  const [protectionData, setProtectionData] = useState({
+    flc: '',
+    protectionType: 'inverse-time-breaker'
+  });
+
+  const [wireSizeData, setWireSizeData] = useState({
+    flc: '',
+    tempRating: '75C'
+  });
+
+  // Dark mode colors
   const colors = {
     cardBg: isDarkMode ? '#374151' : '#ffffff',
     cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
@@ -18,12 +38,6 @@ function MotorCalculations({ isDarkMode = false }) {
   
   // Motor Full Load Current Calculator
   const MotorFLCCalculator = () => {
-    const [horsepower, setHorsepower] = useState('');
-    const [voltage, setVoltage] = useState('480');
-    const [phase, setPhase] = useState('three');
-    const [efficiency, setEfficiency] = useState('0.85');
-    const [powerFactor, setPowerFactor] = useState('0.8');
-
     const necFLCTable = {
       single: {
         115: { 0.25: 4.4, 0.33: 5.8, 0.5: 7.2, 0.75: 9.8, 1: 13.8, 1.5: 20, 2: 24, 3: 34, 5: 56 },
@@ -39,17 +53,17 @@ function MotorCalculations({ isDarkMode = false }) {
     };
 
     const calculateFLC = () => {
-      const hp = parseFloat(horsepower);
-      const volt = parseInt(voltage);
+      const hp = parseFloat(flcData.horsepower);
+      const volt = parseInt(flcData.voltage);
       
-      if (necFLCTable[phase] && necFLCTable[phase][volt] && necFLCTable[phase][volt][hp]) {
-        return necFLCTable[phase][volt][hp];
+      if (necFLCTable[flcData.phase] && necFLCTable[flcData.phase][volt] && necFLCTable[flcData.phase][volt][hp]) {
+        return necFLCTable[flcData.phase][volt][hp];
       }
       
-      const eff = parseFloat(efficiency);
-      const pf = parseFloat(powerFactor);
+      const eff = parseFloat(flcData.efficiency);
+      const pf = parseFloat(flcData.powerFactor);
       
-      if (phase === 'single') {
+      if (flcData.phase === 'single') {
         return (hp * 746) / (volt * eff * pf);
       } else {
         return (hp * 746) / (1.732 * volt * eff * pf);
@@ -57,7 +71,7 @@ function MotorCalculations({ isDarkMode = false }) {
     };
 
     const flc = calculateFLC();
-    const isNECValue = necFLCTable[phase]?.[parseInt(voltage)]?.[parseFloat(horsepower)];
+    const isNECValue = necFLCTable[flcData.phase]?.[parseInt(flcData.voltage)]?.[parseFloat(flcData.horsepower)];
 
     return (
       <div>
@@ -73,8 +87,8 @@ function MotorCalculations({ isDarkMode = false }) {
               Motor Horsepower
             </label>
             <select 
-              value={horsepower} 
-              onChange={(e) => setHorsepower(e.target.value)}
+              value={flcData.horsepower} 
+              onChange={(e) => setFlcData({...flcData, horsepower: e.target.value})}
               style={{ 
                 width: '100%', 
                 padding: '0.625rem', 
@@ -120,8 +134,8 @@ function MotorCalculations({ isDarkMode = false }) {
               Voltage
             </label>
             <select 
-              value={voltage} 
-              onChange={(e) => setVoltage(e.target.value)}
+              value={flcData.voltage} 
+              onChange={(e) => setFlcData({...flcData, voltage: e.target.value})}
               style={{ 
                 width: '100%', 
                 padding: '0.625rem', 
@@ -154,8 +168,8 @@ function MotorCalculations({ isDarkMode = false }) {
               Phase
             </label>
             <select 
-              value={phase} 
-              onChange={(e) => setPhase(e.target.value)}
+              value={flcData.phase} 
+              onChange={(e) => setFlcData({...flcData, phase: e.target.value})}
               style={{ 
                 width: '100%', 
                 padding: '0.625rem', 
@@ -173,7 +187,7 @@ function MotorCalculations({ isDarkMode = false }) {
           </div>
         </div>
 
-        {horsepower && !isNECValue && (
+        {flcData.horsepower && !isNECValue && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label style={{ 
@@ -186,8 +200,8 @@ function MotorCalculations({ isDarkMode = false }) {
                 Motor Efficiency
               </label>
               <select 
-                value={efficiency} 
-                onChange={(e) => setEfficiency(e.target.value)}
+                value={flcData.efficiency} 
+                onChange={(e) => setFlcData({...flcData, efficiency: e.target.value})}
                 style={{ 
                   width: '100%', 
                   padding: '0.625rem', 
@@ -217,8 +231,8 @@ function MotorCalculations({ isDarkMode = false }) {
                 Power Factor
               </label>
               <select 
-                value={powerFactor} 
-                onChange={(e) => setPowerFactor(e.target.value)}
+                value={flcData.powerFactor} 
+                onChange={(e) => setFlcData({...flcData, powerFactor: e.target.value})}
                 style={{ 
                   width: '100%', 
                   padding: '0.625rem', 
@@ -291,7 +305,7 @@ function MotorCalculations({ isDarkMode = false }) {
               </div>
             </div>
           </div>
-        ) : horsepower ? (
+        ) : flcData.horsepower ? (
           <div style={{
             background: '#fef3c7',
             border: '1px solid #fcd34d',
@@ -317,9 +331,6 @@ function MotorCalculations({ isDarkMode = false }) {
 
   // Motor Branch Circuit Protection Calculator
   const MotorProtectionCalculator = () => {
-    const [flc, setFlc] = useState('');
-    const [protectionType, setProtectionType] = useState('inverse-time-breaker');
-
     const protectionPercentages = {
       'inverse-time-breaker': 250,
       'instantaneous-trip-breaker': 800,
@@ -328,9 +339,9 @@ function MotorCalculations({ isDarkMode = false }) {
     };
 
     const calculateProtection = () => {
-      if (!flc) return { calculated: '0', standard: 0 };
-      const current = parseFloat(flc);
-      const percentage = protectionPercentages[protectionType];
+      if (!protectionData.flc) return { calculated: '0', standard: 0 };
+      const current = parseFloat(protectionData.flc);
+      const percentage = protectionPercentages[protectionData.protectionType];
       const maxRating = (current * percentage) / 100;
       
       const standardSizes = [15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 110, 125, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500, 600, 700, 800, 1000, 1200, 1600, 2000, 2500, 3000, 4000, 5000, 6000];
@@ -361,8 +372,8 @@ function MotorCalculations({ isDarkMode = false }) {
             </label>
             <input 
               type="number" 
-              value={flc} 
-              onChange={(e) => setFlc(e.target.value)}
+              value={protectionData.flc} 
+              onChange={(e) => setProtectionData({...protectionData, flc: e.target.value})}
               placeholder="Enter FLC in amps"
               style={{ 
                 width: '100%', 
@@ -388,8 +399,8 @@ function MotorCalculations({ isDarkMode = false }) {
               Protection Type
             </label>
             <select 
-              value={protectionType} 
-              onChange={(e) => setProtectionType(e.target.value)}
+              value={protectionData.protectionType} 
+              onChange={(e) => setProtectionData({...protectionData, protectionType: e.target.value})}
               style={{ 
                 width: '100%', 
                 padding: '0.625rem', 
@@ -450,7 +461,7 @@ function MotorCalculations({ isDarkMode = false }) {
           </div>
         </div>
 
-        {flc && (
+        {protectionData.flc && (
           <div style={{
             background: colors.sectionBg,
             padding: '1rem',
@@ -471,13 +482,10 @@ function MotorCalculations({ isDarkMode = false }) {
 
   // Motor Wire Sizing Calculator
   const MotorWireSizeCalculator = () => {
-    const [flc, setFlc] = useState('');
-    const [tempRating, setTempRating] = useState('75C');
-
     const calculateWireSize = () => {
-      if (!flc) return null;
+      if (!wireSizeData.flc) return null;
       
-      const requiredAmps = parseFloat(flc) * 1.25;
+      const requiredAmps = parseFloat(wireSizeData.flc) * 1.25;
       
       const ampacityTable = {
         '60C': {
@@ -510,7 +518,7 @@ function MotorCalculations({ isDarkMode = false }) {
                          '400', '500', '600', '700', '750'];
       
       const suitableWire = wireSizes.find(size => {
-        const hasEnoughAmpacity = ampacityTable[tempRating][size] >= requiredAmps;
+        const hasEnoughAmpacity = ampacityTable[wireSizeData.tempRating][size] >= requiredAmps;
         const meetsOCPDLimit = !ocpdLimits[size] || ocpdLimits[size] >= requiredAmps;
         return hasEnoughAmpacity && meetsOCPDLimit;
       });
@@ -518,7 +526,7 @@ function MotorCalculations({ isDarkMode = false }) {
       return {
         requiredAmps: requiredAmps.toFixed(1),
         wireSize: suitableWire || 'Larger than 750 kcmil required',
-        ampacity: suitableWire ? ampacityTable[tempRating][suitableWire] : 'N/A',
+        ampacity: suitableWire ? ampacityTable[wireSizeData.tempRating][suitableWire] : 'N/A',
         ocpdLimit: suitableWire && ocpdLimits[suitableWire] ? ocpdLimits[suitableWire] : null
       };
     };
@@ -540,8 +548,8 @@ function MotorCalculations({ isDarkMode = false }) {
             </label>
             <input 
               type="number" 
-              value={flc} 
-              onChange={(e) => setFlc(e.target.value)}
+              value={wireSizeData.flc} 
+              onChange={(e) => setWireSizeData({...wireSizeData, flc: e.target.value})}
               placeholder="Enter FLC in amps"
               style={{ 
                 width: '100%', 
@@ -567,8 +575,8 @@ function MotorCalculations({ isDarkMode = false }) {
               Temperature Rating
             </label>
             <select 
-              value={tempRating} 
-              onChange={(e) => setTempRating(e.target.value)}
+              value={wireSizeData.tempRating} 
+              onChange={(e) => setWireSizeData({...wireSizeData, tempRating: e.target.value})}
               style={{ 
                 width: '100%', 
                 padding: '0.625rem', 
@@ -673,6 +681,206 @@ function MotorCalculations({ isDarkMode = false }) {
       </div>
     );
   };
+
+  // Expose exportPDF function to parent via ref
+  useImperativeHandle(ref, () => ({
+    exportPDF: () => {
+      let pdfData;
+
+      if (activeCalculator === 'flc') {
+        if (!flcData.horsepower) {
+          alert('Please select motor horsepower before exporting');
+          return;
+        }
+
+        const necFLCTable = {
+          single: {
+            115: { 0.25: 4.4, 0.33: 5.8, 0.5: 7.2, 0.75: 9.8, 1: 13.8, 1.5: 20, 2: 24, 3: 34, 5: 56 },
+            230: { 0.25: 2.2, 0.33: 2.9, 0.5: 3.6, 0.75: 4.9, 1: 6.9, 1.5: 10, 2: 12, 3: 17, 5: 28 }
+          },
+          three: {
+            230: { 0.5: 2.0, 0.75: 2.8, 1: 3.6, 1.5: 5.2, 2: 6.8, 3: 9.6, 5: 15.2, 7.5: 22, 10: 28, 15: 42, 20: 54, 25: 68, 30: 80, 40: 104, 50: 130, 60: 154, 75: 192, 100: 248, 125: 312, 150: 360, 200: 480 },
+            460: { 0.5: 1.0, 0.75: 1.4, 1: 1.8, 1.5: 2.6, 2: 3.4, 3: 4.8, 5: 7.6, 7.5: 11, 10: 14, 15: 21, 20: 27, 25: 34, 30: 40, 40: 52, 50: 65, 60: 77, 75: 96, 100: 124, 125: 156, 150: 180, 200: 240 },
+            575: { 0.5: 0.8, 0.75: 1.1, 1: 1.4, 1.5: 2.1, 2: 2.7, 3: 3.9, 5: 6.1, 7.5: 9, 10: 11, 15: 17, 20: 22, 25: 27, 30: 32, 40: 41, 50: 52, 60: 62, 75: 77, 100: 99, 125: 125, 150: 144, 200: 192 },
+            2300: { 250: 65, 300: 77, 350: 90, 400: 103, 450: 116, 500: 129 },
+            4000: { 500: 74, 600: 88, 700: 103, 800: 118, 900: 132, 1000: 147 }
+          }
+        };
+
+        const hp = parseFloat(flcData.horsepower);
+        const volt = parseInt(flcData.voltage);
+        let flc;
+        let isNECValue = false;
+        
+        if (necFLCTable[flcData.phase]?.[volt]?.[hp]) {
+          flc = necFLCTable[flcData.phase][volt][hp];
+          isNECValue = true;
+        } else {
+          const eff = parseFloat(flcData.efficiency);
+          const pf = parseFloat(flcData.powerFactor);
+          
+          if (flcData.phase === 'single') {
+            flc = (hp * 746) / (volt * eff * pf);
+          } else {
+            flc = (hp * 746) / (1.732 * volt * eff * pf);
+          }
+        }
+
+        const inputs = {
+          motorHorsepower: `${hp} HP`,
+          voltage: `${flcData.voltage}V`,
+          phase: flcData.phase === 'single' ? 'Single Phase' : 'Three Phase'
+        };
+
+        if (!isNECValue) {
+          inputs.motorEfficiency = `${(parseFloat(flcData.efficiency) * 100).toFixed(0)}%`;
+          inputs.powerFactor = flcData.powerFactor;
+        }
+
+        pdfData = {
+          calculatorName: 'Motor Calculations - Full Load Current',
+          inputs,
+          results: {
+            fullLoadCurrent: `${flc.toFixed(1)} Amperes`,
+            source: isNECValue ? 'NEC Table 430.250' : 'Calculated'
+          },
+          additionalInfo: isNECValue ? {
+            note: 'Standard full load current from NEC tables'
+          } : {
+            calculation: flcData.phase === 'single' ? 
+              `FLC = (${hp} HP × 746) ÷ (${volt}V × ${flcData.efficiency} eff × ${flcData.powerFactor} pf) = ${flc.toFixed(1)}A` :
+              `FLC = (${hp} HP × 746) ÷ (1.732 × ${volt}V × ${flcData.efficiency} eff × ${flcData.powerFactor} pf) = ${flc.toFixed(1)}A`,
+            note: 'Calculated value - not in NEC tables'
+          },
+          necReferences: [
+            'NEC Table 430.250 - Full-Load Current, Three-Phase Alternating-Current Motors',
+            'NEC Table 430.248 - Full-Load Current, Single-Phase Alternating-Current Motors',
+            'NEC 430.6 - Ampacity and Motor Rating Determination'
+          ]
+        };
+
+      } else if (activeCalculator === 'protection') {
+        if (!protectionData.flc) {
+          alert('Please enter motor FLC before exporting');
+          return;
+        }
+
+        const protectionTypes = {
+          'inverse-time-breaker': 'Inverse Time Breaker',
+          'instantaneous-trip-breaker': 'Instantaneous Trip Breaker',
+          'inverse-time-fuse': 'Inverse Time Fuse',
+          'time-delay-fuse': 'Time Delay Fuse'
+        };
+
+        const protectionPercentages = {
+          'inverse-time-breaker': 250,
+          'instantaneous-trip-breaker': 800,
+          'inverse-time-fuse': 175,
+          'time-delay-fuse': 175
+        };
+
+        const current = parseFloat(protectionData.flc);
+        const percentage = protectionPercentages[protectionData.protectionType];
+        const maxRating = (current * percentage) / 100;
+        
+        const standardSizes = [15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 110, 125, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500, 600, 700, 800, 1000, 1200, 1600, 2000, 2500, 3000, 4000, 5000, 6000];
+        const nextSize = standardSizes.find(size => size >= maxRating) || maxRating;
+
+        pdfData = {
+          calculatorName: 'Motor Calculations - Branch Circuit Protection',
+          inputs: {
+            motorFullLoadCurrent: `${protectionData.flc} Amps`,
+            protectionType: protectionTypes[protectionData.protectionType]
+          },
+          results: {
+            calculatedMaximum: `${maxRating.toFixed(1)} Amperes`,
+            standardSize: `${nextSize} Amperes`
+          },
+          additionalInfo: {
+            calculation: `Maximum = ${current}A × ${percentage}% = ${maxRating.toFixed(1)}A`,
+            nextStandardSize: `Next standard OCPD size: ${nextSize}A`
+          },
+          necReferences: [
+            `NEC Table 430.52 - Maximum Rating or Setting of Motor Branch-Circuit Short-Circuit and Ground-Fault Protective Devices (${percentage}% of FLC)`,
+            'NEC 430.52(C) - Rating or Setting for Individual Motor Circuit',
+            'NEC 240.6 - Standard Ampere Ratings'
+          ]
+        };
+
+      } else if (activeCalculator === 'wiresize') {
+        if (!wireSizeData.flc) {
+          alert('Please enter motor FLC before exporting');
+          return;
+        }
+
+        const tempRatingNames = {
+          '60C': '60°C (140°F) - TW, UF',
+          '75C': '75°C (167°F) - THWN, XHHW',
+          '90C': '90°C (194°F) - THHN, XHHW-2'
+        };
+
+        const requiredAmps = (parseFloat(wireSizeData.flc) * 1.25).toFixed(1);
+        
+        const ampacityTable = {
+          '60C': {
+            '14': 15, '12': 20, '10': 30, '8': 40, '6': 55, '4': 70, '3': 85,
+            '2': 95, '1': 110, '1/0': 125, '2/0': 145, '3/0': 165, '4/0': 195,
+            '250': 215, '300': 240, '350': 260, '400': 280, '500': 320,
+            '600': 355, '700': 385, '750': 400
+          },
+          '75C': {
+            '14': 20, '12': 25, '10': 35, '8': 50, '6': 65, '4': 85, '3': 100, '2': 115,
+            '1': 130, '1/0': 150, '2/0': 175, '3/0': 200, '4/0': 230, '250': 255,
+            '300': 285, '350': 310, '400': 335, '500': 380, '600': 420, '750': 475
+          },
+          '90C': {
+            '14': 25, '12': 30, '10': 40, '8': 55, '6': 75, '4': 95, '3': 115,
+            '2': 130, '1': 150, '1/0': 170, '2/0': 195, '3/0': 225, '4/0': 260,
+            '250': 290, '300': 320, '350': 350, '400': 380, '500': 430,
+            '600': 475, '700': 520, '750': 535
+          }
+        };
+
+        const ocpdLimits = { '14': 15, '12': 20, '10': 30 };
+        const wireSizes = ['14', '12', '10', '8', '6', '4', '3', '2', '1', '1/0', '2/0', '3/0', '4/0', '250', '300', '350', '400', '500', '600', '700', '750'];
+        
+        const suitableWire = wireSizes.find(size => {
+          const hasEnoughAmpacity = ampacityTable[wireSizeData.tempRating][size] >= parseFloat(requiredAmps);
+          const meetsOCPDLimit = !ocpdLimits[size] || ocpdLimits[size] >= parseFloat(requiredAmps);
+          return hasEnoughAmpacity && meetsOCPDLimit;
+        });
+
+        const wireSize = suitableWire || 'Larger than 750 kcmil required';
+        const ampacity = suitableWire ? ampacityTable[wireSizeData.tempRating][suitableWire] : 'N/A';
+
+        pdfData = {
+          calculatorName: 'Motor Calculations - Wire Sizing',
+          inputs: {
+            motorFullLoadCurrent: `${wireSizeData.flc} Amps`,
+            temperatureRating: tempRatingNames[wireSizeData.tempRating]
+          },
+          results: {
+            requiredCapacity: `${requiredAmps} Amps (125% of FLC)`,
+            minimumWireSize: wireSize,
+            wireAmpacity: ampacity !== 'N/A' ? `${ampacity} Amps` : 'N/A'
+          },
+          additionalInfo: {
+            calculation: `Required capacity = ${wireSizeData.flc}A × 125% = ${requiredAmps}A`,
+            ...(suitableWire && ocpdLimits[suitableWire] && {
+              ocpdLimitation: `NEC 240.4(D): ${ocpdLimits[suitableWire]}A maximum OCPD for ${wireSize} wire`
+            })
+          },
+          necReferences: [
+            'NEC 430.22 - Single Motor - Conductors supplying a single motor shall have an ampacity not less than 125% of FLC',
+            'NEC Table 310.16 - Allowable Ampacities of Insulated Conductors',
+            'NEC 240.4(D) - Small Conductors - Unless specifically permitted, overcurrent protection shall not exceed limits'
+          ]
+        };
+      }
+
+      exportToPDF(pdfData);
+    }
+  }));
 
   const calculatorComponents = {
     flc: <MotorFLCCalculator />,
@@ -810,6 +1018,6 @@ function MotorCalculations({ isDarkMode = false }) {
       </div>
     </div>
   );
-}
+});
 
 export default MotorCalculations;
