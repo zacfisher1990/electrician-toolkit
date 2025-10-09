@@ -142,18 +142,22 @@ function App() {
         {/* Menu Button */}
         <div style={{ position: 'relative' }}>
           <button 
-            onClick={() => setShowMenu(!showMenu)}
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              cursor: 'pointer',
-              padding: '0.25rem',
-              display: 'flex',
-              alignItems: 'center'
-            }}
-          >
-            <Menu size={24} color="white" />
-          </button>
+  onClick={() => setShowMenu(!showMenu)}
+  style={{ 
+    background: 'none', 
+    border: 'none', 
+    cursor: 'pointer',
+    padding: '0.5rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '40px',
+    minHeight: '40px',
+    lineHeight: 1
+  }}
+>
+  <Menu size={24} color="white" style={{ display: 'block', flexShrink: 0 }} />
+</button>
 
           {/* Dropdown Menu */}
           {showMenu && (
