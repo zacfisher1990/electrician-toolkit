@@ -1,8 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Lightbulb, CheckCircle, Info } from 'lucide-react';
+import { exportToPDF } from './pdfExport';
 
-function LightingCalculator({ isDarkMode = false, onBack }) {
+const LightingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [activeTab, setActiveTab] = useState('lumens');
+
+  // Lifted state for all calculators
+  const [lumensData, setLumensData] = useState({
+    roomLength: '',
+    roomWidth: '',
+    roomType: 'living',
+    lumensPerFixture: ''
+  });
+
+  const [spacingData, setSpacingData] = useState({
+    roomLength: '',
+    roomWidth: '',
+    ceilingHeight: '8',
+    fixtureType: 'recessed'
+  });
+
+  const [wattsData, setWattsData] = useState({
+    area: '',
+    buildingType: 'office'
+  });
 
   // Dark mode colors
   const colors = {
@@ -18,11 +39,6 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
 
   // Lumens Calculator
   const LumensCalculator = () => {
-    const [roomLength, setRoomLength] = useState('');
-    const [roomWidth, setRoomWidth] = useState('');
-    const [roomType, setRoomType] = useState('living');
-    const [lumensPerFixture, setLumensPerFixture] = useState('');
-
     const footCandlesByRoom = {
       'living': 10, 'kitchen': 50, 'bathroom': 70, 'bedroom': 10,
       'office': 50, 'workshop': 75, 'garage': 50, 'hallway': 5,
@@ -38,17 +54,17 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
     };
 
     const calculateLumens = () => {
-      if (!roomLength || !roomWidth) return null;
+      if (!lumensData.roomLength || !lumensData.roomWidth) return null;
       
-      const length = parseFloat(roomLength);
-      const width = parseFloat(roomWidth);
+      const length = parseFloat(lumensData.roomLength);
+      const width = parseFloat(lumensData.roomWidth);
       const area = length * width;
-      const footCandles = footCandlesByRoom[roomType];
+      const footCandles = footCandlesByRoom[lumensData.roomType];
       const totalLumens = footCandles * area;
       
       let fixturesNeeded = null;
-      if (lumensPerFixture) {
-        const lpf = parseFloat(lumensPerFixture);
+      if (lumensData.lumensPerFixture) {
+        const lpf = parseFloat(lumensData.lumensPerFixture);
         fixturesNeeded = Math.ceil(totalLumens / lpf);
       }
 
@@ -71,8 +87,8 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
             </label>
             <input
               type="number"
-              value={roomLength}
-              onChange={(e) => setRoomLength(e.target.value)}
+              value={lumensData.roomLength}
+              onChange={(e) => setLumensData({...lumensData, roomLength: e.target.value})}
               placeholder="Enter length"
               style={{
                 width: '100%',
@@ -93,8 +109,8 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
             </label>
             <input
               type="number"
-              value={roomWidth}
-              onChange={(e) => setRoomWidth(e.target.value)}
+              value={lumensData.roomWidth}
+              onChange={(e) => setLumensData({...lumensData, roomWidth: e.target.value})}
               placeholder="Enter width"
               style={{
                 width: '100%',
@@ -114,8 +130,8 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
               Room Type
             </label>
             <select
-              value={roomType}
-              onChange={(e) => setRoomType(e.target.value)}
+              value={lumensData.roomType}
+              onChange={(e) => setLumensData({...lumensData, roomType: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -140,8 +156,8 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
             </label>
             <input
               type="number"
-              value={lumensPerFixture}
-              onChange={(e) => setLumensPerFixture(e.target.value)}
+              value={lumensData.lumensPerFixture}
+              onChange={(e) => setLumensData({...lumensData, lumensPerFixture: e.target.value})}
               placeholder="e.g., 800"
               style={{
                 width: '100%',
@@ -230,7 +246,7 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
                   </div>
                   <div>Recommended level: {results.footCandles} foot-candles</div>
                   {results.fixturesNeeded && (
-                    <div>Using {lumensPerFixture} lumens per fixture</div>
+                    <div>Using {lumensData.lumensPerFixture} lumens per fixture</div>
                   )}
                 </div>
               </div>
@@ -261,11 +277,6 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
 
   // Fixture Spacing Calculator
   const FixtureSpacingCalculator = () => {
-    const [roomLength, setRoomLength] = useState('');
-    const [roomWidth, setRoomWidth] = useState('');
-    const [ceilingHeight, setCeilingHeight] = useState('8');
-    const [fixtureType, setFixtureType] = useState('recessed');
-
     const spacingRatios = {
       'recessed': 1.5,
       'pendant': 1.0,
@@ -274,32 +285,24 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
     };
 
     const calculateSpacing = () => {
-      if (!roomLength || !roomWidth) return null;
+      if (!spacingData.roomLength || !spacingData.roomWidth) return null;
       
-      const length = parseFloat(roomLength);
-      const width = parseFloat(roomWidth);
-      const height = parseFloat(ceilingHeight);
-      const ratio = spacingRatios[fixtureType];
+      const length = parseFloat(spacingData.roomLength);
+      const width = parseFloat(spacingData.roomWidth);
+      const height = parseFloat(spacingData.ceilingHeight);
+      const ratio = spacingRatios[spacingData.fixtureType];
       
-      // Calculate maximum spacing based on ceiling height and fixture type
       const maxSpacing = height * ratio;
+      const targetSpacing = spacingData.fixtureType === 'recessed' ? 6 : maxSpacing * 0.8;
       
-      // Industry standard for recessed cans: 4-6 feet spacing
-      // Most common practice is 5-6 feet for residential, balanced coverage
-      const targetSpacing = fixtureType === 'recessed' ? 6 : maxSpacing * 0.8;
-      
-      // Calculate number of fixtures needed
-      // Round to nearest integer for most balanced layout
       const fixturesLength = Math.max(2, Math.round(length / targetSpacing));
       const fixturesWidth = Math.max(2, Math.round(width / targetSpacing));
       
       const totalFixtures = fixturesLength * fixturesWidth;
       
-      // Calculate actual spacing between fixtures
       const actualSpacingLength = length / fixturesLength;
       const actualSpacingWidth = width / fixturesWidth;
       
-      // Wall offset is half the actual spacing for centered layout
       const wallOffsetLength = actualSpacingLength / 2;
       const wallOffsetWidth = actualSpacingWidth / 2;
 
@@ -326,8 +329,8 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
             </label>
             <input
               type="number"
-              value={roomLength}
-              onChange={(e) => setRoomLength(e.target.value)}
+              value={spacingData.roomLength}
+              onChange={(e) => setSpacingData({...spacingData, roomLength: e.target.value})}
               placeholder="Enter length"
               style={{
                 width: '100%',
@@ -348,8 +351,8 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
             </label>
             <input
               type="number"
-              value={roomWidth}
-              onChange={(e) => setRoomWidth(e.target.value)}
+              value={spacingData.roomWidth}
+              onChange={(e) => setSpacingData({...spacingData, roomWidth: e.target.value})}
               placeholder="Enter width"
               style={{
                 width: '100%',
@@ -370,8 +373,8 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
             </label>
             <input
               type="number"
-              value={ceilingHeight}
-              onChange={(e) => setCeilingHeight(e.target.value)}
+              value={spacingData.ceilingHeight}
+              onChange={(e) => setSpacingData({...spacingData, ceilingHeight: e.target.value})}
               placeholder="8"
               style={{
                 width: '100%',
@@ -391,8 +394,8 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
               Fixture Type
             </label>
             <select
-              value={fixtureType}
-              onChange={(e) => setFixtureType(e.target.value)}
+              value={spacingData.fixtureType}
+              onChange={(e) => setSpacingData({...spacingData, fixtureType: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -514,9 +517,6 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
 
   // Watts per Square Foot Calculator
   const WattsPerSqFtCalculator = () => {
-    const [area, setArea] = useState('');
-    const [buildingType, setBuildingType] = useState('office');
-
     const wattsPerSqFt = {
       'office': 1.0, 'retail': 1.5, 'warehouse': 0.5, 'school': 1.2,
       'hospital': 1.0, 'hotel': 1.0, 'restaurant': 1.3, 'residential': 1.0
@@ -534,10 +534,10 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
     };
 
     const calculateWattage = () => {
-      if (!area) return null;
+      if (!wattsData.area) return null;
       
-      const sqft = parseFloat(area);
-      const watts = wattsPerSqFt[buildingType];
+      const sqft = parseFloat(wattsData.area);
+      const watts = wattsPerSqFt[wattsData.buildingType];
       const totalWatts = sqft * watts;
       const totalVA = totalWatts;
       const amperage120V = totalVA / 120;
@@ -563,8 +563,8 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
             </label>
             <input
               type="number"
-              value={area}
-              onChange={(e) => setArea(e.target.value)}
+              value={wattsData.area}
+              onChange={(e) => setWattsData({...wattsData, area: e.target.value})}
               placeholder="Enter area"
               style={{
                 width: '100%',
@@ -584,8 +584,8 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
               Building Type
             </label>
             <select
-              value={buildingType}
-              onChange={(e) => setBuildingType(e.target.value)}
+              value={wattsData.buildingType}
+              onChange={(e) => setWattsData({...wattsData, buildingType: e.target.value})}
               style={{
                 width: '100%',
                 padding: '0.625rem',
@@ -702,6 +702,195 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
     );
   };
 
+  // Expose exportPDF function to parent via ref
+  useImperativeHandle(ref, () => ({
+    exportPDF: () => {
+      let pdfData;
+
+      if (activeTab === 'lumens') {
+        if (!lumensData.roomLength || !lumensData.roomWidth) {
+          alert('Please enter room dimensions before exporting');
+          return;
+        }
+
+        const roomTypeNames = {
+          'living': 'Living Room', 'kitchen': 'Kitchen',
+          'bathroom': 'Bathroom', 'bedroom': 'Bedroom',
+          'office': 'Office/Study', 'workshop': 'Workshop',
+          'garage': 'Garage', 'hallway': 'Hallway',
+          'dining': 'Dining Room', 'laundry': 'Laundry Room'
+        };
+
+        const footCandlesByRoom = {
+          'living': 10, 'kitchen': 50, 'bathroom': 70, 'bedroom': 10,
+          'office': 50, 'workshop': 75, 'garage': 50, 'hallway': 5,
+          'dining': 30, 'laundry': 50
+        };
+
+        const length = parseFloat(lumensData.roomLength);
+        const width = parseFloat(lumensData.roomWidth);
+        const area = (length * width).toFixed(1);
+        const footCandles = footCandlesByRoom[lumensData.roomType];
+        const totalLumens = (footCandles * area).toFixed(0);
+        
+        const inputs = {
+          roomLength: `${lumensData.roomLength} feet`,
+          roomWidth: `${lumensData.roomWidth} feet`,
+          roomType: `${roomTypeNames[lumensData.roomType]} (${footCandles} fc)`
+        };
+
+        const results = {
+          roomArea: `${area} sq ft`,
+          totalLumensNeeded: `${totalLumens} lumens`
+        };
+
+        if (lumensData.lumensPerFixture) {
+          const lpf = parseFloat(lumensData.lumensPerFixture);
+          const fixturesNeeded = Math.ceil(parseFloat(totalLumens) / lpf);
+          inputs.lumensPerFixture = `${lumensData.lumensPerFixture} lumens`;
+          results.fixturesNeeded = `${fixturesNeeded} fixtures`;
+        }
+
+        pdfData = {
+          calculatorName: 'Lighting Calculations - Room Lumens',
+          inputs,
+          results,
+          additionalInfo: {
+            calculation: `Area (${area} sq ft) × Recommended Level (${footCandles} foot-candles) = ${totalLumens} lumens`,
+            tip1: 'LED bulbs typically produce 60-100 lumens per watt',
+            tip2: 'Layer lighting: combine ambient, task, and accent lighting',
+            tip3: 'Dark wall colors absorb light; increase lumens by 10-20%'
+          },
+          necReferences: [
+            'IES (Illuminating Engineering Society) recommended light levels',
+            'Foot-candles measure illuminance on a surface',
+            '1 foot-candle = 1 lumen per square foot'
+          ]
+        };
+
+      } else if (activeTab === 'spacing') {
+        if (!spacingData.roomLength || !spacingData.roomWidth) {
+          alert('Please enter room dimensions before exporting');
+          return;
+        }
+
+        const fixtureTypeNames = {
+          'recessed': 'Recessed Can (1.5:1 ratio)',
+          'pendant': 'Pendant (1:1 ratio)',
+          'track': 'Track Light (2:1 ratio)',
+          'surface': 'Surface Mount (1.5:1 ratio)'
+        };
+
+        const spacingRatios = {
+          'recessed': 1.5, 'pendant': 1.0, 'track': 2.0, 'surface': 1.5
+        };
+
+        const length = parseFloat(spacingData.roomLength);
+        const width = parseFloat(spacingData.roomWidth);
+        const height = parseFloat(spacingData.ceilingHeight);
+        const ratio = spacingRatios[spacingData.fixtureType];
+        
+        const maxSpacing = (height * ratio).toFixed(1);
+        const targetSpacing = spacingData.fixtureType === 'recessed' ? 6 : parseFloat(maxSpacing) * 0.8;
+        
+        const fixturesLength = Math.max(2, Math.round(length / targetSpacing));
+        const fixturesWidth = Math.max(2, Math.round(width / targetSpacing));
+        const totalFixtures = fixturesLength * fixturesWidth;
+        
+        const actualSpacingLength = (length / fixturesLength).toFixed(1);
+        const actualSpacingWidth = (width / fixturesWidth).toFixed(1);
+        const wallOffsetLength = (parseFloat(actualSpacingLength) / 2).toFixed(1);
+        const wallOffsetWidth = (parseFloat(actualSpacingWidth) / 2).toFixed(1);
+
+        pdfData = {
+          calculatorName: 'Lighting Calculations - Fixture Spacing',
+          inputs: {
+            roomLength: `${spacingData.roomLength} feet`,
+            roomWidth: `${spacingData.roomWidth} feet`,
+            ceilingHeight: `${spacingData.ceilingHeight} feet`,
+            fixtureType: fixtureTypeNames[spacingData.fixtureType]
+          },
+          results: {
+            maximumSpacing: `${maxSpacing} feet`,
+            totalFixtures: `${totalFixtures} fixtures`,
+            layoutGrid: `${fixturesLength} × ${fixturesWidth}`,
+            lengthSpacing: `${actualSpacingLength} feet`,
+            widthSpacing: `${actualSpacingWidth} feet`
+          },
+          additionalInfo: {
+            wallOffsets: `Start ${wallOffsetLength} ft from walls (length) and ${wallOffsetWidth} ft from walls (width)`,
+            spacingFormula: `Maximum spacing = Ceiling height (${height} ft) × Spacing ratio (${ratio}) = ${maxSpacing} ft`,
+            tip1: 'Industry standard: 4-6 feet spacing for recessed cans',
+            tip2: 'Space fixtures evenly with proper wall offsets for uniform coverage'
+          },
+          necReferences: [
+            'Spacing ratio guidelines from IES Lighting Handbook',
+            'Recessed fixtures: 1.5:1 ratio (spacing to mounting height)',
+            'Pendant fixtures: 1:1 ratio for focused task lighting',
+            'Track lights: 2:1 ratio for accent lighting'
+          ]
+        };
+
+      } else if (activeTab === 'watts') {
+        if (!wattsData.area) {
+          alert('Please enter area before exporting');
+          return;
+        }
+
+        const buildingTypeNames = {
+          'office': 'Office Building',
+          'retail': 'Retail Store',
+          'warehouse': 'Warehouse',
+          'school': 'School',
+          'hospital': 'Hospital',
+          'hotel': 'Hotel',
+          'restaurant': 'Restaurant',
+          'residential': 'Residential'
+        };
+
+        const wattsPerSqFt = {
+          'office': 1.0, 'retail': 1.5, 'warehouse': 0.5, 'school': 1.2,
+          'hospital': 1.0, 'hotel': 1.0, 'restaurant': 1.3, 'residential': 1.0
+        };
+
+        const sqft = parseFloat(wattsData.area);
+        const watts = wattsPerSqFt[wattsData.buildingType];
+        const totalWatts = (sqft * watts).toFixed(0);
+        const totalVA = totalWatts;
+        const amperage = (parseFloat(totalVA) / 120).toFixed(1);
+        const circuits = Math.ceil(parseFloat(amperage) / 16);
+
+        pdfData = {
+          calculatorName: 'Lighting Calculations - Watts per Square Foot',
+          inputs: {
+            area: `${wattsData.area} square feet`,
+            buildingType: `${buildingTypeNames[wattsData.buildingType]} (${watts} W/sq ft)`
+          },
+          results: {
+            unitLoad: `${watts} W/sq ft`,
+            totalLoad: `${totalWatts} watts`,
+            totalVA: `${totalVA} VA`,
+            currentAt120V: `${amperage} Amps`,
+            requiredCircuits: `${circuits} × 20A circuits`
+          },
+          additionalInfo: {
+            calculation: `Area (${sqft} sq ft) × Unit Load (${watts} W/sq ft) = ${totalWatts} watts`,
+            circuitCalculation: `Total current (${amperage} A) ÷ 16A (80% of 20A) = ${circuits} circuits needed`,
+            note: 'Continuous loads require 125% conductor/OCPD sizing'
+          },
+          necReferences: [
+            'NEC Table 220.12 - General Lighting Loads by Occupancy',
+            'NEC 210.19(A)(1) - Branch Circuit Ampacity',
+            'NEC 210.20(A) - Continuous and Noncontinuous Loads',
+            'Calculate using building area, not just lit area'
+          ]
+        };
+      }
+
+      exportToPDF(pdfData);
+    }
+  }));
+
   const tabComponents = {
     lumens: <LumensCalculator />,
     spacing: <FixtureSpacingCalculator />,
@@ -791,6 +980,6 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
       </div>
     </div>
   );
-}
+});
 
 export default LightingCalculator;
