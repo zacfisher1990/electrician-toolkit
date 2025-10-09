@@ -281,12 +281,27 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
       const height = parseFloat(ceilingHeight);
       const ratio = spacingRatios[fixtureType];
       
+      // Calculate maximum spacing based on ceiling height and fixture type
       const maxSpacing = height * ratio;
-      const fixturesLength = Math.ceil(length / maxSpacing);
-      const fixturesWidth = Math.ceil(width / maxSpacing);
+      
+      // Industry standard for recessed cans: 4-6 feet spacing
+      // Most common practice is 5-6 feet for residential, balanced coverage
+      const targetSpacing = fixtureType === 'recessed' ? 6 : maxSpacing * 0.8;
+      
+      // Calculate number of fixtures needed
+      // Round to nearest integer for most balanced layout
+      const fixturesLength = Math.max(2, Math.round(length / targetSpacing));
+      const fixturesWidth = Math.max(2, Math.round(width / targetSpacing));
+      
       const totalFixtures = fixturesLength * fixturesWidth;
+      
+      // Calculate actual spacing between fixtures
       const actualSpacingLength = length / fixturesLength;
       const actualSpacingWidth = width / fixturesWidth;
+      
+      // Wall offset is half the actual spacing for centered layout
+      const wallOffsetLength = actualSpacingLength / 2;
+      const wallOffsetWidth = actualSpacingWidth / 2;
 
       return {
         maxSpacing: maxSpacing.toFixed(1),
@@ -294,7 +309,9 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
         fixturesWidth,
         totalFixtures,
         actualSpacingLength: actualSpacingLength.toFixed(1),
-        actualSpacingWidth: actualSpacingWidth.toFixed(1)
+        actualSpacingWidth: actualSpacingWidth.toFixed(1),
+        wallOffsetLength: wallOffsetLength.toFixed(1),
+        wallOffsetWidth: wallOffsetWidth.toFixed(1)
       };
     };
 
@@ -466,7 +483,7 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
                   <div>Length spacing: {results.actualSpacingLength} ft</div>
                   <div>Width spacing: {results.actualSpacingWidth} ft</div>
                   <div style={{ marginTop: '0.5rem', fontSize: '0.8125rem' }}>
-                    Start {(parseFloat(results.actualSpacingLength) / 2).toFixed(1)} ft from walls (length) and {(parseFloat(results.actualSpacingWidth) / 2).toFixed(1)} ft from walls (width)
+                    Start {results.wallOffsetLength} ft from walls (length) and {results.wallOffsetWidth} ft from walls (width)
                   </div>
                 </div>
               </div>
@@ -484,9 +501,9 @@ function LightingCalculator({ isDarkMode = false, onBack }) {
                 Spacing Guidelines:
               </div>
               <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                <li>Industry standard: 4-6 feet spacing for recessed cans</li>
                 <li>Spacing ratio = max distance between fixtures ÷ ceiling height</li>
-                <li>Recessed cans: 1.5:1 ratio is standard</li>
-                <li>Space fixtures evenly; avoid placing directly against walls</li>
+                <li>Space fixtures evenly with proper wall offsets for uniform coverage</li>
               </ul>
             </div>
           </>
