@@ -2,15 +2,16 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
-// Your web app's Firebase configuration
+console.log('API Key:', import.meta.env.VITE_FIREBASE_API_KEY);
+// Your web app's Firebase configuration - using environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyAvIm1f_4pRj3SRCmEbpVvxCdIarOo5cTI",
-  authDomain: "electrician-toolkit.firebaseapp.com",
-  projectId: "electrician-toolkit",
-  storageBucket: "electrician-toolkit.firebasestorage.app",
-  messagingSenderId: "699587080269",
-  appId: "1:699587080269:web:94181d9250b943e6152c04",
-  measurementId: "G-ZVDDQ6J26T"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
