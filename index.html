@@ -20,26 +20,27 @@
 <body>
   <div id="root"></div>
   
+  <!-- Add this line: -->
+  <script type="module" src="/src/index.jsx"></script>
   
   <!-- Service Worker Registration -->
-<script type="module">
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      
-      if (window.location.hostname === 'localhost') {
-        console.log('Skipping service worker on localhost');
-        return;
-      }
-      
-      navigator.serviceWorker.register('/electrician-toolkit/service-worker.js')
-        .then((registration) => {
-          console.log('ServiceWorker registration successful:', registration.scope);
-        })
-        .catch((error) => {
-          console.log('ServiceWorker registration failed:', error);
-        });
-    });
-  }
-</script>
+  <script type="module">
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        if (window.location.hostname === 'localhost') {
+          console.log('Skipping service worker on localhost');
+          return;
+        }
+        
+        navigator.serviceWorker.register('/electrician-toolkit/service-worker.js')
+          .then((registration) => {
+            console.log('ServiceWorker registration successful:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('ServiceWorker registration failed:', error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
