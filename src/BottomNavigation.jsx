@@ -49,9 +49,11 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       display: 'flex',
       justifyContent: 'space-around',
       padding: 0,
-      zIndex: 1000,
+      zIndex: 10000,
       boxShadow: isDarkMode ? '0 -1px 3px rgba(0, 0, 0, 0.3)' : '0 -1px 3px rgba(0, 0, 0, 0.1)',
-      height: '52px' // Fixed height for the entire nav bar
+      height: '52px',
+      minHeight: '52px',
+      maxHeight: '52px'
     }}>
       <button
         onClick={() => onNavigate('home')}
