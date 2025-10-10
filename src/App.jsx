@@ -26,7 +26,11 @@ import Estimates from './Estimates.jsx';
 import './App.css';
 
 function App() {
-  const [activeCalculator, setActiveCalculator] = useState(null);
+  const [activeCalculator, setActiveCalculator] = useState(() => {
+    // Initialize from localStorage or default to null (home)
+    const saved = localStorage.getItem('activeView');
+    return saved || null;
+  });
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showExportToast, setShowExportToast] = useState(false);
@@ -36,6 +40,15 @@ function App() {
   
   // SHARED JOBS STATE - moved from Jobs.jsx
   const [jobs, setJobs] = useState([]);
+  
+  // Save active view to localStorage whenever it changes
+  React.useEffect(() => {
+    if (activeCalculator === null) {
+      localStorage.setItem('activeView', '');
+    } else {
+      localStorage.setItem('activeView', activeCalculator);
+    }
+  }, [activeCalculator]);
   
   // Job management functions
   const addJob = (jobData) => {
