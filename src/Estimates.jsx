@@ -2,20 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2, Edit, ChevronDown, DollarSign, Clock, FileText, Check } from 'lucide-react';
 
 const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
-  const [estimates, setEstimates] = useState([
-    {
-      id: 1,
-      name: 'Panel Upgrade Example',
-      laborHours: 8,
-      laborRate: 85,
-      materials: [
-        { name: '200A Panel', cost: 350 },
-        { name: 'Wire & Conduit', cost: 180 }
-      ],
-      total: 1210,
-      createdAt: new Date()
-    }
-  ]);
+  const [estimates, setEstimates] = useState([]);
 
   const [showNewEstimate, setShowNewEstimate] = useState(false);
   const [editingEstimate, setEditingEstimate] = useState(null);
@@ -143,53 +130,6 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
       paddingBottom: '5rem'
     }}>
       <div style={{ padding: '1rem' }}>
-        {/* Templates Section */}
-        {!showNewEstimate && !editingEstimate && (
-          <div style={{
-            background: colors.cardBg,
-            borderRadius: '0.75rem',
-            border: `1px solid ${colors.border}`,
-            padding: '1rem',
-            marginBottom: '1rem',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ 
-              margin: '0 0 0.75rem 0', 
-              color: colors.text, 
-              fontSize: '1rem',
-              fontWeight: '600'
-            }}>
-              Quick Templates
-            </h3>
-            <div style={{ display: 'grid', gap: '0.5rem' }}>
-              {templates.map((template, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => applyTemplate(template)}
-                  style={{
-                    padding: '0.75rem',
-                    background: colors.bg,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '0.5rem',
-                    color: colors.text,
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    fontSize: '0.9375rem',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}
-                >
-                  <span>{template.name}</span>
-                  <span style={{ fontSize: '0.875rem', color: colors.subtext }}>
-                    ${calculateTotal(template.laborHours, template.laborRate, template.materials).toFixed(0)}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* New/Edit Estimate Form */}
         <div style={{
           background: colors.cardBg,
