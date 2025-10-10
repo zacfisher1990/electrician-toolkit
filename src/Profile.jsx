@@ -5,7 +5,8 @@ import {
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
   signOut,
-  onAuthStateChanged 
+  onAuthStateChanged,
+  sendEmailVerification 
 } from 'firebase/auth';
 
 const Profile = ({ isDarkMode }) => {
@@ -40,7 +41,22 @@ const Profile = ({ isDarkMode }) => {
     setError('');
     
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Send welcome email via Netlify function
+      try {
+        await fetch('/.netlify/functions/send-welcome-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email })
+        });
+      } catch (emailError) {
+        console.error('Welcome email failed:', emailError);
+        // Don't block signup if welcome email fails
+      }
+      
+      alert('Welcome! Please check your email to verify your account.');
+      
       setEmail('');
       setPassword('');
     } catch (err) {

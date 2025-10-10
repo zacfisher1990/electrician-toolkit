@@ -12,6 +12,7 @@
     "lucide-react": "^0.544.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "resend": "^6.1.2",
     "web-vitals": "^3.1.0"
   },
   "overrides": {
@@ -49,6 +50,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "gh-pages": "^6.3.0",
     "jsdom": "^26.1.0",
+    "netlify-cli": "^23.9.1",
     "vite": "^6.3.6",
     "vitest": "^3.0.7"
   }
