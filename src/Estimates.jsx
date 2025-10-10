@@ -139,7 +139,6 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
 
   return (
     <div style={{ 
-      minHeight: '100vh', 
       background: colors.bg,
       paddingBottom: '5rem'
     }}>
@@ -593,7 +592,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
                           left: 0,
                           right: 0,
                           bottom: 0,
-                          zIndex: 998
+                          zIndex: 9998
                         }}
                       />
                       <div style={{
@@ -608,7 +607,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
                         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                         maxHeight: '200px',
                         overflowY: 'auto',
-                        zIndex: 999
+                        zIndex: 9999
                       }}>
                         <button
                           onClick={() => handleApplyToJob(estimate, 'new')}
