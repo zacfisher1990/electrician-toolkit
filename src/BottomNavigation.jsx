@@ -41,16 +41,17 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
   return (
     <div style={{
       position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
+      bottom: '8px',
+      left: '8px',
+      right: '8px',
       background: colors.bg,
       borderTop: `1px solid ${colors.border}`,
+      borderRadius: '12px',
       display: 'flex',
       justifyContent: 'space-around',
       padding: 0,
       zIndex: 10000,
-      boxShadow: isDarkMode ? '0 -1px 3px rgba(0, 0, 0, 0.3)' : '0 -1px 3px rgba(0, 0, 0, 0.1)',
+      boxShadow: isDarkMode ? '0 -2px 10px rgba(0, 0, 0, 0.4)' : '0 -2px 10px rgba(0, 0, 0, 0.15)',
       height: '52px',
       minHeight: '52px',
       maxHeight: '52px'
