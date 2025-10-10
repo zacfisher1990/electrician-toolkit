@@ -10,6 +10,34 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
     inactiveText: isDarkMode ? '#9ca3af' : '#6b7280'
   };
 
+  const buttonStyle = (isActive) => ({
+    background: 'none',
+    border: 'none',
+    color: isActive ? colors.activeText : colors.inactiveText,
+    cursor: 'pointer',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.125rem',
+    fontSize: '0.5625rem',
+    fontWeight: '500',
+    flex: 1,
+    padding: '0.25rem 0.125rem',
+    transition: 'color 0.2s',
+    minWidth: 0,
+    minHeight: '52px', // Fixed height to prevent shifting
+    maxHeight: '52px'
+  });
+
+  const labelStyle = {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '100%',
+    lineHeight: '1'
+  };
+
   return (
     <div style={{
       position: 'fixed',
@@ -20,123 +48,49 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       borderTop: `1px solid ${colors.border}`,
       display: 'flex',
       justifyContent: 'space-around',
-      padding: '0.375rem 0',
+      padding: 0,
       zIndex: 1000,
-      boxShadow: isDarkMode ? '0 -1px 3px rgba(0, 0, 0, 0.3)' : '0 -1px 3px rgba(0, 0, 0, 0.1)'
+      boxShadow: isDarkMode ? '0 -1px 3px rgba(0, 0, 0, 0.3)' : '0 -1px 3px rgba(0, 0, 0, 0.1)',
+      height: '52px' // Fixed height for the entire nav bar
     }}>
       <button
         onClick={() => onNavigate('home')}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: currentView === 'home' ? colors.activeText : colors.inactiveText,
-          cursor: 'pointer',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.125rem',
-          fontSize: '0.5625rem',
-          fontWeight: '500',
-          flex: 1,
-          padding: '0.125rem',
-          transition: 'color 0.2s',
-          minWidth: 0
-        }}
+        style={buttonStyle(currentView === 'home')}
       >
         <Home size={18} strokeWidth={2} />
-        <span>Home</span>
+        <span style={labelStyle}>Home</span>
       </button>
       
       <button
         onClick={() => onNavigate('calculators')}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: currentView === 'calculators' ? colors.activeText : colors.inactiveText,
-          cursor: 'pointer',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.125rem',
-          fontSize: '0.5625rem',
-          fontWeight: '500',
-          flex: 1,
-          padding: '0.125rem',
-          transition: 'color 0.2s',
-          minWidth: 0
-        }}
+        style={buttonStyle(currentView === 'calculators')}
       >
         <Calculator size={18} strokeWidth={2} />
-        <span>Calculators</span>
+        <span style={labelStyle}>Calculators</span>
       </button>
 
       <button
         onClick={() => onNavigate('jobs')}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: currentView === 'jobs' ? colors.activeText : colors.inactiveText,
-          cursor: 'pointer',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.125rem',
-          fontSize: '0.5625rem',
-          fontWeight: '500',
-          flex: 1,
-          padding: '0.125rem',
-          transition: 'color 0.2s',
-          minWidth: 0
-        }}
+        style={buttonStyle(currentView === 'jobs')}
       >
         <Briefcase size={18} strokeWidth={2} />
-        <span>Jobs</span>
+        <span style={labelStyle}>Jobs</span>
       </button>
 
       <button
         onClick={() => onNavigate('estimates')}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: currentView === 'estimates' ? colors.activeText : colors.inactiveText,
-          cursor: 'pointer',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.125rem',
-          fontSize: '0.5625rem',
-          fontWeight: '500',
-          flex: 1,
-          padding: '0.125rem',
-          transition: 'color 0.2s',
-          minWidth: 0
-        }}
+        style={buttonStyle(currentView === 'estimates')}
       >
         <FileText size={18} strokeWidth={2} />
-        <span>Estimates</span>
+        <span style={labelStyle}>Estimates</span>
       </button>
 
       <button
         onClick={() => onNavigate('profile')}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: currentView === 'profile' ? colors.activeText : colors.inactiveText,
-          cursor: 'pointer',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.125rem',
-          fontSize: '0.5625rem',
-          fontWeight: '500',
-          flex: 1,
-          padding: '0.125rem',
-          transition: 'color 0.2s',
-          minWidth: 0
-        }}
+        style={buttonStyle(currentView === 'profile')}
       >
         <User size={18} strokeWidth={2} />
-        <span>Profile</span>
+        <span style={labelStyle}>Profile</span>
       </button>
     </div>
   );
