@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Calculator, Briefcase, User } from 'lucide-react';
+import { Home, Calculator, Briefcase, User, FileText } from 'lucide-react';
 
 function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
   // Dark mode colors
@@ -91,6 +91,29 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       >
         <Briefcase size={18} strokeWidth={2} />
         <span>Jobs</span>
+      </button>
+
+      <button
+        onClick={() => onNavigate('estimates')}
+        style={{
+          background: 'none',
+          border: 'none',
+          color: currentView === 'estimates' ? colors.activeText : colors.inactiveText,
+          cursor: 'pointer',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '0.125rem',
+          fontSize: '0.5625rem',
+          fontWeight: '500',
+          flex: 1,
+          padding: '0.125rem',
+          transition: 'color 0.2s',
+          minWidth: 0
+        }}
+      >
+        <FileText size={18} strokeWidth={2} />
+        <span>Estimates</span>
       </button>
 
       <button

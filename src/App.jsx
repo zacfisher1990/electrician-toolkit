@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Menu, FileDown, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon } from 'lucide-react';
+import { Menu, FileDown, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText } from 'lucide-react';
 import CalculatorMenu from './CalculatorMenu.jsx';
 import VoltageDropCalculator from './VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './OhmsLawCalculator.jsx';
@@ -22,6 +22,7 @@ import ThreePhasePowerCalculator from './ThreePhasePowerCalculator.jsx';
 import Home from './Home.jsx';
 import Profile from './Profile.jsx';
 import Jobs from './Jobs.jsx';
+import Estimates from './Estimates.jsx';
 import './App.css';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showExportToast, setShowExportToast] = useState(false);
+  const [pendingEstimate, setPendingEstimate] = useState(null);
   
   // Ref to access calculator's export function
   const calculatorRef = useRef(null);
@@ -41,6 +43,22 @@ function App() {
     } else if (view === 'profile') {
       setActiveCalculator('profile');
     } else if (view === 'jobs') {
+      setActiveCalculator('jobs');
+    } else if (view === 'estimates') {
+      setActiveCalculator('estimates');
+    }
+  };
+
+  // Handle applying estimate to job
+  const handleApplyEstimate = (estimate, jobId) => {
+    if (jobId === 'new') {
+      // Store estimate and navigate to jobs page to create new job
+      setPendingEstimate(estimate);
+      setActiveCalculator('jobs');
+    } else {
+      // Apply estimate to existing job
+      // This will be handled by the Jobs component
+      setPendingEstimate({ ...estimate, jobId });
       setActiveCalculator('jobs');
     }
   };
@@ -116,7 +134,16 @@ function App() {
       case 'profile':
         return <Profile isDarkMode={isDarkMode} />;
       case 'jobs':
-        return <Jobs isDarkMode={isDarkMode} />;
+        return <Jobs 
+          isDarkMode={isDarkMode} 
+          pendingEstimate={pendingEstimate}
+          onEstimateApplied={() => setPendingEstimate(null)}
+        />;
+      case 'estimates':
+        return <Estimates 
+          isDarkMode={isDarkMode}
+          onApplyToJob={handleApplyEstimate}
+        />;
       default:
         return <Home isDarkMode={isDarkMode} />;
     }
@@ -134,6 +161,9 @@ function App() {
     }
     if (activeCalculator === 'jobs') {
       return { title: 'Job Log', icon: Briefcase };
+    }
+    if (activeCalculator === 'estimates') {
+      return { title: 'Estimates', icon: FileText };
     }
     
     const headerMap = {
@@ -244,7 +274,7 @@ function App() {
               }}>
                 <div style={{ padding: '0.5rem 0' }}>
                   {/* Export PDF Button - Only show when calculator is active */}
-                  {activeCalculator && activeCalculator !== 'profile' && activeCalculator !== 'jobs' && activeCalculator !== 'calculators' && (
+                  {activeCalculator && activeCalculator !== 'profile' && activeCalculator !== 'jobs' && activeCalculator !== 'calculators' && activeCalculator !== 'estimates' && (
                     <>
                       <button
                         onClick={handleExportPDF}
@@ -314,7 +344,7 @@ function App() {
         ) : (
           <div style={{ 
             minHeight: 'calc(100vh - 3.5rem)', 
-            padding: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' ? '0' : '1rem',
+            padding: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' ? '0' : '1rem',
             paddingBottom: '5rem'
           }}>
             {renderCalculator()}
@@ -356,6 +386,8 @@ function App() {
             ? 'profile'
             : activeCalculator === 'jobs'
             ? 'jobs'
+            : activeCalculator === 'estimates'
+            ? 'estimates'
             : activeCalculator === 'calculators'
             ? 'calculators'
             : activeCalculator 
