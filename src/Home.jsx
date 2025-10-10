@@ -1,68 +1,9 @@
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon, Clock, MapPin, DollarSign, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const Home = ({ isDarkMode }) => {
+const Home = ({ isDarkMode, jobs }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  
-  // Sample jobs data - in a real app, this would come from your Jobs component state
-  const jobs = [
-    {
-      id: 1,
-      title: 'Residential Rewiring',
-      client: 'Smith Family',
-      location: '123 Main St',
-      status: 'in-progress',
-      date: new Date(2024, 9, 8), // October 8, 2024
-      time: '9:00 AM',
-      estimatedCost: 3500,
-      duration: '4 hours'
-    },
-    {
-      id: 2,
-      title: 'Commercial Panel Upgrade',
-      client: 'ABC Corp',
-      location: '456 Business Ave',
-      status: 'completed',
-      date: new Date(2024, 9, 5),
-      time: '8:00 AM',
-      estimatedCost: 8500,
-      duration: '6 hours'
-    },
-    {
-      id: 3,
-      title: 'Outlet Installation',
-      client: 'Johnson Residence',
-      location: '789 Oak Dr',
-      status: 'scheduled',
-      date: new Date(2024, 9, 12),
-      time: '10:00 AM',
-      estimatedCost: 450,
-      duration: '2 hours'
-    },
-    {
-      id: 4,
-      title: 'Service Upgrade',
-      client: 'Williams Home',
-      location: '321 Pine St',
-      status: 'scheduled',
-      date: new Date(2024, 9, 15),
-      time: '1:00 PM',
-      estimatedCost: 2800,
-      duration: '5 hours'
-    },
-    {
-      id: 5,
-      title: 'Lighting Install',
-      client: 'Brown Family',
-      location: '654 Elm Ave',
-      status: 'scheduled',
-      date: new Date(2024, 9, 12),
-      time: '2:00 PM',
-      estimatedCost: 650,
-      duration: '3 hours'
-    }
-  ];
 
   const colors = {
     bg: isDarkMode ? '#1f2937' : '#f9fafb',
@@ -81,6 +22,12 @@ const Home = ({ isDarkMode }) => {
     'completed': '#10b981'
   };
 
+  // Convert job dates from strings to Date objects for calendar display
+  const jobsWithDates = jobs.map(job => ({
+    ...job,
+    dateObj: job.date ? new Date(job.date + 'T00:00:00') : null
+  }));
+
   // Calendar functions
   const getDaysInMonth = (date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -91,6 +38,7 @@ const Home = ({ isDarkMode }) => {
   };
 
   const isSameDay = (date1, date2) => {
+    if (!date1 || !date2) return false;
     return date1.getDate() === date2.getDate() &&
            date1.getMonth() === date2.getMonth() &&
            date1.getFullYear() === date2.getFullYear();
@@ -101,11 +49,11 @@ const Home = ({ isDarkMode }) => {
   };
 
   const getJobsForDate = (date) => {
-    return jobs.filter(job => isSameDay(job.date, date));
+    return jobsWithDates.filter(job => job.dateObj && isSameDay(job.dateObj, date));
   };
 
   const hasJobsOnDate = (date) => {
-    return jobs.some(job => isSameDay(job.date, date));
+    return jobsWithDates.some(job => job.dateObj && isSameDay(job.dateObj, date));
   };
 
   const previousMonth = () => {
@@ -133,9 +81,10 @@ const Home = ({ isDarkMode }) => {
   }
 
   const selectedDayJobs = getJobsForDate(selectedDate);
-  const upcomingJobs = jobs
-    .filter(job => job.date >= new Date() && job.status === 'scheduled')
-    .sort((a, b) => a.date - b.date)
+  const today = new Date();
+  const upcomingJobs = jobsWithDates
+    .filter(job => job.dateObj && job.dateObj >= today && job.status === 'scheduled')
+    .sort((a, b) => a.dateObj - b.dateObj)
     .slice(0, 5);
 
   return (
@@ -146,20 +95,6 @@ const Home = ({ isDarkMode }) => {
       maxWidth: '100vw',
       overflowX: 'hidden'
     }}>
-      {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)',
-        padding: '1.5rem 1rem',
-        color: 'white'
-      }}>
-        <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.5rem', fontWeight: '600' }}>
-          Welcome Back
-        </h2>
-        <p style={{ margin: 0, opacity: 0.9, fontSize: '0.875rem' }}>
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-        </p>
-      </div>
-
       <div style={{ padding: '1rem' }}>
         {/* Quick Stats */}
         <div style={{ 
@@ -488,18 +423,24 @@ const Home = ({ isDarkMode }) => {
                   </div>
                   
                   <div style={{ display: 'grid', gap: '0.25rem', fontSize: '0.875rem', color: colors.subtext }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Clock size={14} />
-                      <span>{job.time} ({job.duration})</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <MapPin size={14} />
-                      <span>{job.location}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <DollarSign size={14} />
-                      <span>${job.estimatedCost.toLocaleString()}</span>
-                    </div>
+                    {job.time && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Clock size={14} />
+                        <span>{job.time}{job.duration && ` (${job.duration})`}</span>
+                      </div>
+                    )}
+                    {job.location && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <MapPin size={14} />
+                        <span>{job.location}</span>
+                      </div>
+                    )}
+                    {job.estimatedCost && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <DollarSign size={14} />
+                        <span>${Number(job.estimatedCost).toLocaleString()}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -566,7 +507,7 @@ const Home = ({ isDarkMode }) => {
                       gap: '0.25rem'
                     }}>
                       <CalendarIcon size={12} />
-                      {job.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {job.time}
+                      {job.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{job.time && ` at ${job.time}`}
                     </div>
                   </div>
                   <div style={{

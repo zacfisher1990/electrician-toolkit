@@ -1,30 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Clock, CheckCircle, AlertCircle, MapPin, Calendar, DollarSign, Edit, Trash2, Briefcase, ChevronDown } from 'lucide-react';
 
-const Jobs = ({ isDarkMode }) => {
-  const [jobs, setJobs] = useState([
-    {
-      id: 1,
-      title: 'Residential Rewiring',
-      client: 'Smith Family',
-      location: '123 Main St',
-      status: 'in-progress',
-      date: '2024-10-07',
-      estimatedCost: 3500,
-      notes: 'Replace old aluminum wiring with copper'
-    },
-    {
-      id: 2,
-      title: 'Commercial Panel Upgrade',
-      client: 'ABC Corp',
-      location: '456 Business Ave',
-      status: 'completed',
-      date: '2024-10-04',
-      estimatedCost: 8500,
-      notes: 'Upgraded to 400A service'
-    }
-  ]);
-
+const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate, onEstimateApplied }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [formData, setFormData] = useState({
@@ -33,7 +10,9 @@ const Jobs = ({ isDarkMode }) => {
     location: '',
     status: 'scheduled',
     date: '',
+    time: '',
     estimatedCost: '',
+    duration: '',
     notes: ''
   });
 
@@ -59,7 +38,9 @@ const Jobs = ({ isDarkMode }) => {
       location: '',
       status: 'scheduled',
       date: '',
+      time: '',
       estimatedCost: '',
+      duration: '',
       notes: ''
     });
     setShowAddForm(false);
@@ -68,16 +49,14 @@ const Jobs = ({ isDarkMode }) => {
 
   const handleAddJob = () => {
     if (formData.title && formData.client) {
-      setJobs([...jobs, { ...formData, id: Date.now() }]);
+      addJob(formData);
       resetForm();
     }
   };
 
   const handleEditJob = () => {
     if (formData.title && formData.client) {
-      setJobs(jobs.map(job => 
-        job.id === editingJob.id ? { ...formData, id: job.id } : job
-      ));
+      updateJob(editingJob.id, formData);
       resetForm();
     }
   };
@@ -87,11 +66,13 @@ const Jobs = ({ isDarkMode }) => {
     setFormData({
       title: job.title,
       client: job.client,
-      location: job.location,
+      location: job.location || '',
       status: job.status,
-      date: job.date,
-      estimatedCost: job.estimatedCost,
-      notes: job.notes
+      date: job.date || '',
+      time: job.time || '',
+      estimatedCost: job.estimatedCost || '',
+      duration: job.duration || '',
+      notes: job.notes || ''
     });
     setShowAddForm(true);
     // Scroll to top to show the form
@@ -100,7 +81,7 @@ const Jobs = ({ isDarkMode }) => {
 
   const handleDeleteJob = (id) => {
     if (window.confirm('Are you sure you want to delete this job?')) {
-      setJobs(jobs.filter(job => job.id !== id));
+      deleteJob(id);
     }
   };
 
@@ -232,10 +213,44 @@ const Jobs = ({ isDarkMode }) => {
                   />
 
                   <input
+                    type="time"
+                    placeholder="Time"
+                    value={formData.time}
+                    onChange={(e) => setFormData(prev => ({...prev, time: e.target.value}))}
+                    style={{
+                      padding: '0.75rem',
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '0.5rem',
+                      fontSize: '0.9375rem',
+                      background: colors.inputBg,
+                      color: colors.text,
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <input
                     type="number"
                     placeholder="Cost ($)"
                     value={formData.estimatedCost}
                     onChange={(e) => setFormData(prev => ({...prev, estimatedCost: e.target.value}))}
+                    style={{
+                      padding: '0.75rem',
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '0.5rem',
+                      fontSize: '0.9375rem',
+                      background: colors.inputBg,
+                      color: colors.text,
+                      boxSizing: 'border-box'
+                    }}
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Duration"
+                    value={formData.duration}
+                    onChange={(e) => setFormData(prev => ({...prev, duration: e.target.value}))}
                     style={{
                       padding: '0.75rem',
                       border: `1px solid ${colors.border}`,
@@ -459,7 +474,11 @@ const Jobs = ({ isDarkMode }) => {
                     fontSize: '0.875rem'
                   }}>
                     <Calendar size={16} />
-                    <span>{new Date(job.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    <span>
+                      {new Date(job.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {job.time && ` at ${job.time}`}
+                      {job.duration && ` (${job.duration})`}
+                    </span>
                   </div>
                 )}
 
