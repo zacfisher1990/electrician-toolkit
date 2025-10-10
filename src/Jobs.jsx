@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Clock, CheckCircle, AlertCircle, MapPin, Calendar, DollarSign, Edit, Trash2, Briefcase } from 'lucide-react';
+import { Plus, Clock, CheckCircle, AlertCircle, MapPin, Calendar, DollarSign, Edit, Trash2, Briefcase, ChevronDown } from 'lucide-react';
 
 const Jobs = ({ isDarkMode }) => {
   const [jobs, setJobs] = useState([
@@ -9,7 +9,7 @@ const Jobs = ({ isDarkMode }) => {
       client: 'Smith Family',
       location: '123 Main St',
       status: 'in-progress',
-      date: '2024-10-08',
+      date: '2024-10-07',
       estimatedCost: 3500,
       notes: 'Replace old aluminum wiring with copper'
     },
@@ -19,19 +19,9 @@ const Jobs = ({ isDarkMode }) => {
       client: 'ABC Corp',
       location: '456 Business Ave',
       status: 'completed',
-      date: '2024-10-05',
+      date: '2024-10-04',
       estimatedCost: 8500,
       notes: 'Upgraded to 400A service'
-    },
-    {
-      id: 3,
-      title: 'Outlet Installation',
-      client: 'Johnson Residence',
-      location: '789 Oak Dr',
-      status: 'scheduled',
-      date: '2024-10-12',
-      estimatedCost: 450,
-      notes: 'Add 6 new GFCI outlets'
     }
   ]);
 
@@ -48,11 +38,12 @@ const Jobs = ({ isDarkMode }) => {
   });
 
   const colors = {
-    bg: isDarkMode ? '#1f2937' : '#f5f5f5',
-    cardBg: isDarkMode ? '#111827' : '#ffffff',
+    bg: isDarkMode ? '#1f2937' : '#f9fafb',
+    cardBg: isDarkMode ? '#374151' : '#ffffff',
     text: isDarkMode ? '#f9fafb' : '#111827',
     subtext: isDarkMode ? '#9ca3af' : '#6b7280',
-    border: isDarkMode ? '#374151' : '#e5e7eb',
+    border: isDarkMode ? '#4b5563' : '#e5e7eb',
+    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
   };
 
   const statusConfig = {
@@ -102,7 +93,9 @@ const Jobs = ({ isDarkMode }) => {
       estimatedCost: job.estimatedCost,
       notes: job.notes
     });
-    setShowAddForm(false);
+    setShowAddForm(true);
+    // Scroll to top to show the form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeleteJob = (id) => {
@@ -111,260 +104,281 @@ const Jobs = ({ isDarkMode }) => {
     }
   };
 
-  const showForm = showAddForm || editingJob;
-
   return (
     <div style={{ 
       minHeight: '100vh', 
       background: colors.bg,
       paddingBottom: '5rem'
     }}>
-      {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)',
-        padding: '1.5rem 1rem',
-        color: 'white'
-      }}>
+      <div style={{ padding: '1rem' }}>
+        {/* Add New Job Button/Form */}
+        <div style={{
+          background: colors.cardBg,
+          borderRadius: '0.75rem',
+          border: `1px solid ${colors.border}`,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          marginBottom: '1rem',
+          overflow: 'hidden'
+        }}>
+          {/* Header Button */}
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            style={{
+              width: '100%',
+              padding: '1rem',
+              background: 'transparent',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              color: colors.text
+            }}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: '1.125rem',
+              fontWeight: '600'
+            }}>
+              <Plus size={20} />
+              {editingJob ? 'Edit Job' : 'Add New Job'}
+            </div>
+            <ChevronDown 
+              size={20} 
+              style={{
+                transform: showAddForm ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s'
+              }}
+            />
+          </button>
+
+          {/* Expandable Form */}
+          {showAddForm && (
+            <div style={{
+              padding: '0 1rem 1rem 1rem',
+              borderTop: `1px solid ${colors.border}`
+            }}>
+              <div style={{ paddingTop: '1rem' }}>
+                <input
+                  type="text"
+                  placeholder="Job Title *"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({...prev, title: e.target.value}))}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    marginBottom: '0.75rem',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.5rem',
+                    fontSize: '0.9375rem',
+                    background: colors.inputBg,
+                    color: colors.text,
+                    boxSizing: 'border-box'
+                  }}
+                />
+
+                <input
+                  type="text"
+                  placeholder="Client Name *"
+                  value={formData.client}
+                  onChange={(e) => setFormData(prev => ({...prev, client: e.target.value}))}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    marginBottom: '0.75rem',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.5rem',
+                    fontSize: '0.9375rem',
+                    background: colors.inputBg,
+                    color: colors.text,
+                    boxSizing: 'border-box'
+                  }}
+                />
+
+                <input
+                  type="text"
+                  placeholder="Location"
+                  value={formData.location}
+                  onChange={(e) => setFormData(prev => ({...prev, location: e.target.value}))}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    marginBottom: '0.75rem',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.5rem',
+                    fontSize: '0.9375rem',
+                    background: colors.inputBg,
+                    color: colors.text,
+                    boxSizing: 'border-box'
+                  }}
+                />
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData(prev => ({...prev, date: e.target.value}))}
+                    style={{
+                      padding: '0.75rem',
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '0.5rem',
+                      fontSize: '0.9375rem',
+                      background: colors.inputBg,
+                      color: colors.text,
+                      boxSizing: 'border-box'
+                    }}
+                  />
+
+                  <input
+                    type="number"
+                    placeholder="Cost ($)"
+                    value={formData.estimatedCost}
+                    onChange={(e) => setFormData(prev => ({...prev, estimatedCost: e.target.value}))}
+                    style={{
+                      padding: '0.75rem',
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '0.5rem',
+                      fontSize: '0.9375rem',
+                      background: colors.inputBg,
+                      color: colors.text,
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData(prev => ({...prev, status: e.target.value}))}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    marginBottom: '0.75rem',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.5rem',
+                    fontSize: '0.9375rem',
+                    background: colors.inputBg,
+                    color: colors.text,
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="scheduled">Scheduled</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+
+                <textarea
+                  placeholder="Notes"
+                  value={formData.notes}
+                  onChange={(e) => setFormData(prev => ({...prev, notes: e.target.value}))}
+                  rows="3"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    marginBottom: '0.75rem',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.5rem',
+                    fontSize: '0.9375rem',
+                    background: colors.inputBg,
+                    color: colors.text,
+                    boxSizing: 'border-box',
+                    resize: 'vertical'
+                  }}
+                />
+
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    onClick={editingJob ? handleEditJob : handleAddJob}
+                    disabled={!formData.title || !formData.client}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem',
+                      background: (!formData.title || !formData.client) ? colors.border : '#2563eb',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '0.5rem',
+                      fontSize: '0.9375rem',
+                      fontWeight: '600',
+                      cursor: (!formData.title || !formData.client) ? 'not-allowed' : 'pointer',
+                      opacity: (!formData.title || !formData.client) ? 0.5 : 1
+                    }}
+                  >
+                    {editingJob ? 'Update Job' : 'Add Job'}
+                  </button>
+                  <button
+                    onClick={resetForm}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem',
+                      background: 'transparent',
+                      color: colors.text,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '0.5rem',
+                      fontSize: '0.9375rem',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Section Header */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          marginBottom: '1rem',
+          padding: '0 0.25rem'
         }}>
-          <div>
-            <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.5rem', fontWeight: '600' }}>
-              Job Log
-            </h2>
-            <p style={{ margin: 0, opacity: 0.9, fontSize: '0.875rem' }}>
-              {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'} tracked
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              if (showForm) {
-                resetForm();
-              } else {
-                setShowAddForm(true);
-              }
-            }}
-            style={{
-              background: 'white',
-              color: '#2563eb',
-              border: 'none',
-              borderRadius: '50%',
-              width: '48px',
-              height: '48px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-              transition: 'transform 0.2s',
-              transform: showForm ? 'rotate(45deg)' : 'rotate(0deg)'
-            }}
-            onMouseEnter={(e) => {
-              if (!showForm) e.currentTarget.style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = showForm ? 'rotate(45deg)' : 'scale(1)';
-            }}
-          >
-            <Plus size={24} strokeWidth={2} />
-          </button>
-        </div>
-      </div>
-
-      {/* Add/Edit Job Form */}
-      {showForm && (
-        <div style={{
-          background: colors.cardBg,
-          margin: '1rem',
-          padding: '1rem',
-          borderRadius: '0.75rem',
-          border: `1px solid ${colors.border}`,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ margin: '0 0 1rem 0', color: colors.text, fontSize: '1.125rem' }}>
-            {editingJob ? 'Edit Job' : 'New Job'}
+          <h3 style={{ 
+            margin: 0, 
+            color: colors.text, 
+            fontSize: '1.125rem',
+            fontWeight: '600'
+          }}>
+            Job List
           </h3>
-          
-          <input
-            type="text"
-            placeholder="Job Title *"
-            value={formData.title}
-            onChange={(e) => setFormData(prev => ({...prev, title: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              marginBottom: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              background: colors.bg,
-              color: colors.text,
-              boxSizing: 'border-box'
-            }}
-          />
-
-          <input
-            type="text"
-            placeholder="Client Name *"
-            value={formData.client}
-            onChange={(e) => setFormData(prev => ({...prev, client: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              marginBottom: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              background: colors.bg,
-              color: colors.text,
-              boxSizing: 'border-box'
-            }}
-          />
-
-          <input
-            type="text"
-            placeholder="Location"
-            value={formData.location}
-            onChange={(e) => setFormData(prev => ({...prev, location: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              marginBottom: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              background: colors.bg,
-              color: colors.text,
-              boxSizing: 'border-box'
-            }}
-          />
-
-          <input
-            type="date"
-            value={formData.date}
-            onChange={(e) => setFormData(prev => ({...prev, date: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              marginBottom: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              background: colors.bg,
-              color: colors.text,
-              boxSizing: 'border-box'
-            }}
-          />
-
-          <input
-            type="number"
-            placeholder="Estimated Cost ($)"
-            value={formData.estimatedCost}
-            onChange={(e) => setFormData(prev => ({...prev, estimatedCost: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              marginBottom: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              background: colors.bg,
-              color: colors.text,
-              boxSizing: 'border-box'
-            }}
-          />
-
-          <select
-            value={formData.status}
-            onChange={(e) => setFormData(prev => ({...prev, status: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              marginBottom: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              background: colors.bg,
-              color: colors.text,
-              boxSizing: 'border-box'
-            }}
-          >
-            <option value="scheduled">Scheduled</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
-
-          <textarea
-            placeholder="Notes"
-            value={formData.notes}
-            onChange={(e) => setFormData(prev => ({...prev, notes: e.target.value}))}
-            rows="3"
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              marginBottom: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              background: colors.bg,
-              color: colors.text,
-              boxSizing: 'border-box',
-              resize: 'vertical'
-            }}
-          />
-
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              onClick={editingJob ? handleEditJob : handleAddJob}
-              style={{
-                flex: 1,
-                padding: '0.75rem',
-                background: '#2563eb',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.5rem',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
-            >
-              {editingJob ? 'Update Job' : 'Add Job'}
-            </button>
-            <button
-              onClick={resetForm}
-              style={{
-                flex: 1,
-                padding: '0.75rem',
-                background: 'transparent',
-                color: colors.text,
-                border: `1px solid ${colors.border}`,
-                borderRadius: '0.5rem',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
-            >
-              Cancel
-            </button>
-          </div>
+          <span style={{
+            fontSize: '0.875rem',
+            color: colors.subtext,
+            background: colors.cardBg,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '1rem',
+            border: `1px solid ${colors.border}`
+          }}>
+            {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
+          </span>
         </div>
-      )}
 
-      {/* Job List */}
-      <div style={{ padding: '1rem' }}>
+        {/* Job List */}
         {jobs.length === 0 ? (
           <div style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '0.75rem',
             textAlign: 'center',
             padding: '3rem 1rem',
             color: colors.subtext
           }}>
             <Briefcase size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-            <p>No jobs yet. Click the + button to add your first job!</p>
+            <p style={{ margin: 0, fontSize: '0.9375rem' }}>No jobs yet. Add your first job above!</p>
           </div>
         ) : (
-          jobs.map((job) => {
+          [...jobs]
+            .sort((a, b) => {
+              // Sort by date: newest first (if no date, put at end)
+              if (!a.date && !b.date) return 0;
+              if (!a.date) return 1;
+              if (!b.date) return -1;
+              return new Date(b.date) - new Date(a.date);
+            })
+            .map((job) => {
             const StatusIcon = statusConfig[job.status].icon;
             const isEditing = editingJob && editingJob.id === job.id;
             
@@ -391,7 +405,7 @@ const Jobs = ({ isDarkMode }) => {
                     <h3 style={{
                       margin: '0 0 0.25rem 0',
                       color: colors.text,
-                      fontSize: '1.125rem',
+                      fontSize: '1rem',
                       fontWeight: '600'
                     }}>
                       {job.title}
@@ -413,7 +427,8 @@ const Jobs = ({ isDarkMode }) => {
                     background: `${statusConfig[job.status].color}20`,
                     color: statusConfig[job.status].color,
                     fontSize: '0.75rem',
-                    fontWeight: '600'
+                    fontWeight: '600',
+                    whiteSpace: 'nowrap'
                   }}>
                     <StatusIcon size={14} />
                     <span>{statusConfig[job.status].label}</span>
@@ -444,7 +459,7 @@ const Jobs = ({ isDarkMode }) => {
                     fontSize: '0.875rem'
                   }}>
                     <Calendar size={16} />
-                    <span>{new Date(job.date).toLocaleDateString()}</span>
+                    <span>{new Date(job.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                   </div>
                 )}
 
