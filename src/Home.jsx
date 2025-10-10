@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Clock, MapPin, DollarSign, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import Weather from './Weather.jsx'; // Import the Weather component
 
 const Home = ({ isDarkMode }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -161,6 +162,9 @@ const Home = ({ isDarkMode }) => {
       </div>
 
       <div style={{ padding: '1rem' }}>
+        {/* Weather Component - NEW! */}
+        <Weather isDarkMode={isDarkMode} />
+
         {/* Quick Stats */}
         <div style={{ 
           display: 'grid', 
