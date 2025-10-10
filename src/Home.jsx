@@ -142,7 +142,9 @@ const Home = ({ isDarkMode }) => {
     <div style={{ 
       minHeight: '100vh', 
       background: colors.bg,
-      paddingBottom: '5rem'
+      paddingBottom: '5rem',
+      maxWidth: '100vw',
+      overflowX: 'hidden'
     }}>
       {/* Header */}
       <div style={{
@@ -163,20 +165,36 @@ const Home = ({ isDarkMode }) => {
         <div style={{ 
           display: 'grid', 
           gridTemplateColumns: 'repeat(3, 1fr)', 
-          gap: '0.75rem',
-          marginBottom: '1rem'
+          gap: '0.5rem',
+          marginBottom: '1rem',
+          maxWidth: '100%',
+          overflow: 'hidden'
         }}>
           <div style={{
             background: colors.cardBg,
             border: `1px solid ${colors.border}`,
             borderRadius: '0.75rem',
-            padding: '1rem',
-            textAlign: 'center'
+            padding: '0.75rem',
+            textAlign: 'center',
+            minWidth: 0
           }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#3b82f6', marginBottom: '0.25rem' }}>
+            <div style={{ 
+              fontSize: '1.5rem', 
+              fontWeight: '700', 
+              color: '#3b82f6', 
+              marginBottom: '0.25rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
               {upcomingJobs.length}
             </div>
-            <div style={{ fontSize: '0.75rem', color: colors.subtext }}>
+            <div style={{ 
+              fontSize: '0.75rem', 
+              color: colors.subtext,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
               Upcoming
             </div>
           </div>
@@ -184,13 +202,27 @@ const Home = ({ isDarkMode }) => {
             background: colors.cardBg,
             border: `1px solid ${colors.border}`,
             borderRadius: '0.75rem',
-            padding: '1rem',
-            textAlign: 'center'
+            padding: '0.75rem',
+            textAlign: 'center',
+            minWidth: 0
           }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#f59e0b', marginBottom: '0.25rem' }}>
+            <div style={{ 
+              fontSize: '1.5rem', 
+              fontWeight: '700', 
+              color: '#f59e0b', 
+              marginBottom: '0.25rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
               {jobs.filter(j => j.status === 'in-progress').length}
             </div>
-            <div style={{ fontSize: '0.75rem', color: colors.subtext }}>
+            <div style={{ 
+              fontSize: '0.75rem', 
+              color: colors.subtext,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
               In Progress
             </div>
           </div>
@@ -198,13 +230,27 @@ const Home = ({ isDarkMode }) => {
             background: colors.cardBg,
             border: `1px solid ${colors.border}`,
             borderRadius: '0.75rem',
-            padding: '1rem',
-            textAlign: 'center'
+            padding: '0.75rem',
+            textAlign: 'center',
+            minWidth: 0
           }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#10b981', marginBottom: '0.25rem' }}>
+            <div style={{ 
+              fontSize: '1.5rem', 
+              fontWeight: '700', 
+              color: '#10b981', 
+              marginBottom: '0.25rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
               {jobs.filter(j => j.status === 'completed').length}
             </div>
-            <div style={{ fontSize: '0.75rem', color: colors.subtext }}>
+            <div style={{ 
+              fontSize: '0.75rem', 
+              color: colors.subtext,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
               Completed
             </div>
           </div>
