@@ -31,6 +31,8 @@ function App() {
   const [showMenu, setShowMenu] = useState(false);
   const [showExportToast, setShowExportToast] = useState(false);
   const [pendingEstimate, setPendingEstimate] = useState(null);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   
   // SHARED JOBS STATE - moved from Jobs.jsx
   const [jobs, setJobs] = useState([]);
@@ -52,6 +54,29 @@ function App() {
   
   // Ref to access calculator's export function
   const calculatorRef = useRef(null);
+
+  // Handle scroll to show/hide header
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY < 10) {
+        // Always show header at top
+        setHeaderVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        // Scrolling down & past threshold - hide header
+        setHeaderVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up - show header
+        setHeaderVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   const handleNavigate = (view) => {
     if (view === 'home') {
@@ -221,21 +246,26 @@ function App() {
         background: '#2563eb',
         padding: '0.5rem 1rem',
         borderBottom: `1px solid ${colors.headerBorder}`,
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
+        left: 0,
+        right: 0,
         zIndex: 100,
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        minHeight: '48px',
+        transform: headerVisible ? 'translateY(0)' : 'translateY(-100%)',
+        transition: 'transform 0.3s ease-in-out'
       }}>
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
-          gap: '0.75rem' 
+          gap: '0.5rem' 
         }}>
-          <HeaderIcon size={24} color="white" strokeWidth={2} />
+          <HeaderIcon size={20} color="white" strokeWidth={2} />
           <h1 style={{ 
-            fontSize: '1.125rem', 
+            fontSize: '1rem', 
             fontWeight: '600',
             color: 'white',
             margin: 0,
@@ -362,6 +392,7 @@ function App() {
       {/* Content Area */}
       <div style={{ 
         paddingBottom: '5rem',
+        paddingTop: '48px',
         position: 'relative',
         minHeight: '100vh'
       }}>
