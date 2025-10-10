@@ -33,68 +33,7 @@ function App() {
   const [pendingEstimate, setPendingEstimate] = useState(null);
   
   // SHARED JOBS STATE - moved from Jobs.jsx
-  const [jobs, setJobs] = useState([
-    {
-      id: 1,
-      title: 'Residential Rewiring',
-      client: 'Smith Family',
-      location: '123 Main St',
-      status: 'in-progress',
-      date: '2024-10-08',
-      time: '9:00 AM',
-      estimatedCost: 3500,
-      duration: '4 hours',
-      notes: 'Replace old aluminum wiring with copper'
-    },
-    {
-      id: 2,
-      title: 'Commercial Panel Upgrade',
-      client: 'ABC Corp',
-      location: '456 Business Ave',
-      status: 'completed',
-      date: '2024-10-05',
-      time: '8:00 AM',
-      estimatedCost: 8500,
-      duration: '6 hours',
-      notes: 'Upgraded to 400A service'
-    },
-    {
-      id: 3,
-      title: 'Outlet Installation',
-      client: 'Johnson Residence',
-      location: '789 Oak Dr',
-      status: 'scheduled',
-      date: '2024-10-12',
-      time: '10:00 AM',
-      estimatedCost: 450,
-      duration: '2 hours',
-      notes: ''
-    },
-    {
-      id: 4,
-      title: 'Service Upgrade',
-      client: 'Williams Home',
-      location: '321 Pine St',
-      status: 'scheduled',
-      date: '2024-10-15',
-      time: '1:00 PM',
-      estimatedCost: 2800,
-      duration: '5 hours',
-      notes: ''
-    },
-    {
-      id: 5,
-      title: 'Lighting Install',
-      client: 'Brown Family',
-      location: '654 Elm Ave',
-      status: 'scheduled',
-      date: '2024-10-12',
-      time: '2:00 PM',
-      estimatedCost: 650,
-      duration: '3 hours',
-      notes: ''
-    }
-  ]);
+  const [jobs, setJobs] = useState([]);
   
   // Job management functions
   const addJob = (jobData) => {
@@ -421,7 +360,11 @@ function App() {
       </div>
 
       {/* Content Area */}
-      <div style={{ paddingBottom: '5rem' }}>
+      <div style={{ 
+        paddingBottom: '5rem',
+        position: 'relative',
+        minHeight: '100vh'
+      }}>
         {!activeCalculator ? (
           renderCalculator()
         ) : (
