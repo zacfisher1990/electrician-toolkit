@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Clock, MapPin, DollarSign, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import Weather from './Weather.jsx'; // Import the Weather component
 
 const Home = ({ isDarkMode }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -162,9 +161,6 @@ const Home = ({ isDarkMode }) => {
       </div>
 
       <div style={{ padding: '1rem' }}>
-        {/* Weather Component - NEW! */}
-        <Weather isDarkMode={isDarkMode} />
-
         {/* Quick Stats */}
         <div style={{ 
           display: 'grid', 
@@ -340,7 +336,7 @@ const Home = ({ isDarkMode }) => {
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(7, 1fr)',
-            gap: '0.25rem'
+            gap: '0.125rem'
           }}>
             {calendarDays.map((date, index) => {
               if (!date) {
@@ -358,17 +354,20 @@ const Home = ({ isDarkMode }) => {
                   style={{
                     aspectRatio: '1',
                     border: 'none',
-                    borderRadius: '0.5rem',
+                    borderRadius: '0.375rem',
                     background: isSelected ? colors.selectedDay : isTodayDate ? colors.todayBg : 'transparent',
                     color: isSelected ? 'white' : colors.text,
                     cursor: 'pointer',
-                    fontSize: '0.875rem',
+                    fontSize: '0.75rem',
                     fontWeight: isSelected || isTodayDate ? '600' : '400',
                     position: 'relative',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    padding: '0.25rem',
+                    minWidth: 0,
+                    width: '100%'
                   }}
                   onMouseEnter={(e) => {
                     if (!isSelected) {
@@ -387,18 +386,18 @@ const Home = ({ isDarkMode }) => {
                   {hasJobs && (
                     <div style={{
                       position: 'absolute',
-                      bottom: '0.25rem',
+                      bottom: '0.125rem',
                       left: '50%',
                       transform: 'translateX(-50%)',
                       display: 'flex',
-                      gap: '0.125rem'
+                      gap: '0.0625rem'
                     }}>
                       {getJobsForDate(date).slice(0, 3).map((job, i) => (
                         <div
                           key={i}
                           style={{
-                            width: '4px',
-                            height: '4px',
+                            width: '3px',
+                            height: '3px',
                             borderRadius: '50%',
                             background: isSelected ? 'white' : statusColors[job.status]
                           }}
