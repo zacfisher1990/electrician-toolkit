@@ -60,13 +60,31 @@ function App() {
     }, [isDarkMode]);
 
    
-  React.useEffect(() => {
   // Update theme-color meta tag based on dark mode
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', isDarkMode ? '#000000' : '#2563eb');
-    }
-  }, [isDarkMode]);
+  React.useEffect(() => {
+     const updateThemeColor = () => {
+     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+       metaThemeColor.setAttribute('content', isDarkMode ? '#000000' : '#2563eb');
+      }
+    };
+
+     // Update immediately
+    updateThemeColor();
+
+     // Also update when page becomes visible (when returning to the app)
+     const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          updateThemeColor();
+        }
+     };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  return () => {
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+  };
+}, [isDarkMode]);
 
   React.useEffect(() => {
   // Scroll to top whenever the view changes
