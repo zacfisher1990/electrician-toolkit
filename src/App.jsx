@@ -67,6 +67,11 @@ function App() {
       metaThemeColor.setAttribute('content', isDarkMode ? '#000000' : '#2563eb');
     }
   }, [isDarkMode]);
+
+  React.useEffect(() => {
+  // Scroll to top whenever the view changes
+    window.scrollTo(0, 0);
+    }, [activeCalculator]);
   
   // Job management functions
   const addJob = (jobData) => {
