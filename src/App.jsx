@@ -13,13 +13,13 @@ import ServiceEntranceSizing from './ServiceEntranceSizing.jsx';
 import GroundingBondingCalculator from './GroundingBondingCalculator.jsx';
 import ConduitBendingCalculator from './ConduitBendingCalculator.jsx';
 import LightingCalculator from './LightingCalculator.jsx';
+import ReceptacleCalculator from './ReceptacleCalculator.jsx';
 import BottomNavigation from './BottomNavigation.jsx';
 import VFDSizingCalculator from './VFDSizingCalculator.jsx';
 import ReactanceImpedanceCalculator from './ReactanceImpedanceCalculator.jsx';
 import PowerFactorCorrection from './PowerFactorCorrection.jsx';
 import PowerTriangleCalculator from './PowerTriangleCalculator.jsx';
 import ThreePhasePowerCalculator from './ThreePhasePowerCalculator.jsx';
-import ReceptacleCalculator from './ReceptacleCalculator.jsx';
 import Home from './Home.jsx';
 import Profile from './Profile.jsx';
 import Jobs from './Jobs.jsx';
@@ -219,6 +219,8 @@ const colors = {
         return <ConduitBendingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
       case 'lighting':
         return <LightingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+      case 'receptacles':
+        return <ReceptacleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
       case 'vfd-sizing':
         return <VFDSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
       case 'reactance-impedance':
@@ -229,8 +231,6 @@ const colors = {
         return <PowerTriangleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
       case 'three-phase-power':
         return <ThreePhasePowerCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
-      case 'receptacles':
-        return <ReceptacleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
       case 'calculators':
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -303,20 +303,19 @@ const colors = {
   const HeaderIcon = headerInfo.icon;
 
   return (
-
     <div className="App" style={{ background: isDarkMode ? '#000000' : '#ffffff' }}>
-    {/* Notch Area Cover - Always Visible */}
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: 'env(safe-area-inset-top)',
-      background: isDarkMode ? '#000000' : '#2563eb',
-      zIndex: 101
-    }} />
+      {/* Notch Area Cover - Always Visible */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 'env(safe-area-inset-top)',
+        background: isDarkMode ? '#000000' : '#2563eb',
+        zIndex: 101
+      }} />
 
-      {/* Persistent Header - Always Visible */}
+      {/* Persistent Header - Hides on scroll */}
       <div style={{ 
         background: isDarkMode ? '#000000' : '#2563eb',
         padding: '0.5rem 1rem',
@@ -330,12 +329,10 @@ const colors = {
         justifyContent: 'space-between',
         alignItems: 'center',
         minHeight: '48px',
-        transform: headerVisible ? 'translateY(0)' : 'translateY(-150%)',
+        transform: headerVisible ? 'translateY(0)' : 'translateY(calc(-100% - env(safe-area-inset-top)))',
         transition: 'transform 0.3s ease-in-out',
-        paddingTop: 'calc(0.5rem + env(safe-area-inset-top))',
         paddingLeft: 'max(1rem, env(safe-area-inset-left))',
-        paddingRight: 'max(1rem, env(safe-area-inset-right))',
-        paddingBottom: '0.5rem'
+        paddingRight: 'max(1rem, env(safe-area-inset-right))'
       }}>
         <div style={{ 
           display: 'flex', 
@@ -470,13 +467,13 @@ const colors = {
 
       {/* Content Area */}
       <div style={{ 
-          paddingBottom: 'calc(60px + env(safe-area-inset-bottom))',
-          paddingTop: 'calc(48px + 0.5rem + env(safe-area-inset-top))',  // Changed this line
-          paddingLeft: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-left)',
-          paddingRight: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-right)',
-          position: 'relative',
-          minHeight: '100vh',
-          boxSizing: 'border-box'
+        paddingBottom: 'calc(65px + env(safe-area-inset-bottom))',
+        paddingTop: 'calc(48px + env(safe-area-inset-top))',
+        paddingLeft: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-left)',
+        paddingRight: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-right)',
+        position: 'relative',
+        minHeight: '100vh',
+        boxSizing: 'border-box'
         }}>
         {!activeCalculator ? (
           renderCalculator()
