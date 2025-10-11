@@ -31,7 +31,11 @@ function App() {
     const saved = localStorage.getItem('activeView');
     return saved || null;
   });
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+  // Initialize from localStorage or default to false
+  const saved = localStorage.getItem('isDarkMode');
+  return saved === 'true'; // localStorage stores strings, so convert to boolean
+});
   const [showMenu, setShowMenu] = useState(false);
   const [showExportToast, setShowExportToast] = useState(false);
   const [pendingEstimate, setPendingEstimate] = useState(null);
@@ -49,6 +53,11 @@ function App() {
       localStorage.setItem('activeView', activeCalculator);
     }
   }, [activeCalculator]);
+
+  // Save dark mode preference to localStorage whenever it changes
+  React.useEffect(() => {
+    localStorage.setItem('isDarkMode', isDarkMode);
+    }, [isDarkMode]);
   
   // Job management functions
   const addJob = (jobData) => {
