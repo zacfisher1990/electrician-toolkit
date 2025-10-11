@@ -283,7 +283,10 @@ const colors = {
         alignItems: 'center',
         minHeight: '48px',
         transform: headerVisible ? 'translateY(0)' : 'translateY(-100%)',
-        transition: 'transform 0.3s ease-in-out'
+        transition: 'transform 0.3s ease-in-out',
+        paddingTop: 'max(0.5rem, env(safe-area-inset-top))',
+        paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+        paddingRight: 'max(1rem, env(safe-area-inset-right))'
       }}>
         <div style={{ 
           display: 'flex', 
@@ -419,7 +422,7 @@ const colors = {
       {/* Content Area */}
       <div style={{ 
         paddingBottom: '5rem',
-        paddingTop: '48px',
+        paddingTop: 'calc(48px + env(safe-area-inset-top))',
         position: 'relative',
         minHeight: '100vh'
       }}>
