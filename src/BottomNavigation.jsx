@@ -56,10 +56,12 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       justifyContent: 'space-around',
       alignItems: 'center',
       padding: 0,
+      paddingLeft: 'env(safe-area-inset-left)',
+      paddingRight: 'env(safe-area-inset-right)',
+      paddingBottom: 'env(safe-area-inset-bottom)',
       margin: 0,
       zIndex: 10000,
       height: '60px',
-      paddingBottom: 'env(safe-area-inset-bottom)',
       boxSizing: 'border-box'
     }}>
       <button
