@@ -17,12 +17,12 @@ const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate,
   });
 
   const colors = {
-    bg: isDarkMode ? '#1f2937' : '#f9fafb',
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    text: isDarkMode ? '#f9fafb' : '#111827',
-    subtext: isDarkMode ? '#9ca3af' : '#6b7280',
-    border: isDarkMode ? '#4b5563' : '#e5e7eb',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
+    bg: isDarkMode ? '#000000' : '#f9fafb',
+    cardBg: isDarkMode ? '#0a0a0a' : '#ffffff',
+    text: isDarkMode ? '#ffffff' : '#111827',
+    subtext: isDarkMode ? '#666666' : '#6b7280',
+    border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+    inputBg: isDarkMode ? '#000000' : '#ffffff',
   };
 
   const statusConfig = {
@@ -97,7 +97,7 @@ const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate,
           background: colors.cardBg,
           borderRadius: '0.75rem',
           border: `1px solid ${colors.border}`,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          boxShadow: 'none',
           marginBottom: '1rem',
           overflow: 'hidden'
         }}>
@@ -406,7 +406,7 @@ const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate,
                   borderRadius: '0.75rem',
                   padding: '1rem',
                   marginBottom: '0.75rem',
-                  boxShadow: isEditing ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : '0 1px 3px rgba(0,0,0,0.1)',
+                  boxShadow: isEditing ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : 'none',
                   transition: 'all 0.2s'
                 }}
               >

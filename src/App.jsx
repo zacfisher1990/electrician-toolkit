@@ -153,11 +153,11 @@ function App() {
   // Dark mode colors
 const colors = {
   headerBg: isDarkMode ? '#000000' : '#ffffff',
-  headerText: isDarkMode ? '#f9fafb' : '#111827',
-  headerBorder: isDarkMode ? '#1f2937' : '#e5e7eb',
-  menuBg: isDarkMode ? '#0a0a0a' : 'white',
-  cardBorder: isDarkMode ? '#262626' : '#e5e7eb',
-  cardText: isDarkMode ? '#f9fafb' : '#111827',
+  headerText: isDarkMode ? '#ffffff' : '#111827',
+  headerBorder: isDarkMode ? '#000000' : '#e5e7eb',
+  menuBg: isDarkMode ? '#000000' : 'white',
+  cardBorder: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+  cardText: isDarkMode ? '#ffffff' : '#111827',
 };
 
   const renderCalculator = () => {

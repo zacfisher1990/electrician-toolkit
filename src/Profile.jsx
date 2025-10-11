@@ -18,12 +18,12 @@ const Profile = ({ isDarkMode }) => {
   const [error, setError] = useState('');
 
   const colors = {
-    bg: isDarkMode ? '#1f2937' : '#f9fafb',
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    text: isDarkMode ? '#f9fafb' : '#111827',
-    subtext: isDarkMode ? '#9ca3af' : '#6b7280',
-    border: isDarkMode ? '#4b5563' : '#e5e7eb',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
+    bg: isDarkMode ? '#000000' : '#f9fafb',
+    cardBg: isDarkMode ? '#0a0a0a' : '#ffffff',
+    text: isDarkMode ? '#ffffff' : '#111827',
+    subtext: isDarkMode ? '#666666' : '#6b7280',
+    border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+    inputBg: isDarkMode ? '#000000' : '#ffffff',
   };
 
   // Listen for auth state changes
@@ -115,7 +115,7 @@ const Profile = ({ isDarkMode }) => {
             padding: '2rem 1rem',
             marginBottom: '1rem',
             textAlign: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            boxShadow: 'none'
           }}>
             <div style={{
               width: '80px',
@@ -153,7 +153,7 @@ const Profile = ({ isDarkMode }) => {
             border: `1px solid ${colors.border}`,
             overflow: 'hidden',
             marginBottom: '1rem',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            boxShadow: 'none'
           }}>
             <h3 style={{
               margin: 0,
@@ -240,7 +240,7 @@ const Profile = ({ isDarkMode }) => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem',
-              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
+              boxShadow: 'none'
             }}
           >
             <LogOut size={20} />
@@ -266,7 +266,7 @@ const Profile = ({ isDarkMode }) => {
           border: `1px solid ${colors.border}`,
           padding: '2rem 1rem',
           marginTop: '2rem',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          boxShadow: 'none'
         }}>
           {/* Icon */}
           <div style={{

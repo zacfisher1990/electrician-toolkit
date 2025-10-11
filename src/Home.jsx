@@ -6,14 +6,14 @@ const Home = ({ isDarkMode, jobs }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const colors = {
-    bg: isDarkMode ? '#1f2937' : '#f9fafb',
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    text: isDarkMode ? '#f9fafb' : '#111827',
-    subtext: isDarkMode ? '#9ca3af' : '#6b7280',
-    border: isDarkMode ? '#4b5563' : '#e5e7eb',
-    calendarBg: isDarkMode ? '#111827' : '#ffffff',
+    bg: isDarkMode ? '#000000' : '#f9fafb',
+    cardBg: isDarkMode ? '#0a0a0a' : '#ffffff',
+    text: isDarkMode ? '#ffffff' : '#111827',
+    subtext: isDarkMode ? '#666666' : '#6b7280',
+    border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+    calendarBg: isDarkMode ? '#000000' : '#ffffff',
     selectedDay: '#3b82f6',
-    todayBg: isDarkMode ? '#374151' : '#f3f4f6',
+    todayBg: isDarkMode ? '#1a1a1a' : '#f3f4f6',
   };
 
   const statusColors = {
@@ -198,7 +198,7 @@ const Home = ({ isDarkMode, jobs }) => {
           borderRadius: '0.75rem',
           padding: '1rem',
           marginBottom: '1rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          boxShadow: 'none'
         }}>
           {/* Calendar Header */}
           <div style={{
@@ -353,7 +353,7 @@ const Home = ({ isDarkMode, jobs }) => {
           borderRadius: '0.75rem',
           padding: '1rem',
           marginBottom: '1rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          boxShadow: 'none'
         }}>
           <div style={{
             display: 'flex',
@@ -454,7 +454,7 @@ const Home = ({ isDarkMode, jobs }) => {
           border: `1px solid ${colors.border}`,
           borderRadius: '0.75rem',
           padding: '1rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          boxShadow: 'none'
         }}>
           <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.125rem', fontWeight: '600', color: colors.text }}>
             Upcoming Jobs

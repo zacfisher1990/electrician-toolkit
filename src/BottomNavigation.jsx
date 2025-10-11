@@ -2,12 +2,12 @@ import React from 'react';
 import { Home, Calculator, Briefcase, User, FileText } from 'lucide-react';
 
 function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
-  // Dark mode colors
+  // Dark mode colors - PURE BLACK
   const colors = {
-    bg: isDarkMode ? '#111827' : '#ffffff',
-    border: isDarkMode ? '#374151' : '#e5e7eb',
+    bg: isDarkMode ? '#000000' : '#ffffff',
+    border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
     activeText: '#3b82f6',
-    inactiveText: isDarkMode ? '#9ca3af' : '#6b7280'
+    inactiveText: isDarkMode ? '#666666' : '#6b7280'
   };
 
   const buttonStyle = (isActive) => ({
@@ -51,7 +51,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       justifyContent: 'space-around',
       padding: 0,
       zIndex: 10000,
-      boxShadow: isDarkMode ? '0 -2px 10px rgba(0, 0, 0, 0.4)' : '0 -2px 10px rgba(0, 0, 0, 0.15)',
+      boxShadow: 'none',
       height: '52px',
       minHeight: '52px',
       maxHeight: '52px'

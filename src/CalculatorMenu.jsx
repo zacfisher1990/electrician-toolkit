@@ -53,20 +53,20 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
     'Safety': '#ef4444'                 // Red
   };
 
-  // Dark mode colors
+  // Dark mode colors - PURE BLACK
   const colors = {
-    mainBg: isDarkMode ? '#1f2937' : '#f9fafb',
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    inputBg: isDarkMode ? '#374151' : '#f9fafb',
-    inputBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    inputText: isDarkMode ? '#f9fafb' : '#111827',
-    placeholderText: isDarkMode ? '#9ca3af' : '#6b7280',
+    mainBg: isDarkMode ? '#000000' : '#f9fafb',
+    cardBg: isDarkMode ? '#0a0a0a' : '#ffffff',
+    cardBorder: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+    cardText: isDarkMode ? '#ffffff' : '#111827',
+    inputBg: isDarkMode ? '#0a0a0a' : '#f9fafb',
+    inputBorder: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+    inputText: isDarkMode ? '#ffffff' : '#111827',
+    placeholderText: isDarkMode ? '#666666' : '#6b7280',
     headerGradient: isDarkMode 
       ? 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)'
       : 'linear-gradient(135deg, #2563eb 0%, #60a5fa 100%)',
-    categoryHeaderText: isDarkMode ? '#e5e7eb' : '#4b5563'
+    categoryHeaderText: isDarkMode ? '#cccccc' : '#4b5563'
   };
 
   // Flatten all calculators for searching
@@ -127,7 +127,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = '#3b82f6';
-                e.target.style.backgroundColor = isDarkMode ? '#1f2937' : '#ffffff';
+                e.target.style.backgroundColor = isDarkMode ? '#000000' : '#ffffff';
                 e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
               }}
               onBlur={(e) => {
@@ -180,9 +180,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                           justifyContent: 'center',
                           gap: '0.625rem',
                           minHeight: '110px',
-                          boxShadow: isDarkMode 
-                            ? '0 2px 4px rgba(0,0,0,0.2)' 
-                            : '0 2px 4px rgba(0,0,0,0.06)',
+                          boxShadow: 'none',
                           transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                           color: colors.cardText,
                           position: 'relative',
@@ -190,16 +188,12 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                         }}
                         onMouseOver={(e) => {
                           e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                          e.currentTarget.style.boxShadow = isDarkMode
-                            ? '0 8px 16px rgba(0,0,0,0.3)'
-                            : '0 8px 16px rgba(0,0,0,0.12)';
+                          e.currentTarget.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#f9fafb';
                           e.currentTarget.style.borderColor = iconColor;
                         }}
                         onMouseOut={(e) => {
                           e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                          e.currentTarget.style.boxShadow = isDarkMode 
-                            ? '0 2px 4px rgba(0,0,0,0.2)' 
-                            : '0 2px 4px rgba(0,0,0,0.06)';
+                          e.currentTarget.style.backgroundColor = colors.cardBg;
                           e.currentTarget.style.borderColor = colors.cardBorder;
                         }}
                         onMouseDown={(e) => {
@@ -214,7 +208,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                           height: '48px',
                           borderRadius: '50%',
                           backgroundColor: isDarkMode 
-                            ? `${iconColor}20` 
+                            ? `${iconColor}25` 
                             : `${iconColor}15`,
                           display: 'flex',
                           alignItems: 'center',
@@ -308,9 +302,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                           justifyContent: 'center',
                           gap: '0.625rem',
                           minHeight: '110px',
-                          boxShadow: isDarkMode 
-                            ? '0 2px 4px rgba(0,0,0,0.2)' 
-                            : '0 2px 4px rgba(0,0,0,0.06)',
+                          boxShadow: 'none',
                           transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                           color: colors.cardText,
                           position: 'relative',
@@ -318,16 +310,12 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                         }}
                         onMouseOver={(e) => {
                           e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                          e.currentTarget.style.boxShadow = isDarkMode
-                            ? '0 8px 16px rgba(0,0,0,0.3)'
-                            : '0 8px 16px rgba(0,0,0,0.12)';
+                          e.currentTarget.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#f9fafb';
                           e.currentTarget.style.borderColor = iconColor;
                         }}
                         onMouseOut={(e) => {
                           e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                          e.currentTarget.style.boxShadow = isDarkMode 
-                            ? '0 2px 4px rgba(0,0,0,0.2)' 
-                            : '0 2px 4px rgba(0,0,0,0.06)';
+                          e.currentTarget.style.backgroundColor = colors.cardBg;
                           e.currentTarget.style.borderColor = colors.cardBorder;
                         }}
                         onMouseDown={(e) => {
@@ -343,7 +331,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                           height: '48px',
                           borderRadius: '50%',
                           backgroundColor: isDarkMode 
-                            ? `${iconColor}20` 
+                            ? `${iconColor}25` 
                             : `${iconColor}15`,
                           display: 'flex',
                           alignItems: 'center',

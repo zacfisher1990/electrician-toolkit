@@ -26,12 +26,12 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
   ];
 
   const colors = {
-    bg: isDarkMode ? '#1f2937' : '#f9fafb',
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    text: isDarkMode ? '#f9fafb' : '#111827',
-    subtext: isDarkMode ? '#9ca3af' : '#6b7280',
-    border: isDarkMode ? '#4b5563' : '#e5e7eb',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
+    bg: isDarkMode ? '#000000' : '#f9fafb',
+    cardBg: isDarkMode ? '#0a0a0a' : '#ffffff',
+    text: isDarkMode ? '#ffffff' : '#111827',
+    subtext: isDarkMode ? '#666666' : '#6b7280',
+    border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+    inputBg: isDarkMode ? '#000000' : '#ffffff',
   };
 
   const calculateTotal = (laborHours, laborRate, materials) => {
@@ -135,7 +135,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
           background: colors.cardBg,
           borderRadius: '0.75rem',
           border: `1px solid ${colors.border}`,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          boxShadow: 'none',
           marginBottom: '1rem',
           overflow: 'hidden'
         }}>
@@ -428,7 +428,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
                 borderRadius: '0.75rem',
                 padding: '1rem',
                 marginBottom: '0.75rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                boxShadow: 'none'
               }}
             >
               <div style={{
@@ -544,7 +544,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
                         background: colors.cardBg,
                         border: `1px solid ${colors.border}`,
                         borderRadius: '0.5rem',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        boxShadow: isDarkMode ? '0 4px 12px rgba(0,0,0,0.6)' : '0 4px 12px rgba(0,0,0,0.15)',
                         maxHeight: '200px',
                         overflowY: 'auto',
                         zIndex: 9999
