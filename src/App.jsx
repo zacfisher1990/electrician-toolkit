@@ -151,14 +151,14 @@ function App() {
   };
 
   // Dark mode colors
-  const colors = {
-    headerBg: isDarkMode ? '#111827' : '#ffffff',
-    headerText: isDarkMode ? '#f9fafb' : '#111827',
-    headerBorder: isDarkMode ? '#374151' : '#e5e7eb',
-    menuBg: isDarkMode ? '#1f2937' : 'white',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-  };
+const colors = {
+  headerBg: isDarkMode ? '#000000' : '#ffffff',
+  headerText: isDarkMode ? '#f9fafb' : '#111827',
+  headerBorder: isDarkMode ? '#1f2937' : '#e5e7eb',
+  menuBg: isDarkMode ? '#0a0a0a' : 'white',
+  cardBorder: isDarkMode ? '#262626' : '#e5e7eb',
+  cardText: isDarkMode ? '#f9fafb' : '#111827',
+};
 
   const renderCalculator = () => {
     switch(activeCalculator) {
@@ -267,10 +267,10 @@ function App() {
   const HeaderIcon = headerInfo.icon;
 
   return (
-    <div className="App" style={{ background: isDarkMode ? '#1f2937' : '#ffffff' }}>
+    <div className="App" style={{ background: isDarkMode ? '#000000' : '#ffffff' }}>
       {/* Persistent Header - Always Visible */}
       <div style={{ 
-        background: '#2563eb',
+        background: isDarkMode ? '#000000' : '#2563eb',
         padding: '0.5rem 1rem',
         borderBottom: `1px solid ${colors.headerBorder}`,
         position: 'fixed',
