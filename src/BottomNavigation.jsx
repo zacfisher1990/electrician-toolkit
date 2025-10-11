@@ -25,21 +25,23 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
     gap: '0.25rem',
     fontSize: '0.625rem',
     fontWeight: '500',
-    flex: 1,
-    padding: '0.5rem 0',
+    flex: '1 1 0',
+    padding: '0.5rem 0.25rem',
     margin: 0,
     transition: 'color 0.2s',
     WebkitTapHighlightColor: 'transparent',
     WebkitAppearance: 'none',
     MozAppearance: 'none',
-    appearance: 'none'
+    appearance: 'none',
+    minWidth: '0'
   });
 
   const labelStyle = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    maxWidth: '100%',
+    width: '100%',
+    textAlign: 'center',
     lineHeight: '1',
     marginTop: '0.125rem'
   };
@@ -50,25 +52,26 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       bottom: 0,
       left: 0,
       right: 0,
+      width: '100%',
       background: colors.bg,
       borderTop: `1px solid ${colors.border}`,
       display: 'flex',
-      justifyContent: 'space-around',
+      justifyContent: 'space-between',
       alignItems: 'center',
-      padding: 0,
+      padding: '0',
       paddingLeft: 'env(safe-area-inset-left)',
       paddingRight: 'env(safe-area-inset-right)',
       paddingBottom: 'env(safe-area-inset-bottom)',
       margin: 0,
       zIndex: 10000,
-      height: '60px',
+      minHeight: '60px',
       boxSizing: 'border-box'
     }}>
       <button
         onClick={() => onNavigate('home')}
         style={buttonStyle(currentView === 'home')}
       >
-        <Home size={24} strokeWidth={currentView === 'home' ? 2.5 : 2} />
+        <Home size={22} strokeWidth={currentView === 'home' ? 2.5 : 2} />
         <span style={labelStyle}>Home</span>
       </button>
       
@@ -76,7 +79,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
         onClick={() => onNavigate('calculators')}
         style={buttonStyle(currentView === 'calculators')}
       >
-        <Calculator size={24} strokeWidth={currentView === 'calculators' ? 2.5 : 2} />
+        <Calculator size={22} strokeWidth={currentView === 'calculators' ? 2.5 : 2} />
         <span style={labelStyle}>Calculators</span>
       </button>
 
@@ -84,7 +87,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
         onClick={() => onNavigate('jobs')}
         style={buttonStyle(currentView === 'jobs')}
       >
-        <Briefcase size={24} strokeWidth={currentView === 'jobs' ? 2.5 : 2} />
+        <Briefcase size={22} strokeWidth={currentView === 'jobs' ? 2.5 : 2} />
         <span style={labelStyle}>Jobs</span>
       </button>
 
@@ -92,7 +95,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
         onClick={() => onNavigate('estimates')}
         style={buttonStyle(currentView === 'estimates')}
       >
-        <FileText size={24} strokeWidth={currentView === 'estimates' ? 2.5 : 2} />
+        <FileText size={22} strokeWidth={currentView === 'estimates' ? 2.5 : 2} />
         <span style={labelStyle}>Estimates</span>
       </button>
 
@@ -100,7 +103,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
         onClick={() => onNavigate('profile')}
         style={buttonStyle(currentView === 'profile')}
       >
-        <User size={24} strokeWidth={currentView === 'profile' ? 2.5 : 2} />
+        <User size={22} strokeWidth={currentView === 'profile' ? 2.5 : 2} />
         <span style={labelStyle}>Profile</span>
       </button>
     </div>
