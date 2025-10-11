@@ -2,7 +2,7 @@ import React from 'react';
 import { Home, Calculator, Briefcase, User, FileText } from 'lucide-react';
 
 function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
-  // Dark mode colors - PURE BLACK
+  // Dark mode colors
   const colors = {
     bg: isDarkMode ? '#000000' : '#ffffff',
     border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
@@ -11,23 +11,28 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
   };
 
   const buttonStyle = (isActive) => ({
-    background: 'none',
-    border: 'none',
+    background: 'transparent',
+    border: '0',
+    borderWidth: '0',
+    outline: 'none',
+    boxShadow: 'none',
     color: isActive ? colors.activeText : colors.inactiveText,
     cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '0.125rem',
-    fontSize: '0.5625rem',
+    gap: '0.25rem',
+    fontSize: '0.625rem',
     fontWeight: '500',
     flex: 1,
-    padding: '0.25rem 0.125rem',
+    padding: '0.5rem 0',
+    margin: 0,
     transition: 'color 0.2s',
-    minWidth: 0,
-    minHeight: '52px', // Fixed height to prevent shifting
-    maxHeight: '52px'
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none',
+    MozAppearance: 'none',
+    appearance: 'none'
   });
 
   const labelStyle = {
@@ -35,32 +40,33 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     maxWidth: '100%',
-    lineHeight: '1'
+    lineHeight: '1',
+    marginTop: '0.125rem'
   };
 
   return (
     <div style={{
       position: 'fixed',
-      bottom: '8px',
-      left: '8px',
-      right: '8px',
+      bottom: 0,
+      left: 0,
+      right: 0,
       background: colors.bg,
       borderTop: `1px solid ${colors.border}`,
-      borderRadius: '12px',
       display: 'flex',
       justifyContent: 'space-around',
+      alignItems: 'center',
       padding: 0,
+      margin: 0,
       zIndex: 10000,
-      boxShadow: 'none',
-      height: '52px',
-      minHeight: '52px',
-      maxHeight: '52px'
+      height: '60px',
+      paddingBottom: 'env(safe-area-inset-bottom)',
+      boxSizing: 'border-box'
     }}>
       <button
         onClick={() => onNavigate('home')}
         style={buttonStyle(currentView === 'home')}
       >
-        <Home size={18} strokeWidth={2} />
+        <Home size={24} strokeWidth={currentView === 'home' ? 2.5 : 2} />
         <span style={labelStyle}>Home</span>
       </button>
       
@@ -68,7 +74,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
         onClick={() => onNavigate('calculators')}
         style={buttonStyle(currentView === 'calculators')}
       >
-        <Calculator size={18} strokeWidth={2} />
+        <Calculator size={24} strokeWidth={currentView === 'calculators' ? 2.5 : 2} />
         <span style={labelStyle}>Calculators</span>
       </button>
 
@@ -76,7 +82,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
         onClick={() => onNavigate('jobs')}
         style={buttonStyle(currentView === 'jobs')}
       >
-        <Briefcase size={18} strokeWidth={2} />
+        <Briefcase size={24} strokeWidth={currentView === 'jobs' ? 2.5 : 2} />
         <span style={labelStyle}>Jobs</span>
       </button>
 
@@ -84,7 +90,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
         onClick={() => onNavigate('estimates')}
         style={buttonStyle(currentView === 'estimates')}
       >
-        <FileText size={18} strokeWidth={2} />
+        <FileText size={24} strokeWidth={currentView === 'estimates' ? 2.5 : 2} />
         <span style={labelStyle}>Estimates</span>
       </button>
 
@@ -92,7 +98,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
         onClick={() => onNavigate('profile')}
         style={buttonStyle(currentView === 'profile')}
       >
-        <User size={18} strokeWidth={2} />
+        <User size={24} strokeWidth={currentView === 'profile' ? 2.5 : 2} />
         <span style={labelStyle}>Profile</span>
       </button>
     </div>
