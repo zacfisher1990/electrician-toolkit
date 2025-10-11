@@ -318,11 +318,12 @@ const colors = {
         justifyContent: 'space-between',
         alignItems: 'center',
         minHeight: '48px',
-        transform: headerVisible ? 'translateY(0)' : 'translateY(-120%)',
+        transform: headerVisible ? 'translateY(0)' : 'translateY(-150%)',
         transition: 'transform 0.3s ease-in-out',
-        paddingTop: '1rem',
+        paddingTop: 'calc(0.5rem + env(safe-area-inset-top))',
         paddingLeft: 'max(1rem, env(safe-area-inset-left))',
-        paddingRight: 'max(1rem, env(safe-area-inset-right))'
+        paddingRight: 'max(1rem, env(safe-area-inset-right))',
+        paddingBottom: '0.5rem'
       }}>
         <div style={{ 
           display: 'flex', 
@@ -457,13 +458,13 @@ const colors = {
 
       {/* Content Area */}
       <div style={{ 
-        paddingBottom: 'calc(60px + env(safe-area-inset-bottom))',
-        paddingTop: 'calc(48px + env(safe-area-inset-top))',
-        paddingLeft: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-left)',
-        paddingRight: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-right)',
-        position: 'relative',
-        minHeight: '100vh',
-        boxSizing: 'border-box'
+          paddingBottom: 'calc(60px + env(safe-area-inset-bottom))',
+          paddingTop: 'calc(48px + 0.5rem + env(safe-area-inset-top))',  // Changed this line
+          paddingLeft: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-left)',
+          paddingRight: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-right)',
+          position: 'relative',
+          minHeight: '100vh',
+          boxSizing: 'border-box'
         }}>
         {!activeCalculator ? (
           renderCalculator()
