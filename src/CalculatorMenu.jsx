@@ -29,7 +29,7 @@ import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circ
         { id: 'motor-calculations', name: 'Motors', icon: Settings, keywords: 'motor flc protection starter 430' },
         { id: 'transformer-sizing', name: 'Transformers', icon: Radio, keywords: 'transformer kva sizing current primary secondary 450' },
         { id: 'vfd-sizing', name: 'VFD Sizing', icon: Gauge, keywords: 'vfd variable frequency drive motor speed control inverter ac drive' },
-        { id: 'lighting', name: 'Lighting', icon: Lightbulb, keywords: 'lighting lumens foot candles fixtures spacing watts illumination' }
+        
       ]
     },
     {
@@ -37,7 +37,9 @@ import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circ
       calculators: [
         { id: 'box-fill', name: 'Box Fill', icon: Package, keywords: 'box fill junction cubic inch volume 314' },
         { id: 'conduit-fill', name: 'Conduit Fill', icon: Circle, keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
-        { id: 'conduit-bending', name: 'Conduit Bending', icon: CornerDownRight, keywords: 'conduit bending offset saddle stub bend emt' }
+        { id: 'conduit-bending', name: 'Conduit Bending', icon: CornerDownRight, keywords: 'conduit bending offset saddle stub bend emt' },
+        { id: 'receptacles', name: 'Receptacles', icon: Plug, keywords: 'receptacle outlet gfci plug socket 210.52 counter kitchen bathroom wall spacing' },
+        { id: 'lighting', name: 'Lighting', icon: Lightbulb, keywords: 'lighting lumens foot candles fixtures spacing watts illumination' }
       ]
     }
   ];

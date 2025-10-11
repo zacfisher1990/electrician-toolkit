@@ -19,6 +19,7 @@ import ReactanceImpedanceCalculator from './ReactanceImpedanceCalculator.jsx';
 import PowerFactorCorrection from './PowerFactorCorrection.jsx';
 import PowerTriangleCalculator from './PowerTriangleCalculator.jsx';
 import ThreePhasePowerCalculator from './ThreePhasePowerCalculator.jsx';
+import ReceptacleCalculator from './ReceptacleCalculator.jsx';
 import Home from './Home.jsx';
 import Profile from './Profile.jsx';
 import Jobs from './Jobs.jsx';
@@ -228,6 +229,8 @@ const colors = {
         return <PowerTriangleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
       case 'three-phase-power':
         return <ThreePhasePowerCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+      case 'receptacles':
+        return <ReceptacleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
       case 'calculators':
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -287,6 +290,7 @@ const colors = {
       'grounding-bonding': { title: 'Grounding & Bonding', icon: Globe },
       'conduit-bending': { title: 'Conduit Bending', icon: CornerDownRight },
       'lighting': { title: 'Lighting', icon: Lightbulb },
+      'receptacles': { title: 'Receptacles', icon: Plug },
       'vfd-sizing': { title: 'VFD Sizing', icon: Gauge },
       'power-triangle': { title: 'Power Triangle', icon: Triangle },
       'three-phase-power': { title: 'Three-Phase Power', icon: Tally3 }
