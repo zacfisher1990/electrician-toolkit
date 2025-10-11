@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';
+
 function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -149,7 +150,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                 fontSize: '0.875rem',
                 color: colors.placeholderText,
                 marginBottom: '1rem',
-                paddingLeft: '0.25rem'
+                paddingLeft: '0'
               }}>
                 {filteredResults.length} {filteredResults.length === 1 ? 'result' : 'results'} found
               </div>
@@ -256,7 +257,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                   alignItems: 'center',
                   gap: '0.75rem',
                   marginBottom: '1rem',
-                  paddingLeft: '0.25rem'
+                  paddingLeft: '0'
                 }}>
                   <div style={{
                     width: '4px',
