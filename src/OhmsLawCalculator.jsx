@@ -607,76 +607,73 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
       
 
-      {/* Tab Navigation */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ 
-          display: 'flex', 
-          gap: '0.5rem',
-          flexWrap: 'wrap'
-        }}>
-          <button
-            onClick={() => setActiveTab('basic')}
-            style={{
-              flex: '1 1 auto',
-              minWidth: '80px',
-              padding: '0.75rem 1rem',
-              background: activeTab === 'basic' ? '#3b82f6' : 'transparent',
-              color: activeTab === 'basic' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'basic' ? '#3b82f6' : colors.cardBorder}`,
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            Basic
-          </button>
-          <button
-            onClick={() => setActiveTab('series')}
-            style={{
-              flex: '1 1 auto',
-              minWidth: '80px',
-              padding: '0.75rem 1rem',
-              background: activeTab === 'series' ? '#3b82f6' : 'transparent',
-              color: activeTab === 'series' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'series' ? '#3b82f6' : colors.cardBorder}`,
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            Series
-          </button>
-          <button
-            onClick={() => setActiveTab('parallel')}
-            style={{
-              flex: '1 1 auto',
-              minWidth: '80px',
-              padding: '0.75rem 1rem',
-              background: activeTab === 'parallel' ? '#3b82f6' : 'transparent',
-              color: activeTab === 'parallel' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'parallel' ? '#3b82f6' : colors.cardBorder}`,
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            Parallel
-          </button>
-        </div>
-      </div>
+     {/* Tab Navigation */}
+<div style={{
+  background: colors.cardBg,
+  border: `1px solid ${colors.cardBorder}`,
+  borderRadius: '12px',
+  padding: '1rem',
+  marginBottom: '1rem',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  display: 'flex',
+  gap: '0.5rem'
+  
+}}>
+  <button
+    onClick={() => setActiveTab('basic')}
+    style={{
+      flex: '1 1 auto',
+      minWidth: '80px',
+      padding: '0.625rem 1rem',
+      background: activeTab === 'basic' ? '#3b82f6' : colors.sectionBg,
+      color: activeTab === 'basic' ? 'white' : colors.labelText,
+      border: `1px solid ${activeTab === 'basic' ? '#3b82f6' : colors.cardBorder}`,
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontSize: '0.875rem',
+      fontWeight: '600',
+      transition: 'all 0.2s'
+    }}
+  >
+    Basic
+  </button>
+  <button
+    onClick={() => setActiveTab('series')}
+    style={{
+      flex: '1 1 auto',
+      minWidth: '80px',
+      padding: '0.625rem 1rem',
+      background: activeTab === 'series' ? '#3b82f6' : colors.sectionBg,
+      color: activeTab === 'series' ? 'white' : colors.labelText,
+      border: `1px solid ${activeTab === 'series' ? '#3b82f6' : colors.cardBorder}`,
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontSize: '0.875rem',
+      fontWeight: '600',
+      transition: 'all 0.2s'
+    }}
+  >
+    Series
+  </button>
+  <button
+    onClick={() => setActiveTab('parallel')}
+    style={{
+      flex: '1 1 auto',
+      minWidth: '80px',
+      padding: '0.625rem 1rem',
+      background: activeTab === 'parallel' ? '#3b82f6' : colors.sectionBg,
+      color: activeTab === 'parallel' ? 'white' : colors.labelText,
+      border: `1px solid ${activeTab === 'parallel' ? '#3b82f6' : colors.cardBorder}`,
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontSize: '0.875rem',
+      fontWeight: '600',
+      transition: 'all 0.2s'
+    }}
+  >
+    Parallel
+  </button>
+</div>
 
       {/* Basic Tab */}
       {activeTab === 'basic' && (
@@ -1057,27 +1054,39 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
               marginBottom: '0.75rem',
               border: `1px solid ${colors.cardBorder}`
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <h4 style={{ fontWeight: '600', color: colors.labelText, margin: 0, fontSize: '0.875rem' }}>
-                  Component {index + 1}
-                </h4>
-                {seriesComponents.length > 1 && (
-                  <button
-                    onClick={() => removeSeriesComponent(comp.id)}
-                    style={{ 
-                      color: '#dc2626', 
-                      background: 'none', 
-                      border: 'none', 
-                      cursor: 'pointer', 
-                      padding: '0.25rem',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                )}
-              </div>
+              <div style={{ 
+  display: 'grid',
+  gridTemplateColumns: '1fr auto',
+  alignItems: 'center',
+  marginBottom: '0.75rem',
+  gap: '0.5rem'
+}}>
+  <h4 style={{ 
+    fontWeight: '600', 
+    color: colors.labelText, 
+    margin: 0, 
+    fontSize: '0.875rem'
+  }}>
+    Component {index + 1}
+  </h4>
+  {seriesComponents.length > 1 && (
+    <button
+      onClick={() => removeSeriesComponent(comp.id)}
+      style={{ 
+        color: '#dc2626', 
+        background: 'none', 
+        border: 'none', 
+        cursor: 'pointer', 
+        padding: '0.5rem',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <Trash2 size={18} />
+    </button>
+  )}
+</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
                 {[
                   { field: 'R', label: 'R (Ω)' },
@@ -1362,27 +1371,39 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
               marginBottom: '0.75rem',
               border: `1px solid ${colors.cardBorder}`
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <h4 style={{ fontWeight: '600', color: colors.labelText, margin: 0, fontSize: '0.875rem' }}>
-                  Component {index + 1}
-                </h4>
-                {parallelComponents.length > 1 && (
-                  <button
-                    onClick={() => removeParallelComponent(comp.id)}
-                    style={{ 
-                      color: '#dc2626', 
-                      background: 'none', 
-                      border: 'none', 
-                      cursor: 'pointer', 
-                      padding: '0.25rem',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                )}
-              </div>
+              <div style={{ 
+  display: 'grid',
+  gridTemplateColumns: '1fr auto',
+  alignItems: 'center',
+  marginBottom: '0.75rem',
+  gap: '0.5rem'
+}}>
+  <h4 style={{ 
+    fontWeight: '600', 
+    color: colors.labelText, 
+    margin: 0, 
+    fontSize: '0.875rem'
+  }}>
+    Component {index + 1}
+  </h4>
+  {parallelComponents.length > 1 && (
+    <button
+      onClick={() => removeParallelComponent(comp.id)}
+      style={{ 
+        color: '#dc2626', 
+        background: 'none', 
+        border: 'none', 
+        cursor: 'pointer', 
+        padding: '0.5rem',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <Trash2 size={18} />
+    </button>
+  )}
+</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
                 {[
                   { field: 'R', label: 'R (Ω)' },
