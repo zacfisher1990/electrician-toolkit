@@ -265,14 +265,16 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                     backgroundColor: categoryColors[category.name],
                     borderRadius: '2px'
                   }} />
+                  {/* Category Header */}
                   <h3 style={{
                     fontSize: '1rem',
                     fontWeight: '600',
                     color: colors.categoryHeaderText,
                     margin: 0,
+                    marginBottom: '1rem',
                     letterSpacing: '-0.01em'
                   }}>
-                    {category.name}
+                  {category.name}
                   </h3>
                 </div>
 
