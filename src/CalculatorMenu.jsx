@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Tally3, SquareDivide, Zap, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
+import { Search, Tally3, Target, Cable, SquareDivide, Zap, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const calculatorCategories = [
@@ -9,7 +9,7 @@ import { Search, Tally3, SquareDivide, Zap, Plug, Package, Circle, AlertTriangle
         { id: 'voltage-drop', name: 'Voltage Drop', icon: TrendingDown, keywords: 'voltage drop vd wire circuit' },
         { id: 'ohms-law', name: "Ohm's Law", icon: SquareDivide, keywords: 'ohms law voltage current resistance power series parallel circuit' },
         { id: 'reactance-impedance', name: 'Reactance', icon: Waves, keywords: 'reactance impedance xl xc capacitive inductive resonance frequency ac circuit' },
-        { id: 'power-factor', name: 'Power Factor', icon: Activity, keywords: 'power factor correction pf capacitor kvar cos phi efficiency demand charge penalty savings' },
+        { id: 'power-factor', name: 'Power Factor', icon: Target, keywords: 'power factor correction pf capacitor kvar cos phi efficiency demand charge penalty savings' },
         { id: 'power-triangle', name: 'Power Triangle', icon: Triangle, keywords: 'power triangle kva kw kvar apparent real reactive power factor angle phase' },
         { id: 'three-phase-power', name: 'Three-Phase', icon: Tally3, keywords: 'three phase power 3 phase current voltage kw kva motor industrial commercial wye delta line' }
       ]
@@ -17,7 +17,7 @@ import { Search, Tally3, SquareDivide, Zap, Plug, Package, Circle, AlertTriangle
     {
       name: 'Sizing & Rating',
       calculators: [
-        { id: 'ampacity', name: 'Ampacity', icon: AlertTriangle, keywords: 'ampacity current rating 310 temperature' },
+        { id: 'ampacity', name: 'Ampacity', icon: Cable, keywords: 'ampacity current rating 310 temperature' },
         { id: 'load-calculations', name: 'Load Calculations', icon: BarChart3, keywords: 'load calculation service size residential commercial demand' },
         { id: 'service-entrance', name: 'Service Entrance', icon: Building, keywords: 'service entrance sizing panel main 230' },
         { id: 'grounding-bonding', name: 'Grounding & Bonding', icon: Globe, keywords: 'grounding bonding ground electrode equipment gec egc jumper 250' }
