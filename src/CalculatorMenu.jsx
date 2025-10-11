@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Zap, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
+import { Search, Tally3, SquareDivide, Zap, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const calculatorCategories = [
@@ -7,11 +7,11 @@ import { Search, Zap, Plug, Package, Circle, AlertTriangle, Settings, BarChart3,
       name: 'Power Calculations',
       calculators: [
         { id: 'voltage-drop', name: 'Voltage Drop', icon: TrendingDown, keywords: 'voltage drop vd wire circuit' },
-        { id: 'ohms-law', name: "Ohm's Law", icon: Zap, keywords: 'ohms law voltage current resistance power series parallel circuit' },
+        { id: 'ohms-law', name: "Ohm's Law", icon: SquareDivide, keywords: 'ohms law voltage current resistance power series parallel circuit' },
         { id: 'reactance-impedance', name: 'Reactance', icon: Waves, keywords: 'reactance impedance xl xc capacitive inductive resonance frequency ac circuit' },
         { id: 'power-factor', name: 'Power Factor', icon: Activity, keywords: 'power factor correction pf capacitor kvar cos phi efficiency demand charge penalty savings' },
         { id: 'power-triangle', name: 'Power Triangle', icon: Triangle, keywords: 'power triangle kva kw kvar apparent real reactive power factor angle phase' },
-        { id: 'three-phase-power', name: 'Three-Phase', icon: Zap, keywords: 'three phase power 3 phase current voltage kw kva motor industrial commercial wye delta line' }
+        { id: 'three-phase-power', name: 'Three-Phase', icon: Tally3, keywords: 'three phase power 3 phase current voltage kw kva motor industrial commercial wye delta line' }
       ]
     },
     {
