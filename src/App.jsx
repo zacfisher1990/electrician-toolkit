@@ -318,9 +318,9 @@ const colors = {
         justifyContent: 'space-between',
         alignItems: 'center',
         minHeight: '48px',
-        transform: headerVisible ? 'translateY(0)' : 'translateY(-100%)',
+        transform: headerVisible ? 'translateY(0)' : 'translateY(-120%)',
         transition: 'transform 0.3s ease-in-out',
-        paddingTop: 'max(0.5rem, env(safe-area-inset-top))',
+        paddingTop: '1rem',
         paddingLeft: 'max(1rem, env(safe-area-inset-left))',
         paddingRight: 'max(1rem, env(safe-area-inset-right))'
       }}>

@@ -58,13 +58,10 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'stretch',
-      padding: '0.5rem 0',
-      paddingLeft: 'max(0.5rem, env(safe-area-inset-left))',
-      paddingRight: 'max(0.5rem, env(safe-area-inset-right))',
-      paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
+      padding: '0.5rem 0.5rem 0.75rem 0.5rem',
       margin: 0,
       zIndex: 10000,
-      minHeight: '60px',
+      minHeight: '65px',
       boxSizing: 'border-box'
     }}>
       <button
