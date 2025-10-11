@@ -4,6 +4,11 @@
   padding: 10px;
   min-height: 100vh;
   background-color: #f5f5f5;
+  /* Safe area insets for iOS */
+  padding-left: max(10px, env(safe-area-inset-left));
+  padding-right: max(10px, env(safe-area-inset-right));
+  padding-top: max(10px, env(safe-area-inset-top));
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
 }
 
 /* Header styling */
@@ -21,6 +26,10 @@
   margin-bottom: 20px;
   border-radius: 0 0 15px 15px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  /* Safe area for header */
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
+  padding-top: max(20px, env(safe-area-inset-top));
 }
 
 /* Calculator containers */
@@ -162,6 +171,8 @@ label {
 @media (max-width: 768px) {
   .App {
     padding: 5px;
+    padding-left: max(5px, env(safe-area-inset-left));
+    padding-right: max(5px, env(safe-area-inset-right));
   }
   
   .calculator-container {
@@ -173,6 +184,8 @@ label {
     font-size: 1.2rem;
     padding: 15px;
     min-height: 12vh;
+    padding-left: max(15px, env(safe-area-inset-left));
+    padding-right: max(15px, env(safe-area-inset-right));
   }
   
   button {
@@ -190,6 +203,8 @@ label {
   .App-header {
     font-size: 1rem;
     padding: 10px;
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
   }
   
   .calculator-container {
