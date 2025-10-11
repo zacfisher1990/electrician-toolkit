@@ -303,14 +303,26 @@ const colors = {
   const HeaderIcon = headerInfo.icon;
 
   return (
+
     <div className="App" style={{ background: isDarkMode ? '#000000' : '#ffffff' }}>
+    {/* Notch Area Cover - Always Visible */}
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 'env(safe-area-inset-top)',
+      background: isDarkMode ? '#000000' : '#2563eb',
+      zIndex: 101
+    }} />
+
       {/* Persistent Header - Always Visible */}
       <div style={{ 
         background: isDarkMode ? '#000000' : '#2563eb',
         padding: '0.5rem 1rem',
         borderBottom: `1px solid ${colors.headerBorder}`,
         position: 'fixed',
-        top: 0,
+        top: 'env(safe-area-inset-top)',
         left: 0,
         right: 0,
         zIndex: 100,
