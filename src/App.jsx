@@ -435,10 +435,13 @@ const colors = {
 
       {/* Content Area */}
       <div style={{ 
-        paddingBottom: '5rem',
+        paddingBottom: 'calc(60px + env(safe-area-inset-bottom))',
         paddingTop: 'calc(48px + env(safe-area-inset-top))',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)',
         position: 'relative',
-        minHeight: '100vh'
+        minHeight: '100vh',
+        boxSizing: 'border-box'
       }}>
         {!activeCalculator ? (
           renderCalculator()
