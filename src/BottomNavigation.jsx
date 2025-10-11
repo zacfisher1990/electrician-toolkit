@@ -55,60 +55,57 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       width: '100%',
       background: colors.bg,
       borderTop: `1px solid ${colors.border}`,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'stretch',
+      padding: '0.5rem 0',
+      paddingLeft: 'max(0.5rem, env(safe-area-inset-left))',
+      paddingRight: 'max(0.5rem, env(safe-area-inset-right))',
+      paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
       margin: 0,
       zIndex: 10000,
-      boxSizing: 'border-box',
-      paddingBottom: 'env(safe-area-inset-bottom)'
+      minHeight: '60px',
+      boxSizing: 'border-box'
     }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '0.25rem 0',
-        paddingLeft: 'max(0.5rem, env(safe-area-inset-left))',
-        paddingRight: 'max(0.5rem, env(safe-area-inset-right))',
-        minHeight: '60px'
-      }}>
-        <button
-          onClick={() => onNavigate('home')}
-          style={buttonStyle(currentView === 'home')}
-        >
-          <Home size={22} strokeWidth={currentView === 'home' ? 2.5 : 2} />
-          <span style={labelStyle}>Home</span>
-        </button>
-        
-        <button
-          onClick={() => onNavigate('calculators')}
-          style={buttonStyle(currentView === 'calculators')}
-        >
-          <Calculator size={22} strokeWidth={currentView === 'calculators' ? 2.5 : 2} />
-          <span style={labelStyle}>Calculators</span>
-        </button>
+      <button
+        onClick={() => onNavigate('home')}
+        style={buttonStyle(currentView === 'home')}
+      >
+        <Home size={22} strokeWidth={currentView === 'home' ? 2.5 : 2} />
+        <span style={labelStyle}>Home</span>
+      </button>
+      
+      <button
+        onClick={() => onNavigate('calculators')}
+        style={buttonStyle(currentView === 'calculators')}
+      >
+        <Calculator size={22} strokeWidth={currentView === 'calculators' ? 2.5 : 2} />
+        <span style={labelStyle}>Calculators</span>
+      </button>
 
-        <button
-          onClick={() => onNavigate('jobs')}
-          style={buttonStyle(currentView === 'jobs')}
-        >
-          <Briefcase size={22} strokeWidth={currentView === 'jobs' ? 2.5 : 2} />
-          <span style={labelStyle}>Jobs</span>
-        </button>
+      <button
+        onClick={() => onNavigate('jobs')}
+        style={buttonStyle(currentView === 'jobs')}
+      >
+        <Briefcase size={22} strokeWidth={currentView === 'jobs' ? 2.5 : 2} />
+        <span style={labelStyle}>Jobs</span>
+      </button>
 
-        <button
-          onClick={() => onNavigate('estimates')}
-          style={buttonStyle(currentView === 'estimates')}
-        >
-          <FileText size={22} strokeWidth={currentView === 'estimates' ? 2.5 : 2} />
-          <span style={labelStyle}>Estimates</span>
-        </button>
+      <button
+        onClick={() => onNavigate('estimates')}
+        style={buttonStyle(currentView === 'estimates')}
+      >
+        <FileText size={22} strokeWidth={currentView === 'estimates' ? 2.5 : 2} />
+        <span style={labelStyle}>Estimates</span>
+      </button>
 
-        <button
-          onClick={() => onNavigate('profile')}
-          style={buttonStyle(currentView === 'profile')}
-        >
-          <User size={22} strokeWidth={currentView === 'profile' ? 2.5 : 2} />
-          <span style={labelStyle}>Profile</span>
-        </button>
-      </div>
+      <button
+        onClick={() => onNavigate('profile')}
+        style={buttonStyle(currentView === 'profile')}
+      >
+        <User size={22} strokeWidth={currentView === 'profile' ? 2.5 : 2} />
+        <span style={labelStyle}>Profile</span>
+      </button>
     </div>
   );
 }
