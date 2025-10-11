@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Menu, FileDown, Zap, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText } from 'lucide-react';
+import { Menu, FileDown, Omega, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText } from 'lucide-react';
 import CalculatorMenu from './CalculatorMenu.jsx';
 import VoltageDropCalculator from './VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './OhmsLawCalculator.jsx';
@@ -275,7 +275,7 @@ const colors = {
     const headerMap = {
       'voltage-drop': { title: 'Voltage Drop', icon: TrendingDown },
       'ohms-law': { title: "Ohm's Law", icon: SquareDivide },
-      'reactance-impedance': { title: 'Reactance & Impedance', icon: Waves },
+      'reactance-impedance': { title: 'Reactance & Impedance', icon: Omega },
       'power-factor': { title: 'Power Factor Correction', icon: Target },
       'box-fill': { title: 'Box Fill', icon: Package },
       'conduit-fill': { title: 'Conduit Fill', icon: Circle },
