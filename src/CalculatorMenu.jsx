@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Zap, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Cpu, Building, Globe, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';
+import { Search, Zap, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Cpu, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';
 function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -38,7 +38,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
       calculators: [
         { id: 'box-fill', name: 'Box Fill', icon: Package, keywords: 'box fill junction cubic inch volume 314' },
         { id: 'conduit-fill', name: 'Conduit Fill', icon: Circle, keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
-        { id: 'conduit-bending', name: 'Bending', icon: Maximize2, keywords: 'conduit bending offset saddle stub bend emt' }
+        { id: 'conduit-bending', name: 'Conduit Bending', icon: CornerDownRight, keywords: 'conduit bending offset saddle stub bend emt' }
       ]
     }
   ];
@@ -193,6 +193,10 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                             justifyContent: 'center',
                             width: '70px',
                             height: '70px',
+                            minWidth: '70px',      
+                            minHeight: '70px',     
+                            maxWidth: '70px',      
+                            maxHeight: '70px',     
                             flexShrink: 0,
                             boxShadow: 'none',
                             transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -318,6 +322,11 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                             justifyContent: 'center',
                             width: '70px',
                             height: '70px',
+                            minWidth: '70px',      
+                            minHeight: '70px',     
+                            maxWidth: '70px',      
+                            maxHeight: '70px',     
+                            flexShrink: 0,         
                             boxShadow: 'none',
                             transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                             position: 'relative',
