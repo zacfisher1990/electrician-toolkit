@@ -27,6 +27,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
     fontWeight: '500',
     flex: '1 1 0',
     padding: '0.5rem 0.25rem',
+    paddingBottom: '0.75rem', // Extra padding for buttons
     margin: 0,
     transition: 'color 0.2s',
     WebkitTapHighlightColor: 'transparent',
@@ -61,7 +62,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       padding: '0',
       paddingLeft: 'env(safe-area-inset-left)',
       paddingRight: 'env(safe-area-inset-right)',
-      paddingBottom: 'env(safe-area-inset-bottom)',
+      paddingBottom: '0.5rem', // Changed: added base padding
       margin: 0,
       zIndex: 10000,
       minHeight: '60px',
