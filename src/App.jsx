@@ -58,6 +58,15 @@ function App() {
   React.useEffect(() => {
     localStorage.setItem('isDarkMode', isDarkMode);
     }, [isDarkMode]);
+
+   
+  React.useEffect(() => {
+  // Update theme-color meta tag based on dark mode
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', isDarkMode ? '#000000' : '#2563eb');
+    }
+  }, [isDarkMode]);
   
   // Job management functions
   const addJob = (jobData) => {
