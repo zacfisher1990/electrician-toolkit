@@ -455,12 +455,12 @@ const colors = {
       <div style={{ 
         paddingBottom: 'calc(60px + env(safe-area-inset-bottom))',
         paddingTop: 'calc(48px + env(safe-area-inset-top))',
-        paddingLeft: 'env(safe-area-inset-left)',
-        paddingRight: 'env(safe-area-inset-right)',
+        paddingLeft: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-left)',
+        paddingRight: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-right)',
         position: 'relative',
         minHeight: '100vh',
         boxSizing: 'border-box'
-      }}>
+        }}>
         {!activeCalculator ? (
           renderCalculator()
         ) : (

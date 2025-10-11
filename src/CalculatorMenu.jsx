@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Zap, Plug, Package, Wrench, AlertTriangle, Settings, BarChart3, Cpu, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';
-
+import { Search, Zap, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Cpu, Building, Globe, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';
 function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -20,9 +19,9 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
       name: 'Sizing & Rating',
       calculators: [
         { id: 'ampacity', name: 'Ampacity', icon: AlertTriangle, keywords: 'ampacity current rating 310 temperature' },
-        { id: 'load-calculations', name: 'Load', icon: BarChart3, keywords: 'load calculation service size residential commercial demand' },
-        { id: 'service-entrance', name: 'Service', icon: Building, keywords: 'service entrance sizing panel main 230' },
-        { id: 'grounding-bonding', name: 'Grounding', icon: Shield, keywords: 'grounding bonding ground electrode equipment gec egc jumper 250' }
+        { id: 'load-calculations', name: 'Load Calculations', icon: BarChart3, keywords: 'load calculation service size residential commercial demand' },
+        { id: 'service-entrance', name: 'Service Entrance', icon: Building, keywords: 'service entrance sizing panel main 230' },
+        { id: 'grounding-bonding', name: 'Grounding & Bonding', icon: Globe, keywords: 'grounding bonding ground electrode equipment gec egc jumper 250' }
       ]
     },
     {
@@ -38,7 +37,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
       name: 'Installation',
       calculators: [
         { id: 'box-fill', name: 'Box Fill', icon: Package, keywords: 'box fill junction cubic inch volume 314' },
-        { id: 'conduit-fill', name: 'Conduit Fill', icon: Wrench, keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
+        { id: 'conduit-fill', name: 'Conduit Fill', icon: Circle, keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
         { id: 'conduit-bending', name: 'Bending', icon: Maximize2, keywords: 'conduit bending offset saddle stub bend emt' }
       ]
     }
@@ -94,8 +93,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
         {/* Content Area */}
         <div style={{ 
           padding: '1.25rem',
-          paddingLeft: 'max(1.25rem, env(safe-area-inset-left))',
-          paddingRight: 'max(1.25rem, env(safe-area-inset-right))'
+          boxSizing: 'border-box'
         }}>
           {/* Search Bar */}
           <div style={{ 
@@ -157,8 +155,10 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
               <div style={{ 
                 display: 'grid', 
                 gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                gap: '1rem',
-                marginBottom: '1rem'
+                gap: '1.25rem',
+                marginBottom: '1rem',
+                boxSizing: 'border-box',
+                width: '100%'
               }}>
                 {filteredResults.length > 0 ? (
                   filteredResults.map(calc => {
@@ -166,72 +166,73 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                     const iconColor = categoryColors[calc.category] || '#3b82f6';
                     
                     return (
-                      <button
+                      <div
                         key={calc.id}
                         onClick={() => {
                           console.log('Clicked calculator:', calc.id);
                           onSelectCalculator(calc.id);
                         }}
                         style={{
-                          backgroundColor: colors.cardBg,
-                          border: `1px solid ${colors.cardBorder}`,
-                          borderRadius: '14px',
-                          padding: '1.25rem 0.75rem',
                           cursor: 'pointer',
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '0.625rem',
-                          minHeight: '110px',
-                          boxShadow: 'none',
-                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                          color: colors.cardText,
-                          position: 'relative',
-                          overflow: 'hidden'
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                          e.currentTarget.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#f9fafb';
-                          e.currentTarget.style.borderColor = iconColor;
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                          e.currentTarget.style.backgroundColor = colors.cardBg;
-                          e.currentTarget.style.borderColor = colors.cardBorder;
-                        }}
-                        onMouseDown={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-2px) scale(0.98)';
-                        }}
-                        onMouseUp={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                          gap: '0.5rem'
                         }}
                       >
-                        <div style={{
-                          width: '48px',
-                          height: '48px',
-                          borderRadius: '50%',
-                          backgroundColor: isDarkMode 
-                            ? `${iconColor}25` 
-                            : `${iconColor}15`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.25s ease'
-                        }}>
-                          <IconComponent size={26} strokeWidth={2} color={iconColor} />
-                        </div>
+                        {/* Square Button with Icon Only */}
+                        <button
+                          style={{
+                            backgroundColor: colors.cardBg,
+                            border: `1px solid ${colors.cardBorder}`,
+                            borderRadius: '12px',
+                            padding: '0',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '70px',
+                            height: '70px',
+                            flexShrink: 0,
+                            boxShadow: 'none',
+                            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                            position: 'relative',
+                            overflow: 'hidden'
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+                            e.currentTarget.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#f9fafb';
+                            e.currentTarget.style.borderColor = iconColor;
+                            e.currentTarget.style.boxShadow = `0 8px 16px ${iconColor}20`;
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                            e.currentTarget.style.backgroundColor = colors.cardBg;
+                            e.currentTarget.style.borderColor = colors.cardBorder;
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                          onMouseDown={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px) scale(0.95)';
+                          }}
+                          onMouseUp={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+                          }}
+                        >
+                          <IconComponent size={28} strokeWidth={2} color={iconColor} />
+                        </button>
                         
+                        {/* Title Below Button */}
                         <div style={{ 
-                          fontSize: '0.875rem',
-                          fontWeight: '700',
+                          fontSize: '0.75rem',
+                          fontWeight: '600',
                           textAlign: 'center',
-                          lineHeight: '1.3',
-                          letterSpacing: '-0.01em'
+                          lineHeight: '1.2',
+                          color: colors.cardText,
+                          maxWidth: '90px'
                         }}>
                           {calc.name}
                         </div>
-                      </button>
+                      </div>
                     );
                   })
                 ) : (
@@ -265,16 +266,14 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                     backgroundColor: categoryColors[category.name],
                     borderRadius: '2px'
                   }} />
-                  {/* Category Header */}
                   <h3 style={{
                     fontSize: '1rem',
                     fontWeight: '600',
                     color: colors.categoryHeaderText,
                     margin: 0,
-                    marginBottom: '1rem',
                     letterSpacing: '-0.01em'
                   }}>
-                  {category.name}
+                    {category.name}
                   </h3>
                 </div>
 
@@ -282,82 +281,82 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                 <div style={{ 
                   display: 'grid', 
                   gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                  gap: '1rem',
-                  marginBottom: categoryIndex < calculatorCategories.length - 1 ? '1.5rem' : '1rem'
+                  gap: '1.25rem',
+                  marginBottom: categoryIndex < calculatorCategories.length - 1 ? '1.5rem' : '1rem',
+                  boxSizing: 'border-box',
+                  width: '100%'
                 }}>
                   {category.calculators.map(calc => {
                     const IconComponent = calc.icon;
                     const iconColor = categoryColors[category.name];
                     
                     return (
-                      <button
+                      <div
                         key={calc.id}
                         onClick={() => {
                           console.log('Clicked calculator:', calc.id);
                           onSelectCalculator(calc.id);
                         }}
                         style={{
-                          backgroundColor: colors.cardBg,
-                          border: `1px solid ${colors.cardBorder}`,
-                          borderRadius: '14px',
-                          padding: '1.25rem 0.75rem',
                           cursor: 'pointer',
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '0.625rem',
-                          minHeight: '110px',
-                          boxShadow: 'none',
-                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                          color: colors.cardText,
-                          position: 'relative',
-                          overflow: 'hidden'
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                          e.currentTarget.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#f9fafb';
-                          e.currentTarget.style.borderColor = iconColor;
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                          e.currentTarget.style.backgroundColor = colors.cardBg;
-                          e.currentTarget.style.borderColor = colors.cardBorder;
-                        }}
-                        onMouseDown={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-2px) scale(0.98)';
-                        }}
-                        onMouseUp={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                          gap: '0.5rem'
                         }}
                       >
-                        {/* Icon with background circle */}
-                        <div style={{
-                          width: '48px',
-                          height: '48px',
-                          borderRadius: '50%',
-                          backgroundColor: isDarkMode 
-                            ? `${iconColor}25` 
-                            : `${iconColor}15`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.25s ease'
-                        }}>
-                          <IconComponent size={26} strokeWidth={2} color={iconColor} />
-                        </div>
+                        {/* Square Button with Icon Only */}
+                        <button
+                          style={{
+                            backgroundColor: colors.cardBg,
+                            border: `1px solid ${colors.cardBorder}`,
+                            borderRadius: '12px',
+                            padding: '0',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '70px',
+                            height: '70px',
+                            boxShadow: 'none',
+                            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                            position: 'relative',
+                            overflow: 'hidden'
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+                            e.currentTarget.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#f9fafb';
+                            e.currentTarget.style.borderColor = iconColor;
+                            e.currentTarget.style.boxShadow = `0 8px 16px ${iconColor}20`;
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                            e.currentTarget.style.backgroundColor = colors.cardBg;
+                            e.currentTarget.style.borderColor = colors.cardBorder;
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                          onMouseDown={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px) scale(0.95)';
+                          }}
+                          onMouseUp={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+                          }}
+                        >
+                          <IconComponent size={28} strokeWidth={2} color={iconColor} />
+                        </button>
                         
-                        {/* Calculator name */}
+                        {/* Title Below Button */}
                         <div style={{ 
-                          fontSize: '0.875rem',
-                          fontWeight: '700',
+                          fontSize: '0.75rem',
+                          fontWeight: '600',
                           textAlign: 'center',
-                          lineHeight: '1.3',
-                          letterSpacing: '-0.01em'
+                          lineHeight: '1.2',
+                          color: colors.cardText,
+                          maxWidth: '90px'
                         }}>
                           {calc.name}
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
