@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Zap, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Cpu, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';
-function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
+import { Search, Zap, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const calculatorCategories = [
@@ -28,7 +27,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
       name: 'Equipment',
       calculators: [
         { id: 'motor-calculations', name: 'Motors', icon: Settings, keywords: 'motor flc protection starter 430' },
-        { id: 'transformer-sizing', name: 'Transformers', icon: Cpu, keywords: 'transformer kva sizing current primary secondary 450' },
+        { id: 'transformer-sizing', name: 'Transformers', icon: Radio, keywords: 'transformer kva sizing current primary secondary 450' },
         { id: 'vfd-sizing', name: 'VFD Sizing', icon: Gauge, keywords: 'vfd variable frequency drive motor speed control inverter ac drive' },
         { id: 'lighting', name: 'Lighting', icon: Lightbulb, keywords: 'lighting lumens foot candles fixtures spacing watts illumination' }
       ]
