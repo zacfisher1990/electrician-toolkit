@@ -91,7 +91,11 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
     }}>
       <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
         {/* Content Area */}
-        <div style={{ padding: '1.25rem' }}>
+        <div style={{ 
+          padding: '1.25rem',
+          paddingLeft: 'max(1.25rem, env(safe-area-inset-left))',
+          paddingRight: 'max(1.25rem, env(safe-area-inset-right))'
+        }}>
           {/* Search Bar */}
           <div style={{ 
             marginBottom: '1.5rem',
