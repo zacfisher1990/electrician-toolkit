@@ -717,7 +717,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
                   color: colors.labelText, 
                   marginBottom: '0.5rem' 
                 }}>
-                  Voltage (V)
+                  Voltage (E)
                 </label>
                 <input
                   type="number"
@@ -1002,7 +1002,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
             }}>
               Circuit Totals (Optional)
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', marginBottom: '0.5rem' }}>
               {['R', 'V', 'I', 'P'].map(field => (
                 <div key={field}>
                   <label style={{ 
@@ -1090,7 +1090,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
                 {[
                   { field: 'R', label: 'R (Ω)' },
-                  { field: 'V', label: 'V (V)' },
+                  { field: 'E', label: 'E (V)' },
                   { field: 'I', label: 'I (A)' },
                   { field: 'P', label: 'P (W)' }
                 ].map(({ field, label }) => (
@@ -1205,7 +1205,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
             }}>
               Circuit Totals
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
               <div style={{
                 background: colors.sectionBg,
                 padding: '1rem',
@@ -1319,7 +1319,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
             }}>
               Circuit Totals (Optional)
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', marginBottom: '0.5rem' }}>
               {['R', 'V', 'I', 'P'].map(field => (
                 <div key={field}>
                   <label style={{ 
@@ -1407,7 +1407,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
                 {[
                   { field: 'R', label: 'R (Ω)' },
-                  { field: 'V', label: 'V (V)' },
+                  { field: 'E', label: 'E (V)' },
                   { field: 'I', label: 'I (A)' },
                   { field: 'P', label: 'P (W)' }
                 ].map(({ field, label }) => (
@@ -1522,7 +1522,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
             }}>
               Circuit Totals
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
               <div style={{
                 background: colors.sectionBg,
                 padding: '1rem',
@@ -1546,7 +1546,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
                 textAlign: 'center'
               }}>
                 <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Voltage
+                  Total E
                 </div>
                 <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
                   {getTotalsParallel().totalV.toFixed(1)}
@@ -1605,7 +1605,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
         <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
           Formulas:
         </div>
-        V = I × R • P = V × I • I = V ÷ R • P = I² × R • R = V ÷ I • P = V² ÷ R
+        E = I × R • P = E × I • I = E ÷ R • P = I² × R • R = E ÷ I • P = E² ÷ R
       </div>
     </div>
   );
