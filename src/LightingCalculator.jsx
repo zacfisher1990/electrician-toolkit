@@ -92,7 +92,7 @@ const LumensCalculator = ({ lumensData, setLumensData, colors }) => {
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Room Type
+            Room Type <br/>  <br/>
           </label>
           <select
             value={lumensData.roomType}

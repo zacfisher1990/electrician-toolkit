@@ -54,7 +54,7 @@ const OffsetBendCalculator = ({ offsetData, setOffsetData, colors }) => {
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Bend Angle
+            Bend Angle <br/>  <br/>
           </label>
           <select
             value={offsetData.bendAngle}
@@ -201,7 +201,7 @@ const StubUpCalculator = ({ stubUpData, setStubUpData, colors }) => {
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Conduit Size
+            Conduit Size <br/>  <br/>
           </label>
           <select
             value={stubUpData.conduitSize}

@@ -76,8 +76,8 @@ const ResidentialLoadCalculator = ({ data, setData, colors }) => {
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
         <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Square Footage
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem', minHeight: '2.5rem' }}>
+            Square<br/>Footage<br/>   <br/>
           </label>
           <input 
             type="number" 
@@ -95,6 +95,7 @@ const ResidentialLoadCalculator = ({ data, setData, colors }) => {
               boxSizing: 'border-box'
             }}
           />
+          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
         </div>
 
         <div>
@@ -122,7 +123,7 @@ const ResidentialLoadCalculator = ({ data, setData, colors }) => {
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Laundry Circuits
+            Laundry Circuits <br/>   <br/>
           </label>
           <input 
             type="number" 
@@ -163,6 +164,7 @@ const ResidentialLoadCalculator = ({ data, setData, colors }) => {
               boxSizing: 'border-box'
             }}
           />
+          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
         </div>
 
         <div>
@@ -185,6 +187,7 @@ const ResidentialLoadCalculator = ({ data, setData, colors }) => {
               boxSizing: 'border-box'
             }}
           />
+          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
         </div>
 
         <div>
@@ -207,6 +210,7 @@ const ResidentialLoadCalculator = ({ data, setData, colors }) => {
               boxSizing: 'border-box'
             }}
           />
+          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
         </div>
 
         <div>
@@ -229,6 +233,7 @@ const ResidentialLoadCalculator = ({ data, setData, colors }) => {
               boxSizing: 'border-box'
             }}
           />
+          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
         </div>
 
         <div>
@@ -251,6 +256,7 @@ const ResidentialLoadCalculator = ({ data, setData, colors }) => {
               boxSizing: 'border-box'
             }}
           />
+          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
         </div>
 
         <div>
@@ -271,9 +277,11 @@ const ResidentialLoadCalculator = ({ data, setData, colors }) => {
               boxSizing: 'border-box'
             }}
           >
+            
             <option value="240">240V</option>
             <option value="208">208V</option>
           </select>
+           <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
         </div>
       </div>
 
@@ -614,8 +622,9 @@ const CommercialLoadCalculator = ({ data, setData, colors }) => {
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            System Phase
+            System Phase <br/>    <br/>
           </label>
+          
           <select 
             value={data.phase} 
             onChange={(e) => setData(prev => ({...prev, phase: e.target.value}))}

@@ -292,7 +292,7 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
             </select>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
             <div>
               <label style={{ 
                 display: 'block', 
@@ -377,7 +377,7 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
         </h3>
         
         <div style={{ display: 'grid', gap: '1rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
             <div>
               <label style={{ 
                 display: 'block', 
