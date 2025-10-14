@@ -358,7 +358,7 @@ const SaddleBendCalculator = ({ saddleData, setSaddleData, colors }) => {
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Obstacle Width (Optional)
+            Obstacle Width <br/> (Optional)
           </label>
           <input
             type="number"

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
+import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';
+
+function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const calculatorCategories = [
@@ -55,12 +57,12 @@ import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circ
 
   // Dark mode colors - PURE BLACK
   const colors = {
-    mainBg: isDarkMode ? '#000000' : '#f9fafb',
+    mainBg: isDarkMode ? '#000000' : '#f3f4f6',
     cardBg: isDarkMode ? '#0a0a0a' : '#ffffff',
-    cardBorder: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+    cardBorder: isDarkMode ? '#1a1a1a' : '#d1d5db',
     cardText: isDarkMode ? '#ffffff' : '#111827',
-    inputBg: isDarkMode ? '#0a0a0a' : '#f9fafb',
-    inputBorder: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+    inputBg: isDarkMode ? '#0a0a0a' : '#ffffff',
+    inputBorder: isDarkMode ? '#1a1a1a' : '#d1d5db',
     inputText: isDarkMode ? '#ffffff' : '#111827',
     placeholderText: isDarkMode ? '#666666' : '#6b7280',
     headerGradient: isDarkMode 
@@ -184,8 +186,8 @@ import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circ
                         {/* Square Button with Icon Only */}
                         <button
                           style={{
-                            backgroundColor: colors.cardBg,
-                            border: `1px solid ${colors.cardBorder}`,
+                            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+                            border: `2px solid ${isDarkMode ? '#2a2a2a' : '#d1d5db'}`,
                             borderRadius: '12px',
                             padding: '0',
                             cursor: 'pointer',
@@ -199,22 +201,22 @@ import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circ
                             maxWidth: '70px',      
                             maxHeight: '70px',     
                             flexShrink: 0,
-                            boxShadow: 'none',
+                            boxShadow: isDarkMode ? '0 1px 3px rgba(0, 0, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)',
                             transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                             position: 'relative',
                             overflow: 'hidden'
                           }}
                           onMouseOver={(e) => {
                             e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
-                            e.currentTarget.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#f9fafb';
+                            e.currentTarget.style.backgroundColor = isDarkMode ? '#252525' : '#ffffff';
                             e.currentTarget.style.borderColor = iconColor;
-                            e.currentTarget.style.boxShadow = `0 8px 16px ${iconColor}20`;
+                            e.currentTarget.style.boxShadow = `0 8px 16px ${iconColor}30, 0 4px 6px ${iconColor}20`;
                           }}
                           onMouseOut={(e) => {
                             e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                            e.currentTarget.style.backgroundColor = colors.cardBg;
-                            e.currentTarget.style.borderColor = colors.cardBorder;
-                            e.currentTarget.style.boxShadow = 'none';
+                            e.currentTarget.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#ffffff';
+                            e.currentTarget.style.borderColor = isDarkMode ? '#2a2a2a' : '#d1d5db';
+                            e.currentTarget.style.boxShadow = isDarkMode ? '0 1px 3px rgba(0, 0, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)';
                           }}
                           onMouseDown={(e) => {
                             e.currentTarget.style.transform = 'translateY(-2px) scale(0.95)';
@@ -313,8 +315,8 @@ import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circ
                         {/* Square Button with Icon Only */}
                         <button
                           style={{
-                            backgroundColor: colors.cardBg,
-                            border: `1px solid ${colors.cardBorder}`,
+                            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+                            border: `2px solid ${isDarkMode ? '#2a2a2a' : '#d1d5db'}`,
                             borderRadius: '12px',
                             padding: '0',
                             cursor: 'pointer',
@@ -328,22 +330,22 @@ import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circ
                             maxWidth: '70px',      
                             maxHeight: '70px',     
                             flexShrink: 0,         
-                            boxShadow: 'none',
+                            boxShadow: isDarkMode ? '0 1px 3px rgba(0, 0, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)',
                             transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                             position: 'relative',
                             overflow: 'hidden'
                           }}
                           onMouseOver={(e) => {
                             e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
-                            e.currentTarget.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#f9fafb';
+                            e.currentTarget.style.backgroundColor = isDarkMode ? '#252525' : '#ffffff';
                             e.currentTarget.style.borderColor = iconColor;
-                            e.currentTarget.style.boxShadow = `0 8px 16px ${iconColor}20`;
+                            e.currentTarget.style.boxShadow = `0 8px 16px ${iconColor}30, 0 4px 6px ${iconColor}20`;
                           }}
                           onMouseOut={(e) => {
                             e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                            e.currentTarget.style.backgroundColor = colors.cardBg;
-                            e.currentTarget.style.borderColor = colors.cardBorder;
-                            e.currentTarget.style.boxShadow = 'none';
+                            e.currentTarget.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#ffffff';
+                            e.currentTarget.style.borderColor = isDarkMode ? '#2a2a2a' : '#d1d5db';
+                            e.currentTarget.style.boxShadow = isDarkMode ? '0 1px 3px rgba(0, 0, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)';
                           }}
                           onMouseDown={(e) => {
                             e.currentTarget.style.transform = 'translateY(-2px) scale(0.95)';
