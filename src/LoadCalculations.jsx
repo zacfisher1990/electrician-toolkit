@@ -622,7 +622,7 @@ const CommercialLoadCalculator = ({ data, setData, colors }) => {
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            System Phase <br/>    <br/>
+            System<br/> Phase
           </label>
           
           <select 

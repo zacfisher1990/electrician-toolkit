@@ -497,7 +497,7 @@ const FourPointSaddleCalculator = ({ fourPointData, setFourPointData, colors }) 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Obstacle Height (inches)
+            Obstacle Height <br/> (inches)
           </label>
           <input
             type="number"
@@ -519,7 +519,7 @@ const FourPointSaddleCalculator = ({ fourPointData, setFourPointData, colors }) 
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Obstacle Width (inches)
+            Obstacle Width <br/> (inches)
           </label>
           <input
             type="number"

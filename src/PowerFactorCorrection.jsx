@@ -391,7 +391,7 @@ const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {
                     color: colors.labelText, 
                     marginBottom: '0.5rem' 
                   }}>
-                    Target Power Factor
+                    Target Power Factor <br/>
                   </label>
                   <select 
                     value={targetPF} 

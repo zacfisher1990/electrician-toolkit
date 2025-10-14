@@ -253,7 +253,7 @@ const PowerTriangleCalculator = forwardRef(({ isDarkMode = false, onBack }, ref)
                 color: colors.labelText, 
                 marginBottom: '0.5rem' 
               }}>
-                Real Power (kW)
+                Real Power <br/>(kW)
               </label>
               <input 
                 type="number" 
@@ -315,7 +315,7 @@ const PowerTriangleCalculator = forwardRef(({ isDarkMode = false, onBack }, ref)
                 color: colors.labelText, 
                 marginBottom: '0.5rem' 
               }}>
-                Apparent Power (kVA)
+                Apparent Power <br/> (kVA)
               </label>
               <input 
                 type="number" 
@@ -346,7 +346,7 @@ const PowerTriangleCalculator = forwardRef(({ isDarkMode = false, onBack }, ref)
                 color: colors.labelText, 
                 marginBottom: '0.5rem' 
               }}>
-                Power Factor
+                Power Factor <br/>  <br/>
               </label>
               <input 
                 type="number" 
