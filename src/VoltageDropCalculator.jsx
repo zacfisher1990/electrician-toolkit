@@ -1,8 +1,9 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, FileDown, Briefcase } from 'lucide-react';
 import { exportToPDF } from './pdfExport';
+import { getUserJobs, addCalculationToJob } from './jobsService';
 
-const VoltageDropCalculator = forwardRef(({ isDarkMode = false }, ref) => {
+const VoltageDropCalculator = forwardRef(({ isDarkMode = false, onExportSuccess }, ref) => {
   const [voltage, setVoltage] = useState('');
   const [current, setCurrent] = useState('');
   const [distance, setDistance] = useState('');
@@ -10,6 +11,9 @@ const VoltageDropCalculator = forwardRef(({ isDarkMode = false }, ref) => {
   const [phaseType, setPhaseType] = useState('single');
   const [conductorType, setConductorType] = useState('copper');
   const [powerFactor, setPowerFactor] = useState('1.0');
+  const [showJobSelector, setShowJobSelector] = useState(false);
+  const [jobs, setJobs] = useState([]);
+  const [loadingJobs, setLoadingJobs] = useState(false);
 
   // Dark mode colors
   const colors = {
@@ -88,51 +92,100 @@ const VoltageDropCalculator = forwardRef(({ isDarkMode = false }, ref) => {
 
   const result = calculateDrop();
 
+  const handleOpenJobSelector = async () => {
+    setShowJobSelector(true);
+    setLoadingJobs(true);
+    try {
+      const userJobs = await getUserJobs();
+      setJobs(userJobs);
+    } catch (error) {
+      console.error('Error loading jobs:', error);
+      alert('Failed to load jobs. Please try again.');
+    } finally {
+      setLoadingJobs(false);
+    }
+  };
+
+  const handleAttachToJob = async (jobId) => {
+    try {
+      const calculationData = {
+        type: 'voltage-drop',
+        data: {
+          voltage: parseFloat(voltage),
+          current: parseFloat(current),
+          distance: parseFloat(distance),
+          wireSize,
+          phaseType,
+          conductorType,
+          powerFactor: parseFloat(powerFactor),
+          results: {
+            voltageDrop: result.drop,
+            percentageDrop: result.percentage,
+            excessive: result.excessive
+          }
+        }
+      };
+      
+      await addCalculationToJob(jobId, calculationData);
+      setShowJobSelector(false);
+      alert('Calculation attached to job successfully!');
+    } catch (error) {
+      console.error('Error attaching calculation:', error);
+      alert('Failed to attach calculation. Please try again.');
+    }
+  };
+
+  const handleExport = () => {
+    if (!voltage || !current || !distance) {
+      alert('Please enter all required values before exporting to PDF');
+      return;
+    }
+
+    const pdfData = {
+      calculatorName: 'Voltage Drop Calculator',
+      inputs: {
+        systemType: phaseType === 'single' ? 'Single Phase' : 'Three Phase',
+        conductorMaterial: conductorType.charAt(0).toUpperCase() + conductorType.slice(1),
+        systemVoltage: `${voltage} V`,
+        loadCurrent: `${current} A`,
+        oneWayDistance: `${distance} ft`,
+        wireSize: wireSize.includes('/') ? `${wireSize} AWG` : `${wireSize} ${parseInt(wireSize) <= 4 ? 'AWG' : 'kcmil'}`,
+        powerFactor: powerFactor
+      },
+      results: {
+        voltageDrop: `${result.drop} V`,
+        percentageDrop: `${result.percentage}%`,
+        necCompliant: result.excessive ? 'NO - Exceeds 3% limit' : 'YES - Within 3% limit',
+        status: result.excessive ? '⚠️ WARNING: Exceeds NEC 3% Limit' : '✓ Within NEC limits'
+      },
+      additionalInfo: {
+        formula: phaseType === 'single' 
+          ? '2 × K × I × L × PF ÷ CM'
+          : '1.732 × K × I × L × PF ÷ CM',
+        kConstant: `${kConstants[conductorType].ac} (${conductorType} AC)`,
+        circularMils: circularMils[wireSize].toLocaleString(),
+        powerFactorUsed: powerFactor,
+        systemConfiguration: phaseType === 'single' ? 'Single phase' : 'Three phase'
+      },
+      necReferences: [
+        'NEC Guidelines: Branch circuits - 3% max',
+        'Feeders - 3% max',
+        'Combined branch circuit and feeder - 5% max',
+        'Note: Excessive voltage drop can cause equipment malfunction and reduced efficiency'
+      ]
+    };
+
+    exportToPDF(pdfData);
+    
+    // Show success notification
+    if (onExportSuccess) {
+      onExportSuccess();
+    }
+  };
+
   // Expose exportPDF function to parent via ref
   useImperativeHandle(ref, () => ({
-    exportPDF: () => {
-      // Check if we have enough data to export
-      if (!voltage || !current || !distance) {
-        alert('Please enter all required values before exporting to PDF');
-        return;
-      }
-
-      const pdfData = {
-        calculatorName: 'Voltage Drop Calculator',
-        inputs: {
-          systemType: phaseType === 'single' ? 'Single Phase' : 'Three Phase',
-          conductorMaterial: conductorType.charAt(0).toUpperCase() + conductorType.slice(1),
-          systemVoltage: `${voltage} V`,
-          loadCurrent: `${current} A`,
-          oneWayDistance: `${distance} ft`,
-          wireSize: wireSize.includes('/') ? `${wireSize} AWG` : `${wireSize} ${parseInt(wireSize) <= 4 ? 'AWG' : 'kcmil'}`,
-          powerFactor: powerFactor
-        },
-        results: {
-          voltageDrop: `${result.drop} V`,
-          percentageDrop: `${result.percentage}%`,
-          necCompliant: result.excessive ? 'NO - Exceeds 3% limit' : 'YES - Within 3% limit',
-          status: result.excessive ? '⚠️ WARNING: Exceeds NEC 3% Limit' : '✓ Within NEC limits'
-        },
-        additionalInfo: {
-          formula: phaseType === 'single' 
-            ? '2 × K × I × L × PF ÷ CM'
-            : '1.732 × K × I × L × PF ÷ CM',
-          kConstant: `${kConstants[conductorType].ac} (${conductorType} AC)`,
-          circularMils: circularMils[wireSize].toLocaleString(),
-          powerFactorUsed: powerFactor,
-          systemConfiguration: phaseType === 'single' ? 'Single phase' : 'Three phase'
-        },
-        necReferences: [
-          'NEC Guidelines: Branch circuits - 3% max',
-          'Feeders - 3% max',
-          'Combined branch circuit and feeder - 5% max',
-          'Note: Excessive voltage drop can cause equipment malfunction and reduced efficiency'
-        ]
-      };
-
-      exportToPDF(pdfData);
-    }
+    exportPDF: handleExport
   }));
 
   return (
@@ -500,6 +553,65 @@ const VoltageDropCalculator = forwardRef(({ isDarkMode = false }, ref) => {
               </div>
             </div>
           )}
+
+          {/* Action Buttons */}
+          <div style={{
+            display: 'flex',
+            gap: '0.5rem',
+            marginBottom: '1rem'
+          }}>
+            <button
+              onClick={handleExport}
+              style={{
+                flex: 1,
+                padding: '0.875rem',
+                background: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.9375rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'background 0.2s',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.background = '#2563eb'}
+              onMouseOut={(e) => e.currentTarget.style.background = '#3b82f6'}
+            >
+              <FileDown size={18} />
+              Export to PDF
+            </button>
+            
+            <button
+              onClick={handleOpenJobSelector}
+              style={{
+                flex: 1,
+                padding: '0.875rem',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.9375rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'background 0.2s',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.background = '#059669'}
+              onMouseOut={(e) => e.currentTarget.style.background = '#10b981'}
+            >
+              <Briefcase size={18} />
+              Attach to Job
+            </button>
+          </div>
         </div>
       )}
 
@@ -517,6 +629,115 @@ const VoltageDropCalculator = forwardRef(({ isDarkMode = false }, ref) => {
         </div>
         Branch circuits: 3% max • Feeders: 3% max • Combined: 5% max
       </div>
+
+      {/* Job Selector Modal */}
+      {showJobSelector && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: colors.cardBg,
+            borderRadius: '12px',
+            padding: '1.5rem',
+            maxWidth: '400px',
+            width: '100%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <h3 style={{ 
+              marginTop: 0, 
+              marginBottom: '1rem',
+              color: colors.cardText,
+              fontSize: '1.125rem',
+              fontWeight: '600'
+            }}>
+              Select a Job
+            </h3>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              {loadingJobs ? (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '2rem', 
+                  color: colors.labelText 
+                }}>
+                  Loading jobs...
+                </div>
+              ) : jobs && jobs.length > 0 ? (
+                jobs.map(job => (
+                  <div
+                    key={job.id}
+                    onClick={() => handleAttachToJob(job.id)}
+                    style={{
+                      padding: '1rem',
+                      background: colors.sectionBg,
+                      borderRadius: '8px',
+                      marginBottom: '0.5rem',
+                      cursor: 'pointer',
+                      border: `1px solid ${colors.cardBorder}`,
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                  >
+                    <div style={{ 
+                      fontWeight: '600', 
+                      color: colors.cardText,
+                      marginBottom: '0.25rem'
+                    }}>
+                      {job.name}
+                    </div>
+                    <div style={{ 
+                      fontSize: '0.875rem', 
+                      color: colors.labelText 
+                    }}>
+                      {job.location || 'No location'}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '2rem', 
+                  color: colors.labelText 
+                }}>
+                  <p>No jobs found. Create a job first.</p>
+                </div>
+              )}
+            </div>
+            
+            <button
+              onClick={() => setShowJobSelector(false)}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                background: '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'background 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.background = '#4b5563'}
+              onMouseOut={(e) => e.currentTarget.style.background = '#6b7280'}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

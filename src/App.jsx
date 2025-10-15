@@ -117,20 +117,20 @@ function App() {
   }, [lastScrollY]);
 
   const handleNavigate = (view) => {
-  if (view === 'home') {
-    setActiveCalculator(null);
-  } else if (view === 'calculators') {
-    setActiveCalculator('calculators');
-  } else if (view === 'profile') {
-    setActiveCalculator('profile');
-  } else if (view === 'jobs') {
-    setActiveCalculator('jobs');
-  } else if (view === 'estimates') {
-    setActiveCalculator('estimates');
-  } else if (view === 'invoices') {
-    setActiveCalculator('invoices'); 
-  }
-};
+    if (view === 'home') {
+      setActiveCalculator(null); // null = Home page
+    } else if (view === 'calculators') {
+      setActiveCalculator('calculators'); // Show calculator menu
+    } else if (view === 'profile') {
+      setActiveCalculator('profile');
+    } else if (view === 'jobs') {
+      setActiveCalculator('jobs');
+    } else if (view === 'estimates') {
+      setActiveCalculator('estimates');
+    } else if (view === 'invoices') {
+      setActiveCalculator('invoices');
+    }
+  };
 
   // Handle back to calculator menu - stable reference
   const handleBackToMenu = () => {
@@ -179,43 +179,48 @@ const colors = {
 };
 
   const renderCalculator = () => {
+    const exportSuccessHandler = () => {
+      setShowExportToast(true);
+      setTimeout(() => setShowExportToast(false), 3000);
+    };
+
     switch(activeCalculator) {
       case 'voltage-drop':
-        return <VoltageDropCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <VoltageDropCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'ohms-law':
-        return <OhmsLawCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <OhmsLawCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'box-fill':
-        return <BoxFillCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <BoxFillCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'conduit-fill':
-        return <ConduitFillCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <ConduitFillCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'ampacity':
-        return <AmpacityLookupCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <AmpacityLookupCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'motor-calculations':
-        return <MotorCalculations ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <MotorCalculations ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'load-calculations':
-        return <LoadCalculations ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <LoadCalculations ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'transformer-sizing':
-        return <TransformerSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <TransformerSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'service-entrance':
-        return <ServiceEntranceSizing ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <ServiceEntranceSizing ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'grounding-bonding':
-        return <GroundingBondingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <GroundingBondingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'conduit-bending':
-        return <ConduitBendingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <ConduitBendingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'lighting':
-        return <LightingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <LightingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'receptacles':
-        return <ReceptacleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <ReceptacleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'vfd-sizing':
-        return <VFDSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <VFDSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'reactance-impedance':
-        return <ReactanceImpedanceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <ReactanceImpedanceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'power-factor':
-        return <PowerFactorCorrection ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <PowerFactorCorrection ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'power-triangle':
-        return <PowerTriangleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <PowerTriangleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'three-phase-power':
-        return <ThreePhasePowerCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <ThreePhasePowerCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'calculators':
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -232,7 +237,7 @@ const colors = {
           isDarkMode={isDarkMode}
           onApplyToJob={handleApplyEstimate}
         />;
-      case 'invoices': 
+      case 'invoices':
         return <Invoices isDarkMode={isDarkMode} />;
       default:
         return <Home isDarkMode={isDarkMode} />;
@@ -255,8 +260,8 @@ const colors = {
     if (activeCalculator === 'estimates') {
       return { title: 'Estimates', icon: FileText };
     }
-    if (activeCalculator === 'invoices') {  
-    return { title: 'Invoices', icon: Receipt };
+    if (activeCalculator === 'invoices') {
+      return { title: 'Invoices', icon: Receipt };
     }
     
     const headerMap = {
@@ -416,38 +421,6 @@ const colors = {
                     background: colors.cardBorder,
                     margin: '0.5rem 0'
                   }} />
-
-                  {/* Export PDF Button - Only show when calculator is active */}
-                  {activeCalculator && activeCalculator !== 'profile' && activeCalculator !== 'jobs' && activeCalculator !== 'calculators' && activeCalculator !== 'estimates' && (
-                    <>
-                      <button
-                        onClick={handleExportPDF}
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem 1rem',
-                          background: 'transparent',
-                          border: 'none',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          color: colors.cardText,
-                          fontSize: '0.875rem',
-                          fontWeight: '500'
-                        }}
-                        onMouseEnter={(e) => e.target.style.background = isDarkMode ? '#374151' : '#f3f4f6'}
-                        onMouseLeave={(e) => e.target.style.background = 'transparent'}
-                      >
-                        <FileDown size={16} />
-                        <span>Export to PDF</span>
-                      </button>
-                      <div style={{
-                        height: '1px',
-                        background: colors.cardBorder,
-                        margin: '0.5rem 0'
-                      }} />
-                    </>
-                  )}
                   
                   {/* Dark Mode Toggle */}
                   <button
@@ -496,7 +469,7 @@ const colors = {
         ) : (
           <div style={{ 
             minHeight: 'calc(100vh - 3.5rem)', 
-            padding: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' ? '0' : '1rem',
+            padding: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' ? '0' : '1rem',
             paddingBottom: '5rem'
           }}>
             {renderCalculator()}
