@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Clock, CheckCircle, AlertCircle, MapPin, Calendar, DollarSign, Edit, Trash2, Briefcase, ChevronDown } from 'lucide-react';
 import { getUserJobs, createJob, deleteJob as deleteJobFromFirebase } from './jobsService';
 import { auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const Jobs = ({ isDarkMode }) => {
   const [jobs, setJobs] = useState([]);
@@ -35,16 +36,26 @@ const Jobs = ({ isDarkMode }) => {
     'completed': { color: '#10b981', icon: CheckCircle, label: 'Completed' }
   };
 
-  // Load jobs from Firebase on mount
+  
   useEffect(() => {
-    loadJobs();
-  }, []);
+    // Wait for auth to be ready before loading jobs
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in, load jobs
+        loadJobs();
+      } else {
+        // User is not signed in
+        setLoading(false);
+      }
+    });
 
-  // Add this right after your useEffect that loads jobs
-useEffect(() => {
-  console.log('Jobs component mounted');
-  console.log('Auth state:', auth.currentUser);
-}, []);
+    return () => unsubscribe();
+  }, []);
+    // Add this right after your useEffect that loads jobs
+  useEffect(() => {
+    console.log('Jobs component mounted');
+    console.log('Auth state:', auth.currentUser);
+  }, []);
 
   const loadJobs = async () => {
     setLoading(true);
