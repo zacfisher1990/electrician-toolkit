@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Calculator, Briefcase, User, FileText } from 'lucide-react';
+import { Home, Calculator, Briefcase, FileText, Receipt } from 'lucide-react';
 
 function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
   // Dark mode colors
@@ -98,11 +98,11 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       </button>
 
       <button
-        onClick={() => onNavigate('profile')}
-        style={buttonStyle(currentView === 'profile')}
+        onClick={() => onNavigate('invoices')}
+        style={buttonStyle(currentView === 'invoices')}
       >
-        <User size={22} strokeWidth={currentView === 'profile' ? 2.5 : 2} />
-        <span style={labelStyle}>Profile</span>
+        <Receipt size={22} strokeWidth={currentView === 'invoices' ? 2.5 : 2} />
+        <span style={labelStyle}>Invoices</span>
       </button>
     </div>
   );

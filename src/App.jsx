@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Menu, FileDown, Omega, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText } from 'lucide-react';
+import { Menu, FileDown, Omega, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt } from 'lucide-react';
 import CalculatorMenu from './CalculatorMenu.jsx';
 import VoltageDropCalculator from './VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './OhmsLawCalculator.jsx';
@@ -24,6 +24,7 @@ import Home from './Home.jsx';
 import Profile from './Profile.jsx';
 import Jobs from './Jobs.jsx';
 import Estimates from './Estimates.jsx';
+import Invoices from './Invoices.jsx';
 import './App.css';
 
 function App() {
@@ -116,18 +117,20 @@ function App() {
   }, [lastScrollY]);
 
   const handleNavigate = (view) => {
-    if (view === 'home') {
-      setActiveCalculator(null); // null = Home page
-    } else if (view === 'calculators') {
-      setActiveCalculator('calculators'); // Show calculator menu
-    } else if (view === 'profile') {
-      setActiveCalculator('profile');
-    } else if (view === 'jobs') {
-      setActiveCalculator('jobs');
-    } else if (view === 'estimates') {
-      setActiveCalculator('estimates');
-    }
-  };
+  if (view === 'home') {
+    setActiveCalculator(null);
+  } else if (view === 'calculators') {
+    setActiveCalculator('calculators');
+  } else if (view === 'profile') {
+    setActiveCalculator('profile');
+  } else if (view === 'jobs') {
+    setActiveCalculator('jobs');
+  } else if (view === 'estimates') {
+    setActiveCalculator('estimates');
+  } else if (view === 'invoices') {
+    setActiveCalculator('invoices'); 
+  }
+};
 
   // Handle back to calculator menu - stable reference
   const handleBackToMenu = () => {
@@ -229,6 +232,8 @@ const colors = {
           isDarkMode={isDarkMode}
           onApplyToJob={handleApplyEstimate}
         />;
+      case 'invoices': 
+        return <Invoices isDarkMode={isDarkMode} />;
       default:
         return <Home isDarkMode={isDarkMode} />;
     }
@@ -249,6 +254,9 @@ const colors = {
     }
     if (activeCalculator === 'estimates') {
       return { title: 'Estimates', icon: FileText };
+    }
+    if (activeCalculator === 'invoices') {  
+    return { title: 'Invoices', icon: Receipt };
     }
     
     const headerMap = {
@@ -377,6 +385,38 @@ const colors = {
                 overflow: 'hidden'
               }}>
                 <div style={{ padding: '0.5rem 0' }}>
+                  {/* Profile Button */}
+                  <button
+                    onClick={() => {
+                      handleNavigate('profile');
+                      setShowMenu(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      color: colors.cardText,
+                      fontSize: '0.875rem',
+                      fontWeight: '500'
+                    }}
+                    onMouseEnter={(e) => e.target.style.background = isDarkMode ? '#374151' : '#f3f4f6'}
+                    onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                  >
+                    <User size={16} />
+                    <span>Profile</span>
+                  </button>
+
+                  <div style={{
+                    height: '1px',
+                    background: colors.cardBorder,
+                    margin: '0.5rem 0'
+                  }} />
+
                   {/* Export PDF Button - Only show when calculator is active */}
                   {activeCalculator && activeCalculator !== 'profile' && activeCalculator !== 'jobs' && activeCalculator !== 'calculators' && activeCalculator !== 'estimates' && (
                     <>
@@ -494,12 +534,14 @@ const colors = {
       <BottomNavigation 
         onNavigate={handleNavigate}
         currentView={
-          activeCalculator === 'profile' 
-            ? 'profile'
-            : activeCalculator === 'jobs'
+          activeCalculator === 'jobs'
             ? 'jobs'
             : activeCalculator === 'estimates'
             ? 'estimates'
+            : activeCalculator === 'invoices'
+            ? 'invoices'
+            : activeCalculator === 'profile' 
+            ? 'profile'
             : activeCalculator === 'calculators'
             ? 'calculators'
             : activeCalculator 
