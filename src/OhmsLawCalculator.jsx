@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { exportToPDF } from './pdfExport';
 import { Zap, Plus, Trash2, Calculator, Info } from 'lucide-react';
+import { FileDown } from 'lucide-react';
 
 const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
   const [activeTab, setActiveTab] = useState('basic');
@@ -20,6 +21,12 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
   const [parallelComponents, setParallelComponents] = useState([
     { id: 1, R: '', V: '', I: '', P: '' }
   ]);
+
+  const handleExport = () => {
+  if (ref.current) {
+    ref.current.exportPDF();
+  }
+};
 
   // Dark mode colors - matching ConduitFillCalculator
   const colors = {
@@ -982,7 +989,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
             </div>
           </div>
 
-          {/* Circuit Totals */}
+         {/* Circuit Totals */}
           <div style={{
             background: colors.cardBg,
             border: `1px solid ${colors.cardBorder}`,
@@ -1003,37 +1010,46 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
               Circuit Totals (Optional)
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              {['R', 'V', 'I', 'P'].map(field => (
-                <div key={field}>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.8125rem', 
-                    fontWeight: '500', 
-                    color: colors.labelText, 
-                    marginBottom: '0.5rem' 
-                  }}>
-                    {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
-                  </label>
-                  <input
-                    type="number"
-                    value={seriesTotals[field]}
-                    onChange={(e) => setSeriesTotals({...seriesTotals, [field]: e.target.value})}
-                    placeholder="Optional"
-                    disabled={isTotalFieldDisabled(seriesTotals, field)}
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.625rem',
-                      fontSize: '0.9375rem',
-                      border: `1px solid ${colors.inputBorder}`, 
-                      borderRadius: '8px',
-                      backgroundColor: isTotalFieldDisabled(seriesTotals, field) ? colors.sectionBg : colors.inputBg,
-                      color: colors.cardText,
-                      boxSizing: 'border-box',
-                      cursor: isTotalFieldDisabled(seriesTotals, field) ? 'not-allowed' : 'text'
-                    }}
-                  />
-                </div>
-              ))}
+              {['V', 'I', 'R', 'P'].map(field => {
+                const labels = {
+                  'R': 'Ohms (R)',
+                  'V': 'Volts (E)',
+                  'I': 'Amps (I)',
+                  'P': 'Watts (P)'
+                };
+                
+                return (
+                  <div key={field}>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '0.8125rem', 
+                      fontWeight: '500', 
+                      color: colors.labelText, 
+                      marginBottom: '0.5rem' 
+                    }}>
+                      {labels[field]}
+                    </label>
+                    <input
+                      type="number"
+                      value={seriesTotals[field]}
+                      onChange={(e) => setSeriesTotals({...seriesTotals, [field]: e.target.value})}
+                      placeholder="Optional"
+                      disabled={isTotalFieldDisabled(seriesTotals, field)}
+                      style={{ 
+                        width: '100%', 
+                        padding: '0.625rem',
+                        fontSize: '0.9375rem',
+                        border: `1px solid ${colors.inputBorder}`, 
+                        borderRadius: '8px',
+                        backgroundColor: isTotalFieldDisabled(seriesTotals, field) ? colors.sectionBg : colors.inputBg,
+                        color: colors.cardText,
+                        boxSizing: 'border-box',
+                        cursor: isTotalFieldDisabled(seriesTotals, field) ? 'not-allowed' : 'text'
+                      }}
+                    />
+                  </div>
+                );
+              })}
             </div>
             <p style={{ 
               fontSize: '0.8125rem', 
@@ -1089,10 +1105,11 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
 </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
                 {[
-                  { field: 'R', label: 'R (Ω)' },
-                  { field: 'E', label: 'E (V)' },
-                  { field: 'I', label: 'I (A)' },
-                  { field: 'P', label: 'P (W)' }
+                  
+                  { field: 'E', label: 'Volts (E)' },
+                  { field: 'I', label: 'Amps (I)' },
+                  { field: 'R', label: 'Ohms (R)' },
+                  { field: 'P', label: 'Watts (P)' }
                 ].map(({ field, label }) => (
                   <div key={field}>
                     <label style={{ 
@@ -1299,7 +1316,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
             </div>
           </div>
 
-          {/* Circuit Totals */}
+                    {/* Circuit Totals */}
           <div style={{
             background: colors.cardBg,
             border: `1px solid ${colors.cardBorder}`,
@@ -1320,37 +1337,46 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
               Circuit Totals (Optional)
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              {['R', 'V', 'I', 'P'].map(field => (
-                <div key={field}>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.8125rem', 
-                    fontWeight: '500', 
-                    color: colors.labelText, 
-                    marginBottom: '0.5rem' 
-                  }}>
-                    {field} ({field === 'R' ? 'Ω' : field === 'V' ? 'V' : field === 'I' ? 'A' : 'W'})
-                  </label>
-                  <input
-                    type="number"
-                    value={parallelTotals[field]}
-                    onChange={(e) => setParallelTotals({...parallelTotals, [field]: e.target.value})}
-                    placeholder="Optional"
-                    disabled={isTotalFieldDisabled(parallelTotals, field)}
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.625rem',
-                      fontSize: '0.9375rem',
-                      border: `1px solid ${colors.inputBorder}`, 
-                      borderRadius: '8px',
-                      backgroundColor: isTotalFieldDisabled(parallelTotals, field) ? colors.sectionBg : colors.inputBg,
-                      color: colors.cardText,
-                      boxSizing: 'border-box',
-                      cursor: isTotalFieldDisabled(parallelTotals, field) ? 'not-allowed' : 'text'
-                    }}
-                  />
-                </div>
-              ))}
+              {['V', 'I', 'R', 'P'].map(field => {
+                const labels = {
+                  'R': 'Ohms (R)',
+                  'V': 'Volts (E)',
+                  'I': 'Amps (I)',
+                  'P': 'Watts (P)'
+                };
+                
+                return (
+                  <div key={field}>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '0.8125rem', 
+                      fontWeight: '500', 
+                      color: colors.labelText, 
+                      marginBottom: '0.5rem' 
+                    }}>
+                      {labels[field]}
+                    </label>
+                    <input
+                      type="number"
+                      value={parallelTotals[field]}
+                      onChange={(e) => setParallelTotals({...parallelTotals, [field]: e.target.value})}
+                      placeholder="Optional"
+                      disabled={isTotalFieldDisabled(parallelTotals, field)}
+                      style={{ 
+                        width: '100%', 
+                        padding: '0.625rem',
+                        fontSize: '0.9375rem',
+                        border: `1px solid ${colors.inputBorder}`, 
+                        borderRadius: '8px',
+                        backgroundColor: isTotalFieldDisabled(parallelTotals, field) ? colors.sectionBg : colors.inputBg,
+                        color: colors.cardText,
+                        boxSizing: 'border-box',
+                        cursor: isTotalFieldDisabled(parallelTotals, field) ? 'not-allowed' : 'text'
+                      }}
+                    />
+                  </div>
+                );
+              })}
             </div>
             <p style={{ 
               fontSize: '0.8125rem', 
@@ -1406,10 +1432,11 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
 </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
                 {[
-                  { field: 'R', label: 'R (Ω)' },
-                  { field: 'E', label: 'E (V)' },
-                  { field: 'I', label: 'I (A)' },
-                  { field: 'P', label: 'P (W)' }
+                  
+                  { field: 'E', label: 'Volts (E)' },
+                  { field: 'I', label: 'Amps (I)' },
+                  { field: 'R', label: 'Ohms (R)' },
+                  { field: 'P', label: 'Watts (P)' }
                 ].map(({ field, label }) => (
                   <div key={field}>
                     <label style={{ 
@@ -1614,6 +1641,35 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
         <div>P = E² ÷ R</div>
         
       </div>
+      {/* Export PDF Button - Show when there are results */}
+{(voltage || current || resistance || power) && (
+  <button
+    onClick={handleExport}
+    style={{
+      width: '100%',
+      padding: '0.875rem',
+      background: '#3b82f6',
+      color: 'white',
+      border: 'none',
+      borderRadius: '8px',
+      fontSize: '0.9375rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '0.5rem',
+      marginTop: '1rem',
+      transition: 'background 0.2s',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    }}
+    onMouseOver={(e) => e.currentTarget.style.background = '#2563eb'}
+    onMouseOut={(e) => e.currentTarget.style.background = '#3b82f6'}
+  >
+    <FileDown size={18} />
+    Export to PDF
+  </button>
+)}
     </div>
   );
 });
