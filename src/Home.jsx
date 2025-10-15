@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getUserJobs } from './jobsService';
+import { auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
-const Home = ({ isDarkMode, jobs }) => {
+const Home = ({ isDarkMode }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -21,6 +26,27 @@ const Home = ({ isDarkMode, jobs }) => {
     'in-progress': '#f59e0b',
     'completed': '#10b981'
   };
+
+  // Load jobs from Firebase
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userJobs = await getUserJobs();
+          setJobs(userJobs);
+        } catch (error) {
+          console.error('Error loading jobs:', error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setJobs([]);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Convert job dates from strings to Date objects for calendar display
   const jobsWithDates = jobs.map(job => ({
@@ -86,6 +112,20 @@ const Home = ({ isDarkMode, jobs }) => {
     .filter(job => job.dateObj && job.dateObj >= today && job.status === 'scheduled')
     .sort((a, b) => a.dateObj - b.dateObj)
     .slice(0, 5);
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: colors.bg,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ color: colors.text }}>Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ 
@@ -410,7 +450,7 @@ const Home = ({ isDarkMode, jobs }) => {
                         fontWeight: '600',
                         color: colors.text
                       }}>
-                        {job.title}
+                        {job.title || job.name}
                       </h4>
                       <p style={{
                         margin: 0,
@@ -490,7 +530,7 @@ const Home = ({ isDarkMode, jobs }) => {
                       fontWeight: '600',
                       color: colors.text
                     }}>
-                      {job.title}
+                      {job.title || job.name}
                     </h4>
                     <p style={{
                       margin: '0 0 0.25rem 0',
