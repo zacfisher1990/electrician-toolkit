@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Clock, CheckCircle, AlertCircle, MapPin, Calendar, DollarSign, Edit, Trash2, Briefcase, ChevronDown } from 'lucide-react';
+import { getUserJobs, createJob, deleteJob as deleteJobFromFirebase } from './jobsService';
+import { auth } from './firebase';
 
-const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate, onEstimateApplied }) => {
+const Jobs = ({ isDarkMode }) => {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [formData, setFormData] = useState({
@@ -31,6 +35,30 @@ const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate,
     'completed': { color: '#10b981', icon: CheckCircle, label: 'Completed' }
   };
 
+  // Load jobs from Firebase on mount
+  useEffect(() => {
+    loadJobs();
+  }, []);
+
+  // Add this right after your useEffect that loads jobs
+useEffect(() => {
+  console.log('Jobs component mounted');
+  console.log('Auth state:', auth.currentUser);
+}, []);
+
+  const loadJobs = async () => {
+    setLoading(true);
+    try {
+      const userJobs = await getUserJobs();
+      setJobs(userJobs);
+    } catch (error) {
+      console.error('Error loading jobs:', error);
+      alert('Failed to load jobs. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       title: '',
@@ -47,24 +75,70 @@ const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate,
     setEditingJob(null);
   };
 
-  const handleAddJob = () => {
+  const handleAddJob = async () => {
     if (formData.title && formData.client) {
-      addJob(formData);
-      resetForm();
+      try {
+
+        console.log('Attempting to add job...');
+        console.log('Auth user:', auth.currentUser); // Check if user is logged in
+        // Create job object with proper field names for Firebase
+        const jobData = {
+          name: formData.title, // Map title to name for consistency
+          title: formData.title,
+          client: formData.client,
+          location: formData.location,
+          status: formData.status,
+          date: formData.date,
+          time: formData.time,
+          estimatedCost: formData.estimatedCost,
+          duration: formData.duration,
+          notes: formData.notes
+        };
+
+        console.log('Job data:', jobData);
+
+        await createJob(jobData);
+        console.log('Job created successfully!');
+        resetForm();
+        loadJobs(); // Reload jobs after adding
+      } catch (error) {
+        console.error('Error adding job:', error);
+        alert('Failed to add job. Please try again.');
+      }
     }
   };
 
-  const handleEditJob = () => {
-    if (formData.title && formData.client) {
-      updateJob(editingJob.id, formData);
-      resetForm();
+  const handleEditJob = async () => {
+    if (formData.title && formData.client && editingJob) {
+      try {
+        const { updateJob } = await import('./jobsService');
+        const jobData = {
+          name: formData.title,
+          title: formData.title,
+          client: formData.client,
+          location: formData.location,
+          status: formData.status,
+          date: formData.date,
+          time: formData.time,
+          estimatedCost: formData.estimatedCost,
+          duration: formData.duration,
+          notes: formData.notes
+        };
+
+        await updateJob(editingJob.id, jobData);
+        resetForm();
+        loadJobs(); // Reload jobs after updating
+      } catch (error) {
+        console.error('Error updating job:', error);
+        alert('Failed to update job. Please try again.');
+      }
     }
   };
 
   const startEdit = (job) => {
     setEditingJob(job);
     setFormData({
-      title: job.title,
+      title: job.title || job.name,
       client: job.client,
       location: job.location || '',
       status: job.status,
@@ -75,15 +149,34 @@ const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate,
       notes: job.notes || ''
     });
     setShowAddForm(true);
-    // Scroll to top to show the form
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDeleteJob = (id) => {
-    if (window.confirm('Are you sure you want to delete this job?')) {
-      deleteJob(id);
+  const handleDeleteJob = async (id, jobTitle) => {
+    if (window.confirm(`Are you sure you want to delete "${jobTitle}"?`)) {
+      try {
+        await deleteJobFromFirebase(id);
+        loadJobs(); // Reload jobs after deleting
+      } catch (error) {
+        console.error('Error deleting job:', error);
+        alert('Failed to delete job. Please try again.');
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: colors.bg,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ color: colors.subtext }}>Loading jobs...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ 
@@ -387,7 +480,6 @@ const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate,
         ) : (
           [...jobs]
             .sort((a, b) => {
-              // Sort by date: newest first (if no date, put at end)
               if (!a.date && !b.date) return 0;
               if (!a.date) return 1;
               if (!b.date) return -1;
@@ -396,6 +488,7 @@ const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate,
             .map((job) => {
             const StatusIcon = statusConfig[job.status].icon;
             const isEditing = editingJob && editingJob.id === job.id;
+            const jobTitle = job.title || job.name;
             
             return (
               <div
@@ -423,7 +516,7 @@ const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate,
                       fontSize: '1rem',
                       fontWeight: '600'
                     }}>
-                      {job.title}
+                      {jobTitle}
                     </h3>
                     <p style={{
                       margin: 0,
@@ -537,7 +630,7 @@ const Jobs = ({ isDarkMode, jobs, addJob, updateJob, deleteJob, pendingEstimate,
                     {isEditing ? 'Editing...' : 'Edit'}
                   </button>
                   <button
-                    onClick={() => handleDeleteJob(job.id)}
+                    onClick={() => handleDeleteJob(job.id, jobTitle)}
                     style={{
                       flex: 1,
                       padding: '0.5rem',

@@ -43,9 +43,6 @@ function App() {
   const [headerVisible, setHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   
-  // SHARED JOBS STATE - moved from Jobs.jsx
-  const [jobs, setJobs] = useState([]);
-  
   // Save active view to localStorage whenever it changes
   React.useEffect(() => {
     if (activeCalculator === null) {
@@ -91,21 +88,6 @@ function App() {
   // Scroll to top whenever the view changes
     window.scrollTo(0, 0);
     }, [activeCalculator]);
-  
-  // Job management functions
-  const addJob = (jobData) => {
-    setJobs([...jobs, { ...jobData, id: Date.now() }]);
-  };
-  
-  const updateJob = (jobId, jobData) => {
-    setJobs(jobs.map(job => 
-      job.id === jobId ? { ...jobData, id: job.id } : job
-    ));
-  };
-  
-  const deleteJob = (jobId) => {
-    setJobs(jobs.filter(job => job.id !== jobId));
-  };
   
   // Ref to access calculator's export function
   const calculatorRef = useRef(null);
@@ -240,13 +222,7 @@ const colors = {
         return <Profile isDarkMode={isDarkMode} />;
       case 'jobs':
         return <Jobs 
-          isDarkMode={isDarkMode} 
-          jobs={jobs}
-          addJob={addJob}
-          updateJob={updateJob}
-          deleteJob={deleteJob}
-          pendingEstimate={pendingEstimate}
-          onEstimateApplied={() => setPendingEstimate(null)}
+          isDarkMode={isDarkMode}
         />;
       case 'estimates':
         return <Estimates 
@@ -254,7 +230,7 @@ const colors = {
           onApplyToJob={handleApplyEstimate}
         />;
       default:
-        return <Home isDarkMode={isDarkMode} jobs={jobs} />;
+        return <Home isDarkMode={isDarkMode} />;
     }
   };
 

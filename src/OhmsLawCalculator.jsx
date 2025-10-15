@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { exportToPDF } from './pdfExport';
-import { Zap, Plus, Trash2, Calculator, Info } from 'lucide-react';
-import { FileDown } from 'lucide-react';
+import { Zap, Plus, Trash2, Calculator, Info, FileDown, Briefcase } from 'lucide-react';
+import { getUserJobs, addCalculationToJob } from './jobsService';
+
 
 const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
   const [activeTab, setActiveTab] = useState('basic');
@@ -21,10 +22,53 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
   const [parallelComponents, setParallelComponents] = useState([
     { id: 1, R: '', V: '', I: '', P: '' }
   ]);
+  // job selector
+  const [showJobSelector, setShowJobSelector] = useState(false);
+  const [jobs, setJobs] = useState([]);
+  const [loadingJobs, setLoadingJobs] = useState(false);
+  
 
+  //export pdf
   const handleExport = () => {
   if (ref.current) {
     ref.current.exportPDF();
+  }
+};
+
+
+
+const handleOpenJobSelector = async () => {
+  setShowJobSelector(true);
+  setLoadingJobs(true);
+  try {
+    const userJobs = await getUserJobs();
+    setJobs(userJobs);
+  } catch (error) {
+    console.error('Error loading jobs:', error);
+    alert('Failed to load jobs. Please try again.');
+  } finally {
+    setLoadingJobs(false);
+  }
+};
+
+const handleAttachToJob = async (jobId) => {
+  try {
+    const calculationData = {
+      type: 'ohms-law',
+      data: {
+        voltage: parseFloat(voltage) || 0,
+        current: parseFloat(current) || 0,
+        resistance: parseFloat(resistance) || 0,
+        power: parseFloat(power) || 0
+      }
+    };
+    
+    await addCalculationToJob(jobId, calculationData);
+    setShowJobSelector(false);
+    alert('Calculation attached to job successfully!');
+  } catch (error) {
+    console.error('Error attaching calculation:', error);
+    alert('Failed to attach calculation. Please try again.');
   }
 };
 
@@ -1223,6 +1267,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
               Circuit Totals
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+              {/* Voltage - First */}
               <div style={{
                 background: colors.sectionBg,
                 padding: '1rem',
@@ -1230,31 +1275,16 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
                 textAlign: 'center'
               }}>
                 <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Total R
-                </div>
-                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
-                  {getTotalsSeries().totalR.toFixed(1)}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                  Ω
-                </div>
-              </div>
-              <div style={{
-                background: colors.sectionBg,
-                padding: '1rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Total V
+                  Voltage
                 </div>
                 <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
                   {getTotalsSeries().totalV.toFixed(1)}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                  V
+                  E
                 </div>
               </div>
+              {/* Amperage - Second */}
               <div style={{
                 background: colors.sectionBg,
                 padding: '1rem',
@@ -1262,15 +1292,16 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
                 textAlign: 'center'
               }}>
                 <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Current
+                  Amperage
                 </div>
                 <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
                   {getTotalsSeries().totalI.toFixed(1)}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                  A
+                  I
                 </div>
               </div>
+              {/* Resistance - Third */}
               <div style={{
                 background: colors.sectionBg,
                 padding: '1rem',
@@ -1278,13 +1309,30 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
                 textAlign: 'center'
               }}>
                 <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Total P
+                  Resistance
+                </div>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
+                  {getTotalsSeries().totalR.toFixed(1)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
+                  R
+                </div>
+              </div>
+              {/* Wattage - Fourth */}
+              <div style={{
+                background: colors.sectionBg,
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
+                  Wattage
                 </div>
                 <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
                   {getTotalsSeries().totalP.toFixed(1)}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                  W
+                  P
                 </div>
               </div>
             </div>
@@ -1619,57 +1667,200 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
         </div>
       )}
 
-      {/* Formula Reference Footer */}
+          {/* Formula Reference Footer */}
+          <div style={{
+            background: colors.sectionBg,
+            padding: '1rem',
+            borderRadius: '8px',
+            border: `1px solid ${colors.cardBorder}`,
+            fontSize: '0.8125rem',
+            color: colors.labelText,
+            marginTop: '1rem'
+          }}>
+            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+              Formulas:
+            </div>
+            
+            <div>E = I × R</div>
+            <div>P = E × I</div>
+            <div>I = E ÷ R</div>
+            <div>P = I² × R </div>
+            <div>R = E ÷ I</div>
+            <div>P = E² ÷ R</div>
+            
+          </div>
+
+                    {/* Job Selector Modal */}
+        {showJobSelector && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem'
+          }}>
+            <div style={{
+              background: colors.cardBg,
+              borderRadius: '12px',
+              padding: '1.5rem',
+              maxWidth: '400px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'auto'
+            }}>
+              <h3 style={{ 
+                marginTop: 0, 
+                marginBottom: '1rem',
+                color: colors.cardText,
+                fontSize: '1.125rem',
+                fontWeight: '600'
+              }}>
+                Select a Job
+              </h3>
+              
+                            {/* Job List */}
+              <div style={{ marginBottom: '1rem' }}>
+                {loadingJobs ? (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '2rem', 
+                    color: colors.labelText 
+                  }}>
+                    Loading jobs...
+                  </div>
+                ) : jobs && jobs.length > 0 ? (
+                  jobs.map(job => (
+                    <div
+                      key={job.id}
+                      onClick={() => handleAttachToJob(job.id)}
+                      style={{
+                        padding: '1rem',
+                        background: colors.sectionBg,
+                        borderRadius: '8px',
+                        marginBottom: '0.5rem',
+                        cursor: 'pointer',
+                        border: `1px solid ${colors.cardBorder}`,
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                      onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
+                      <div style={{ 
+                        fontWeight: '600', 
+                        color: colors.cardText,
+                        marginBottom: '0.25rem'
+                      }}>
+                        {job.name}
+                      </div>
+                      <div style={{ 
+                        fontSize: '0.875rem', 
+                        color: colors.labelText 
+                      }}>
+                        {job.location || 'No location'}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '2rem', 
+                    color: colors.labelText 
+                  }}>
+                    <p>No jobs found. Create a job first.</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Cancel Button */}
+              <button
+                onClick={() => setShowJobSelector(false)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  background: '#6b7280',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.background = '#4b5563'}
+                onMouseOut={(e) => e.currentTarget.style.background = '#6b7280'}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+          {/* Action Buttons - Show when there are results */}
+    {(voltage || current || resistance || power) && (
       <div style={{
-        background: colors.sectionBg,
-        padding: '1rem',
-        borderRadius: '8px',
-        border: `1px solid ${colors.cardBorder}`,
-        fontSize: '0.8125rem',
-        color: colors.labelText,
+        display: 'flex',
+        gap: '0.5rem',
         marginTop: '1rem'
       }}>
-        <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-          Formulas:
-        </div>
+        <button
+          onClick={handleExport}
+          style={{
+            flex: 1,
+            padding: '0.875rem',
+            background: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '0.9375rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            transition: 'background 0.2s',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = '#2563eb'}
+          onMouseOut={(e) => e.currentTarget.style.background = '#3b82f6'}
+        >
+          <FileDown size={18} />
+          Export to PDF
+        </button>
         
-        <div>E = I × R</div>
-        <div>P = E × I</div>
-        <div>I = E ÷ R</div>
-        <div>P = I² × R </div>
-        <div>R = E ÷ I</div>
-        <div>P = E² ÷ R</div>
-        
+        <button
+          onClick={handleOpenJobSelector}
+          style={{
+            flex: 1,
+            padding: '0.875rem',
+            background: '#10b981',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '0.9375rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            transition: 'background 0.2s',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = '#059669'}
+          onMouseOut={(e) => e.currentTarget.style.background = '#10b981'}
+        >
+          <Briefcase size={18} />
+          Attach to Job
+        </button>
       </div>
-      {/* Export PDF Button - Show when there are results */}
-{(voltage || current || resistance || power) && (
-  <button
-    onClick={handleExport}
-    style={{
-      width: '100%',
-      padding: '0.875rem',
-      background: '#3b82f6',
-      color: 'white',
-      border: 'none',
-      borderRadius: '8px',
-      fontSize: '0.9375rem',
-      fontWeight: '600',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '0.5rem',
-      marginTop: '1rem',
-      transition: 'background 0.2s',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-    }}
-    onMouseOver={(e) => e.currentTarget.style.background = '#2563eb'}
-    onMouseOut={(e) => e.currentTarget.style.background = '#3b82f6'}
-  >
-    <FileDown size={18} />
-    Export to PDF
-  </button>
-)}
+    )}
     </div>
   );
 });
