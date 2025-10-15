@@ -296,7 +296,7 @@ const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {
                     color: colors.labelText, 
                     marginBottom: '0.5rem' 
                   }}>
-                    Real Power (kW)
+                    Real Power (kW) 
                   </label>
                   <input 
                     type="number" 
@@ -648,7 +648,7 @@ const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {
                     color: colors.labelText, 
                     marginBottom: '0.5rem' 
                   }}>
-                    Real Power (kW)
+                    Real Power <br/> (kW)
                   </label>
                   <input 
                     type="number" 
@@ -740,7 +740,7 @@ const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {
                     color: colors.labelText, 
                     marginBottom: '0.5rem' 
                   }}>
-                    Target Power Factor
+                    Target Power <br/> Factor
                   </label>
                   <select 
                     value={savingsTargetPF} 
