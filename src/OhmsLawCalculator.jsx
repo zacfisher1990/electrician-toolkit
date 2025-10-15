@@ -503,10 +503,10 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
             note: 'Calculations based on fundamental electrical formulas'
           },
           necReferences: [
-            "Ohm's Law: V = I × R",
-            'Power formulas: P = V × I, P = I² × R, P = V² ÷ R',
-            'Current: I = V ÷ R, I = P ÷ V, I = √(P ÷ R)',
-            'Resistance: R = V ÷ I, R = V² ÷ P, R = P ÷ I²'
+            "Ohm's Law: E = I × R",
+            'Power formulas: P = E × I, P = I² × R, P = E² ÷ R',
+            'Current: I = E ÷ R, I = P ÷ E, I = √(P ÷ R)',
+            'Resistance: R = E ÷ I, R = E² ÷ P, R = P ÷ I²'
           ]
         };
 
@@ -717,7 +717,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
                   color: colors.labelText, 
                   marginBottom: '0.5rem' 
                 }}>
-                  Voltage (E)
+                  Volts (E)
                 </label>
                 <input
                   type="number"
@@ -750,7 +750,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
                   color: colors.labelText, 
                   marginBottom: '0.5rem' 
                 }}>
-                  Current (A)
+                  Amps (I)
                 </label>
                 <input
                   type="number"
@@ -783,7 +783,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
                   color: colors.labelText, 
                   marginBottom: '0.5rem' 
                 }}>
-                  Resistance (Ω)
+                  Ohms (R)
                 </label>
                 <input
                   type="number"
@@ -816,7 +816,7 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
                   color: colors.labelText, 
                   marginBottom: '0.5rem' 
                 }}>
-                  Power (W)
+                  Watts (P)
                 </label>
                 <input
                   type="number"
@@ -1605,7 +1605,14 @@ const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
         <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
           Formulas:
         </div>
-        E = I × R • P = E × I • I = E ÷ R • P = I² × R • R = E ÷ I • P = E² ÷ R
+        
+        <div>E = I × R</div>
+        <div>P = E × I</div>
+        <div>I = E ÷ R</div>
+        <div>P = I² × R </div>
+        <div>R = E ÷ I</div>
+        <div>P = E² ÷ R</div>
+        
       </div>
     </div>
   );
