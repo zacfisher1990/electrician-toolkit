@@ -4,10 +4,10 @@ import { Home, Calculator, Briefcase, FileText, Receipt } from 'lucide-react';
 function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
   // Dark mode colors
   const colors = {
-    bg: isDarkMode ? '#000000' : '#ffffff',
-    border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+    bg: isDarkMode ? '#1a1a1a' : '#ffffff', // Changed from #000000 to #1a1a1a for dark mode
+    border: isDarkMode ? '#2a2a2a' : '#e5e7eb', // Slightly lighter border for dark mode
     activeText: '#3b82f6',
-    inactiveText: isDarkMode ? '#666666' : '#6b7280'
+    inactiveText: isDarkMode ? '#999999' : '#6b7280' // Slightly lighter inactive text for better contrast
   };
 
   const buttonStyle = (isActive) => ({
@@ -21,13 +21,13 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'flex-start', // Changed from 'center' to 'flex-start'
+    justifyContent: 'flex-start',
     gap: '0.25rem',
     fontSize: '0.625rem',
     fontWeight: '500',
     flex: '1 1 0',
-    padding: '0.5rem 0.25rem', // Changed back to 0.5rem for less padding
-    paddingTop: '0.75rem', // Add extra padding at the top to raise buttons
+    padding: '0.5rem 0.25rem',
+    paddingTop: '0.75rem',
     margin: 0,
     transition: 'color 0.2s',
     WebkitTapHighlightColor: 'transparent',
