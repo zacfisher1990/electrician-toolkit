@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, FileDown, Omega, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt } from 'lucide-react';
-import Header from './Header.jsx';
 import CalculatorMenu from './CalculatorMenu.jsx';
 import VoltageDropCalculator from './VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './OhmsLawCalculator.jsx';
@@ -26,6 +25,7 @@ import Profile from './Profile.jsx';
 import Jobs from './Jobs.jsx';
 import Estimates from './Estimates.jsx';
 import Invoices from './Invoices.jsx';
+import Header from './Header.jsx';
 import './App.css';
 
 function App() {
@@ -93,7 +93,7 @@ function App() {
     const updateThemeColor = () => {
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', isDarkMode ? '#000000' : '#2563eb');
+        metaThemeColor.setAttribute('content', isDarkMode ? '#1a1a1a' : '#2563eb');
       }
     };
 
@@ -145,7 +145,7 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  const handleNavigate = (view) => {
+  const handleNavigate = (view, data = null) => {
     if (view === 'home') {
       setActiveCalculator(null); // null = Home page
     } else if (view === 'calculators') {
@@ -156,6 +156,10 @@ function App() {
       setActiveCalculator('jobs');
     } else if (view === 'estimates') {
       setActiveCalculator('estimates');
+      // Pass data to estimates if provided
+      if (data) {
+        setPendingEstimate(data);
+      }
     } else if (view === 'invoices') {
       setActiveCalculator('invoices');
     }
@@ -251,11 +255,14 @@ function App() {
       case 'jobs':
         return <Jobs 
           isDarkMode={isDarkMode}
+          onNavigateToEstimates={(data) => handleNavigate('estimates', data)}
         />;
       case 'estimates':
         return <Estimates 
           isDarkMode={isDarkMode}
           onApplyToJob={handleApplyEstimate}
+          pendingEstimateData={pendingEstimate}
+          onClearPendingData={() => setPendingEstimate(null)}
         />;
       case 'invoices':
         return <Invoices isDarkMode={isDarkMode} />;
@@ -309,7 +316,6 @@ function App() {
   };
 
   const headerInfo = getHeaderInfo();
-  const HeaderIcon = headerInfo.icon;
 
   return (
     <div className="App" style={{ background: isDarkMode ? '#000000' : '#ffffff', overscrollBehavior: 'none' }}>

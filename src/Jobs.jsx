@@ -4,7 +4,7 @@ import { getUserJobs, createJob, deleteJob as deleteJobFromFirebase } from './jo
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const Jobs = ({ isDarkMode }) => {
+const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -12,6 +12,9 @@ const Jobs = ({ isDarkMode }) => {
   const [editingJob, setEditingJob] = useState(null);
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(null);
   const statusDropdownRef = useRef(null);
+  const [showEstimateMenu, setShowEstimateMenu] = useState(false);
+  const [estimates, setEstimates] = useState([]);
+  const estimateMenuRef = useRef(null);
   const [formData, setFormData] = useState({
     title: '',
     client: '',
@@ -62,6 +65,35 @@ const Jobs = ({ isDarkMode }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+    // Load estimates
+    useEffect(() => {
+    const loadEstimates = async () => {
+        try {
+        const { getUserEstimates } = await import('./estimatesService');
+        const userEstimates = await getUserEstimates();
+        setEstimates(userEstimates);
+        } catch (error) {
+        console.error('Error loading estimates:', error);
+        }
+    };
+
+    if (auth.currentUser) {
+        loadEstimates();
+    }
+    }, []);
+
+    // Close estimate menu when clicking outside
+    useEffect(() => {
+    const handleClickOutside = (event) => {
+        if (estimateMenuRef.current && !estimateMenuRef.current.contains(event.target)) {
+        setShowEstimateMenu(false);
+        }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
   const loadJobs = async () => {
     setLoading(true);
@@ -203,6 +235,87 @@ const Jobs = ({ isDarkMode }) => {
       </div>
     );
   }
+
+  const handleSelectEstimate = (estimate) => {
+  if (estimate) {
+    // Apply estimate cost to the job
+    setFormData(prev => ({
+      ...prev,
+      estimatedCost: estimate.total.toString()
+    }));
+  }
+  setShowEstimateMenu(false);
+};
+
+const handleCreateNewEstimate = async () => {
+  console.log('handleCreateNewEstimate called');
+  console.log('onNavigateToEstimates:', onNavigateToEstimates);
+  setShowEstimateMenu(false);
+  
+  // If we're in the "Add New Job" form, save the job first
+  if (showAddForm && formData.title && formData.client) {
+    try {
+      console.log('Creating job with data:', formData);
+      
+      const jobData = {
+        name: formData.title,
+        title: formData.title,
+        client: formData.client,
+        location: formData.location,
+        status: formData.status,
+        date: formData.date,
+        time: formData.time,
+        estimatedCost: formData.estimatedCost,
+        duration: formData.duration,
+        notes: formData.notes
+      };
+
+      const jobId = await createJob(jobData);
+      console.log('Job created with ID:', jobId);
+      
+      // Navigate to estimates page with job info
+      const estimateData = {
+        jobId: jobId,
+        jobName: formData.title,
+        jobClient: formData.client
+      };
+      
+      console.log('Navigating with data:', estimateData);
+      
+      if (onNavigateToEstimates) {
+        onNavigateToEstimates(estimateData);
+      } else {
+        console.error('onNavigateToEstimates is not defined!');
+        alert('Navigation function not available. Please check the console.');
+      }
+      
+      resetForm();
+      loadJobs();
+    } catch (error) {
+      console.error('Error creating job:', error);
+      alert('Failed to create job. Please try again.');
+    }
+  } else if (viewingJob) {
+    // If viewing an existing job, just navigate with that job's info
+    const estimateData = {
+      jobId: viewingJob.id,
+      jobName: viewingJob.title || viewingJob.name,
+      jobClient: viewingJob.client
+    };
+    
+    console.log('Navigating from existing job with data:', estimateData);
+    
+    if (onNavigateToEstimates) {
+      onNavigateToEstimates(estimateData);
+    } else {
+      console.error('onNavigateToEstimates is not defined!');
+      alert('Navigation function not available. Please check the console.');
+    }
+  } else {
+    console.log('Neither new job form nor viewing job condition met');
+    alert('Please fill in the job title and client name first.');
+  }
+};
 
   return (
     <div style={{ 
@@ -365,11 +478,119 @@ const Jobs = ({ isDarkMode }) => {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                <input
-                  type="number"
-                  placeholder="Cost ($)"
-                  value={formData.estimatedCost}
+              {/* Add Estimate Button */}
+<div style={{ position: 'relative', marginBottom: '0.75rem' }} ref={showEstimateMenu ? estimateMenuRef : null}>
+  <button
+    type="button"
+    onClick={() => setShowEstimateMenu(!showEstimateMenu)}
+    style={{
+      width: '100%',
+      padding: '0.75rem',
+      background: colors.inputBg,
+      border: `1px solid ${colors.border}`,
+      borderRadius: '0.5rem',
+      color: '#2563eb',
+      cursor: 'pointer',
+      fontSize: '0.9375rem',
+      fontWeight: '600',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '0.5rem'
+    }}
+  >
+    <Plus size={18} />
+    Add Estimate
+  </button>
+
+  {/* Estimate Dropdown Menu */}
+  {showEstimateMenu && (
+    <div style={{
+      position: 'absolute',
+      top: '100%',
+      left: 0,
+      right: 0,
+      marginTop: '0.5rem',
+      background: colors.cardBg,
+      border: `1px solid ${colors.border}`,
+      borderRadius: '0.5rem',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+      zIndex: 100,
+      maxHeight: '200px',
+      overflowY: 'auto'
+    }}>
+      {/* Create New Estimate Option */}
+      <button
+        onClick={handleCreateNewEstimate}
+        style={{
+          width: '100%',
+          padding: '0.75rem',
+          background: 'transparent',
+          border: 'none',
+          borderBottom: `1px solid ${colors.border}`,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          color: '#2563eb',
+          fontSize: '0.875rem',
+          fontWeight: '600',
+          textAlign: 'left'
+        }}
+        onMouseEnter={(e) => e.target.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6'}
+        onMouseLeave={(e) => e.target.style.background = 'transparent'}
+      >
+        <Plus size={16} />
+        Create New Estimate
+      </button>
+
+      {/* Existing Estimates */}
+      {estimates.length === 0 ? (
+        <div style={{
+          padding: '1rem',
+          textAlign: 'center',
+          color: colors.subtext,
+          fontSize: '0.875rem'
+        }}>
+          No estimates available
+        </div>
+      ) : (
+        estimates.map((estimate) => (
+          <button
+            key={estimate.id}
+            onClick={() => handleSelectEstimate(estimate)}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: `1px solid ${colors.border}`,
+              cursor: 'pointer',
+              textAlign: 'left',
+              color: colors.text,
+              fontSize: '0.875rem'
+            }}
+            onMouseEnter={(e) => e.target.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6'}
+            onMouseLeave={(e) => e.target.style.background = 'transparent'}
+          >
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+              {estimate.name || 'Untitled Estimate'}
+            </div>
+            <div style={{ color: colors.subtext, fontSize: '0.75rem' }}>
+              ${Number(estimate.total || 0).toLocaleString()}
+            </div>
+          </button>
+        ))
+      )}
+    </div>
+  )}
+</div>
+
+<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+  <input
+    type="number"
+    placeholder="Cost ($)"
+    value={formData.estimatedCost}
                   onChange={(e) => setFormData(prev => ({...prev, estimatedCost: e.target.value}))}
                   style={{
                     padding: '0.75rem',
@@ -619,11 +840,119 @@ const Jobs = ({ isDarkMode }) => {
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                  <input
-                    type="number"
-                    placeholder="Cost ($)"
-                    value={formData.estimatedCost}
+                {/* Add Estimate Button */}
+<div style={{ position: 'relative', marginBottom: '0.75rem' }} ref={showEstimateMenu ? estimateMenuRef : null}>
+  <button
+    type="button"
+    onClick={() => setShowEstimateMenu(!showEstimateMenu)}
+    style={{
+      width: '100%',
+      padding: '0.75rem',
+      background: colors.inputBg,
+      border: `1px solid ${colors.border}`,
+      borderRadius: '0.5rem',
+      color: '#2563eb',
+      cursor: 'pointer',
+      fontSize: '0.9375rem',
+      fontWeight: '600',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '0.5rem'
+    }}
+  >
+    <Plus size={18} />
+    Add Estimate
+  </button>
+
+  {/* Estimate Dropdown Menu */}
+  {showEstimateMenu && (
+    <div style={{
+      position: 'absolute',
+      top: '100%',
+      left: 0,
+      right: 0,
+      marginTop: '0.5rem',
+      background: colors.cardBg,
+      border: `1px solid ${colors.border}`,
+      borderRadius: '0.5rem',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+      zIndex: 100,
+      maxHeight: '200px',
+      overflowY: 'auto'
+    }}>
+      {/* Create New Estimate Option */}
+      <button
+        onClick={handleCreateNewEstimate}
+        style={{
+          width: '100%',
+          padding: '0.75rem',
+          background: 'transparent',
+          border: 'none',
+          borderBottom: `1px solid ${colors.border}`,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          color: '#2563eb',
+          fontSize: '0.875rem',
+          fontWeight: '600',
+          textAlign: 'left'
+        }}
+        onMouseEnter={(e) => e.target.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6'}
+        onMouseLeave={(e) => e.target.style.background = 'transparent'}
+      >
+        <Plus size={16} />
+        Create New Estimate
+      </button>
+
+      {/* Existing Estimates */}
+      {estimates.length === 0 ? (
+        <div style={{
+          padding: '1rem',
+          textAlign: 'center',
+          color: colors.subtext,
+          fontSize: '0.875rem'
+        }}>
+          No estimates available
+        </div>
+      ) : (
+        estimates.map((estimate) => (
+          <button
+            key={estimate.id}
+            onClick={() => handleSelectEstimate(estimate)}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: `1px solid ${colors.border}`,
+              cursor: 'pointer',
+              textAlign: 'left',
+              color: colors.text,
+              fontSize: '0.875rem'
+            }}
+            onMouseEnter={(e) => e.target.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6'}
+            onMouseLeave={(e) => e.target.style.background = 'transparent'}
+          >
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+              {estimate.name || 'Untitled Estimate'}
+            </div>
+            <div style={{ color: colors.subtext, fontSize: '0.75rem' }}>
+              ${Number(estimate.total || 0).toLocaleString()}
+            </div>
+          </button>
+        ))
+      )}
+    </div>
+  )}
+</div>
+
+<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+  <input
+    type="number"
+    placeholder="Cost ($)"
+    value={formData.estimatedCost}
                     onChange={(e) => setFormData(prev => ({...prev, estimatedCost: e.target.value}))}
                     style={{
                       padding: '0.75rem',

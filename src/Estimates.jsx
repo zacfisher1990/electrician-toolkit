@@ -4,7 +4,7 @@ import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as del
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
+const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, onClearPendingData }) => {
   const [estimates, setEstimates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewEstimate, setShowNewEstimate] = useState(false);
@@ -15,7 +15,8 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
     name: '',
     laborHours: '',
     laborRate: '',
-    materials: []
+    materials: [],
+    jobId: null
   });
 
   const [newMaterial, setNewMaterial] = useState({ name: '', cost: '' });
@@ -49,6 +50,25 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
 
     return () => unsubscribe();
   }, []);
+
+  // Handle pending estimate data from Jobs page
+useEffect(() => {
+  if (pendingEstimateData) {
+    setFormData({
+      name: pendingEstimateData.jobName || '',
+      laborHours: '',
+      laborRate: '',
+      materials: [],
+      jobId: pendingEstimateData.jobId || null
+    });
+    setShowNewEstimate(true);
+    
+    // Clear the pending data
+    if (onClearPendingData) {
+      onClearPendingData();
+    }
+  }
+}, [pendingEstimateData, onClearPendingData]);
 
   const loadEstimates = async () => {
     setLoading(true);
@@ -99,51 +119,51 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
   };
 
   const saveEstimate = async () => {
-    if (formData.name) {
-      try {
-        const total = calculateTotal(formData.laborHours, formData.laborRate, formData.materials);
-        
-        const estimateData = {
-          name: formData.name,
-          laborHours: parseFloat(formData.laborHours) || 0,
-          laborRate: parseFloat(formData.laborRate) || 0,
-          materials: formData.materials,
-          total: total
-        };
+  if (formData.name) {
+    try {
+      const total = calculateTotal(formData.laborHours, formData.laborRate, formData.materials);
+      
+      const estimateData = {
+        name: formData.name,
+        laborHours: parseFloat(formData.laborHours) || 0,
+        laborRate: parseFloat(formData.laborRate) || 0,
+        materials: formData.materials,
+        total: total,
+        jobId: formData.jobId || null // Link to job if available
+      };
 
-        if (editingEstimate) {
-          await updateEstimate(editingEstimate.id, estimateData);
-        } else {
-          await createEstimate(estimateData);
-        }
-        
-        resetForm();
-        loadEstimates();
-      } catch (error) {
-        console.error('Error saving estimate:', error);
-        alert('Failed to save estimate. Please try again.');
+      if (editingEstimate) {
+        await updateEstimate(editingEstimate.id, estimateData);
+      } else {
+        await createEstimate(estimateData);
       }
+      
+      resetForm();
+      loadEstimates();
+    } catch (error) {
+      console.error('Error saving estimate:', error);
+      alert('Failed to save estimate. Please try again.');
     }
-  };
-
+  }
+};
   const resetForm = () => {
-    setFormData({ name: '', laborHours: '', laborRate: '', materials: [] });
-    setNewMaterial({ name: '', cost: '' });
-    setShowNewEstimate(false);
-    setEditingEstimate(null);
-  };
-
+  setFormData({ name: '', laborHours: '', laborRate: '', materials: [], jobId: null });
+  setNewMaterial({ name: '', cost: '' });
+  setShowNewEstimate(false);
+  setEditingEstimate(null);
+};
   const startEdit = (estimate) => {
-    setEditingEstimate(estimate);
-    setFormData({
-      name: estimate.name,
-      laborHours: estimate.laborHours.toString(),
-      laborRate: estimate.laborRate.toString(),
-      materials: [...estimate.materials]
-    });
-    setShowNewEstimate(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  setEditingEstimate(estimate);
+  setFormData({
+    name: estimate.name,
+    laborHours: estimate.laborHours.toString(),
+    laborRate: estimate.laborRate.toString(),
+    materials: [...estimate.materials],
+    jobId: estimate.jobId || null
+  });
+  setShowNewEstimate(true);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
   const deleteEstimate = async (id, estimateName) => {
     if (window.confirm(`Delete "${estimateName}"?`)) {
