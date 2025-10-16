@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Menu, FileDown, Omega, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt } from 'lucide-react';
 import CalculatorMenu from './CalculatorMenu.jsx';
 import VoltageDropCalculator from './VoltageDropCalculator.jsx';
@@ -34,18 +34,46 @@ function App() {
     return saved || null;
   });
   const [isDarkMode, setIsDarkMode] = useState(() => {
-  // Initialize from localStorage or default to false
-  const saved = localStorage.getItem('isDarkMode');
-  return saved === 'true'; // localStorage stores strings, so convert to boolean
-});
+    // Initialize from localStorage or default to false
+    const saved = localStorage.getItem('isDarkMode');
+    return saved === 'true'; // localStorage stores strings, so convert to boolean
+  });
   const [showMenu, setShowMenu] = useState(false);
   const [showExportToast, setShowExportToast] = useState(false);
   const [pendingEstimate, setPendingEstimate] = useState(null);
   const [headerVisible, setHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (event.state && event.state.view !== undefined) {
+        setActiveCalculator(event.state.view);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    // Set initial state
+    if (!window.history.state) {
+      window.history.replaceState({ view: activeCalculator }, '');
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  // Update browser history when view changes
+  useEffect(() => {
+    // Don't push state on initial load
+    if (window.history.state && window.history.state.view !== activeCalculator) {
+      window.history.pushState({ view: activeCalculator }, '');
+    }
+  }, [activeCalculator]);
+
   // Save active view to localStorage whenever it changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (activeCalculator === null) {
       localStorage.setItem('activeView', '');
     } else {
@@ -54,47 +82,47 @@ function App() {
   }, [activeCalculator]);
 
   // Save dark mode preference to localStorage whenever it changes
-  React.useEffect(() => {
+  useEffect(() => {
     localStorage.setItem('isDarkMode', isDarkMode);
-    }, [isDarkMode]);
+  }, [isDarkMode]);
 
    
   // Update theme-color meta tag based on dark mode
-  React.useEffect(() => {
-     const updateThemeColor = () => {
-     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  useEffect(() => {
+    const updateThemeColor = () => {
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
-       metaThemeColor.setAttribute('content', isDarkMode ? '#000000' : '#2563eb');
+        metaThemeColor.setAttribute('content', isDarkMode ? '#000000' : '#2563eb');
       }
     };
 
-     // Update immediately
+    // Update immediately
     updateThemeColor();
 
-     // Also update when page becomes visible (when returning to the app)
-     const handleVisibilityChange = () => {
-        if (document.visibilityState === 'visible') {
-          updateThemeColor();
-        }
-     };
+    // Also update when page becomes visible (when returning to the app)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        updateThemeColor();
+      }
+    };
 
-  document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
-  return () => {
-    document.removeEventListener('visibilitychange', handleVisibilityChange);
-  };
-}, [isDarkMode]);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isDarkMode]);
 
-  React.useEffect(() => {
-  // Scroll to top whenever the view changes
+  useEffect(() => {
+    // Scroll to top whenever the view changes
     window.scrollTo(0, 0);
-    }, [activeCalculator]);
+  }, [activeCalculator]);
   
   // Ref to access calculator's export function
   const calculatorRef = useRef(null);
 
   // Handle scroll to show/hide header
-  React.useEffect(() => {
+  useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
@@ -134,7 +162,8 @@ function App() {
 
   // Handle back to calculator menu - stable reference
   const handleBackToMenu = () => {
-    setActiveCalculator(null);
+    // Use browser back instead of directly setting state
+    window.history.back();
   };
 
   // Handle applying estimate to job
@@ -169,14 +198,14 @@ function App() {
   };
 
   // Dark mode colors
-const colors = {
-  headerBg: isDarkMode ? '#000000' : '#ffffff',
-  headerText: isDarkMode ? '#ffffff' : '#111827',
-  headerBorder: isDarkMode ? '#000000' : '#e5e7eb',
-  menuBg: isDarkMode ? '#000000' : 'white',
-  cardBorder: isDarkMode ? '#1a1a1a' : '#e5e7eb',
-  cardText: isDarkMode ? '#ffffff' : '#111827',
-};
+  const colors = {
+    headerBg: isDarkMode ? '#000000' : '#ffffff',
+    headerText: isDarkMode ? '#ffffff' : '#111827',
+    headerBorder: isDarkMode ? '#000000' : '#e5e7eb',
+    menuBg: isDarkMode ? '#000000' : 'white',
+    cardBorder: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+    cardText: isDarkMode ? '#ffffff' : '#111827',
+  };
 
   const renderCalculator = () => {
     const exportSuccessHandler = () => {
@@ -463,7 +492,7 @@ const colors = {
         position: 'relative',
         minHeight: '100vh',
         boxSizing: 'border-box'
-        }}>
+      }}>
         {!activeCalculator ? (
           renderCalculator()
         ) : (

@@ -26,7 +26,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
     fontSize: '0.625rem',
     fontWeight: '500',
     flex: '1 1 0',
-    padding: '0.5rem 0.25rem',
+    padding: '0.75rem 0.25rem', // Changed from 0.5rem to 0.75rem
     margin: 0,
     transition: 'color 0.2s',
     WebkitTapHighlightColor: 'transparent',
@@ -49,7 +49,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
   return (
     <div style={{
       position: 'fixed',
-      bottom: 0,
+      bottom: 0, // Stays flush with bottom
       left: 0,
       right: 0,
       width: '100%',
@@ -62,7 +62,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       paddingBottom: 'calc(0.25rem + env(safe-area-inset-bottom))',
       margin: 0,
       zIndex: 10000,
-      minHeight: '60px',
+      minHeight: '80px', // Changed from 60px to make it thicker
       boxSizing: 'border-box'
     }}>
       <button
