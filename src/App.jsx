@@ -312,7 +312,7 @@ function App() {
   const HeaderIcon = headerInfo.icon;
 
   return (
-    <div className="App" style={{ background: isDarkMode ? '#000000' : '#ffffff' }}>
+    <div className="App" style={{ background: isDarkMode ? '#000000' : '#ffffff', overscrollBehavior: 'none' }}>
       <Header 
         headerInfo={headerInfo}
         isDarkMode={isDarkMode}
