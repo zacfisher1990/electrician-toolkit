@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Clock, CheckCircle, AlertCircle, MapPin, Calendar, DollarSign, Edit, Trash2, Briefcase, ChevronDown, X, Eye } from 'lucide-react';
 import { getUserJobs, createJob, deleteJob as deleteJobFromFirebase } from './jobsService';
 import { auth } from './firebase';
@@ -10,6 +10,8 @@ const Jobs = ({ isDarkMode }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [viewingJob, setViewingJob] = useState(null);
   const [editingJob, setEditingJob] = useState(null);
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(null);
+  const statusDropdownRef = useRef(null);
   const [formData, setFormData] = useState({
     title: '',
     client: '',
@@ -47,6 +49,18 @@ const Jobs = ({ isDarkMode }) => {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target)) {
+        setStatusDropdownOpen(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const loadJobs = async () => {
@@ -132,17 +146,16 @@ const Jobs = ({ isDarkMode }) => {
     }
   };
 
-  const handleUpdateStatus = async (newStatus) => {
-    if (viewingJob) {
-      try {
-        const { updateJob } = await import('./jobsService');
-        await updateJob(viewingJob.id, { ...viewingJob, status: newStatus });
-        setViewingJob({ ...viewingJob, status: newStatus });
-        loadJobs();
-      } catch (error) {
-        console.error('Error updating status:', error);
-        alert('Failed to update status. Please try again.');
-      }
+  const handleUpdateStatus = async (jobId, newStatus) => {
+    try {
+      const { updateJob } = await import('./jobsService');
+      const job = jobs.find(j => j.id === jobId);
+      await updateJob(jobId, { ...job, status: newStatus });
+      setStatusDropdownOpen(null);
+      loadJobs();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Failed to update status. Please try again.');
     }
   };
 
@@ -215,23 +228,24 @@ const Jobs = ({ isDarkMode }) => {
             }}
           />
           
-          {/* Modal */}
-          <div style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: colors.cardBg,
-            borderRadius: '1rem',
-            padding: '1.5rem',
-            width: '90%',
-            maxWidth: '500px',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            zIndex: 1001,
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-            animation: 'slideUp 0.3s'
-          }}>
+        {/* Modal */}
+        <div style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        background: colors.cardBg,
+        borderRadius: '1rem',
+        padding: '1.5rem',
+        paddingBottom: 'calc(100px + env(safe-area-inset-bottom))', // Much more padding at bottom
+        width: '90%',
+        maxWidth: '500px',
+        maxHeight: '80vh', // Reduced from 85vh
+        overflowY: 'auto',
+        zIndex: 1001,
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+        WebkitOverflowScrolling: 'touch'
+        }}>
             {/* Header */}
             <div style={{
               display: 'flex',
@@ -261,53 +275,6 @@ const Jobs = ({ isDarkMode }) => {
               >
                 <X size={24} />
               </button>
-            </div>
-
-            {/* Status Update Buttons */}
-            <div style={{
-              marginBottom: '1.5rem',
-              padding: '1rem',
-              background: colors.bg,
-              borderRadius: '0.5rem'
-            }}>
-              <div style={{
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                color: colors.text,
-                marginBottom: '0.75rem'
-              }}>
-                Update Job Status
-              </div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '0.5rem'
-              }}>
-                {Object.entries(statusConfig).map(([key, config]) => (
-                  <button
-                    key={key}
-                    onClick={() => handleUpdateStatus(key)}
-                    style={{
-                      padding: '0.625rem 0.5rem',
-                      background: viewingJob.status === key ? config.color : 'transparent',
-                      border: `2px solid ${config.color}`,
-                      borderRadius: '0.5rem',
-                      color: viewingJob.status === key ? 'white' : config.color,
-                      cursor: 'pointer',
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.25rem',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <config.icon size={14} />
-                    <span>{config.label}</span>
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Form Fields */}
@@ -431,6 +398,26 @@ const Jobs = ({ isDarkMode }) => {
                   }}
                 />
               </div>
+
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData(prev => ({...prev, status: e.target.value}))}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  marginBottom: '0.75rem',
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '0.5rem',
+                  fontSize: '0.9375rem',
+                  background: colors.inputBg,
+                  color: colors.text,
+                  boxSizing: 'border-box'
+                }}
+              >
+                <option value="scheduled">Scheduled</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
 
               <textarea
                 placeholder="Notes"
@@ -834,20 +821,90 @@ const Jobs = ({ isDarkMode }) => {
                       {job.client}
                     </p>
                   </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                    padding: '0.25rem 0.75rem',
-                    borderRadius: '1rem',
-                    background: `${statusConfig[job.status].color}20`,
-                    color: statusConfig[job.status].color,
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    whiteSpace: 'nowrap'
-                  }}>
-                    <StatusIcon size={14} />
-                    <span>{statusConfig[job.status].label}</span>
+                  
+                  {/* Status Badge with Dropdown */}
+                  <div style={{ position: 'relative' }} ref={statusDropdownOpen === job.id ? statusDropdownRef : null}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStatusDropdownOpen(statusDropdownOpen === job.id ? null : job.id);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '1rem',
+                        background: `${statusConfig[job.status].color}20`,
+                        color: statusConfig[job.status].color,
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        whiteSpace: 'nowrap',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <StatusIcon size={14} />
+                      <span>{statusConfig[job.status].label}</span>
+                    </button>
+
+                    {/* Status Dropdown Menu */}
+                    {statusDropdownOpen === job.id && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        right: 0,
+                        marginTop: '0.5rem',
+                        background: colors.cardBg,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: '0.5rem',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                        zIndex: 100,
+                        minWidth: '140px',
+                        overflow: 'hidden'
+                      }}>
+                        {Object.entries(statusConfig).map(([key, config]) => {
+                          const OptionIcon = config.icon;
+                          return (
+                            <button
+                              key={key}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUpdateStatus(job.id, key);
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '0.625rem 0.75rem',
+                                background: job.status === key ? `${config.color}20` : 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                color: config.color,
+                                fontSize: '0.875rem',
+                                fontWeight: job.status === key ? '600' : '500',
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseEnter={(e) => {
+                                if (job.status !== key) {
+                                  e.target.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6';
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (job.status !== key) {
+                                  e.target.style.background = 'transparent';
+                                }
+                              }}
+                            >
+                              <OptionIcon size={16} />
+                              <span>{config.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -911,53 +968,28 @@ const Jobs = ({ isDarkMode }) => {
                   </p>
                 )}
 
-                <div style={{
-                  display: 'flex',
-                  gap: '0.5rem',
-                  marginTop: '0.75rem'
-                }}>
-                  <button
-                    onClick={() => openJobView(job)}
-                    style={{
-                      flex: 1,
-                      padding: '0.5rem',
-                      background: '#2563eb',
-                      border: 'none',
-                      borderRadius: '0.5rem',
-                      color: 'white',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.25rem',
-                      fontSize: '0.875rem',
-                      fontWeight: '600'
-                    }}
-                  >
-                    <Eye size={16} />
-                    View Job
-                  </button>
-                  <button
-                    onClick={() => handleDeleteJob(job.id, jobTitle)}
-                    style={{
-                      flex: 1,
-                      padding: '0.5rem',
-                      background: 'transparent',
-                      border: '1px solid #ef4444',
-                      borderRadius: '0.5rem',
-                      color: '#ef4444',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.25rem',
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    <Trash2 size={16} />
-                    Delete
-                  </button>
-                </div>
+                <button
+                onClick={() => openJobView(job)}
+                style={{
+                    width: '100%',
+                    marginTop: '0.75rem',
+                    padding: '0.5rem',
+                    background: '#2563eb',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    color: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.25rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '600'
+                }}
+                >
+                <Eye size={16} />
+                View Job
+                </button>
               </div>
             );
           })
