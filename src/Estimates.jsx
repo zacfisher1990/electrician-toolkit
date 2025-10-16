@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit, ChevronDown, DollarSign, Clock, FileText, Check } from 'lucide-react';
+import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as deleteEstimateFromFirebase } from './estimatesService';
+import { auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
   const [estimates, setEstimates] = useState([]);
-
+  const [loading, setLoading] = useState(true);
   const [showNewEstimate, setShowNewEstimate] = useState(false);
   const [editingEstimate, setEditingEstimate] = useState(null);
   const [showJobDropdown, setShowJobDropdown] = useState(null);
@@ -27,11 +30,37 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
-    cardBg: isDarkMode ? '#0a0a0a' : '#ffffff',
+    cardBg: isDarkMode ? '#1a1a1a' : '#ffffff',
     text: isDarkMode ? '#ffffff' : '#111827',
-    subtext: isDarkMode ? '#666666' : '#6b7280',
-    border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
+    subtext: isDarkMode ? '#999999' : '#6b7280',
+    border: isDarkMode ? '#2a2a2a' : '#e5e7eb',
     inputBg: isDarkMode ? '#000000' : '#ffffff',
+  };
+
+  // Load estimates from Firebase
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loadEstimates();
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const loadEstimates = async () => {
+    setLoading(true);
+    try {
+      const userEstimates = await getUserEstimates();
+      setEstimates(userEstimates);
+    } catch (error) {
+      console.error('Error loading estimates:', error);
+      alert('Failed to load estimates. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const calculateTotal = (laborHours, laborRate, materials) => {
@@ -69,26 +98,31 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
     }));
   };
 
-  const saveEstimate = () => {
+  const saveEstimate = async () => {
     if (formData.name) {
-      const total = calculateTotal(formData.laborHours, formData.laborRate, formData.materials);
-      
-      if (editingEstimate) {
-        setEstimates(estimates.map(est => 
-          est.id === editingEstimate.id 
-            ? { ...formData, id: est.id, total, createdAt: est.createdAt }
-            : est
-        ));
-      } else {
-        setEstimates([...estimates, { 
-          ...formData, 
-          id: Date.now(), 
-          total,
-          createdAt: new Date()
-        }]);
+      try {
+        const total = calculateTotal(formData.laborHours, formData.laborRate, formData.materials);
+        
+        const estimateData = {
+          name: formData.name,
+          laborHours: parseFloat(formData.laborHours) || 0,
+          laborRate: parseFloat(formData.laborRate) || 0,
+          materials: formData.materials,
+          total: total
+        };
+
+        if (editingEstimate) {
+          await updateEstimate(editingEstimate.id, estimateData);
+        } else {
+          await createEstimate(estimateData);
+        }
+        
+        resetForm();
+        loadEstimates();
+      } catch (error) {
+        console.error('Error saving estimate:', error);
+        alert('Failed to save estimate. Please try again.');
       }
-      
-      resetForm();
     }
   };
 
@@ -103,17 +137,23 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
     setEditingEstimate(estimate);
     setFormData({
       name: estimate.name,
-      laborHours: estimate.laborHours,
-      laborRate: estimate.laborRate,
+      laborHours: estimate.laborHours.toString(),
+      laborRate: estimate.laborRate.toString(),
       materials: [...estimate.materials]
     });
     setShowNewEstimate(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const deleteEstimate = (id) => {
-    if (window.confirm('Delete this estimate?')) {
-      setEstimates(estimates.filter(est => est.id !== id));
+  const deleteEstimate = async (id, estimateName) => {
+    if (window.confirm(`Delete "${estimateName}"?`)) {
+      try {
+        await deleteEstimateFromFirebase(id);
+        loadEstimates();
+      } catch (error) {
+        console.error('Error deleting estimate:', error);
+        alert('Failed to delete estimate. Please try again.');
+      }
     }
   };
 
@@ -124,9 +164,25 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
     setShowJobDropdown(null);
   };
 
+  if (loading) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: colors.bg,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingBottom: '5rem'
+      }}>
+        <div style={{ color: colors.subtext }}>Loading estimates...</div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ 
       background: colors.bg,
+      minHeight: '100vh',
       paddingBottom: '5rem'
     }}>
       <div style={{ padding: '1rem' }}>
@@ -451,7 +507,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
                     color: colors.subtext,
                     fontSize: '0.75rem'
                   }}>
-                    {estimate.createdAt.toLocaleDateString()}
+                    {estimate.createdAt?.toLocaleDateString() || 'N/A'}
                   </p>
                 </div>
                 <div style={{
@@ -582,7 +638,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
                               fontSize: '0.875rem'
                             }}
                           >
-                            {job.title}
+                            {job.title || job.name}
                           </button>
                         ))}
                       </div>
@@ -606,7 +662,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob }) => {
                   <Edit size={16} />
                 </button>
                 <button
-                  onClick={() => deleteEstimate(estimate.id)}
+                  onClick={() => deleteEstimate(estimate.id, estimate.name)}
                   style={{
                     padding: '0.5rem',
                     background: 'transparent',
