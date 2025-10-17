@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Package, Plus, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
-import { exportToPDF } from './pdfExport';
+import { exportToPDF } from '../../utils/pdfExport';
 
 const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [boxType, setBoxType] = useState('4x1.5-square');

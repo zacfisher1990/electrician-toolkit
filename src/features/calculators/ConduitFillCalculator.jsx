@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Wrench, Plus, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
-import { exportToPDF } from './pdfExport';
+import { exportToPDF } from '../../utils/pdfExport';
 
 const ConduitFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [conduitType, setConduitType] = useState('emt-0.5');

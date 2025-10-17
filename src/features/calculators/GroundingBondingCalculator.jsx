@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef, useMemo } from 'react';
 import { Shield, CheckCircle, Info } from 'lucide-react';
-import { exportToPDF } from './pdfExport';
+import { exportToPDF } from '../../utils/pdfExport';
 
 // Grounding Electrode Conductor Calculator - moved outside
 const GECCalculator = ({ gecData, setGecData, colors }) => {

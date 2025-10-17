@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getUserJobs } from './jobsService';
-import { auth } from './firebase';
+import { getUserJobs } from "../jobs/jobsService";
+import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const Home = ({ isDarkMode }) => {

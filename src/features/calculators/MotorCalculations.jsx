@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Settings, CheckCircle, AlertTriangle } from 'lucide-react';
-import { exportToPDF } from './pdfExport';
+import { exportToPDF } from '../../utils/pdfExport';
 
 // Motor Full Load Current Calculator Component
 const MotorFLCCalculator = ({ flcData, setFlcData, colors }) => {

@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Settings, AlertCircle, CheckCircle } from 'lucide-react';
-import { exportToPDF } from './pdfExport';
+import { exportToPDF } from '../../utils/pdfExport';
 
 const VFDSizingCalculator = forwardRef(({ isDarkMode, onBack }, ref) => {
   const [motorHP, setMotorHP] = useState('');

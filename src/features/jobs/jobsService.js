@@ -1,15 +1,16 @@
-import { deleteDoc } from 'firebase/firestore';
-import { updateDoc } from 'firebase/firestore';
+import { db, auth } from '../../firebase/firebase';
 import { 
   collection, 
   addDoc, 
-  getDocs, 
+  updateDoc, 
+  deleteDoc, 
   doc, 
+  query, 
+  where, 
+  getDocs,
   serverTimestamp,
-  query,
   orderBy
 } from 'firebase/firestore';
-import { db, auth } from './firebase'; // import from your existing firebase.js
 
 // Get all jobs for current user
 export const getUserJobs = async () => {

@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Triangle, Info, CheckCircle } from 'lucide-react';
-import { exportToPDF } from './pdfExport';
+import { exportToPDF } from '../../utils/pdfExport';
 
 const PowerTriangleCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [calculationMode, setCalculationMode] = useState('from-kw-pf');

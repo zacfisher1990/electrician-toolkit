@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Clock, CheckCircle, AlertCircle, Briefcase, ChevronDown } from 'lucide-react';
 import { getUserJobs, createJob, deleteJob as deleteJobFromFirebase } from './jobsService';
-import { auth } from './firebase';
+import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import JobCard from './JobCard';
 import JobModal from './JobModal';
@@ -59,7 +59,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   useEffect(() => {
     const loadEstimates = async () => {
       try {
-        const { getUserEstimates } = await import('./estimatesService');
+        const { getUserEstimates } = await import('../estimates/estimatesService');
         const userEstimates = await getUserEstimates();
         setEstimates(userEstimates);
       } catch (error) {

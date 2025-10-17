@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Waves, Info } from 'lucide-react';
-import { exportToPDF } from './pdfExport';
+import { exportToPDF } from '../../utils/pdfExport';
 
 const ReactanceImpedanceCalculator = forwardRef(({ isDarkMode = false }, ref) => {
   const [activeTab, setActiveTab] = useState('inductive');

@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { TrendingUp, CheckCircle, AlertCircle } from 'lucide-react';
-import { exportToPDF } from './pdfExport';
+import { exportToPDF } from '../../utils/pdfExport';
 
 // Move calculator components OUTSIDE to prevent recreation on each render
 const OffsetBendCalculator = ({ offsetData, setOffsetData, colors }) => {

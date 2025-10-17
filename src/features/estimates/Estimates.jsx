@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit, ChevronDown, DollarSign, Clock, FileText, Check } from 'lucide-react';
 import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as deleteEstimateFromFirebase } from './estimatesService';
-import { auth } from './firebase';
+import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, onClearPendingData }) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Info, FileDown, Briefcase } from 'lucide-react';
-import { getUserJobs, addCalculationToJob } from './jobsService';
+import { getUserJobs, addCalculationToJob } from '../jobs/jobsService';
 
 const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
   const [voltage, setVoltage] = useState('');

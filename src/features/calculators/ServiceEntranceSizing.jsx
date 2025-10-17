@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Home, Info } from 'lucide-react';
-import { exportToPDF } from './pdfExport';
+import { exportToPDF } from '../../utils/pdfExport';
 
 const ServiceEntranceSizing = forwardRef(({ isDarkMode = false }, ref) => {
   const [activeTab, setActiveTab] = useState('residential');
