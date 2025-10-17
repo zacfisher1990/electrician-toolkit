@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Clock, CheckCircle, AlertCircle, Briefcase, ChevronDown } from 'lucide-react';
+import { Plus, Clock, CheckCircle, AlertCircle, Briefcase, ChevronDown, X, Search } from 'lucide-react';
 import { getUserJobs, createJob, deleteJob as deleteJobFromFirebase } from './jobsService';
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -18,6 +18,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [estimates, setEstimates] = useState([]);
   const estimateMenuRef = useRef(null);
   const [linkedEstimate, setLinkedEstimate] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     client: '',
@@ -29,6 +30,8 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     duration: '',
     notes: ''
   });
+
+  
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -296,6 +299,21 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     setFormData(prev => ({...prev, estimatedCost: '', estimateId: null}));
   };
 
+  const filteredJobs = jobs.filter(job => {
+  if (!searchQuery) return true;
+  
+  const query = searchQuery.toLowerCase();
+  const jobTitle = (job.title || job.name || '').toLowerCase();
+  const client = (job.client || '').toLowerCase();
+  const location = (job.location || '').toLowerCase();
+  const notes = (job.notes || '').toLowerCase();
+  
+  return jobTitle.includes(query) || 
+         client.includes(query) || 
+         location.includes(query) || 
+         notes.includes(query);
+});
+
   if (loading) {
     return (
       <div style={{ 
@@ -335,8 +353,64 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
         isDarkMode={isDarkMode}
         colors={colors}
       />
-
+      
       <div style={{ padding: '1rem' }}>
+
+        {/* Search Bar */}
+  <div style={{
+    marginBottom: '1rem',
+    position: 'relative'
+  }}>
+    <input
+      type="text"
+      placeholder="Search jobs..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      style={{
+        width: '100%',
+        padding: '0.75rem',
+        paddingLeft: '2.5rem',
+        paddingRight: searchQuery ? '2.5rem' : '0.75rem',
+        border: `1px solid ${colors.border}`,
+        borderRadius: '0.5rem',
+        fontSize: '0.9375rem',
+        background: colors.inputBg,
+        color: colors.text,
+        boxSizing: 'border-box'
+      }}
+    />
+    <Search 
+      size={18} 
+      style={{
+        position: 'absolute',
+        left: '0.75rem',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        color: colors.subtext,
+        pointerEvents: 'none'
+      }}
+    />
+    {searchQuery && (
+      <button
+        onClick={() => setSearchQuery('')}
+        style={{
+          position: 'absolute',
+          right: '0.75rem',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          color: colors.subtext,
+          padding: '0.25rem',
+          display: 'flex',
+          alignItems: 'center'
+        }}
+      >
+        <X size={18} />
+      </button>
+    )}
+  </div>
         {/* Add New Job Button/Form */}
         <div style={{
           background: colors.cardBg,
@@ -466,12 +540,13 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
             borderRadius: '1rem',
             border: `1px solid ${colors.border}`
           }}>
-            {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
+            {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
+            {searchQuery && ` (${jobs.length} total)`}
           </span>
         </div>
 
         {/* Job List */}
-        {jobs.length === 0 ? (
+        {filteredJobs.length === 0 ? (
           <div style={{
             background: colors.cardBg,
             border: `1px solid ${colors.border}`,
@@ -484,7 +559,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
             <p style={{ margin: 0, fontSize: '0.9375rem' }}>No jobs yet. Add your first job above!</p>
           </div>
         ) : (
-          [...jobs]
+          [...filteredJobs]
             .sort((a, b) => {
               if (!a.date && !b.date) return 0;
               if (!a.date) return 1;
