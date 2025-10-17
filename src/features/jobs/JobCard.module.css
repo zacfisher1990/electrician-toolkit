@@ -1,0 +1,66 @@
+/* JobCard.module.css - Ultra compact buttons */
+
+.actionButtons {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 0.4rem !important;
+  margin-top: 0.5rem !important;
+  width: 100% !important;
+}
+
+/* Force buttons to be tiny */
+div.actionButtons > button,
+.actionButtons button {
+  padding: 5px 3px !important;
+  font-size: 9px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  width: 100% !important;
+  height: auto !important;
+  gap: 2px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+div.actionButtons > button svg,
+.actionButtons button svg {
+  width: 12px !important;
+  height: 12px !important;
+  flex-shrink: 0 !important;
+}
+
+div.actionButtons > button span,
+.actionButtons button span {
+  font-size: 9px !important;
+  line-height: 1 !important;
+}
+
+/* Align job title and client to the left */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.cardTitle {
+  flex: 1;
+  text-align: left !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.cardTitle h3 {
+  text-align: left !important;
+  margin: 0 0 0.25rem 0 !important;
+  padding: 0 !important;
+}
+
+.cardTitle p {
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}

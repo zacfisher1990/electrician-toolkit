@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { MapPin, Calendar, DollarSign, Eye, FileText, Receipt } from 'lucide-react';
+import styles from './JobCard.module.css';
 
 const JobCard = ({ 
   job, 
@@ -28,13 +29,8 @@ const JobCard = ({
         transition: 'all 0.2s'
       }}
     >
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: '0.75rem'
-      }}>
-        <div style={{ flex: 1 }}>
+        <div className={styles.cardHeader}>
+        <div className={styles.cardTitle}>
           <h3 style={{
             margin: '0 0 0.25rem 0',
             color: colors.text,
@@ -205,18 +201,12 @@ const JobCard = ({
       )}
 
       {/* Three Action Buttons */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '0.5rem',
-        marginTop: '0.75rem',
-        width: '100%'
-      }}>
+      <div className={styles.actionButtons}>
         <button
           onClick={() => onViewJob(job)}
           title="View Job Details"
           style={{
-            padding: '0.5rem 0.25rem',
+            
             background: '#2563eb',
             border: 'none',
             borderRadius: '0.5rem',
@@ -226,10 +216,7 @@ const JobCard = ({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.25rem',
-            fontSize: '0.625rem',
-            fontWeight: '600',
-            minWidth: 0
+            fontWeight: '600' 
           }}
         >
           <Eye size={16} />
@@ -240,7 +227,7 @@ const JobCard = ({
           onClick={() => onViewEstimate(job)}
           title={job.estimateId ? "View Estimate" : "No estimate linked"}
           style={{
-            padding: '0.5rem 0.25rem',
+            
             background: job.estimateId ? '#10b981' : colors.border,
             border: 'none',
             borderRadius: '0.5rem',
@@ -250,11 +237,8 @@ const JobCard = ({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.25rem',
-            fontSize: '0.625rem',
             fontWeight: '600',
-            opacity: job.estimateId ? 1 : 0.5,
-            minWidth: 0
+            opacity: job.estimateId ? 1 : 0.5
           }}
           disabled={!job.estimateId}
         >
@@ -266,7 +250,6 @@ const JobCard = ({
           onClick={() => onViewInvoice(job)}
           title={job.invoiceId ? "View Invoice" : "No invoice linked"}
           style={{
-            padding: '0.5rem 0.25rem',
             background: job.invoiceId ? '#f59e0b' : colors.border,
             border: 'none',
             borderRadius: '0.5rem',
@@ -276,11 +259,9 @@ const JobCard = ({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.25rem',
-            fontSize: '0.625rem',
             fontWeight: '600',
-            opacity: job.invoiceId ? 1 : 0.5,
-            minWidth: 0
+            opacity: job.invoiceId ? 1 : 0.5
+            
           }}
           disabled={!job.invoiceId}
         >

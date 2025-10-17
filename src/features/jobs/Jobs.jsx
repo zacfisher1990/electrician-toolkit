@@ -3,10 +3,11 @@ import { Plus, Clock, CheckCircle, AlertCircle, Briefcase, ChevronDown, X, Searc
 import { getUserJobs, createJob, deleteJob as deleteJobFromFirebase } from './jobsService';
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import styles from './Jobs.module.css';
 import JobCard from './JobCard';
 import JobModal from './JobModal';
 import JobForm from './JobForm';
-import './Jobs.css';
+
 
 const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [jobs, setJobs] = useState([]);
@@ -413,47 +414,65 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
       </button>
     )}
   </div>
-        {/* Add New Job Button/Form */}
+        
+
+        {/* Section Header */}
         <div style={{
-          background: colors.cardBg,
-          borderRadius: '0.75rem',
-          border: `1px solid ${colors.border}`,
-          boxShadow: 'none',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           marginBottom: '1rem',
-          overflow: 'hidden'
+          padding: '0 0.25rem'
         }}>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            style={{
-              width: '100%',
-              padding: '1rem',
-              background: 'transparent',
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              color: colors.text
-            }}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '1.125rem',
-              fontWeight: '600'
-            }}>
-              <Plus size={20} />
-              Add New Job
-            </div>
-            <ChevronDown 
-              size={20} 
-              style={{
-                transform: showAddForm ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s'
-              }}
-            />
-          </button>
+          <h3 style={{ 
+            margin: 0, 
+            color: colors.text, 
+            fontSize: '1.125rem',
+            fontWeight: '600'
+          }}>
+            Job List
+          </h3>
+          <span style={{
+            fontSize: '0.875rem',
+            color: colors.subtext,
+            background: colors.cardBg,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '1rem',
+            border: `1px solid ${colors.border}`
+          }}>
+            {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
+            {searchQuery && ` (${jobs.length} total)`}
+          </span>
+        </div>
+
+        {/* Add New Job Button/Form */}
+          <div className={styles.addJobContainer} style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.border}`
+          }}>
+            <button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className={styles.addJobButton}
+              style={{ color: colors.text }}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '600'
+              }}>
+                <Plus size={18} />
+                Add New Job
+              </div>
+              <ChevronDown 
+                size={18} 
+                style={{
+                  transform: showAddForm ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s'
+                }}
+              />
+            </button>
 
           {showAddForm && (
             <div style={{
@@ -516,35 +535,6 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Section Header */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1rem',
-          padding: '0 0.25rem'
-        }}>
-          <h3 style={{ 
-            margin: 0, 
-            color: colors.text, 
-            fontSize: '1.125rem',
-            fontWeight: '600'
-          }}>
-            Job List
-          </h3>
-          <span style={{
-            fontSize: '0.875rem',
-            color: colors.subtext,
-            background: colors.cardBg,
-            padding: '0.25rem 0.75rem',
-            borderRadius: '1rem',
-            border: `1px solid ${colors.border}`
-          }}>
-            {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
-            {searchQuery && ` (${jobs.length} total)`}
-          </span>
         </div>
 
         {/* Job List */}
