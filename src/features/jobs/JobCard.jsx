@@ -60,22 +60,29 @@ const JobCard = ({
               setStatusDropdownOpen(statusDropdownOpen === job.id ? null : job.id);
             }}
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '0.25rem',
-              padding: '0.25rem 0.75rem',
-              borderRadius: '1rem',
+              padding: '4px 8px',           // Use px instead of rem
+              borderRadius: '4px',
               background: `${statusConfig[job.status].color}20`,
               color: statusConfig[job.status].color,
-              fontSize: '0.75rem',
+              fontSize: '11px',             // Use px instead of rem
               fontWeight: '600',
               whiteSpace: 'nowrap',
               border: 'none',
               cursor: 'pointer',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              lineHeight: '1',
+              minHeight: 'unset',           // Override any default min-height
+              minWidth: 'unset',            // Override any default min-width
+              height: 'fit-content',
+              width: 'fit-content',
+              boxSizing: 'border-box'
             }}
           >
-            <StatusIcon size={14} />
+            <StatusIcon size={12} />
             <span>{statusConfig[job.status].label}</span>
           </button>
 
