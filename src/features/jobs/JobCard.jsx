@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { MapPin, Calendar, DollarSign, Eye } from 'lucide-react';
+import { MapPin, Calendar, DollarSign, Eye, FileText, Receipt } from 'lucide-react';
 
 const JobCard = ({ 
   job, 
@@ -8,6 +8,8 @@ const JobCard = ({
   setStatusDropdownOpen,
   onUpdateStatus,
   onViewJob,
+  onViewEstimate,
+  onViewInvoice,
   isDarkMode,
   colors 
 }) => {
@@ -195,28 +197,90 @@ const JobCard = ({
         </p>
       )}
 
-      <button
-        onClick={() => onViewJob(job)}
-        style={{
-          width: '100%',
-          marginTop: '0.75rem',
-          padding: '0.5rem',
-          background: '#2563eb',
-          border: 'none',
-          borderRadius: '0.5rem',
-          color: 'white',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.25rem',
-          fontSize: '0.875rem',
-          fontWeight: '600'
-        }}
-      >
-        <Eye size={16} />
-        View Job
-      </button>
+      {/* Three Action Buttons */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '0.5rem',
+        marginTop: '0.75rem',
+        width: '100%'
+      }}>
+        <button
+          onClick={() => onViewJob(job)}
+          title="View Job Details"
+          style={{
+            padding: '0.5rem 0.25rem',
+            background: '#2563eb',
+            border: 'none',
+            borderRadius: '0.5rem',
+            color: 'white',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.25rem',
+            fontSize: '0.625rem',
+            fontWeight: '600',
+            minWidth: 0
+          }}
+        >
+          <Eye size={16} />
+          <span>Job</span>
+        </button>
+
+        <button
+          onClick={() => onViewEstimate(job)}
+          title={job.estimateId ? "View Estimate" : "No estimate linked"}
+          style={{
+            padding: '0.5rem 0.25rem',
+            background: job.estimateId ? '#10b981' : colors.border,
+            border: 'none',
+            borderRadius: '0.5rem',
+            color: 'white',
+            cursor: job.estimateId ? 'pointer' : 'not-allowed',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.25rem',
+            fontSize: '0.625rem',
+            fontWeight: '600',
+            opacity: job.estimateId ? 1 : 0.5,
+            minWidth: 0
+          }}
+          disabled={!job.estimateId}
+        >
+          <FileText size={16} />
+          <span>Estimate</span>
+        </button>
+
+        <button
+          onClick={() => onViewInvoice(job)}
+          title={job.invoiceId ? "View Invoice" : "No invoice linked"}
+          style={{
+            padding: '0.5rem 0.25rem',
+            background: job.invoiceId ? '#f59e0b' : colors.border,
+            border: 'none',
+            borderRadius: '0.5rem',
+            color: 'white',
+            cursor: job.invoiceId ? 'pointer' : 'not-allowed',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.25rem',
+            fontSize: '0.625rem',
+            fontWeight: '600',
+            opacity: job.invoiceId ? 1 : 0.5,
+            minWidth: 0
+          }}
+          disabled={!job.invoiceId}
+        >
+          <Receipt size={16} />
+          <span>Invoice</span>
+        </button>
+      </div>
     </div>
   );
 };

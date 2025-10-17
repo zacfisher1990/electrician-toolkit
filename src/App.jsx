@@ -42,6 +42,7 @@ function App() {
   const [showMenu, setShowMenu] = useState(false);
   const [showExportToast, setShowExportToast] = useState(false);
   const [pendingEstimate, setPendingEstimate] = useState(null);
+  const [navigationData, setNavigationData] = useState(null);
   const [headerVisible, setHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   
@@ -145,25 +146,38 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
+  // Clear navigation data when leaving estimates page
+useEffect(() => {
+  if (activeCalculator !== 'estimates') {
+    setNavigationData(null);
+  }
+}, [activeCalculator]);
+
   const handleNavigate = (view, data = null) => {
-    if (view === 'home') {
-      setActiveCalculator(null); // null = Home page
-    } else if (view === 'calculators') {
-      setActiveCalculator('calculators'); // Show calculator menu
-    } else if (view === 'profile') {
-      setActiveCalculator('profile');
-    } else if (view === 'jobs') {
-      setActiveCalculator('jobs');
-    } else if (view === 'estimates') {
-      setActiveCalculator('estimates');
-      // Pass data to estimates if provided
-      if (data) {
-        setPendingEstimate(data);
+      if (view === 'home') {
+        setActiveCalculator(null);
+      } else if (view === 'calculators') {
+        setActiveCalculator('calculators');
+      } else if (view === 'profile') {
+        setActiveCalculator('profile');
+      } else if (view === 'jobs') {
+        setActiveCalculator('jobs');
+      } else if (view === 'estimates') {
+        setActiveCalculator('estimates');
+        // Handle different types of data
+        if (data) {
+          if (data.viewEstimateId) {
+            // Viewing existing estimate
+            setNavigationData(data);
+          } else {
+            // Creating new estimate from job
+            setPendingEstimate(data);
+          }
+        }
+      } else if (view === 'invoices') {
+        setActiveCalculator('invoices');
       }
-    } else if (view === 'invoices') {
-      setActiveCalculator('invoices');
-    }
-  };
+    };
 
   // Handle back to calculator menu - stable reference
   const handleBackToMenu = () => {
@@ -263,6 +277,7 @@ function App() {
           onApplyToJob={handleApplyEstimate}
           pendingEstimateData={pendingEstimate}
           onClearPendingData={() => setPendingEstimate(null)}
+          navigationData={navigationData}
         />;
       case 'invoices':
         return <Invoices isDarkMode={isDarkMode} />;

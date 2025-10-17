@@ -4,7 +4,7 @@ import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as del
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, onClearPendingData }) => {
+const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, onClearPendingData, navigationData }) => {
   const [estimates, setEstimates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewEstimate, setShowNewEstimate] = useState(false);
@@ -69,6 +69,16 @@ useEffect(() => {
     }
   }
 }, [pendingEstimateData, onClearPendingData]);
+
+    // Handle viewing an existing estimate from navigation
+  useEffect(() => {
+    if (navigationData?.viewEstimateId) {
+      const estimateToView = estimates.find(e => e.id === navigationData.viewEstimateId);
+      if (estimateToView) {
+        startEdit(estimateToView);
+      }
+    }
+  }, [navigationData, estimates]);
 
   const loadEstimates = async () => {
     setLoading(true);

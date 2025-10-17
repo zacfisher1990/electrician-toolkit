@@ -500,6 +500,17 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
                 setStatusDropdownOpen={setStatusDropdownOpen}
                 onUpdateStatus={handleUpdateStatus}
                 onViewJob={openJobView}
+                onViewEstimate={(job) => {
+                  if (job.estimateId && onNavigateToEstimates) {
+                    onNavigateToEstimates({ viewEstimateId: job.estimateId });
+                  }
+                }}
+                onViewInvoice={(job) => {
+                  if (job.invoiceId) {
+                    // TODO: Navigate to invoice view when implemented
+                    console.log('View invoice:', job.invoiceId);
+                  }
+                }}
                 isDarkMode={isDarkMode}
                 colors={colors}
               />
