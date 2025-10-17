@@ -301,6 +301,21 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     setFormData(prev => ({...prev, estimatedCost: '', estimateId: null}));
   };
 
+  const handleEstimateMenuOpen = async (value) => {
+  setShowEstimateMenu(value);
+  
+  // Only reload estimates when opening (not closing)
+  if (value === true) {
+    try {
+      const { getUserEstimates } = await import('../estimates/estimatesService');
+      const userEstimates = await getUserEstimates();
+      setEstimates(userEstimates);
+    } catch (error) {
+      console.error('Error loading estimates:', error);
+    }
+  }
+};
+
   const filteredJobs = jobs.filter(job => {
   if (!searchQuery) return true;
   
@@ -344,7 +359,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
         linkedEstimate={linkedEstimate}
         estimates={estimates}
         showEstimateMenu={showEstimateMenu}
-        setShowEstimateMenu={setShowEstimateMenu}
+        setShowEstimateMenu={handleEstimateMenuOpen}
         onSelectEstimate={handleSelectEstimate}
         onCreateNewEstimate={handleCreateNewEstimate}
         onViewEstimate={handleViewEstimate}
@@ -486,7 +501,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
                   linkedEstimate={linkedEstimate}
                   estimates={estimates}
                   showEstimateMenu={showEstimateMenu}
-                  setShowEstimateMenu={setShowEstimateMenu}
+                  setShowEstimateMenu={handleEstimateMenuOpen}
                   onSelectEstimate={handleSelectEstimate}
                   onCreateNewEstimate={handleCreateNewEstimate}
                   onViewEstimate={handleViewEstimate}
