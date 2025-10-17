@@ -6,6 +6,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import JobCard from './JobCard';
 import JobModal from './JobModal';
 import JobForm from './JobForm';
+import './Jobs.css';
 
 const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [jobs, setJobs] = useState([]);
@@ -329,6 +330,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   }
 
   return (
+    <div className="jobs-container">
     <div style={{ 
       minHeight: '100vh', 
       background: colors.bg,
@@ -592,6 +594,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
             ))
         )}
       </div>
+    </div>
     </div>
   );
 };
