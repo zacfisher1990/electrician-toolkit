@@ -1,6 +1,7 @@
 import React, { useState, useImperativeHandle, forwardRef, useMemo } from 'react';
 import { Shield, CheckCircle, Info } from 'lucide-react';
 import { exportToPDF } from '../../utils/pdfExport';
+import styles from './Calculator.module.css';
 
 // Grounding Electrode Conductor Calculator - moved outside
 const GECCalculator = ({ gecData, setGecData, colors }) => {
@@ -48,11 +49,11 @@ const GECCalculator = ({ gecData, setGecData, colors }) => {
   const results = determineGEC();
 
   return (
-    <div>
+    <div className={styles.container}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Service Conductor Size
+            Service Conductor<br/> Size
           </label>
           <select 
             value={gecData.serviceSize} 
@@ -774,7 +775,8 @@ const GroundingBondingCalculator = forwardRef(({ isDarkMode = false, onBack }, r
           { id: 'egc', label: 'Equipment Grounding' },
           { id: 'bonding', label: 'Bonding Jumpers' }
         ].map(tab => (
-          <button 
+          <button
+            className={styles.btn} 
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
