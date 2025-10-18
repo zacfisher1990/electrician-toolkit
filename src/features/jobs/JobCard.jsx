@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { MapPin, Calendar, DollarSign, Eye, FileText, Receipt } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { MapPin, Calendar, Edit, FileText, Receipt, DollarSign, ChevronDown, ChevronUp } from 'lucide-react';
 import styles from './JobCard.module.css';
 
 const JobCard = ({ 
@@ -15,18 +15,21 @@ const JobCard = ({
   colors 
 }) => {
   const statusDropdownRef = useRef(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const StatusIcon = statusConfig[job.status].icon;
   const jobTitle = job.title || job.name;
 
   return (
     <div
+      onClick={() => setIsExpanded(!isExpanded)}
       style={{
         background: colors.cardBg,
         border: `1px solid ${colors.border}`,
         borderRadius: '0.75rem',
         padding: '1rem',
         marginBottom: '0.75rem',
-        transition: 'all 0.2s'
+        transition: 'all 0.2s',
+        cursor: 'pointer'
       }}
     >
         <div className={styles.cardHeader}>
@@ -35,9 +38,13 @@ const JobCard = ({
             margin: '0 0 0.25rem 0',
             color: colors.text,
             fontSize: '1rem',
-            fontWeight: '600'
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}>
             {jobTitle}
+            {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </h3>
           <p style={{
             margin: 0,
@@ -140,73 +147,96 @@ const JobCard = ({
         </div>
       </div>
 
-      {job.location && (
+      {/* Location and Date on same line */}
+      {(job.location || job.date) && (
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem',
+          justifyContent: 'space-between',
           marginBottom: '0.5rem',
           color: colors.subtext,
-          fontSize: '0.875rem'
-        }}>
-          <MapPin size={16} />
-          <span>{job.location}</span>
-        </div>
-      )}
-
-      {job.date && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          marginBottom: '0.5rem',
-          color: colors.subtext,
-          fontSize: '0.875rem'
-        }}>
-          <Calendar size={16} />
-          <span>
-            {new Date(job.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            {job.time && ` at ${job.time}`}
-            {job.duration && ` (${job.duration})`}
-          </span>
-        </div>
-      )}
-
-      {job.estimatedCost && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          marginBottom: '0.5rem',
-          color: colors.subtext,
-          fontSize: '0.875rem'
-        }}>
-          <DollarSign size={16} />
-          <span>${Number(job.estimatedCost).toLocaleString()}</span>
-        </div>
-      )}
-
-      {job.notes && (
-        <p style={{
-          margin: '0.75rem 0 0 0',
-          padding: '0.75rem',
-          background: colors.bg,
-          borderRadius: '0.5rem',
-          color: colors.text,
           fontSize: '0.875rem',
-          lineHeight: '1.5'
+          gap: '1rem'
         }}>
-          {job.notes}
-        </p>
+          {job.location && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <MapPin size={16} />
+              <span>{job.location}</span>
+            </div>
+          )}
+          
+          {job.date && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              marginLeft: 'auto'
+            }}>
+              <Calendar size={16} />
+              <span>
+                {new Date(job.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                {job.time && ` (${job.time})`}
+                {job.duration && ` ${job.duration}`}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Expanded Details */}
+      {isExpanded && (
+        <div style={{
+          marginTop: '0.75rem',
+          paddingTop: '0.75rem',
+          borderTop: `1px solid ${colors.border}`
+        }}>
+          {job.estimatedCost && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              marginBottom: '0.5rem',
+              color: colors.subtext,
+              fontSize: '0.875rem'
+            }}>
+              <DollarSign size={16} />
+              <span>${Number(job.estimatedCost).toLocaleString()}</span>
+            </div>
+          )}
+
+          {job.notes && (
+            <div style={{
+              marginTop: '0.5rem'
+            }}>
+              <p style={{
+                margin: 0,
+                padding: '0.75rem',
+                background: colors.bg,
+                borderRadius: '0.5rem',
+                color: colors.text,
+                fontSize: '0.875rem',
+                lineHeight: '1.5'
+              }}>
+                {job.notes}
+              </p>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Three Action Buttons */}
       <div className={styles.actionButtons}>
         <button
-          onClick={() => onViewJob(job)}
-          title="View Job Details"
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewJob(job);
+          }}
+          title="Edit Job"
           style={{
-            
             background: '#2563eb',
             border: 'none',
             borderRadius: '0.5rem',
@@ -219,15 +249,17 @@ const JobCard = ({
             fontWeight: '600' 
           }}
         >
-          <Eye size={16} />
-          <span>Job</span>
+          <Edit size={16} />
+          <span>Edit</span>
         </button>
 
         <button
-          onClick={() => onViewEstimate(job)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewEstimate(job);
+          }}
           title={job.estimateId ? "View Estimate" : "No estimate linked"}
           style={{
-            
             background: job.estimateId ? '#10b981' : colors.border,
             border: 'none',
             borderRadius: '0.5rem',
@@ -247,7 +279,10 @@ const JobCard = ({
         </button>
 
         <button
-          onClick={() => onViewInvoice(job)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewInvoice(job);
+          }}
           title={job.invoiceId ? "View Invoice" : "No invoice linked"}
           style={{
             background: job.invoiceId ? '#f59e0b' : colors.border,
@@ -261,7 +296,6 @@ const JobCard = ({
             justifyContent: 'center',
             fontWeight: '600',
             opacity: job.invoiceId ? 1 : 0.5
-            
           }}
           disabled={!job.invoiceId}
         >
