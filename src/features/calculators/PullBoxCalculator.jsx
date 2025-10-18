@@ -195,7 +195,9 @@ const PullBoxCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
           borderBottom: `1px solid ${colors.cardBorder}`,
           paddingBottom: '0.5rem'
         }}>
-          Raceways Entering Box
+          {pullType === 'straight' && 'Raceway Size'}
+          {pullType === 'angle' && 'Raceways on Same Wall'}
+          {pullType === 'u-pull' && 'Raceway Size'}
         </h3>
         
         {raceways.map((raceway, index) => (
@@ -208,9 +210,12 @@ const PullBoxCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
               <h4 style={{ fontWeight: '600', color: colors.labelText, margin: 0, fontSize: '0.875rem' }}>
-                Raceway {index + 1}
+                {pullType === 'angle' 
+                  ? (index === 0 ? 'Largest Raceway' : `Other Raceway ${index}`)
+                  : 'Largest Raceway'
+                }
               </h4>
-              {raceways.length > 1 && (
+              {pullType === 'angle' && index > 0 && (
                 <button
                   onClick={() => removeRaceway(index)}
                   style={{ 
@@ -281,14 +286,14 @@ const PullBoxCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
             }}
           >
             <Plus size={16} />
-            Add Raceway
+            Add Other Raceway
           </button>
         )}
         
         <p style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.5rem', margin: '0.5rem 0 0 0' }}>
-          {pullType === 'angle' 
-            ? 'For angle pulls, add all raceways entering on the same wall' 
-            : 'Enter the largest raceway size entering the box'}
+          {pullType === 'straight' && 'Enter the largest raceway entering the box'}
+          {pullType === 'angle' && 'Enter largest raceway first, then add any other raceways entering on the same wall'}
+          {pullType === 'u-pull' && 'Enter the largest raceway entering and exiting on the same side'}
         </p>
       </div>
 
@@ -357,15 +362,35 @@ const PullBoxCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
               marginTop: '1rem',
               border: `1px solid ${colors.cardBorder}`
             }}>
-              <strong style={{ color: colors.cardText, display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
-                Calculation Breakdown:
+              <strong style={{ color: colors.cardText, display: 'block', marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                Angle Pull Calculation:
               </strong>
-              <div style={{ fontSize: '0.8125rem', color: colors.labelText, lineHeight: '1.6' }}>
-                <div>Largest raceway: {results.largestRaceway}"</div>
-                <div>6 × largest raceway: {(results.largestRaceway * 6).toFixed(1)}"</div>
-                <div>Sum of other raceways: {results.sumOfOthers.toFixed(1)}"</div>
-                <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: `1px solid ${colors.cardBorder}`, fontWeight: '600' }}>
-                  Total minimum distance: {results.minDistance.toFixed(1)}"
+              <div style={{ fontSize: '0.8125rem', color: colors.labelText, lineHeight: '1.8' }}>
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <strong>Step 1:</strong> Largest raceway × 6
+                </div>
+                <div style={{ paddingLeft: '1rem', color: colors.subtleText }}>
+                  {results.largestRaceway}" × 6 = {(results.largestRaceway * 6).toFixed(1)}"
+                </div>
+                
+                <div style={{ marginTop: '0.75rem', marginBottom: '0.5rem' }}>
+                  <strong>Step 2:</strong> Add other raceways on same wall
+                </div>
+                <div style={{ paddingLeft: '1rem', color: colors.subtleText }}>
+                  {results.sumOfOthers > 0 
+                    ? `Sum of others = ${results.sumOfOthers.toFixed(1)}"`
+                    : 'No other raceways'
+                  }
+                </div>
+                
+                <div style={{ 
+                  marginTop: '0.75rem', 
+                  paddingTop: '0.75rem', 
+                  borderTop: `1px solid ${colors.cardBorder}`,
+                  fontWeight: '600',
+                  color: '#3b82f6'
+                }}>
+                  Total: {(results.largestRaceway * 6).toFixed(1)}" + {results.sumOfOthers.toFixed(1)}" = {results.minDistance.toFixed(1)}"
                 </div>
               </div>
             </div>
