@@ -1,5 +1,19 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
+import {
+  wireMaterials,
+  temperatureRatings,
+  wireSizes,
+  ambientTemperatures,
+  getBaseAmpacity,
+  calculateDeratedAmpacity,
+  getOCPDLimit,
+  getCommonApplications,
+  formatTempRating,
+  formatAmbientTemp,
+  formatWireSize,
+  necReferences
+} from './data/ampacityData';
 import { exportToPDF } from '../../utils/pdfExport';
 
 const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
@@ -21,170 +35,27 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
     sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
   };
 
-  const ampacityData = {
-    copper: {
-      '60C': {
-        '22': 3, '20': 5, '18': 7, '16': 10,
-        '14': 15, '12': 20, '10': 30, '8': 40, '6': 55, '4': 70, '3': 85,
-        '2': 95, '1': 110, '1/0': 125, '2/0': 145, '3/0': 165, '4/0': 195,
-        '250': 215, '300': 240, '350': 260, '400': 280, '500': 320,
-        '600': 355, '700': 385, '750': 400
-      },
-      '75C': {
-        '22': 3, '20': 5, '18': 7, '16': 18,
-        '14': 20, '12': 25, '10': 35, '8': 50, '6': 65, '4': 85, '3': 100,
-        '2': 115, '1': 130, '1/0': 150, '2/0': 175, '3/0': 200, '4/0': 230,
-        '250': 255, '300': 285, '350': 310, '400': 335, '500': 380,
-        '600': 420, '700': 460, '750': 475
-      },
-      '90C': {
-        '22': 3, '20': 5, '18': 7, '16': 18,
-        '14': 25, '12': 30, '10': 40, '8': 55, '6': 75, '4': 95, '3': 115,
-        '2': 130, '1': 150, '1/0': 170, '2/0': 195, '3/0': 225, '4/0': 260,
-        '250': 290, '300': 320, '350': 350, '400': 380, '500': 430,
-        '600': 475, '700': 520, '750': 535
-      }
-    },
-    aluminum: {
-      '60C': {
-        '12': 15, '10': 25, '8': 30, '6': 40, '4': 55, '3': 65,
-        '2': 75, '1': 85, '1/0': 100, '2/0': 115, '3/0': 130, '4/0': 150,
-        '250': 170, '300': 190, '350': 210, '400': 225, '500': 260,
-        '600': 285, '700': 310, '750': 320
-      },
-      '75C': {
-        '12': 20, '10': 30, '8': 40, '6': 50, '4': 65, '3': 75,
-        '2': 90, '1': 100, '1/0': 120, '2/0': 135, '3/0': 155, '4/0': 180,
-        '250': 205, '300': 230, '350': 250, '400': 270, '500': 310,
-        '600': 340, '700': 375, '750': 385
-      },
-      '90C': {
-        '12': 25, '10': 35, '8': 45, '6': 60, '4': 75, '3': 85,
-        '2': 100, '1': 115, '1/0': 135, '2/0': 150, '3/0': 175, '4/0': 205,
-        '250': 230, '300': 260, '350': 280, '400': 305, '500': 350,
-        '600': 385, '700': 420, '750': 435
-      }
-    }
-  };
-
-  const tempCorrectionFactors = {
-    '60C': {
-      '10': 1.29, '15': 1.20, '20': 1.11, '25': 1.05, '30': 1.00,
-      '35': 0.94, '40': 0.88, '45': 0.82, '50': 0.75, '55': 0.67,
-      '60': 0.58, '65': 0.47, '70': 0.33
-    },
-    '75C': {
-      '10': 1.20, '15': 1.15, '20': 1.11, '25': 1.05, '30': 1.00,
-      '35': 0.94, '40': 0.88, '45': 0.82, '50': 0.75, '55': 0.67,
-      '60': 0.58, '65': 0.47, '70': 0.33, '75': 0.00
-    },
-    '90C': {
-      '10': 1.15, '15': 1.12, '20': 1.08, '25': 1.04, '30': 1.00,
-      '35': 0.96, '40': 0.91, '45': 0.87, '50': 0.82, '55': 0.76,
-      '60': 0.71, '65': 0.65, '70': 0.58, '75': 0.50, '80': 0.41,
-      '85': 0.29, '90': 0.00
-    }
-  };
-
-  const getCommonApplications = (ampacity, wireSize) => {
-    if (wireSize === '22') return "Thermostat wiring, doorbells, low-voltage controls";
-    if (wireSize === '20') return "Doorbells, security systems, low-voltage controls";
-    if (wireSize === '18') return "Thermostats, lighting controls, doorbells, signaling circuits";
-    if (wireSize === '16') return "Electronics, lighting control systems, doorbells, low-voltage applications";
-    
-    if (ampacity <= 15) return "Lighting circuits, small appliances";
-    if (ampacity <= 20) return "Lighting circuits, small appliances";
-    if (ampacity <= 25) return "General outlets, lighting circuits";
-    if (ampacity <= 30) return "Small appliances, dryers (240V)";
-    if (ampacity <= 40) return "Electric ranges, large appliances";
-    if (ampacity <= 50) return "Electric ranges, welders, heat pumps";
-    if (ampacity <= 100) return "Sub-panels, large motors";
-    if (ampacity <= 200) return "Main panels, large commercial loads";
-    return "Service entrances, industrial applications";
-  };
-
-  const getOCPDLimit = (size, material) => {
-    const limits = {
-      copper: { '14': 15, '12': 20, '10': 30 },
-      aluminum: { '12': 15, '10': 25 }
-    };
-    return limits[material]?.[size] || null;
-  };
-
-  const getCurrentAmpacity = () => {
-    return ampacityData[wireType][tempRating][wireSize] || 0;
-  };
-
-  const calculateDeratedAmpacity = () => {
-    let baseAmpacity = currentAmpacity;
-    
-    const tempFactor = tempCorrectionFactors[tempRating][ambientTemp] || 1.00;
-    
-    let conductorFactor = 1.00;
-    const numCond = parseInt(numConductors);
-    if (numCond <= 3) conductorFactor = 1.00;
-    else if (numCond <= 6) conductorFactor = 0.80;
-    else if (numCond <= 9) conductorFactor = 0.70;
-    else if (numCond <= 20) conductorFactor = 0.50;
-    else if (numCond <= 30) conductorFactor = 0.45;
-    else if (numCond <= 40) conductorFactor = 0.40;
-    else conductorFactor = 0.35;
-    
-    let deratedAmpacity = baseAmpacity * tempFactor * conductorFactor;
-    
-    let continuousAmpacity = deratedAmpacity;
-    if (continuousLoad) {
-      continuousAmpacity = deratedAmpacity * 0.8;
-    }
-    
-    return {
-      base: baseAmpacity,
-      tempFactor,
-      conductorFactor,
-      derated: Math.round(deratedAmpacity * 10) / 10,
-      continuous: Math.round(continuousAmpacity * 10) / 10
-    };
-  };
-
-  const currentAmpacity = getCurrentAmpacity();
-  const ocpdLimit = getOCPDLimit(wireSize, wireType);
-  const deratingResults = calculateDeratedAmpacity();
+  const currentAmpacity = getBaseAmpacity(wireType, tempRating, wireSize);
+  const ocpdLimit = getOCPDLimit(wireType, wireSize);
+  const deratingResults = calculateDeratedAmpacity(
+    currentAmpacity,
+    tempRating,
+    ambientTemp,
+    numConductors,
+    continuousLoad
+  );
   const hasDerating = deratingResults.tempFactor !== 1.00 || deratingResults.conductorFactor !== 1.00 || continuousLoad;
 
   // Expose exportPDF function to parent via ref
   useImperativeHandle(ref, () => ({
     exportPDF: () => {
-      const getTempLabel = (temp) => {
-        const labels = {
-          '60C': '60°C (140°F)',
-          '75C': '75°C (167°F)',
-          '90C': '90°C (194°F)'
-        };
-        return labels[temp] || temp;
-      };
-
-      const getAmbientTempLabel = (temp) => {
-        const temps = {
-          '10': '10°C (50°F)',
-          '15': '15°C (59°F)',
-          '20': '20°C (68°F)',
-          '25': '25°C (77°F)',
-          '30': '30°C (86°F)',
-          '35': '35°C (95°F)',
-          '40': '40°C (104°F)',
-          '45': '45°C (113°F)',
-          '50': '50°C (122°F)'
-        };
-        return temps[temp] || `${temp}°C`;
-      };
-
       const pdfData = {
         calculatorName: 'Ampacity Lookup Calculator',
         inputs: {
-          wireSize: wireSize.includes('/') ? `${wireSize} AWG` : `${wireSize} ${parseInt(wireSize) <= 16 ? 'AWG' : 'kcmil'}`,
+          wireSize: formatWireSize(wireSize),
           wireMaterial: wireType.charAt(0).toUpperCase() + wireType.slice(1),
-          temperatureRating: getTempLabel(tempRating),
-          ambientTemperature: getAmbientTempLabel(ambientTemp),
+          temperatureRating: formatTempRating(tempRating),
+          ambientTemperature: formatAmbientTemp(ambientTemp),
           currentCarryingConductors: numConductors,
           continuousLoad: continuousLoad ? 'Yes (3+ hours)' : 'No'
         },
@@ -202,11 +73,11 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
           deratingApplied: hasDerating ? 'Yes' : 'No'
         },
         necReferences: [
-          'NEC Table 310.16 - Allowable Ampacities of Insulated Conductors',
-          'NEC 310.15(B)(2)(a) - Temperature Correction Factors',
-          'NEC 310.15(B)(3)(a) - Conductor Bundling Adjustment Factors',
-          ocpdLimit ? 'NEC 240.4(D) - Small Conductor Overcurrent Protection' : null,
-          continuousLoad ? 'NEC 210.19(A)(1) - Continuous Load Sizing (125% factor)' : null
+          necReferences.ampacityTable,
+          necReferences.tempCorrection,
+          necReferences.conductorAdjustment,
+          ocpdLimit ? necReferences.ocpdLimit : null,
+          continuousLoad ? necReferences.continuousLoad : null
         ].filter(Boolean)
       };
 
@@ -217,7 +88,6 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
       
-
       {/* Wire Selection */}
       <div style={{
         background: colors.cardBg,
@@ -264,31 +134,11 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
                 boxSizing: 'border-box'
               }}
             >
-              <option value="22">22 AWG</option>
-              <option value="20">20 AWG</option>
-              <option value="18">18 AWG</option>
-              <option value="16">16 AWG</option>
-              <option value="14">14 AWG</option>
-              <option value="12">12 AWG</option>
-              <option value="10">10 AWG</option>
-              <option value="8">8 AWG</option>
-              <option value="6">6 AWG</option>
-              <option value="4">4 AWG</option>
-              <option value="3">3 AWG</option>
-              <option value="2">2 AWG</option>
-              <option value="1">1 AWG</option>
-              <option value="1/0">1/0 AWG</option>
-              <option value="2/0">2/0 AWG</option>
-              <option value="3/0">3/0 AWG</option>
-              <option value="4/0">4/0 AWG</option>
-              <option value="250">250 kcmil</option>
-              <option value="300">300 kcmil</option>
-              <option value="350">350 kcmil</option>
-              <option value="400">400 kcmil</option>
-              <option value="500">500 kcmil</option>
-              <option value="600">600 kcmil</option>
-              <option value="700">700 kcmil</option>
-              <option value="750">750 kcmil</option>
+              {wireSizes.map(size => (
+                <option key={size.value} value={size.value}>
+                  {size.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -317,8 +167,11 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
                   boxSizing: 'border-box'
                 }}
               >
-                <option value="copper">Copper</option>
-                <option value="aluminum">Aluminum</option>
+                {wireMaterials.map(material => (
+                  <option key={material.value} value={material.value}>
+                    {material.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -346,9 +199,11 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
                   boxSizing: 'border-box'
                 }}
               >
-                <option value="60C">60°C (140°F)</option>
-                <option value="75C">75°C (167°F)</option>
-                <option value="90C">90°C (194°F)</option>
+                {temperatureRatings.map(rating => (
+                  <option key={rating.value} value={rating.value}>
+                    {rating.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -402,15 +257,11 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
                   boxSizing: 'border-box'
                 }}
               >
-                <option value="10">10°C (50°F)</option>
-                <option value="15">15°C (59°F)</option>
-                <option value="20">20°C (68°F)</option>
-                <option value="25">25°C (77°F)</option>
-                <option value="30">30°C (86°F) - Standard</option>
-                <option value="35">35°C (95°F)</option>
-                <option value="40">40°C (104°F)</option>
-                <option value="45">45°C (113°F)</option>
-                <option value="50">50°C (122°F)</option>
+                {ambientTemperatures.map(temp => (
+                  <option key={temp.value} value={temp.value}>
+                    {temp.label}
+                  </option>
+                ))}
               </select>
             </div>
             
@@ -553,7 +404,7 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
                 textAlign: 'center'
               }}>
                 <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                  {continuousLoad ? 'Final Ampacity' : 'Final Ampacity'}
+                  Final Ampacity
                 </div>
                 <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
                   {continuousLoad ? deratingResults.continuous : deratingResults.derated} A
@@ -574,10 +425,10 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
             <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
             <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5', width: '100%' }}>
               <div style={{ marginBottom: '0.5rem' }}>
-                <strong>Wire:</strong> {wireSize} AWG {wireType}
+                <strong>Wire:</strong> {formatWireSize(wireSize)} {wireType}
               </div>
               <div style={{ marginBottom: '0.5rem' }}>
-                <strong>Temperature Rating:</strong> {tempRating} ({tempRating === '60C' ? '140°F' : tempRating === '75C' ? '167°F' : '194°F'})
+                <strong>Temperature Rating:</strong> {formatTempRating(tempRating)}
               </div>
             </div>
           </div>
