@@ -1,5 +1,14 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Package, Plus, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { 
+  boxCapacities, 
+  wireVolumeAllowances, 
+  availableWireSizes,
+  getBoxCapacity,
+  getBoxName,
+  getWireVolumeAllowance,
+  necReferences 
+} from './boxFillData';
 import { exportToPDF } from '../../utils/pdfExport';
 
 const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
@@ -26,54 +35,6 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
     subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
   };
 
-  const boxCapacities = {
-    // Device Boxes (Single Gang)
-    '3x2x1.5': { capacity: 7.5, name: '3" x 2" x 1-1/2" Device Box' },
-    '3x2x2': { capacity: 10.0, name: '3" x 2" x 2" Device Box' },
-    '3x2x2.25': { capacity: 10.5, name: '3" x 2" x 2-1/4" Device Box' },
-    '3x2x2.5': { capacity: 12.5, name: '3" x 2" x 2-1/2" Device Box' },
-    '3x2x2.75': { capacity: 14.0, name: '3" x 2" x 2-3/4" Device Box' },
-    '3x2x3.5': { capacity: 18.0, name: '3" x 2" x 3-1/2" Device Box' },
-    
-    // Device Boxes (Multi-Gang)
-    '3x2x2-2gang': { capacity: 14.0, name: '2-Gang 3" x 2" x 2" Device Box' },
-    '3x2x2.25-2gang': { capacity: 17.0, name: '2-Gang 3" x 2" x 2-1/4" Device Box' },
-    '3x2x2.5-2gang': { capacity: 21.0, name: '2-Gang 3" x 2" x 2-1/2" Device Box' },
-    '3x2x3.5-2gang': { capacity: 29.5, name: '2-Gang 3" x 2" x 3-1/2" Device Box' },
-    '3x2x3.5-3gang': { capacity: 43.5, name: '3-Gang 3" x 2" x 3-1/2" Device Box' },
-    
-    // Square Boxes
-    '4x1.25-square': { capacity: 18.0, name: '4" x 1-1/4" Square' },
-    '4x1.5-square': { capacity: 21.0, name: '4" x 1-1/2" Square' },
-    '4x2.125-square': { capacity: 30.3, name: '4" x 2-1/8" Square' },
-    '4-11/16x1.5-square': { capacity: 25.5, name: '4-11/16" x 1-1/2" Square' },
-    '4-11/16x2.125-square': { capacity: 42.0, name: '4-11/16" x 2-1/8" Square' },
-    
-    // Round/Octagon Boxes
-    '4x1.25-round': { capacity: 12.5, name: '4" x 1-1/4" Round' },
-    '4x1.5-round': { capacity: 15.5, name: '4" x 1-1/2" Round' },
-    '4x2.125-round': { capacity: 21.5, name: '4" x 2-1/8" Round' },
-    '4x1.25-octagon': { capacity: 15.5, name: '4" x 1-1/4" Octagon' },
-    '4x1.5-octagon': { capacity: 18.0, name: '4" x 1-1/2" Octagon' },
-    '4x2.125-octagon': { capacity: 24.5, name: '4" x 2-1/8" Octagon' },
-    
-    // Masonry Boxes
-    '3.5x1.5-masonry': { capacity: 14.0, name: '3-1/2" x 1-1/2" Masonry Box' },
-    '3.5x2.125-masonry': { capacity: 21.0, name: '3-1/2" x 2-1/8" Masonry Box' }
-  };
-
-  const wireAllowances = {
-    '14': 2.0,
-    '12': 2.25,
-    '10': 2.5,
-    '8': 3.0,
-    '6': 5.0,
-    '4': 5.0,
-    '3': 5.0,
-    '2': 5.0,
-    '1': 5.0
-  };
-
   const addConductor = () => {
     setConductors([...conductors, { size: '12', count: '' }]);
   };
@@ -95,7 +56,7 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
     
     const conductorDetails = conductors.map(conductor => {
       const count = parseInt(conductor.count) || 0;
-      const wireAllowance = wireAllowances[conductor.size];
+      const wireAllowance = getWireVolumeAllowance(conductor.size);
       const subtotal = wireAllowance * count;
       
       totalFill += subtotal;
@@ -108,6 +69,7 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
       };
     });
     
+    // Find largest wire size (smallest AWG number) that has a count > 0
     const largestWireSize = conductors.reduce((largest, conductor) => {
       const count = parseInt(conductor.count) || 0;
       if (count > 0) {
@@ -118,7 +80,7 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
       return largest;
     }, '14');
     
-    const deviceWireAllowance = wireAllowances[largestWireSize];
+    const deviceWireAllowance = getWireVolumeAllowance(largestWireSize);
     const outlets = parseInt(devices.outlets) || 0;
     const switches = parseInt(devices.switches) || 0;
     const deviceFill = (outlets + switches) * 2 * deviceWireAllowance;
@@ -143,7 +105,7 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   };
 
   const results = calculateFill();
-  const boxCapacity = boxCapacities[boxType].capacity;
+  const boxCapacity = getBoxCapacity(boxType);
   const fillPercentage = boxCapacity > 0 ? ((results.totalFill / boxCapacity) * 100).toFixed(1) : 0;
   const isOverfilled = results.totalFill > boxCapacity;
 
@@ -175,7 +137,7 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
       const pdfData = {
         calculatorName: 'Box Fill Calculator',
         inputs: {
-          boxType: `${boxCapacities[boxType].name} (${boxCapacity} cu.in.)`,
+          boxType: `${getBoxName(boxType)} (${boxCapacity} cu.in.)`,
           ...conductorInputs,
           receptaclesOutlets: outlets > 0 ? `${outlets} (counts as ${outlets * 2} conductors)` : '0',
           switches: switches > 0 ? `${switches} (counts as ${switches * 2} conductors)` : '0',
@@ -197,12 +159,10 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
           deviceWireAllowance: `${results.deviceWireAllowance} cu.in. per conductor`
         },
         necReferences: [
-          'NEC 314.16 - Number of Conductors in Outlet, Device, and Junction Boxes',
-          'NEC 314.16(B) - Box Fill Calculations',
-          'Conductor volume allowances per NEC Table 314.16(B)',
-          'Each device (receptacle/switch) counts as 2 conductor volumes',
-          'All equipment grounding conductors combined count as 1 conductor volume',
-          'One or more cable clamps count as 1 conductor volume',
+          necReferences.mainSection,
+          necReferences.calculations,
+          necReferences.table,
+          ...necReferences.rules,
           isOverfilled ? 'WARNING: This configuration exceeds the maximum allowable box fill' : null
         ].filter(Boolean)
       };
@@ -214,7 +174,6 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
       
-
       {/* Box Selection */}
       <div style={{
         background: colors.cardBg,
@@ -261,29 +220,39 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
             }}
           >
             <optgroup label="Device Boxes (Single Gang)">
-              {Object.entries(boxCapacities).filter(([key]) => key.startsWith('3x2x') && !key.includes('gang')).map(([key, val]) => (
-                <option key={key} value={key}>{val.name} - {val.capacity} cu.in.</option>
-              ))}
+              {Object.entries(boxCapacities)
+                .filter(([key, box]) => box.type === 'device-single')
+                .map(([key, box]) => (
+                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
+                ))}
             </optgroup>
             <optgroup label="Device Boxes (Multi-Gang)">
-              {Object.entries(boxCapacities).filter(([key]) => key.includes('gang')).map(([key, val]) => (
-                <option key={key} value={key}>{val.name} - {val.capacity} cu.in.</option>
-              ))}
+              {Object.entries(boxCapacities)
+                .filter(([key, box]) => box.type === 'device-multi')
+                .map(([key, box]) => (
+                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
+                ))}
             </optgroup>
             <optgroup label="Square Boxes">
-              {Object.entries(boxCapacities).filter(([key]) => key.includes('square')).map(([key, val]) => (
-                <option key={key} value={key}>{val.name} - {val.capacity} cu.in.</option>
-              ))}
+              {Object.entries(boxCapacities)
+                .filter(([key, box]) => box.type === 'square')
+                .map(([key, box]) => (
+                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
+                ))}
             </optgroup>
             <optgroup label="Round/Octagon Boxes">
-              {Object.entries(boxCapacities).filter(([key]) => key.includes('round') || key.includes('octagon')).map(([key, val]) => (
-                <option key={key} value={key}>{val.name} - {val.capacity} cu.in.</option>
-              ))}
+              {Object.entries(boxCapacities)
+                .filter(([key, box]) => box.type === 'round-octagon')
+                .map(([key, box]) => (
+                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
+                ))}
             </optgroup>
             <optgroup label="Masonry Boxes">
-              {Object.entries(boxCapacities).filter(([key]) => key.includes('masonry')).map(([key, val]) => (
-                <option key={key} value={key}>{val.name} - {val.capacity} cu.in.</option>
-              ))}
+              {Object.entries(boxCapacities)
+                .filter(([key, box]) => box.type === 'masonry')
+                .map(([key, box]) => (
+                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
+                ))}
             </optgroup>
           </select>
         </div>
@@ -354,7 +323,7 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
                   boxSizing: 'border-box'
                 }}
               >
-                {Object.keys(wireAllowances).map(size => (
+                {availableWireSizes.map(size => (
                   <option key={size} value={size}>{size} AWG</option>
                 ))}
               </select>
