@@ -92,7 +92,7 @@ const GECCalculator = ({ gecData, setGecData, colors }) => {
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            GEC Material
+            GEC <br/>Material
           </label>
           <select 
             value={gecData.conductorMaterial} 
@@ -245,7 +245,7 @@ const EGCCalculator = ({ egcData, setEgcData, colors }) => {
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            EGC Material <br/>  <br></br>
+            EGC <br/> Material  
           </label>
           <select 
             value={egcData.conductorMaterial} 
