@@ -21,6 +21,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const estimateMenuRef = useRef(null);
   const [linkedEstimate, setLinkedEstimate] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeStatusTab, setActiveStatusTab] = useState('all');
   const [formData, setFormData] = useState({
     title: '',
     client: '',
@@ -302,34 +303,49 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   };
 
   const handleEstimateMenuOpen = async (value) => {
-  setShowEstimateMenu(value);
-  
-  // Only reload estimates when opening (not closing)
-  if (value === true) {
-    try {
-      const { getUserEstimates } = await import('../estimates/estimatesService');
-      const userEstimates = await getUserEstimates();
-      setEstimates(userEstimates);
-    } catch (error) {
-      console.error('Error loading estimates:', error);
+    setShowEstimateMenu(value);
+    
+    if (value === true) {
+      try {
+        const { getUserEstimates } = await import('../estimates/estimatesService');
+        const userEstimates = await getUserEstimates();
+        setEstimates(userEstimates);
+      } catch (error) {
+        console.error('Error loading estimates:', error);
+      }
     }
-  }
-};
+  };
 
+  // Filter by search and status tab
   const filteredJobs = jobs.filter(job => {
-  if (!searchQuery) return true;
-  
-  const query = searchQuery.toLowerCase();
-  const jobTitle = (job.title || job.name || '').toLowerCase();
-  const client = (job.client || '').toLowerCase();
-  const location = (job.location || '').toLowerCase();
-  const notes = (job.notes || '').toLowerCase();
-  
-  return jobTitle.includes(query) || 
-         client.includes(query) || 
-         location.includes(query) || 
-         notes.includes(query);
-});
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const jobTitle = (job.title || job.name || '').toLowerCase();
+      const client = (job.client || '').toLowerCase();
+      const location = (job.location || '').toLowerCase();
+      const notes = (job.notes || '').toLowerCase();
+      
+      const matchesSearch = jobTitle.includes(query) || 
+                           client.includes(query) || 
+                           location.includes(query) || 
+                           notes.includes(query);
+      
+      if (!matchesSearch) return false;
+    }
+    
+    // Status filter
+    if (activeStatusTab === 'all') return true;
+    return job.status === activeStatusTab;
+  });
+
+  // Get counts for each status
+  const statusCounts = {
+    all: jobs.length,
+    scheduled: jobs.filter(j => j.status === 'scheduled').length,
+    'in-progress': jobs.filter(j => j.status === 'in-progress').length,
+    completed: jobs.filter(j => j.status === 'completed').length
+  };
 
   if (loading) {
     return (
@@ -372,64 +388,202 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
         colors={colors}
       />
       
-      <div style={{ padding: '1rem' }}>
+      <div style={{ padding: '1rem 0.25rem' }}>
 
         {/* Search Bar */}
-  <div style={{
-    marginBottom: '1rem',
-    position: 'relative'
-  }}>
-    <input
-      type="text"
-      placeholder="Search jobs..."
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      style={{
-        width: '100%',
-        padding: '0.75rem',
-        paddingLeft: '2.5rem',
-        paddingRight: searchQuery ? '2.5rem' : '0.75rem',
-        border: `1px solid ${colors.border}`,
-        borderRadius: '0.5rem',
-        fontSize: '0.9375rem',
-        background: colors.inputBg,
-        color: colors.text,
-        boxSizing: 'border-box'
-      }}
-    />
-    <Search 
-      size={18} 
-      style={{
-        position: 'absolute',
-        left: '0.75rem',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        color: colors.subtext,
-        pointerEvents: 'none'
-      }}
-    />
-    {searchQuery && (
-      <button
-        onClick={() => setSearchQuery('')}
-        style={{
-          position: 'absolute',
-          right: '0.75rem',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          color: colors.subtext,
-          padding: '0.25rem',
-          display: 'flex',
-          alignItems: 'center'
-        }}
-      >
-        <X size={18} />
-      </button>
-    )}
-  </div>
-        
+        <div style={{
+          marginBottom: '1rem',
+          position: 'relative'
+        }}>
+          <input
+            type="text"
+            placeholder="Search jobs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              paddingLeft: '2.5rem',
+              paddingRight: searchQuery ? '2.5rem' : '0.75rem',
+              border: `1px solid ${colors.border}`,
+              borderRadius: '0.5rem',
+              fontSize: '0.9375rem',
+              background: colors.inputBg,
+              color: colors.text,
+              boxSizing: 'border-box'
+            }}
+          />
+          <Search 
+            size={18} 
+            style={{
+              position: 'absolute',
+              left: '0.75rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: colors.subtext,
+              pointerEvents: 'none'
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                position: 'absolute',
+                right: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: colors.subtext,
+                padding: '0.25rem',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
+
+        {/* Status Tabs */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '0.375rem',
+          marginBottom: '1rem'
+        }}>
+          <button
+            onClick={() => setActiveStatusTab('all')}
+            style={{
+              padding: '0.5rem 0.25rem',
+              borderRadius: '0.5rem',
+              border: `1px solid ${activeStatusTab === 'all' ? colors.text : colors.border}`,
+              background: activeStatusTab === 'all' ? colors.text : 'transparent',
+              color: activeStatusTab === 'all' ? colors.bg : colors.text,
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span>All</span>
+            <span style={{
+              background: activeStatusTab === 'all' ? colors.bg : colors.cardBg,
+              color: activeStatusTab === 'all' ? colors.text : colors.subtext,
+              padding: '0.125rem 0.375rem',
+              borderRadius: '1rem',
+              fontSize: '0.7rem',
+              fontWeight: '700',
+              minWidth: '1.5rem'
+            }}>
+              {statusCounts.all}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveStatusTab('scheduled')}
+            style={{
+              padding: '0.5rem 0.25rem',
+              borderRadius: '0.5rem',
+              border: `1px solid ${activeStatusTab === 'scheduled' ? statusConfig.scheduled.color : colors.border}`,
+              background: activeStatusTab === 'scheduled' ? `${statusConfig.scheduled.color}20` : 'transparent',
+              color: activeStatusTab === 'scheduled' ? statusConfig.scheduled.color : colors.text,
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Clock size={14} />
+            <span style={{ fontSize: '0.7rem' }}>Scheduled</span>
+            <span style={{
+              background: activeStatusTab === 'scheduled' ? statusConfig.scheduled.color : colors.cardBg,
+              color: activeStatusTab === 'scheduled' ? 'white' : colors.subtext,
+              padding: '0.125rem 0.375rem',
+              borderRadius: '1rem',
+              fontSize: '0.7rem',
+              fontWeight: '700',
+              minWidth: '1.5rem'
+            }}>
+              {statusCounts.scheduled}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveStatusTab('in-progress')}
+            style={{
+              padding: '0.5rem 0.25rem',
+              borderRadius: '0.5rem',
+              border: `1px solid ${activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.border}`,
+              background: activeStatusTab === 'in-progress' ? `${statusConfig['in-progress'].color}20` : 'transparent',
+              color: activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.text,
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            <AlertCircle size={14} />
+            <span style={{ fontSize: '0.7rem' }}>In Progress</span>
+            <span style={{
+              background: activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.cardBg,
+              color: activeStatusTab === 'in-progress' ? 'white' : colors.subtext,
+              padding: '0.125rem 0.375rem',
+              borderRadius: '1rem',
+              fontSize: '0.7rem',
+              fontWeight: '700',
+              minWidth: '1.5rem'
+            }}>
+              {statusCounts['in-progress']}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveStatusTab('completed')}
+            style={{
+              padding: '0.5rem 0.25rem',
+              borderRadius: '0.5rem',
+              border: `1px solid ${activeStatusTab === 'completed' ? statusConfig.completed.color : colors.border}`,
+              background: activeStatusTab === 'completed' ? `${statusConfig.completed.color}20` : 'transparent',
+              color: activeStatusTab === 'completed' ? statusConfig.completed.color : colors.text,
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            <CheckCircle size={14} />
+            <span style={{ fontSize: '0.7rem' }}>Completed</span>
+            <span style={{
+              background: activeStatusTab === 'completed' ? statusConfig.completed.color : colors.cardBg,
+              color: activeStatusTab === 'completed' ? 'white' : colors.subtext,
+              padding: '0.125rem 0.375rem',
+              borderRadius: '1rem',
+              fontSize: '0.7rem',
+              fontWeight: '700',
+              minWidth: '1.5rem'
+            }}>
+              {statusCounts.completed}
+            </span>
+          </button>
+        </div>
 
         {/* Section Header */}
         <div style={{
@@ -445,7 +599,10 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
             fontSize: '1.125rem',
             fontWeight: '600'
           }}>
-            Job List
+            {activeStatusTab === 'all' ? 'All Jobs' : 
+             activeStatusTab === 'scheduled' ? 'Scheduled Jobs' :
+             activeStatusTab === 'in-progress' ? 'In Progress Jobs' :
+             'Completed Jobs'}
           </h3>
           <span style={{
             fontSize: '0.875rem',
@@ -456,38 +613,37 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
             border: `1px solid ${colors.border}`
           }}>
             {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
-            {searchQuery && ` (${jobs.length} total)`}
           </span>
         </div>
 
         {/* Add New Job Button/Form */}
-          <div className={styles.addJobContainer} style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.border}`
-          }}>
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className={styles.addJobButton}
-              style={{ color: colors.text }}
-            >
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                fontSize: '0.875rem',
-                fontWeight: '600'
-              }}>
-                <Plus size={18} />
-                Add New Job
-              </div>
-              <ChevronDown 
-                size={18} 
-                style={{
-                  transform: showAddForm ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s'
-                }}
-              />
-            </button>
+        <div className={styles.addJobContainer} style={{
+          background: colors.cardBg,
+          border: `1px solid ${colors.border}`
+        }}>
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className={styles.addJobButton}
+            style={{ color: colors.text }}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: '0.875rem',
+              fontWeight: '600'
+            }}>
+              <Plus size={18} />
+              Add New Job
+            </div>
+            <ChevronDown 
+              size={18} 
+              style={{
+                transform: showAddForm ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s'
+              }}
+            />
+          </button>
 
           {showAddForm && (
             <div style={{
@@ -563,7 +719,11 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
             color: colors.subtext
           }}>
             <Briefcase size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-            <p style={{ margin: 0, fontSize: '0.9375rem' }}>No jobs yet. Add your first job above!</p>
+            <p style={{ margin: 0, fontSize: '0.9375rem' }}>
+              {searchQuery ? 'No jobs match your search.' : 
+               activeStatusTab === 'all' ? 'No jobs yet. Add your first job above!' :
+               `No ${statusConfig[activeStatusTab]?.label.toLowerCase()} jobs.`}
+            </p>
           </div>
         ) : (
           [...filteredJobs]
@@ -589,7 +749,6 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
                 }}
                 onViewInvoice={(job) => {
                   if (job.invoiceId) {
-                    // TODO: Navigate to invoice view when implemented
                     console.log('View invoice:', job.invoiceId);
                   }
                 }}
