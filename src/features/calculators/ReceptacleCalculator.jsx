@@ -1,6 +1,7 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Plug, CheckCircle, AlertCircle } from 'lucide-react';
 import { exportToPDF } from '../../utils/pdfExport';
+import styles from './Calculator.module.css';
 
 // Move calculator components OUTSIDE to prevent recreation on each render
 const GeneralReceptaclesCalculator = ({ generalData, setGeneralData, colors }) => {
@@ -40,7 +41,7 @@ const GeneralReceptaclesCalculator = ({ generalData, setGeneralData, colors }) =
   const results = calculateReceptacles();
 
   return (
-    <div>
+    <div className={styles.menu}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
@@ -949,6 +950,7 @@ const ReceptacleCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) =>
           { id: 'bathroom', label: 'Bathroom' }
         ].map(tab => (
           <button 
+            className={styles.btn}
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{

@@ -1,6 +1,7 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { TrendingUp, CheckCircle, AlertCircle } from 'lucide-react';
 import { exportToPDF } from '../../utils/pdfExport';
+import styles from './Calculator.module.css';
 
 // Move calculator components OUTSIDE to prevent recreation on each render
 const OffsetBendCalculator = ({ offsetData, setOffsetData, colors }) => {
@@ -27,7 +28,7 @@ const OffsetBendCalculator = ({ offsetData, setOffsetData, colors }) => {
   const results = calculateOffset();
 
   return (
-    <div>
+    <div className={styles.menu}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
@@ -854,6 +855,7 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
           { id: 'fourpoint', label: '4-Point Saddle' }
         ].map(tab => (
           <button 
+            className={styles.btn}
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{

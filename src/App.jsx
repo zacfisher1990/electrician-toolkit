@@ -88,20 +88,20 @@ function App() {
     localStorage.setItem('isDarkMode', isDarkMode);
   }, [isDarkMode]);
 
-  useEffect(() => {
-  // Dynamically update theme-color meta tag
-  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+ useEffect(() => {
   const newColor = isDarkMode ? '#000000' : '#f5f5f5';
   
+  // Update meta theme-color
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
   if (metaThemeColor) {
     metaThemeColor.setAttribute('content', newColor);
-  } else {
-    // Create the meta tag if it doesn't exist
-    const meta = document.createElement('meta');
-    meta.name = 'theme-color';
-    meta.content = newColor;
-    document.head.appendChild(meta);
   }
+  
+  // ALSO set body background to prevent black showing through
+  document.body.style.backgroundColor = newColor;
+  
+  // Set the html element background too
+  document.documentElement.style.backgroundColor = newColor;
 }, [isDarkMode]);
 
    

@@ -1,6 +1,7 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Lightbulb, CheckCircle, Info } from 'lucide-react';
 import { exportToPDF } from '../../utils/pdfExport';
+import styles from './Calculator.module.css';
 
 // Move calculator components OUTSIDE to prevent recreation on each render
 const LumensCalculator = ({ lumensData, setLumensData, colors }) => {
@@ -44,7 +45,7 @@ const LumensCalculator = ({ lumensData, setLumensData, colors }) => {
   const results = calculateLumens();
 
   return (
-    <div>
+    <div className={styles.menu}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
@@ -915,6 +916,7 @@ const LightingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
           { id: 'watts', label: 'Watts/Sq Ft' }
         ].map(tab => (
           <button 
+            className={styles.btn}
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
