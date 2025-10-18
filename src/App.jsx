@@ -88,6 +88,22 @@ function App() {
     localStorage.setItem('isDarkMode', isDarkMode);
   }, [isDarkMode]);
 
+  useEffect(() => {
+  // Dynamically update theme-color meta tag
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  const newColor = isDarkMode ? '#000000' : '#f5f5f5';
+  
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', newColor);
+  } else {
+    // Create the meta tag if it doesn't exist
+    const meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    meta.content = newColor;
+    document.head.appendChild(meta);
+  }
+}, [isDarkMode]);
+
    
   // Update theme-color meta tag based on dark mode
   useEffect(() => {
