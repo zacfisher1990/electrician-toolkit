@@ -29,7 +29,9 @@ const JobCard = ({
         padding: '1rem',
         marginBottom: '0.75rem',
         transition: 'all 0.2s',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        WebkitTapHighlightColor: 'transparent',
+        userSelect: 'none'
       }}
     >
         <div className={styles.cardHeader}>

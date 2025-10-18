@@ -7,6 +7,7 @@ import styles from './Jobs.module.css';
 import JobCard from './JobCard';
 import JobModal from './JobModal';
 import JobForm from './JobForm';
+import StatusTabs from './StatusTabs';
 
 
 const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
@@ -33,8 +34,6 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     duration: '',
     notes: ''
   });
-
-  
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -363,402 +362,272 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
 
   return (
     <div className="jobs-container">
-    <div style={{ 
-      minHeight: '100vh', 
-      background: colors.bg,
-      paddingBottom: '5rem'
-    }}>
-      <JobModal
-        viewingJob={viewingJob}
-        formData={formData}
-        setFormData={setFormData}
-        linkedEstimate={linkedEstimate}
-        estimates={estimates}
-        showEstimateMenu={showEstimateMenu}
-        setShowEstimateMenu={handleEstimateMenuOpen}
-        onSelectEstimate={handleSelectEstimate}
-        onCreateNewEstimate={handleCreateNewEstimate}
-        onViewEstimate={handleViewEstimate}
-        onRemoveEstimate={handleRemoveEstimate}
-        estimateMenuRef={estimateMenuRef}
-        onClose={resetForm}
-        onSave={handleEditJob}
-        onDelete={handleDeleteJob}
-        isDarkMode={isDarkMode}
-        colors={colors}
-      />
-      
-      <div style={{ padding: '1rem 0.25rem' }}>
+      <div style={{ 
+        minHeight: '100vh', 
+        background: colors.bg,
+        paddingBottom: '5rem'
+      }}>
+        <JobModal
+          viewingJob={viewingJob}
+          formData={formData}
+          setFormData={setFormData}
+          linkedEstimate={linkedEstimate}
+          estimates={estimates}
+          showEstimateMenu={showEstimateMenu}
+          setShowEstimateMenu={handleEstimateMenuOpen}
+          onSelectEstimate={handleSelectEstimate}
+          onCreateNewEstimate={handleCreateNewEstimate}
+          onViewEstimate={handleViewEstimate}
+          onRemoveEstimate={handleRemoveEstimate}
+          estimateMenuRef={estimateMenuRef}
+          onClose={resetForm}
+          onSave={handleEditJob}
+          onDelete={handleDeleteJob}
+          isDarkMode={isDarkMode}
+          colors={colors}
+        />
+        
+        <div style={{ padding: '1rem 0.25rem' }}>
 
-        {/* Search Bar */}
-        <div style={{
-          marginBottom: '1rem',
-          position: 'relative'
-        }}>
-          <input
-            type="text"
-            placeholder="Search jobs..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              paddingLeft: '2.5rem',
-              paddingRight: searchQuery ? '2.5rem' : '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              fontSize: '0.9375rem',
-              background: colors.inputBg,
-              color: colors.text,
-              boxSizing: 'border-box'
-            }}
+          {/* Status Tabs - NOW USING COMPONENT */}
+          <StatusTabs
+            activeStatusTab={activeStatusTab}
+            setActiveStatusTab={setActiveStatusTab}
+            statusCounts={statusCounts}
+            statusConfig={statusConfig}
+            colors={colors}
           />
-          <Search 
-            size={18} 
-            style={{
-              position: 'absolute',
-              left: '0.75rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: colors.subtext,
-              pointerEvents: 'none'
-            }}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              style={{
-                position: 'absolute',
-                right: '0.75rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                color: colors.subtext,
-                padding: '0.25rem',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              <X size={18} />
-            </button>
-          )}
-        </div>
 
-        {/* Status Tabs */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '0.375rem',
-          marginBottom: '1rem'
-        }}>
-          <button
-            onClick={() => setActiveStatusTab('all')}
-            style={{
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${activeStatusTab === 'all' ? colors.text : colors.border}`,
-              background: activeStatusTab === 'all' ? colors.text : 'transparent',
-              color: activeStatusTab === 'all' ? colors.bg : colors.text,
-              fontSize: '0.75rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.25rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <span>All</span>
-            <span style={{
-              background: activeStatusTab === 'all' ? colors.bg : colors.cardBg,
-              color: activeStatusTab === 'all' ? colors.text : colors.subtext,
-              padding: '0.125rem 0.375rem',
-              borderRadius: '1rem',
-              fontSize: '0.7rem',
-              fontWeight: '700',
-              minWidth: '1.5rem'
-            }}>
-              {statusCounts.all}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveStatusTab('scheduled')}
-            style={{
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${activeStatusTab === 'scheduled' ? statusConfig.scheduled.color : colors.border}`,
-              background: activeStatusTab === 'scheduled' ? `${statusConfig.scheduled.color}20` : 'transparent',
-              color: activeStatusTab === 'scheduled' ? statusConfig.scheduled.color : colors.text,
-              fontSize: '0.75rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.25rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <Clock size={14} />
-            <span style={{ fontSize: '0.7rem' }}>Scheduled</span>
-            <span style={{
-              background: activeStatusTab === 'scheduled' ? statusConfig.scheduled.color : colors.cardBg,
-              color: activeStatusTab === 'scheduled' ? 'white' : colors.subtext,
-              padding: '0.125rem 0.375rem',
-              borderRadius: '1rem',
-              fontSize: '0.7rem',
-              fontWeight: '700',
-              minWidth: '1.5rem'
-            }}>
-              {statusCounts.scheduled}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveStatusTab('in-progress')}
-            style={{
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.border}`,
-              background: activeStatusTab === 'in-progress' ? `${statusConfig['in-progress'].color}20` : 'transparent',
-              color: activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.text,
-              fontSize: '0.75rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.25rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <AlertCircle size={14} />
-            <span style={{ fontSize: '0.7rem' }}>In Progress</span>
-            <span style={{
-              background: activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.cardBg,
-              color: activeStatusTab === 'in-progress' ? 'white' : colors.subtext,
-              padding: '0.125rem 0.375rem',
-              borderRadius: '1rem',
-              fontSize: '0.7rem',
-              fontWeight: '700',
-              minWidth: '1.5rem'
-            }}>
-              {statusCounts['in-progress']}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveStatusTab('completed')}
-            style={{
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${activeStatusTab === 'completed' ? statusConfig.completed.color : colors.border}`,
-              background: activeStatusTab === 'completed' ? `${statusConfig.completed.color}20` : 'transparent',
-              color: activeStatusTab === 'completed' ? statusConfig.completed.color : colors.text,
-              fontSize: '0.75rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.25rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <CheckCircle size={14} />
-            <span style={{ fontSize: '0.7rem' }}>Completed</span>
-            <span style={{
-              background: activeStatusTab === 'completed' ? statusConfig.completed.color : colors.cardBg,
-              color: activeStatusTab === 'completed' ? 'white' : colors.subtext,
-              padding: '0.125rem 0.375rem',
-              borderRadius: '1rem',
-              fontSize: '0.7rem',
-              fontWeight: '700',
-              minWidth: '1.5rem'
-            }}>
-              {statusCounts.completed}
-            </span>
-          </button>
-        </div>
-
-        {/* Section Header */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1rem',
-          padding: '0 0.25rem'
-        }}>
-          <h3 style={{ 
-            margin: 0, 
-            color: colors.text, 
-            fontSize: '1.125rem',
-            fontWeight: '600'
+          {/* Search Bar */}
+          <div style={{
+            marginBottom: '1rem',
+            position: 'relative'
           }}>
-            {activeStatusTab === 'all' ? 'All Jobs' : 
-             activeStatusTab === 'scheduled' ? 'Scheduled Jobs' :
-             activeStatusTab === 'in-progress' ? 'In Progress Jobs' :
-             'Completed Jobs'}
-          </h3>
-          <span style={{
-            fontSize: '0.875rem',
-            color: colors.subtext,
-            background: colors.cardBg,
-            padding: '0.25rem 0.75rem',
-            borderRadius: '1rem',
-            border: `1px solid ${colors.border}`
-          }}>
-            {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
-          </span>
-        </div>
-
-        {/* Add New Job Button/Form */}
-        <div className={styles.addJobContainer} style={{
-          background: colors.cardBg,
-          border: `1px solid ${colors.border}`
-        }}>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className={styles.addJobButton}
-            style={{ color: colors.text }}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.875rem',
-              fontWeight: '600'
-            }}>
-              <Plus size={18} />
-              Add New Job
-            </div>
-            <ChevronDown 
-              size={18} 
+            <input
+              type="text"
+              placeholder="Search jobs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               style={{
-                transform: showAddForm ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s'
+                width: '100%',
+                padding: '0.75rem',
+                paddingLeft: '2.5rem',
+                paddingRight: searchQuery ? '2.5rem' : '0.75rem',
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                fontSize: '0.9375rem',
+                background: colors.inputBg,
+                color: colors.text,
+                boxSizing: 'border-box'
               }}
             />
-          </button>
+            <Search 
+              size={18} 
+              style={{
+                position: 'absolute',
+                left: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: colors.subtext,
+                pointerEvents: 'none'
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: colors.subtext,
+                  padding: '0.25rem',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
 
-          {showAddForm && (
-            <div style={{
-              padding: '0 1rem 1rem 1rem',
-              borderTop: `1px solid ${colors.border}`
+          {/* Section Header */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1rem',
+            padding: '0 0.25rem'
+          }}>
+            <h3 style={{ 
+              margin: 0, 
+              color: colors.text, 
+              fontSize: '1.125rem',
+              fontWeight: '600'
             }}>
-              <div style={{ paddingTop: '1rem' }}>
-                <JobForm
-                  formData={formData}
-                  setFormData={setFormData}
-                  linkedEstimate={linkedEstimate}
-                  estimates={estimates}
-                  showEstimateMenu={showEstimateMenu}
-                  setShowEstimateMenu={handleEstimateMenuOpen}
-                  onSelectEstimate={handleSelectEstimate}
-                  onCreateNewEstimate={handleCreateNewEstimate}
-                  onViewEstimate={handleViewEstimate}
-                  onRemoveEstimate={handleRemoveEstimate}
-                  estimateMenuRef={estimateMenuRef}
+              {activeStatusTab === 'all' ? 'All Jobs' : 
+               activeStatusTab === 'scheduled' ? 'Scheduled Jobs' :
+               activeStatusTab === 'in-progress' ? 'In Progress Jobs' :
+               'Completed Jobs'}
+            </h3>
+            <span style={{
+              fontSize: '0.875rem',
+              color: colors.subtext,
+              background: colors.cardBg,
+              padding: '0.25rem 0.75rem',
+              borderRadius: '1rem',
+              border: `1px solid ${colors.border}`
+            }}>
+              {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
+            </span>
+          </div>
+
+          {/* Add New Job Button/Form */}
+          <div className={styles.addJobContainer} style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.border}`
+          }}>
+            <button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className={styles.addJobButton}
+              style={{ color: colors.text }}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '600'
+              }}>
+                <Plus size={18} />
+                Add New Job
+              </div>
+              <ChevronDown 
+                size={18} 
+                style={{
+                  transform: showAddForm ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s'
+                }}
+              />
+            </button>
+
+            {showAddForm && (
+              <div style={{
+                padding: '0 1rem 1rem 1rem',
+                borderTop: `1px solid ${colors.border}`
+              }}>
+                <div style={{ paddingTop: '1rem' }}>
+                  <JobForm
+                    formData={formData}
+                    setFormData={setFormData}
+                    linkedEstimate={linkedEstimate}
+                    estimates={estimates}
+                    showEstimateMenu={showEstimateMenu}
+                    setShowEstimateMenu={handleEstimateMenuOpen}
+                    onSelectEstimate={handleSelectEstimate}
+                    onCreateNewEstimate={handleCreateNewEstimate}
+                    onViewEstimate={handleViewEstimate}
+                    onRemoveEstimate={handleRemoveEstimate}
+                    estimateMenuRef={estimateMenuRef}
+                    isDarkMode={isDarkMode}
+                    colors={colors}
+                  />
+
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={handleAddJob}
+                      disabled={!formData.title || !formData.client}
+                      style={{
+                        flex: 1,
+                        padding: '0.75rem',
+                        background: (!formData.title || !formData.client) ? colors.border : '#2563eb',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '0.5rem',
+                        fontSize: '0.9375rem',
+                        fontWeight: '600',
+                        cursor: (!formData.title || !formData.client) ? 'not-allowed' : 'pointer',
+                        opacity: (!formData.title || !formData.client) ? 0.5 : 1
+                      }}
+                    >
+                      Add Job
+                    </button>
+                    <button
+                      onClick={resetForm}
+                      style={{
+                        flex: 1,
+                        padding: '0.75rem',
+                        background: 'transparent',
+                        color: colors.text,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: '0.5rem',
+                        fontSize: '0.9375rem',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Job List */}
+          {filteredJobs.length === 0 ? (
+            <div style={{
+              background: colors.cardBg,
+              border: `1px solid ${colors.border}`,
+              borderRadius: '0.75rem',
+              textAlign: 'center',
+              padding: '3rem 1rem',
+              color: colors.subtext
+            }}>
+              <Briefcase size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+              <p style={{ margin: 0, fontSize: '0.9375rem' }}>
+                {searchQuery ? 'No jobs match your search.' : 
+                 activeStatusTab === 'all' ? 'No jobs yet. Add your first job above!' :
+                 `No ${statusConfig[activeStatusTab]?.label.toLowerCase()} jobs.`}
+              </p>
+            </div>
+          ) : (
+            [...filteredJobs]
+              .sort((a, b) => {
+                if (!a.date && !b.date) return 0;
+                if (!a.date) return 1;
+                if (!b.date) return -1;
+                return new Date(b.date) - new Date(a.date);
+              })
+              .map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  statusConfig={statusConfig}
+                  statusDropdownOpen={statusDropdownOpen}
+                  setStatusDropdownOpen={setStatusDropdownOpen}
+                  onUpdateStatus={handleUpdateStatus}
+                  onViewJob={openJobView}
+                  onViewEstimate={(job) => {
+                    if (job.estimateId && onNavigateToEstimates) {
+                      onNavigateToEstimates({ viewEstimateId: job.estimateId });
+                    }
+                  }}
+                  onViewInvoice={(job) => {
+                    if (job.invoiceId) {
+                      console.log('View invoice:', job.invoiceId);
+                    }
+                  }}
                   isDarkMode={isDarkMode}
                   colors={colors}
                 />
-
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    onClick={handleAddJob}
-                    disabled={!formData.title || !formData.client}
-                    style={{
-                      flex: 1,
-                      padding: '0.75rem',
-                      background: (!formData.title || !formData.client) ? colors.border : '#2563eb',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '0.5rem',
-                      fontSize: '0.9375rem',
-                      fontWeight: '600',
-                      cursor: (!formData.title || !formData.client) ? 'not-allowed' : 'pointer',
-                      opacity: (!formData.title || !formData.client) ? 0.5 : 1
-                    }}
-                  >
-                    Add Job
-                  </button>
-                  <button
-                    onClick={resetForm}
-                    style={{
-                      flex: 1,
-                      padding: '0.75rem',
-                      background: 'transparent',
-                      color: colors.text,
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: '0.5rem',
-                      fontSize: '0.9375rem',
-                      fontWeight: '600',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
+              ))
           )}
         </div>
-
-        {/* Job List */}
-        {filteredJobs.length === 0 ? (
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.75rem',
-            textAlign: 'center',
-            padding: '3rem 1rem',
-            color: colors.subtext
-          }}>
-            <Briefcase size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-            <p style={{ margin: 0, fontSize: '0.9375rem' }}>
-              {searchQuery ? 'No jobs match your search.' : 
-               activeStatusTab === 'all' ? 'No jobs yet. Add your first job above!' :
-               `No ${statusConfig[activeStatusTab]?.label.toLowerCase()} jobs.`}
-            </p>
-          </div>
-        ) : (
-          [...filteredJobs]
-            .sort((a, b) => {
-              if (!a.date && !b.date) return 0;
-              if (!a.date) return 1;
-              if (!b.date) return -1;
-              return new Date(b.date) - new Date(a.date);
-            })
-            .map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                statusConfig={statusConfig}
-                statusDropdownOpen={statusDropdownOpen}
-                setStatusDropdownOpen={setStatusDropdownOpen}
-                onUpdateStatus={handleUpdateStatus}
-                onViewJob={openJobView}
-                onViewEstimate={(job) => {
-                  if (job.estimateId && onNavigateToEstimates) {
-                    onNavigateToEstimates({ viewEstimateId: job.estimateId });
-                  }
-                }}
-                onViewInvoice={(job) => {
-                  if (job.invoiceId) {
-                    console.log('View invoice:', job.invoiceId);
-                  }
-                }}
-                isDarkMode={isDarkMode}
-                colors={colors}
-              />
-            ))
-        )}
       </div>
-    </div>
     </div>
   );
 };
