@@ -1,51 +1,55 @@
 // NEC 314.16 - Box Fill Calculations
-// Box capacities in cubic inches
+// Box capacities in cubic inches from NEC Table 314.16(A) Metal Boxes
 
 export const boxTypes = [
-  { value: 'device-single', label: 'Device Boxes (Single Gang)' },
-  { value: 'device-multi', label: 'Device Boxes (Multi-Gang)' },
-  { value: 'square', label: 'Square Boxes' },
   { value: 'round-octagon', label: 'Round/Octagon Boxes' },
+  { value: 'square', label: 'Square Boxes' },
+  { value: 'device', label: 'Device Boxes' },
   { value: 'masonry', label: 'Masonry Boxes' },
+  { value: 'fs-fd', label: 'FS/FD Boxes' },
 ];
 
 // Box capacities organized by type
 // Format: { capacity: number (cubic inches), name: string }
+// All data from NEC Table 314.16(A) Metal Boxes
 export const boxCapacities = {
-  // Device Boxes (Single Gang)
-  '3x2x1.5': { capacity: 7.5, name: '3" x 2" x 1-1/2" Device Box', type: 'device-single' },
-  '3x2x2': { capacity: 10.0, name: '3" x 2" x 2" Device Box', type: 'device-single' },
-  '3x2x2.25': { capacity: 10.5, name: '3" x 2" x 2-1/4" Device Box', type: 'device-single' },
-  '3x2x2.5': { capacity: 12.5, name: '3" x 2" x 2-1/2" Device Box', type: 'device-single' },
-  '3x2x2.75': { capacity: 14.0, name: '3" x 2" x 2-3/4" Device Box', type: 'device-single' },
-  '3x2x3.5': { capacity: 18.0, name: '3" x 2" x 3-1/2" Device Box', type: 'device-single' },
+  // Round/Octagonal Boxes (4" diameter) - Round and Octagon have same capacity
+  '4x1.25-round-octagon': { capacity: 12.5, name: '4" x 1-1/4" Round/Octagon', type: 'round-octagon' },
+  '4x1.5-round-octagon': { capacity: 15.5, name: '4" x 1-1/2" Round/Octagon', type: 'round-octagon' },
+  '4x2.125-round-octagon': { capacity: 21.5, name: '4" x 2-1/8" Round/Octagon', type: 'round-octagon' },
   
-  // Device Boxes (Multi-Gang)
-  '3x2x2-2gang': { capacity: 14.0, name: '2-Gang 3" x 2" x 2" Device Box', type: 'device-multi' },
-  '3x2x2.25-2gang': { capacity: 17.0, name: '2-Gang 3" x 2" x 2-1/4" Device Box', type: 'device-multi' },
-  '3x2x2.5-2gang': { capacity: 21.0, name: '2-Gang 3" x 2" x 2-1/2" Device Box', type: 'device-multi' },
-  '3x2x3.5-2gang': { capacity: 29.5, name: '2-Gang 3" x 2" x 3-1/2" Device Box', type: 'device-multi' },
-  '3x2x3.5-3gang': { capacity: 43.5, name: '3-Gang 3" x 2" x 3-1/2" Device Box', type: 'device-multi' },
-  
-  // Square Boxes
+  // Square Boxes (4")
   '4x1.25-square': { capacity: 18.0, name: '4" x 1-1/4" Square', type: 'square' },
   '4x1.5-square': { capacity: 21.0, name: '4" x 1-1/2" Square', type: 'square' },
   '4x2.125-square': { capacity: 30.3, name: '4" x 2-1/8" Square', type: 'square' },
+  
+  // Square Boxes (4-11/16")
   '4-11/16x1.25-square': { capacity: 25.5, name: '4-11/16" x 1-1/4" Square', type: 'square' },
-  '4-11/16x1.5-square': { capacity: 25.5, name: '4-11/16" x 1-1/2" Square', type: 'square' },
+  '4-11/16x1.5-square': { capacity: 29.5, name: '4-11/16" x 1-1/2" Square', type: 'square' },
   '4-11/16x2.125-square': { capacity: 42.0, name: '4-11/16" x 2-1/8" Square', type: 'square' },
   
-  // Round/Octagon Boxes
-  '4x1.25-round': { capacity: 12.5, name: '4" x 1-1/4" Round', type: 'round-octagon' },
-  '4x1.5-round': { capacity: 15.5, name: '4" x 1-1/2" Round', type: 'round-octagon' },
-  '4x2.125-round': { capacity: 21.5, name: '4" x 2-1/8" Round', type: 'round-octagon' },
-  '4x1.25-octagon': { capacity: 15.5, name: '4" x 1-1/4" Octagon', type: 'round-octagon' },
-  '4x1.5-octagon': { capacity: 18.0, name: '4" x 1-1/2" Octagon', type: 'round-octagon' },
-  '4x2.125-octagon': { capacity: 24.5, name: '4" x 2-1/8" Octagon', type: 'round-octagon' },
+  // Device Boxes (3" x 2")
+  '3x2x1.5-device': { capacity: 7.5, name: '3" x 2" x 1-1/2" Device', type: 'device' },
+  '3x2x2-device': { capacity: 10.0, name: '3" x 2" x 2" Device', type: 'device' },
+  '3x2x2.25-device': { capacity: 10.5, name: '3" x 2" x 2-1/4" Device', type: 'device' },
+  '3x2x2.5-device': { capacity: 12.5, name: '3" x 2" x 2-1/2" Device', type: 'device' },
+  '3x2x2.75-device': { capacity: 14.0, name: '3" x 2" x 2-3/4" Device', type: 'device' },
+  '3x2x3.5-device': { capacity: 18.0, name: '3" x 2" x 3-1/2" Device', type: 'device' },
   
-  // Masonry Boxes
-  '3.5x1.5-masonry': { capacity: 14.0, name: '3-1/2" x 1-1/2" Masonry Box', type: 'masonry' },
-  '3.5x2.125-masonry': { capacity: 21.0, name: '3-1/2" x 2-1/8" Masonry Box', type: 'masonry' }
+  // Device Boxes (4" x 2-1/8")
+  '4x2.125x1.5-device': { capacity: 10.3, name: '4" x 2-1/8" x 1-1/2" Device', type: 'device' },
+  '4x2.125x1.875-device': { capacity: 13.0, name: '4" x 2-1/8" x 1-7/8" Device', type: 'device' },
+  '4x2.125x2.125-device': { capacity: 14.5, name: '4" x 2-1/8" x 2-1/8" Device', type: 'device' },
+  
+  // Masonry Box/Gang
+  '3.5x2x2.5-masonry': { capacity: 14.0, name: '3-1/2" x 2" x 2-1/2" Masonry', type: 'masonry' },
+  '3.5x2x3.5-masonry': { capacity: 21.0, name: '3-1/2" x 2" x 3-1/2" Masonry', type: 'masonry' },
+  
+  // FS/FD Boxes
+  'fs-1.25-single': { capacity: 13.5, name: 'FS Single Cover/Gang (1-1/4" min)', type: 'fs-fd' },
+  'fd-2.125-single': { capacity: 18.0, name: 'FD Single Cover/Gang (2-1/8" min)', type: 'fs-fd' },
+  'fs-1.25-multiple': { capacity: 18.0, name: 'FS Multiple Cover/Gang (1-1/4" min)', type: 'fs-fd' },
+  'fd-2.125-multiple': { capacity: 24.0, name: 'FD Multiple Cover/Gang (2-1/8" min)', type: 'fs-fd' },
 };
 
 // Volume allowance per conductor (NEC Table 314.16(B))
