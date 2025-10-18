@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, FileDown, Omega, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt } from 'lucide-react';
+import { Menu, FileDown, Omega, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box } from 'lucide-react';
 import CalculatorMenu from './features/calculators/CalculatorMenu.jsx';
 import VoltageDropCalculator from './features/calculators/VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './features/calculators/OhmsLawCalculator.jsx';
 import BoxFillCalculator from './features/calculators/BoxFillCalculator.jsx';
+import PullBoxCalculator from './features/calculators/PullBoxCalculator.jsx';
 import ConduitFillCalculator from './features/calculators/ConduitFillCalculator.jsx';
 import AmpacityLookupCalculator from './features/calculators/AmpacityLookupCalculator.jsx';
 import MotorCalculations from './features/calculators/MotorCalculations.jsx';
@@ -275,6 +276,8 @@ useEffect(() => {
         return <PowerTriangleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'three-phase-power':
         return <ThreePhasePowerCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+      case 'pull-box':
+        return <PullBoxCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'calculators':
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -340,7 +343,8 @@ useEffect(() => {
       'receptacles': { title: 'Receptacles', icon: Plug },
       'vfd-sizing': { title: 'VFD Sizing', icon: Gauge },
       'power-triangle': { title: 'Power Triangle', icon: Triangle },
-      'three-phase-power': { title: 'Three-Phase Power', icon: Tally3 }
+      'three-phase-power': { title: 'Three-Phase Power', icon: Tally3 },
+      'pull-box': { title: 'Pull Box Sizing', icon: Box }
     };
     
     return headerMap[activeCalculator] || { title: 'Electrician\'s Toolkit', icon: Calculator };

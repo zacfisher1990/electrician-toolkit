@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown } from 'lucide-react';
+import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown, Box } from 'lucide-react';
+import styles from './Calculator.module.css';
 
 function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,6 +39,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
       name: 'Installation',
       calculators: [
         { id: 'box-fill', name: 'Box Fill', icon: Package, keywords: 'box fill junction cubic inch volume 314' },
+        { id: 'pull-box', name: 'Pull Box', icon: Box, keywords: 'pull box junction sizing straight angle u-pull 314.28 raceway conduit' },
         { id: 'conduit-fill', name: 'Conduit Fill', icon: Circle, keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
         { id: 'conduit-bending', name: 'Conduit Bending', icon: CornerDownRight, keywords: 'conduit bending offset saddle stub bend emt' },
         { id: 'receptacles', name: 'Receptacles', icon: Plug, keywords: 'receptacle outlet gfci plug socket 210.52 counter kitchen bathroom wall spacing' },
