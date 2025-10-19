@@ -4,10 +4,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const handler = async (event) => {
 
-    console.log('🔍 Function called!');
-    console.log('🔑 RESEND_API_KEY exists?', !!process.env.RESEND_API_KEY);
-    console.log('📧 Request body:', event.body);
-    
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
