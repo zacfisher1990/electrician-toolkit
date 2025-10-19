@@ -26,11 +26,17 @@ import Profile from './features/profile/Profile.jsx';
 import Jobs from './features/jobs/Jobs.jsx';
 import Estimates from './features/estimates/Estimates.jsx';
 import Invoices from './features/invoices/Invoices.jsx';
+import VerifyEmail from './pages/VerifyEmail.jsx';
 import Header from './components/Header.jsx';
 import './App.css';
 
 function App() {
   const [activeCalculator, setActiveCalculator] = useState(() => {
+    // Check if we're on verify-email page from URL
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('token')) {
+      return 'verify-email';
+    }
     // Initialize from localStorage or default to null (home)
     const saved = localStorage.getItem('activeView');
     return saved || null;
@@ -79,7 +85,8 @@ function App() {
   useEffect(() => {
     if (activeCalculator === null) {
       localStorage.setItem('activeView', '');
-    } else {
+    } else if (activeCalculator !== 'verify-email') {
+      // Don't save verify-email to localStorage
       localStorage.setItem('activeView', activeCalculator);
     }
   }, [activeCalculator]);
@@ -193,6 +200,8 @@ useEffect(() => {
         }
       } else if (view === 'invoices') {
         setActiveCalculator('invoices');
+      } else if (view === 'verify-email') {
+        setActiveCalculator('verify-email');
       }
     };
 
@@ -300,6 +309,8 @@ useEffect(() => {
         />;
       case 'invoices':
         return <Invoices isDarkMode={isDarkMode} />;
+      case 'verify-email':
+        return <VerifyEmail isDarkMode={isDarkMode} onNavigate={handleNavigate} />;
       default:
         return <Home isDarkMode={isDarkMode} />;
     }
@@ -323,6 +334,9 @@ useEffect(() => {
     }
     if (activeCalculator === 'invoices') {
       return { title: 'Invoices', icon: Receipt };
+    }
+    if (activeCalculator === 'verify-email') {
+      return { title: 'Verify Email', icon: User };
     }
     
     const headerMap = {
@@ -352,6 +366,9 @@ useEffect(() => {
 
   const headerInfo = getHeaderInfo();
 
+  // Hide bottom nav on verify-email page
+  const showBottomNav = activeCalculator !== 'verify-email';
+
   return (
     <div className="App" style={{ background: isDarkMode ? '#000000' : '#ffffff', overscrollBehavior: 'none' }}>
       <Header 
@@ -366,7 +383,7 @@ useEffect(() => {
 
       {/* Content Area */}
       <div style={{ 
-        paddingBottom: 'calc(65px + env(safe-area-inset-bottom))',
+        paddingBottom: showBottomNav ? 'calc(65px + env(safe-area-inset-bottom))' : '0',
         paddingTop: 'calc(48px + env(safe-area-inset-top))',
         paddingLeft: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-left)',
         paddingRight: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-right)',
@@ -379,8 +396,8 @@ useEffect(() => {
         ) : (
           <div style={{ 
             minHeight: 'calc(100vh - 3.5rem)', 
-            padding: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' ? '0' : '1rem',
-            paddingBottom: '5rem'
+            padding: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'verify-email' ? '0' : '1rem',
+            paddingBottom: showBottomNav ? '5rem' : '0'
           }}>
             {renderCalculator()}
           </div>
@@ -414,25 +431,27 @@ useEffect(() => {
         </div>
       )}
       
-      <BottomNavigation 
-        onNavigate={handleNavigate}
-        currentView={
-          activeCalculator === 'jobs'
-            ? 'jobs'
-            : activeCalculator === 'estimates'
-            ? 'estimates'
-            : activeCalculator === 'invoices'
-            ? 'invoices'
-            : activeCalculator === 'profile' 
-            ? 'profile'
-            : activeCalculator === 'calculators'
-            ? 'calculators'
-            : activeCalculator 
-            ? 'calculators' 
-            : 'home'
-        }
-        isDarkMode={isDarkMode}
-      />
+      {showBottomNav && (
+        <BottomNavigation 
+          onNavigate={handleNavigate}
+          currentView={
+            activeCalculator === 'jobs'
+              ? 'jobs'
+              : activeCalculator === 'estimates'
+              ? 'estimates'
+              : activeCalculator === 'invoices'
+              ? 'invoices'
+              : activeCalculator === 'profile' 
+              ? 'profile'
+              : activeCalculator === 'calculators'
+              ? 'calculators'
+              : activeCalculator 
+              ? 'calculators' 
+              : 'home'
+          }
+          isDarkMode={isDarkMode}
+        />
+      )}
     </div>
   );
 }

@@ -6,9 +6,11 @@ import {
   signInWithEmailAndPassword, 
   signOut,
   onAuthStateChanged,
-  sendEmailVerification,
   sendPasswordResetEmail
 } from 'firebase/auth';
+import { createVerificationToken, sendVerificationEmail, isEmailVerifiedCustom } from '../../utils/emailVerification';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebase/firebase';
 
 const Profile = ({ isDarkMode }) => {
   const [user, setUser] = useState(null);
@@ -22,6 +24,7 @@ const Profile = ({ isDarkMode }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [sendingVerification, setSendingVerification] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -44,100 +47,89 @@ const Profile = ({ isDarkMode }) => {
   const passwordsMatch = password === confirmPassword && confirmPassword !== '';
 
   // Listen for auth state changes
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    setUser(currentUser);
+    
+    if (currentUser) {
+      // Check custom verification status
+      const verified = await isEmailVerifiedCustom(currentUser.uid);
+      setIsEmailVerified(verified);
+    } else {
+      setIsEmailVerified(false);
+    }
+    
+    setLoading(false);
+  });
 
-    return () => unsubscribe();
-  }, []);
+  return () => unsubscribe();
+}, []);
 
   const handleResendVerification = async () => {
-    if (!user) return;
-    
-    setSendingVerification(true);
-    setError('');
-    setSuccess('');
+  if (!user) return;
+  
+  setSendingVerification(true);
+  setError('');
+  setSuccess('');
 
-    try {
-      console.log('🔍 Sending verification emails to:', user.email);
-      
-      // Send Firebase verification email (will go to spam)
-      await sendEmailVerification(user);
-      console.log('✅ Firebase email sent');
-      
-      // Send beautiful Resend email reminder
-      try {
-        await fetch('/.netlify/functions/send-welcome-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            email: user.email,
-            type: 'verification-reminder'
-          })
-        });
-        console.log('✅ Resend reminder email sent');
-      } catch (resendError) {
-        console.warn('Resend email failed, but Firebase email was sent:', resendError);
-      }
-      
-      setSuccess(`Verification emails sent to ${user.email}! Check your inbox and spam folder.`);
-      setTimeout(() => setSuccess(''), 8000);
-    } catch (err) {
-      console.error('❌ Error sending verification email:', err);
-      setError(`Failed to send verification email: ${err.message}`);
-      setTimeout(() => setError(''), 5000);
-    } finally {
-      setSendingVerification(false);
-    }
-  };
+  try {
+    console.log('🔍 Sending custom verification email to:', user.email);
+    
+    // Create new verification token
+    const token = await createVerificationToken(user.uid, user.email);
+    
+    // Send verification email via Resend ONLY
+    await sendVerificationEmail(user.email, token);
+    console.log('✅ Verification email sent via Resend');
+    
+    setSuccess(`Verification email sent to ${user.email}! Check your inbox.`);
+    setTimeout(() => setSuccess(''), 8000);
+  } catch (err) {
+    console.error('❌ Error sending verification email:', err);
+    setError(`Failed to send verification email: ${err.message}`);
+    setTimeout(() => setError(''), 5000);
+  } finally {
+    setSendingVerification(false);
+  }
+};
 
   const handleSignup = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
+  e.preventDefault();
+  setError('');
+  setSuccess('');
+  
+  // Validation
+  if (!isPasswordValid) {
+    setError('Please meet all password requirements');
+    return;
+  }
+  
+  if (password !== confirmPassword) {
+    setError('Passwords do not match');
+    return;
+  }
+  
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     
-    // Validation
-    if (!isPasswordValid) {
-      setError('Please meet all password requirements');
-      return;
-    }
+    // Create verification token
+    const token = await createVerificationToken(userCredential.user.uid, email);
     
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
+    // Send verification email via Resend
+    await sendVerificationEmail(email, token);
     
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Send email verification
-      await sendEmailVerification(userCredential.user);
-      
-      // Send welcome email via Netlify function
-      try {
-        await fetch('/.netlify/functions/send-welcome-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email })
-        });
-      } catch (emailError) {
-        console.error('Welcome email failed:', emailError);
-      }
-      
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setSuccess('Account created! Please check your email to verify your account.');
-    } catch (err) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError('This email is already registered. Try logging in instead.');
-      } else {
-        setError(err.message);
-      }
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setSuccess('Account created! Please check your email inbox to verify your account.');
+  } catch (err) {
+    if (err.code === 'auth/email-already-in-use') {
+      setError('This email is already registered. Try logging in instead.');
+    } else {
+      setError(err.message);
     }
-  };
+  }
+};
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -191,7 +183,7 @@ const Profile = ({ isDarkMode }) => {
       }}>
         <div style={{ padding: '1rem' }}>
           {/* Email Verification Banner */}
-          {!user.emailVerified && (
+          {!isEmailVerified && (
             <div style={{
               background: '#fef3c7',
               border: '1px solid #fbbf24',
@@ -291,7 +283,7 @@ const Profile = ({ isDarkMode }) => {
               width: '80px',
               height: '80px',
               borderRadius: '50%',
-              background: user.emailVerified ? '#10b981' : '#3b82f6',
+              background: isEmailVerified ? '#10b981' : '#3b82f6',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -299,7 +291,7 @@ const Profile = ({ isDarkMode }) => {
               position: 'relative'
             }}>
               <User size={40} color="white" />
-              {user.emailVerified && (
+              {isEmailVerified && (
                 <div style={{
                   position: 'absolute',
                   bottom: 0,
@@ -334,7 +326,7 @@ const Profile = ({ isDarkMode }) => {
               justifyContent: 'center',
               gap: '0.375rem'
             }}>
-              {user.emailVerified ? (
+              {isEmailVerified ? (
                 <>
                   <CheckCircle size={16} color="#10b981" />
                   <span>Verified Account</span>

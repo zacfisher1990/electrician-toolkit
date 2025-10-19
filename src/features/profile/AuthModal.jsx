@@ -4,9 +4,9 @@ import { auth } from "../../firebase/firebase";
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
-  sendEmailVerification,
   sendPasswordResetEmail
 } from 'firebase/auth';
+import { createVerificationToken, sendVerificationEmail, isEmailVerifiedCustom } from '../../utils/emailVerification';
 
 const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -83,30 +83,19 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Send email verification (Firebase - will go to spam)
-      await sendEmailVerification(userCredential.user);
+      // Create verification token (custom system)
+      const token = await createVerificationToken(userCredential.user.uid, email);
       
-      // Send beautiful welcome email via Resend (won't go to spam!)
-      try {
-        await fetch('/.netlify/functions/send-welcome-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            email: email,
-            type: 'welcome'
-          })
-        });
-        console.log('✅ Welcome email sent via Resend');
-      } catch (emailError) {
-        console.error('Welcome email failed:', emailError);
-        // Don't block signup if Resend fails
-      }
+      // Send ONLY our custom verification email via Resend (goes to inbox!)
+      await sendVerificationEmail(email, token);
+      
+      console.log('✅ Custom verification email sent via Resend');
       
       setEmail('');
       setPassword('');
       setConfirmPassword('');
-      onClose(); // Close modal on success
-      alert('Account created! Please check your email (and spam folder) to verify your account.');
+      onClose();
+      alert('Account created! Please check your email inbox to verify your account.');
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
         setError('This email is already registered. Try logging in instead.');
@@ -128,17 +117,19 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // Check if email is verified
-      if (!userCredential.user.emailVerified) {
-        setError('Please verify your email before logging in. Check your inbox.');
-        await auth.signOut(); // Sign them out
+      // Check if email is verified using custom system
+      const isVerified = await isEmailVerifiedCustom(userCredential.user.uid);
+      
+      if (!isVerified) {
+        setError('Please verify your email before logging in. Check your inbox for the verification link.');
+        await auth.signOut();
         setLoading(false);
         return;
       }
       
       setEmail('');
       setPassword('');
-      onClose(); // Close modal on success
+      onClose();
     } catch (err) {
       if (err.code === 'auth/user-not-found') {
         setError('No account found with this email. Try signing up instead.');
