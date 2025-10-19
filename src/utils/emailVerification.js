@@ -99,13 +99,13 @@ export const isEmailVerifiedCustom = async (userId) => {
 };
 
 /**
- * Send verification email via Resend
+ * Send verification email via Resend (Vercel API Route)
  */
 export const sendVerificationEmail = async (email, token) => {
   try {
     const verificationLink = `${window.location.origin}?token=${token}`;
 
-    const response = await fetch('/.netlify/functions/send-verification-email', {
+    const response = await fetch('/api/send-verification-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
