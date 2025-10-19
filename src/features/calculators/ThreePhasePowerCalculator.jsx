@@ -1,6 +1,7 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Zap, Info, CheckCircle } from 'lucide-react';
 import { exportToPDF } from '../../utils/pdfExport';
+import styles from './Calculator.module.css';
 
 const ThreePhasePowerCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [calculationMode, setCalculationMode] = useState('find-power');

@@ -255,7 +255,6 @@ const ReactanceImpedanceCalculator = forwardRef(({ isDarkMode = false }, ref) =>
   }));
 
   return (
-    <div className={styles.container}>
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
       
 
@@ -1096,7 +1095,6 @@ const ReactanceImpedanceCalculator = forwardRef(({ isDarkMode = false }, ref) =>
         </div>
         X<sub>L</sub> increases with frequency • X<sub>C</sub> decreases with frequency • At resonance X<sub>L</sub> = X<sub>C</sub> • Impedance combines resistance and reactance
       </div>
-    </div>
     </div>
   );
 });

@@ -2,6 +2,7 @@ import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { AlertTriangle, CheckCircle, FileDown, Briefcase } from 'lucide-react';
 import { exportToPDF } from '../../utils/pdfExport';
 import { getUserJobs, addCalculationToJob } from '../jobs/jobsService';
+import styles from './Calculator.module.css';
 
 const VoltageDropCalculator = forwardRef(({ isDarkMode = false, onExportSuccess }, ref) => {
   const [voltage, setVoltage] = useState('');

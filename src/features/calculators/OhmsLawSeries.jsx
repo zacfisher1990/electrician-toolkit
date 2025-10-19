@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Info, Plus, Trash2, Calculator, FileDown, Briefcase } from 'lucide-react';
 import { getUserJobs, addCalculationToJob } from '../jobs/jobsService';
+import styles from './Calculator.module.css';
 
 const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
   const [seriesComponents, setSeriesComponents] = useState([

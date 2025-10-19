@@ -3,6 +3,7 @@ import { exportToPDF } from '../../utils/pdfExport';
 import OhmsLawBasic from './OhmsLawBasic';
 import OhmsLawSeries from './OhmsLawSeries';
 import OhmsLawParallel from './OhmsLawParallel';
+import styles from './Calculator.module.css';
 
 const OhmsLawCalculator = forwardRef(({ isDarkMode = false }, ref) => {
   const [activeTab, setActiveTab] = useState('basic');

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Clock, CheckCircle, AlertCircle, Briefcase, ChevronDown, X, Search } from 'lucide-react';
-import { getUserJobs, createJob, deleteJob as deleteJobFromFirebase, subscribeToJobs } from './jobsService';
+import { getUserJobs, createJob, deleteJob as deleteJobFromFirebase } from './jobsService';
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import styles from './Jobs.module.css';
@@ -8,7 +8,6 @@ import JobCard from './JobCard';
 import JobModal from './JobModal';
 import JobForm from './JobForm';
 import StatusTabs from './StatusTabs';
-import AuthModal from '../profile/AuthModal';
 
 
 const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
@@ -24,7 +23,6 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [linkedEstimate, setLinkedEstimate] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStatusTab, setActiveStatusTab] = useState('all');
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     client: '',
@@ -52,34 +50,15 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     'completed': { color: '#10b981', icon: CheckCircle, label: 'Completed' }
   };
 
-  // ============================================
-  // OPTIMIZED DATA LOADING WITH REAL-TIME SYNC
-  // ============================================
   useEffect(() => {
-    let unsubscribeFromJobs = null;
-
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // Load jobs immediately (will use cache if available)
         loadJobs();
-
-        // Set up real-time listener for automatic updates
-        unsubscribeFromJobs = subscribeToJobs(user.uid, (freshJobs) => {
-          console.log('📡 Real-time update received');
-          setJobs(freshJobs);
-          setLoading(false);
-        });
       } else {
         setLoading(false);
       }
     });
-
-    return () => {
-      unsubscribeAuth();
-      if (unsubscribeFromJobs) {
-        unsubscribeFromJobs();
-      }
-    };
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -159,7 +138,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
 
         await createJob(jobData);
         resetForm();
-        // Real-time listener will automatically update the list
+        loadJobs();
       } catch (error) {
         console.error('Error adding job:', error);
         alert('Failed to add job. Please try again.');
@@ -187,7 +166,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
 
         await updateJob(editingJob.id, jobData);
         resetForm();
-        // Real-time listener will automatically update
+        loadJobs();
       } catch (error) {
         console.error('Error updating job:', error);
         alert('Failed to update job. Please try again.');
@@ -201,7 +180,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
       const job = jobs.find(j => j.id === jobId);
       await updateJob(jobId, { ...job, status: newStatus });
       setStatusDropdownOpen(null);
-      // Real-time listener will automatically update
+      loadJobs();
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status. Please try again.');
@@ -240,7 +219,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
         if (viewingJob && viewingJob.id === id) {
           resetForm();
         }
-        // Real-time listener will automatically update
+        loadJobs();
       } catch (error) {
         console.error('Error deleting job:', error);
         alert('Failed to delete job. Please try again.');
@@ -291,6 +270,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
         }
         
         resetForm();
+        loadJobs();
       } catch (error) {
         console.error('Error creating job:', error);
         alert('Failed to create job. Please try again.');
@@ -381,19 +361,12 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   }
 
   return (
-  <div className="jobs-container">
-    {/* Auth Modal */}
-    <AuthModal 
-      isOpen={showAuthModal}
-      onClose={() => setShowAuthModal(false)}
-      isDarkMode={isDarkMode}
-    />
-
-    <div style={{ 
-      minHeight: '100vh', 
-      background: colors.bg,
-      paddingBottom: '5rem'
-    }}>
+    <div className="jobs-container">
+      <div style={{ 
+        minHeight: '100vh', 
+        background: colors.bg,
+        paddingBottom: '5rem'
+      }}>
         <JobModal
           viewingJob={viewingJob}
           formData={formData}
@@ -416,7 +389,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
         
         <div style={{ padding: '1rem 0.25rem' }}>
 
-          {/* Status Tabs */}
+          {/* Status Tabs - NOW USING COMPONENT */}
           <StatusTabs
             activeStatusTab={activeStatusTab}
             setActiveStatusTab={setActiveStatusTab}
@@ -518,14 +491,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
             border: `1px solid ${colors.border}`
           }}>
             <button
-              onClick={() => {
-                // Check if user is logged in
-                if (!auth.currentUser) {
-                  setShowAuthModal(true);
-                  return;
-                }
-                setShowAddForm(!showAddForm);
-              }}
+              onClick={() => setShowAddForm(!showAddForm)}
               className={styles.addJobButton}
               style={{ color: colors.text }}
             >

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Info, FileDown, Briefcase } from 'lucide-react';
 import { getUserJobs, addCalculationToJob } from '../jobs/jobsService';
+import styles from './Calculator.module.css';
 
 const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
   const [voltage, setVoltage] = useState('');

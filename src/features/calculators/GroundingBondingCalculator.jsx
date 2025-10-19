@@ -49,11 +49,11 @@ const GECCalculator = ({ gecData, setGecData, colors }) => {
   const results = determineGEC();
 
   return (
-    <div className={styles.container}>
+    <div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Service Conductor<br/> Size
+            Service Conductor Size
           </label>
           <select 
             value={gecData.serviceSize} 
@@ -93,7 +93,7 @@ const GECCalculator = ({ gecData, setGecData, colors }) => {
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            GEC <br/>Material
+            GEC Material
           </label>
           <select 
             value={gecData.conductorMaterial} 
@@ -246,7 +246,7 @@ const EGCCalculator = ({ egcData, setEgcData, colors }) => {
 
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            EGC <br/> Material  
+            EGC Material <br/>  <br></br>
           </label>
           <select 
             value={egcData.conductorMaterial} 
@@ -775,8 +775,7 @@ const GroundingBondingCalculator = forwardRef(({ isDarkMode = false, onBack }, r
           { id: 'egc', label: 'Equipment Grounding' },
           { id: 'bonding', label: 'Bonding Jumpers' }
         ].map(tab => (
-          <button
-            className={styles.btn} 
+          <button 
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{

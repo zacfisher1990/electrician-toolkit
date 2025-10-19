@@ -1,6 +1,7 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Zap, Info, AlertTriangle } from 'lucide-react';
 import { exportToPDF } from '../../utils/pdfExport';
+import styles from './Calculator.module.css';
 
 const TransformerSizingCalculator = forwardRef(({ isDarkMode = false }, ref) => {
   const [activeTab, setActiveTab] = useState('sizing');

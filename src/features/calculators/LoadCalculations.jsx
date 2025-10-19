@@ -1,6 +1,7 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { BarChart3, CheckCircle, Info } from 'lucide-react';
 import { exportToPDF } from '../../utils/pdfExport';
+import styles from './Calculator.module.css';
 
 // Residential Load Calculator (NEC 220.82 Standard Method)
 const ResidentialLoadCalculator = ({ data, setData, colors }) => {
