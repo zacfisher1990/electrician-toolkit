@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { MapPin, Calendar, Edit, FileText, Receipt, DollarSign, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { MapPin, Calendar, Edit, FileText, Receipt, DollarSign, ChevronDown, ChevronUp, Play, Square } from 'lucide-react';
 import styles from './JobCard.module.css';
 
 const JobCard = ({ 
@@ -11,17 +11,67 @@ const JobCard = ({
   onViewJob,
   onViewEstimate,
   onViewInvoice,
+  onClockInOut,
   isDarkMode,
   colors 
 }) => {
   const statusDropdownRef = useRef(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [currentTime, setCurrentTime] = useState(Date.now());
   const StatusIcon = statusConfig[job.status].icon;
   const jobTitle = job.title || job.name;
 
+  // Update timer every second when clocked in
+  useEffect(() => {
+    if (job.clockedIn) {
+      const interval = setInterval(() => {
+        setCurrentTime(Date.now());
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [job.clockedIn]);
+
+  // Calculate total hours from all work sessions
+  const calculateTotalHours = () => {
+    if (!job.workSessions || job.workSessions.length === 0) return 0;
+    
+    let totalMs = 0;
+    job.workSessions.forEach(session => {
+      if (session.startTime && session.endTime) {
+        totalMs += new Date(session.endTime) - new Date(session.startTime);
+      }
+    });
+    
+    return totalMs / (1000 * 60 * 60); // Convert to hours
+  };
+
+  // Calculate current session duration
+  const getCurrentSessionDuration = () => {
+    if (!job.clockedIn || !job.currentSessionStart) return 0;
+    return (currentTime - new Date(job.currentSessionStart)) / 1000; // Return in seconds
+  };
+
+  // Format duration for display (HH:MM format)
+  const formatDuration = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
+  const handleClockInOut = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (onClockInOut) {
+      onClockInOut(job.id, !job.clockedIn);
+    }
+  };
+
+  const totalHours = calculateTotalHours();
+  const currentSessionSeconds = getCurrentSessionDuration();
+
   return (
     <div
-      onClick={() => setIsExpanded(!isExpanded)}
       style={{
         background: colors.cardBg,
         border: `1px solid ${colors.border}`,
@@ -29,13 +79,16 @@ const JobCard = ({
         padding: '1rem',
         marginBottom: '0.75rem',
         transition: 'all 0.2s',
-        cursor: 'pointer',
         WebkitTapHighlightColor: 'transparent',
         userSelect: 'none'
       }}
     >
-        <div className={styles.cardHeader}>
-        <div className={styles.cardTitle}>
+      <div className={styles.cardHeader}>
+        <div 
+          className={styles.cardTitle}
+          onClick={() => setIsExpanded(!isExpanded)}
+          style={{ cursor: 'pointer' }}
+        >
           <h3 style={{
             margin: '0 0 0.25rem 0',
             color: colors.text,
@@ -56,110 +109,150 @@ const JobCard = ({
             {job.client}
           </p>
         </div>
-        
-        {/* Status Badge with Dropdown */}
-        <div style={{ position: 'relative' }} ref={statusDropdownOpen === job.id ? statusDropdownRef : null}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setStatusDropdownOpen(statusDropdownOpen === job.id ? null : job.id);
-            }}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.25rem',
-              padding: '4px 8px',           // Use px instead of rem
-              borderRadius: '4px',
-              background: `${statusConfig[job.status].color}20`,
-              color: statusConfig[job.status].color,
-              fontSize: '11px',             // Use px instead of rem
-              fontWeight: '600',
-              whiteSpace: 'nowrap',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              lineHeight: '1',
-              minHeight: 'unset',           // Override any default min-height
-              minWidth: 'unset',            // Override any default min-width
-              height: 'fit-content',
-              width: 'fit-content',
-              boxSizing: 'border-box'
-            }}
-          >
-            <StatusIcon size={12} />
-            <span>{statusConfig[job.status].label}</span>
-          </button>
+      
 
-          {statusDropdownOpen === job.id && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: '0.5rem',
-              background: colors.cardBg,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              zIndex: 100,
-              minWidth: '140px',
-              overflow: 'hidden'
-            }}>
-              {Object.entries(statusConfig).map(([key, config]) => {
-                const OptionIcon = config.icon;
-                return (
-                  <button
-                    key={key}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onUpdateStatus(job.id, key);
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '0.625rem 0.75rem',
-                      background: job.status === key ? `${config.color}20` : 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      color: config.color,
-                      fontSize: '0.875rem',
-                      fontWeight: job.status === key ? '600' : '500',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (job.status !== key) {
-                        e.target.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (job.status !== key) {
-                        e.target.style.background = 'transparent';
-                      }
-                    }}
-                  >
-                    <OptionIcon size={16} />
-                    <span>{config.label}</span>
-                  </button>
-                );
-              })}
+        {/* Status Badge with Timer - right side */}
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'flex-end', 
+            gap: '0.25rem',
+            alignSelf: 'flex-start'
+          }}>
+            <div style={{ position: 'relative' }} ref={statusDropdownOpen === job.id ? statusDropdownRef : null}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setStatusDropdownOpen(statusDropdownOpen === job.id ? null : job.id);
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.25rem',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  background: `${statusConfig[job.status].color}20`,
+                  color: statusConfig[job.status].color,
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  whiteSpace: 'nowrap',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  lineHeight: '1',
+                  minHeight: 'unset',
+                  minWidth: 'unset',
+                  height: 'fit-content',
+                  width: 'fit-content',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <StatusIcon size={12} />
+                <span>{statusConfig[job.status].label}</span>
+              </button>
+
+              {statusDropdownOpen === job.id && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: '0.5rem',
+                  background: colors.cardBg,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '0.5rem',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  zIndex: 100,
+                  minWidth: '140px',
+                  overflow: 'hidden'
+                }}>
+                  {Object.entries(statusConfig).map(([key, config]) => {
+                    const OptionIcon = config.icon;
+                    return (
+                      <button
+                        key={key}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onUpdateStatus(job.id, key);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '0.625rem 0.75rem',
+                          background: job.status === key ? `${config.color}20` : 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          color: config.color,
+                          fontSize: '0.875rem',
+                          fontWeight: job.status === key ? '600' : '500',
+                          transition: 'background 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (job.status !== key) {
+                            e.target.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (job.status !== key) {
+                            e.target.style.background = 'transparent';
+                          }
+                        }}
+                      >
+                        <OptionIcon size={16} />
+                        <span>{config.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+
+            {/* Timer */}
+            {(job.clockedIn || totalHours > 0) && (
+              <div style={{
+                fontSize: '0.75rem',
+                color: colors.subtext,
+                textAlign: 'right'
+              }}>
+                {job.clockedIn && (
+                  <div style={{
+                    color: colors.text,
+                    fontWeight: '600',
+                    fontSize: '0.875rem',
+                    fontVariantNumeric: 'tabular-nums'
+                  }}>
+                    {formatDuration(currentSessionSeconds)}
+                  </div>
+                )}
+                {totalHours > 0 && (
+                  <div style={{
+                    fontSize: '0.7rem'
+                  }}>
+                    Total: {totalHours.toFixed(2)}h
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          </div>
 
       {/* Location and Date on same line */}
-      {(job.location || job.date) && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '0.5rem',
-          color: colors.subtext,
-          fontSize: '0.875rem',
-          gap: '1rem'
-        }}>
+          {(job.location || job.date) && (
+            <div 
+              onClick={() => setIsExpanded(!isExpanded)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '0.5rem',
+                color: colors.subtext,
+                fontSize: '0.875rem',
+                gap: '1rem',
+                cursor: 'pointer'
+              }}
+            >
           {job.location && (
             <div style={{
               display: 'flex',
@@ -212,7 +305,7 @@ const JobCard = ({
 
           {job.notes && (
             <div style={{
-              marginTop: '0.5rem'
+              marginBottom: '0.75rem'
             }}>
               <p style={{
                 margin: 0,
@@ -230,11 +323,36 @@ const JobCard = ({
         </div>
       )}
 
-      {/* Three Action Buttons */}
+      {/* Four Action Buttons */}
       <div className={styles.actionButtons}>
         <button
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
+            handleClockInOut(e);
+          }}
+          title={job.clockedIn ? "Clock Out" : "Clock In"}
+          style={{
+            background: job.clockedIn ? '#ef4444' : '#10b981',
+            border: 'none',
+            borderRadius: '0.5rem',
+            color: 'white',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: '600'
+          }}
+        >
+          {job.clockedIn ? <Square size={16} /> : <Play size={16} />}
+          <span>{job.clockedIn ? 'Clock Out' : 'Clock In'}</span>
+        </button>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
             onViewJob(job);
           }}
           title="Edit Job"
@@ -258,6 +376,7 @@ const JobCard = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             onViewEstimate(job);
           }}
           title={job.estimateId ? "View Estimate" : "No estimate linked"}
@@ -283,6 +402,7 @@ const JobCard = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             onViewInvoice(job);
           }}
           title={job.invoiceId ? "View Invoice" : "No invoice linked"}

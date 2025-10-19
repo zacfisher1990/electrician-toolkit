@@ -373,6 +373,58 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     );
   }
 
+  // Add this function to your Jobs.jsx component, before the return statement
+
+const handleClockInOut = async (jobId, clockIn) => {
+  try {
+    const { updateJob } = await import('./jobsService');
+    const job = jobs.find(j => j.id === jobId);
+    
+    let updatedJob;
+    
+    if (clockIn) {
+      // Clock IN - start new session
+      updatedJob = {
+        ...job,
+        clockedIn: true,
+        currentSessionStart: new Date().toISOString()
+      };
+    } else {
+      // Clock OUT - end current session
+      const sessionEnd = new Date().toISOString();
+      const sessionStart = job.currentSessionStart;
+      
+      // Add completed session to workSessions array
+      const workSessions = job.workSessions || [];
+      workSessions.push({
+        startTime: sessionStart,
+        endTime: sessionEnd
+      });
+      
+      updatedJob = {
+        ...job,
+        clockedIn: false,
+        currentSessionStart: null,
+        workSessions: workSessions
+      };
+    }
+    
+    // Update local state IMMEDIATELY (optimistic update)
+    setJobs(prevJobs => 
+      prevJobs.map(j => j.id === jobId ? updatedJob : j)
+    );
+    
+    // Then update in database in the background
+    await updateJob(jobId, updatedJob);
+    
+  } catch (error) {
+    console.error('Error updating clock status:', error);
+    alert('Failed to update clock status. Please try again.');
+    // Reload jobs on error to ensure consistency
+    loadJobs();
+  }
+};
+
   return (
     <div className="jobs-container">
       {/* Auth Modal */}
@@ -641,6 +693,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
                       console.log('View invoice:', job.invoiceId);
                     }
                   }}
+                  onClockInOut={handleClockInOut}
                   isDarkMode={isDarkMode}
                   colors={colors}
                 />
