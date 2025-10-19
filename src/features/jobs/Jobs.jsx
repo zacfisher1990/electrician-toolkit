@@ -8,7 +8,7 @@ import JobCard from './JobCard';
 import JobModal from './JobModal';
 import JobForm from './JobForm';
 import StatusTabs from './StatusTabs';
-
+import AuthModal from '../profile/AuthModal';
 
 const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [jobs, setJobs] = useState([]);
@@ -23,6 +23,8 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [linkedEstimate, setLinkedEstimate] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStatusTab, setActiveStatusTab] = useState('all');
+  const [showAuthModal, setShowAuthModal] = useState(false); // Add this state
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false); // Add this state
   const [formData, setFormData] = useState({
     title: '',
     client: '',
@@ -53,8 +55,10 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
+        setIsUserLoggedIn(true); // Update login state
         loadJobs();
       } else {
+        setIsUserLoggedIn(false); // Update login state
         setLoading(false);
       }
     });
@@ -117,6 +121,15 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     setEditingJob(null);
     setViewingJob(null);
     setLinkedEstimate(null);
+  };
+
+  // New function to handle add job button click with auth check
+  const handleAddJobClick = () => {
+    if (!isUserLoggedIn) {
+      setShowAuthModal(true); // Show auth modal if not logged in
+    } else {
+      setShowAddForm(!showAddForm); // Toggle form if logged in
+    }
   };
 
   const handleAddJob = async () => {
@@ -362,6 +375,13 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
 
   return (
     <div className="jobs-container">
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        isDarkMode={isDarkMode}
+      />
+
       <div style={{ 
         minHeight: '100vh', 
         background: colors.bg,
@@ -389,7 +409,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
         
         <div style={{ padding: '1rem 0.25rem' }}>
 
-          {/* Status Tabs - NOW USING COMPONENT */}
+          {/* Status Tabs */}
           <StatusTabs
             activeStatusTab={activeStatusTab}
             setActiveStatusTab={setActiveStatusTab}
@@ -491,7 +511,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
             border: `1px solid ${colors.border}`
           }}>
             <button
-              onClick={() => setShowAddForm(!showAddForm)}
+              onClick={handleAddJobClick} // Changed to use new function
               className={styles.addJobButton}
               style={{ color: colors.text }}
             >
