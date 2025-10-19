@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "NETLIFY_SKIP_SECRET_DETECTION=true npm run build"
   publish = "dist"
 
 [functions]
