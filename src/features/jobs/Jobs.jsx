@@ -8,6 +8,7 @@ import JobCard from './JobCard';
 import JobModal from './JobModal';
 import JobForm from './JobForm';
 import StatusTabs from './StatusTabs';
+import AuthModal from '../profile/AuthModal';
 
 
 const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
@@ -23,6 +24,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [linkedEstimate, setLinkedEstimate] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStatusTab, setActiveStatusTab] = useState('all');
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     client: '',
@@ -379,12 +381,19 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   }
 
   return (
-    <div className="jobs-container">
-      <div style={{ 
-        minHeight: '100vh', 
-        background: colors.bg,
-        paddingBottom: '5rem'
-      }}>
+  <div className="jobs-container">
+    {/* Auth Modal */}
+    <AuthModal 
+      isOpen={showAuthModal}
+      onClose={() => setShowAuthModal(false)}
+      isDarkMode={isDarkMode}
+    />
+
+    <div style={{ 
+      minHeight: '100vh', 
+      background: colors.bg,
+      paddingBottom: '5rem'
+    }}>
         <JobModal
           viewingJob={viewingJob}
           formData={formData}
@@ -509,7 +518,14 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
             border: `1px solid ${colors.border}`
           }}>
             <button
-              onClick={() => setShowAddForm(!showAddForm)}
+              onClick={() => {
+                // Check if user is logged in
+                if (!auth.currentUser) {
+                  setShowAuthModal(true);
+                  return;
+                }
+                setShowAddForm(!showAddForm);
+              }}
               className={styles.addJobButton}
               style={{ color: colors.text }}
             >
