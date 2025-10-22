@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown, Box } from 'lucide-react';
+import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown, Box, Drill, ArrowUp } from 'lucide-react';
 import styles from './Calculator.module.css';
 
 function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
@@ -42,6 +42,8 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
         { id: 'pull-box', name: 'Pull Box', icon: Box, keywords: 'pull box junction sizing straight angle u-pull 314.28 raceway conduit' },
         { id: 'conduit-fill', name: 'Conduit Fill', icon: Circle, keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
         { id: 'conduit-bending', name: 'Conduit Bending', icon: CornerDownRight, keywords: 'conduit bending offset saddle stub bend emt' },
+        { id: 'underground-depth', name: 'Underground Depth', icon: Drill, keywords: 'underground depth burial trench cable direct bury 300.5 nec pvc rmc duct install' },
+        { id: 'overhead-clearance', name: 'Overhead Clearance', icon: ArrowUp, keywords: 'overhead clearance aerial height span service drop mast 225 attachment point roof' },
         { id: 'receptacles', name: 'Receptacles', icon: Plug, keywords: 'receptacle outlet gfci plug socket 210.52 counter kitchen bathroom wall spacing' },
         { id: 'lighting', name: 'Lighting', icon: Lightbulb, keywords: 'lighting lumens foot candles fixtures spacing watts illumination' }
       ]
@@ -168,7 +170,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                 {filteredResults.length > 0 ? (
                   filteredResults.map(calc => {
                     const IconComponent = calc.icon;
-                    const iconColor = categoryColors[calc.category] || '#3b82f6';
+                    const iconColor = categoryColors[calc.category];
                     
                     return (
                       <div
@@ -202,7 +204,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                             minHeight: '70px',     
                             maxWidth: '70px',      
                             maxHeight: '70px',     
-                            flexShrink: 0,
+                            flexShrink: 0,         
                             boxShadow: isDarkMode ? '0 1px 3px rgba(0, 0, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)',
                             transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                             position: 'relative',

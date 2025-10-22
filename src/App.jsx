@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, FileDown, Omega, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box } from 'lucide-react';
+import { Menu, FileDown, Omega, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, Drill, ArrowUp } from 'lucide-react';
 import CalculatorMenu from './features/calculators/CalculatorMenu.jsx';
 import VoltageDropCalculator from './features/calculators/VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './features/calculators/OhmsLawCalculator.jsx';
@@ -21,6 +21,8 @@ import ReactanceImpedanceCalculator from './features/calculators/ReactanceImpeda
 import PowerFactorCorrection from './features/calculators/PowerFactorCorrection.jsx';
 import PowerTriangleCalculator from './features/calculators/PowerTriangleCalculator.jsx';
 import ThreePhasePowerCalculator from './features/calculators/ThreePhasePowerCalculator.jsx';
+import UndergroundDepthCalculator from './features/calculators/UndergroundDepthCalculator.jsx';
+import OverheadClearanceCalculator from './features/calculators/OverheadClearanceCalculator.jsx';
 import Home from './features/home/Home.jsx';
 import Profile from './features/profile/Profile.jsx';
 import Jobs from './features/jobs/Jobs.jsx';
@@ -188,67 +190,37 @@ useEffect(() => {
         setActiveCalculator('jobs');
       } else if (view === 'estimates') {
         setActiveCalculator('estimates');
-        // Handle different types of data
         if (data) {
-          if (data.viewEstimateId) {
-            // Viewing existing estimate
-            setNavigationData(data);
-          } else {
-            // Creating new estimate from job
-            setPendingEstimate(data);
-          }
+          setNavigationData(data);
         }
       } else if (view === 'invoices') {
         setActiveCalculator('invoices');
-      } else if (view === 'verify-email') {
-        setActiveCalculator('verify-email');
       }
     };
 
-  // Handle back to calculator menu - stable reference
   const handleBackToMenu = () => {
-    // Use browser back instead of directly setting state
-    window.history.back();
+    setActiveCalculator('calculators');
   };
 
-  // Handle applying estimate to job
-  const handleApplyEstimate = (estimate, jobId) => {
-    if (jobId === 'new') {
-      // Store estimate and navigate to jobs page to create new job
-      setPendingEstimate(estimate);
-      setActiveCalculator('jobs');
-    } else {
-      // Apply estimate to existing job
-      // This will be handled by the Jobs component
-      setPendingEstimate({ ...estimate, jobId });
-      setActiveCalculator('jobs');
-    }
+  const exportSuccessHandler = () => {
+    setShowExportToast(true);
+    setTimeout(() => setShowExportToast(false), 3000);
   };
 
-  // Handle PDF Export
   const handleExportPDF = () => {
     if (calculatorRef.current && calculatorRef.current.exportPDF) {
-      try {
-        calculatorRef.current.exportPDF();
-        setShowMenu(false);
-        
-        // Show success toast
-        setShowExportToast(true);
-        setTimeout(() => setShowExportToast(false), 3000);
-      } catch (error) {
-        console.error('PDF export failed:', error);
-        alert('Failed to export PDF. Please try again.');
-      }
+      calculatorRef.current.exportPDF();
+      exportSuccessHandler();
     }
+  };
+
+  const handleApplyEstimate = (estimateData) => {
+    setPendingEstimate(estimateData);
+    setActiveCalculator('jobs');
   };
 
   const renderCalculator = () => {
-    const exportSuccessHandler = () => {
-      setShowExportToast(true);
-      setTimeout(() => setShowExportToast(false), 3000);
-    };
-
-    switch(activeCalculator) {
+    switch (activeCalculator) {
       case 'voltage-drop':
         return <VoltageDropCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'ohms-law':
@@ -287,6 +259,10 @@ useEffect(() => {
         return <ThreePhasePowerCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'pull-box':
         return <PullBoxCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+      case 'underground-depth':
+        return <UndergroundDepthCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+      case 'overhead-clearance':
+        return <OverheadClearanceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'calculators':
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -358,7 +334,9 @@ useEffect(() => {
       'vfd-sizing': { title: 'VFD Sizing', icon: Gauge },
       'power-triangle': { title: 'Power Triangle', icon: Triangle },
       'three-phase-power': { title: 'Three-Phase Power', icon: Tally3 },
-      'pull-box': { title: 'Pull Box Sizing', icon: Box }
+      'pull-box': { title: 'Pull Box Sizing', icon: Box },
+      'underground-depth': { title: 'Underground Depth', icon: Drill },
+      'overhead-clearance': { title: 'Overhead Clearance', icon: ArrowUp }
     };
     
     return headerMap[activeCalculator] || { title: 'Electrician\'s Toolkit', icon: Calculator };
