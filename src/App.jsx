@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, FileDown, Omega, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, Drill, ArrowUp } from 'lucide-react';
+import { Menu, FileDown, Omega, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus } from 'lucide-react';
 import CalculatorMenu from './features/calculators/CalculatorMenu.jsx';
 import VoltageDropCalculator from './features/calculators/VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './features/calculators/OhmsLawCalculator.jsx';
@@ -23,6 +23,8 @@ import PowerTriangleCalculator from './features/calculators/PowerTriangleCalcula
 import ThreePhasePowerCalculator from './features/calculators/ThreePhasePowerCalculator.jsx';
 import UndergroundDepthCalculator from './features/calculators/UndergroundDepthCalculator.jsx';
 import OverheadClearanceCalculator from './features/calculators/OverheadClearanceCalculator.jsx';
+import WorkingSpaceCalculator from './features/calculators/WorkingSpaceCalculator.jsx';
+import NeutralSizingCalculator from './features/calculators/NeutralSizingCalculator.jsx';
 import Home from './features/home/Home.jsx';
 import Profile from './features/profile/Profile.jsx';
 import Jobs from './features/jobs/Jobs.jsx';
@@ -263,6 +265,10 @@ useEffect(() => {
         return <UndergroundDepthCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'overhead-clearance':
         return <OverheadClearanceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+      case 'working-space':
+        return <WorkingSpaceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+      case 'neutral-sizing':
+        return <NeutralSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'calculators':
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -335,8 +341,10 @@ useEffect(() => {
       'power-triangle': { title: 'Power Triangle', icon: Triangle },
       'three-phase-power': { title: 'Three-Phase Power', icon: Tally3 },
       'pull-box': { title: 'Pull Box Sizing', icon: Box },
-      'underground-depth': { title: 'Underground Depth', icon: Drill },
-      'overhead-clearance': { title: 'Overhead Clearance', icon: ArrowUp }
+      'underground-depth': { title: 'Underground Depth', icon: ArrowDown },
+      'overhead-clearance': { title: 'Overhead Clearance', icon: ArrowUp },
+      'working-space': { title: 'Working Space', icon: Ruler },
+      'neutral-sizing': { title: 'Neutral Sizing', icon: Minus }
     };
     
     return headerMap[activeCalculator] || { title: 'Electrician\'s Toolkit', icon: Calculator };
