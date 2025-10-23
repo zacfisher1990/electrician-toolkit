@@ -432,7 +432,7 @@ const ConduitFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) =
               textAlign: 'center'
             }}>
               <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Wire Area
+                Wire <br></br>Area
               </div>
               <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
                 {results.totalWireArea}

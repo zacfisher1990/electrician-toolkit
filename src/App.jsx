@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, FileDown, Omega, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun } from 'lucide-react';
+import { Menu, FileDown, Omega, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap } from 'lucide-react';
 import CalculatorMenu from './features/calculators/CalculatorMenu.jsx';
 import VoltageDropCalculator from './features/calculators/VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './features/calculators/OhmsLawCalculator.jsx';
@@ -17,7 +17,7 @@ import LightingCalculator from './features/calculators/LightingCalculator.jsx';
 import ReceptacleCalculator from './features/calculators/ReceptacleCalculator.jsx';
 import BottomNavigation from './components/BottomNavigation.jsx';
 import VFDSizingCalculator from './features/calculators/VFDSizingCalculator.jsx';
-import ReactanceImpedanceCalculator from './features/calculators/ReactanceImpedanceCalculator.jsx';
+import ReactanceImpedanceCalculator from './features/calculators/ReactanceImpedance/ReactanceImpedanceCalculator.jsx';
 import PowerFactorCorrection from './features/calculators/PowerFactorCorrection.jsx';
 import PowerTriangleCalculator from './features/calculators/PowerTriangleCalculator.jsx';
 import ThreePhasePowerCalculator from './features/calculators/ThreePhasePowerCalculator.jsx';
@@ -26,6 +26,7 @@ import OverheadClearanceCalculator from './features/calculators/OverheadClearanc
 import WorkingSpaceCalculator from './features/calculators/WorkingSpaceCalculator.jsx';
 import NeutralSizingCalculator from './features/calculators/NeutralSizingCalculator.jsx';
 import SolarPVCalculator from './features/calculators/SolarPVCalculator.jsx';
+import EVChargingCalculator from './features/calculators/EVChargingCalculator.jsx';
 import Home from './features/home/Home.jsx';
 import Profile from './features/profile/Profile.jsx';
 import Jobs from './features/jobs/Jobs.jsx';
@@ -272,6 +273,8 @@ useEffect(() => {
         return <NeutralSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'solar-pv':
         return <SolarPVCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+      case 'ev-charging':
+        return <EVChargingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'calculators':
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -348,7 +351,8 @@ useEffect(() => {
       'overhead-clearance': { title: 'Overhead Clearance', icon: ArrowUp },
       'working-space': { title: 'Working Space', icon: Ruler },
       'neutral-sizing': { title: 'Neutral Sizing', icon: Minus },
-      'solar-pv': { title: 'Solar PV', icon: Sun }
+      'solar-pv': { title: 'Solar PV', icon: Sun },
+      'ev-charging': { title: 'EV Charging', icon: Zap }
     };
     
     return headerMap[activeCalculator] || { title: 'Electrician\'s Toolkit', icon: Calculator };

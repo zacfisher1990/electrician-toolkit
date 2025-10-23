@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown, Box, ArrowDown, ArrowUp, Ruler, Minus, Sun } from 'lucide-react';
+import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown, Box, ArrowDown, ArrowUp, Ruler, Minus, Sun, Zap } from 'lucide-react';
 import styles from './Calculator.module.css';
 
 function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
@@ -47,7 +47,13 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
       { id: 'motor-calculations', name: 'Motors', icon: Settings, keywords: 'motor flc protection starter 430' },
       { id: 'transformer-sizing', name: 'Transformers', icon: Radio, keywords: 'transformer kva sizing current primary secondary 450' },
       { id: 'vfd-sizing', name: 'VFD Sizing', icon: Gauge, keywords: 'vfd variable frequency drive motor speed control inverter ac drive' },
-      { id: 'solar-pv', name: 'Solar PV', icon: Sun, keywords: 'solar pv photovoltaic 690 panel array inverter string conductor ocpd renewable' }
+      { id: 'solar-pv', name: 'Solar PV', icon: Sun, keywords: 'solar pv photovoltaic 690 panel array inverter string conductor ocpd renewable' },
+      { 
+     id: 'ev-charging', 
+     name: 'EV Charging', 
+     icon: Zap, 
+     keywords: 'ev charging electric vehicle evse 625 charger station load continuous diversity feeder branch circuit nec' 
+   }
     ]
   }
 ];
