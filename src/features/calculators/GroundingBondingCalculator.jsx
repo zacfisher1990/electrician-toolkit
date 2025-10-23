@@ -49,7 +49,7 @@ const GECCalculator = ({ gecData, setGecData, colors }) => {
   const results = determineGEC();
 
   return (
-    <div>
+    <div className={styles.menu}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
         <div>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
@@ -776,6 +776,7 @@ const GroundingBondingCalculator = forwardRef(({ isDarkMode = false, onBack }, r
           { id: 'bonding', label: 'Bonding Jumpers' }
         ].map(tab => (
           <button 
+            className={styles.btn}
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{

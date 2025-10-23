@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, FileDown, Omega, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus } from 'lucide-react';
+import { Menu, FileDown, Omega, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun } from 'lucide-react';
 import CalculatorMenu from './features/calculators/CalculatorMenu.jsx';
 import VoltageDropCalculator from './features/calculators/VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './features/calculators/OhmsLawCalculator.jsx';
@@ -25,6 +25,7 @@ import UndergroundDepthCalculator from './features/calculators/UndergroundDepthC
 import OverheadClearanceCalculator from './features/calculators/OverheadClearanceCalculator.jsx';
 import WorkingSpaceCalculator from './features/calculators/WorkingSpaceCalculator.jsx';
 import NeutralSizingCalculator from './features/calculators/NeutralSizingCalculator.jsx';
+import SolarPVCalculator from './features/calculators/SolarPVCalculator.jsx';
 import Home from './features/home/Home.jsx';
 import Profile from './features/profile/Profile.jsx';
 import Jobs from './features/jobs/Jobs.jsx';
@@ -269,6 +270,8 @@ useEffect(() => {
         return <WorkingSpaceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'neutral-sizing':
         return <NeutralSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+      case 'solar-pv':
+        return <SolarPVCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'calculators':
         return <CalculatorMenu 
           isDarkMode={isDarkMode} 
@@ -344,7 +347,8 @@ useEffect(() => {
       'underground-depth': { title: 'Underground Depth', icon: ArrowDown },
       'overhead-clearance': { title: 'Overhead Clearance', icon: ArrowUp },
       'working-space': { title: 'Working Space', icon: Ruler },
-      'neutral-sizing': { title: 'Neutral Sizing', icon: Minus }
+      'neutral-sizing': { title: 'Neutral Sizing', icon: Minus },
+      'solar-pv': { title: 'Solar PV', icon: Sun }
     };
     
     return headerMap[activeCalculator] || { title: 'Electrician\'s Toolkit', icon: Calculator };
@@ -378,15 +382,17 @@ useEffect(() => {
         boxSizing: 'border-box'
       }}>
         {!activeCalculator ? (
-          renderCalculator()
-        ) : (
-          <div style={{ 
-            minHeight: 'calc(100vh - 3.5rem)', 
-            padding: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'verify-email' ? '0' : '1rem',
-            paddingBottom: showBottomNav ? '5rem' : '0'
-          }}>
-            {renderCalculator()}
-          </div>
+                  renderCalculator()
+                ) : (
+                  <div style={{ 
+                    minHeight: 'calc(100vh - 3.5rem)', 
+                    paddingTop: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'verify-email' ? '0' : '1rem',
+                    paddingRight: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'verify-email' ? '0' : '1rem',
+                    paddingLeft: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'verify-email' ? '0' : '1rem',
+                    paddingBottom: showBottomNav ? '5rem' : '0'
+                  }}>
+                    {renderCalculator()}
+                </div>
         )}
       </div>
 
