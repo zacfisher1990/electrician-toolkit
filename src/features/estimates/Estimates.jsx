@@ -1,33 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit, ChevronDown, DollarSign, Clock, FileText, Check } from 'lucide-react';
+import { FileText, Search, X } from 'lucide-react';
 import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as deleteEstimateFromFirebase } from './estimatesService';
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import EstimateCard from './EstimateCard';
+import EstimateForm from './EstimateForm';
 
 const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, onClearPendingData, navigationData }) => {
   const [estimates, setEstimates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showNewEstimate, setShowNewEstimate] = useState(false);
   const [editingEstimate, setEditingEstimate] = useState(null);
-  const [showJobDropdown, setShowJobDropdown] = useState(null);
-  
-  const [formData, setFormData] = useState({
-    name: '',
-    laborHours: '',
-    laborRate: '',
-    materials: [],
-    jobId: null
-  });
-
-  const [newMaterial, setNewMaterial] = useState({ name: '', cost: '' });
-
-  const templates = [
-    { name: 'Outlet Installation', laborHours: 2, laborRate: 85, materials: [{ name: 'GFCI Outlets (6)', cost: 120 }, { name: 'Wire & Boxes', cost: 45 }] },
-    { name: 'Panel Upgrade', laborHours: 8, laborRate: 85, materials: [{ name: '200A Panel', cost: 350 }, { name: 'Wire & Conduit', cost: 180 }] },
-    { name: 'Service Call', laborHours: 1, laborRate: 125, materials: [] },
-    { name: 'Lighting Install', laborHours: 4, laborRate: 85, materials: [{ name: 'Fixtures', cost: 200 }, { name: 'Wire & Switches', cost: 60 }] },
-    { name: 'Rewiring Room', laborHours: 16, laborRate: 85, materials: [{ name: 'Wire (500ft)', cost: 180 }, { name: 'Boxes & Devices', cost: 150 }] }
-  ];
+  const [searchQuery, setSearchQuery] = useState('');
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -52,30 +35,19 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
   }, []);
 
   // Handle pending estimate data from Jobs page
-useEffect(() => {
-  if (pendingEstimateData) {
-    setFormData({
-      name: pendingEstimateData.jobName || '',
-      laborHours: '',
-      laborRate: '',
-      materials: [],
-      jobId: pendingEstimateData.jobId || null
-    });
-    setShowNewEstimate(true);
-    
-    // Clear the pending data
-    if (onClearPendingData) {
+  useEffect(() => {
+    if (pendingEstimateData && onClearPendingData) {
+      // Just trigger the form to open - EstimateForm will handle the data
       onClearPendingData();
     }
-  }
-}, [pendingEstimateData, onClearPendingData]);
+  }, [pendingEstimateData, onClearPendingData]);
 
-    // Handle viewing an existing estimate from navigation
+  // Handle viewing an existing estimate from navigation
   useEffect(() => {
     if (navigationData?.viewEstimateId) {
       const estimateToView = estimates.find(e => e.id === navigationData.viewEstimateId);
       if (estimateToView) {
-        startEdit(estimateToView);
+        setEditingEstimate(estimateToView);
       }
     }
   }, [navigationData, estimates]);
@@ -93,87 +65,30 @@ useEffect(() => {
     }
   };
 
-  const calculateTotal = (laborHours, laborRate, materials) => {
-    const labor = (parseFloat(laborHours) || 0) * (parseFloat(laborRate) || 0);
-    const materialsCost = materials.reduce((sum, m) => sum + (parseFloat(m.cost) || 0), 0);
-    return labor + materialsCost;
-  };
-
-  const currentTotal = calculateTotal(formData.laborHours, formData.laborRate, formData.materials);
-
-  const applyTemplate = (template) => {
-    setFormData({
-      name: template.name,
-      laborHours: template.laborHours,
-      laborRate: template.laborRate,
-      materials: [...template.materials]
-    });
-    setShowNewEstimate(true);
-  };
-
-  const addMaterial = () => {
-    if (newMaterial.name && newMaterial.cost) {
-      setFormData(prev => ({
-        ...prev,
-        materials: [...prev.materials, { ...newMaterial }]
-      }));
-      setNewMaterial({ name: '', cost: '' });
-    }
-  };
-
-  const removeMaterial = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      materials: prev.materials.filter((_, i) => i !== index)
-    }));
-  };
-
-  const saveEstimate = async () => {
-  if (formData.name) {
+  const saveEstimate = async (estimateData) => {
     try {
-      const total = calculateTotal(formData.laborHours, formData.laborRate, formData.materials);
-      
-      const estimateData = {
-        name: formData.name,
-        laborHours: parseFloat(formData.laborHours) || 0,
-        laborRate: parseFloat(formData.laborRate) || 0,
-        materials: formData.materials,
-        total: total,
-        jobId: formData.jobId || null // Link to job if available
-      };
-
       if (editingEstimate) {
         await updateEstimate(editingEstimate.id, estimateData);
       } else {
         await createEstimate(estimateData);
       }
       
-      resetForm();
+      setEditingEstimate(null);
       loadEstimates();
     } catch (error) {
       console.error('Error saving estimate:', error);
       alert('Failed to save estimate. Please try again.');
     }
-  }
-};
-  const resetForm = () => {
-  setFormData({ name: '', laborHours: '', laborRate: '', materials: [], jobId: null });
-  setNewMaterial({ name: '', cost: '' });
-  setShowNewEstimate(false);
-  setEditingEstimate(null);
-};
+  };
+
   const startEdit = (estimate) => {
-  setEditingEstimate(estimate);
-  setFormData({
-    name: estimate.name,
-    laborHours: estimate.laborHours.toString(),
-    laborRate: estimate.laborRate.toString(),
-    materials: [...estimate.materials],
-    jobId: estimate.jobId || null
-  });
-  setShowNewEstimate(true);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+    setEditingEstimate(estimate);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingEstimate(null);
+  };
 
   const deleteEstimate = async (id, estimateName) => {
     if (window.confirm(`Delete "${estimateName}"?`)) {
@@ -191,8 +106,25 @@ useEffect(() => {
     if (onApplyToJob) {
       onApplyToJob(estimate, jobId);
     }
-    setShowJobDropdown(null);
   };
+
+  // Filter estimates based on search query
+  const filteredEstimates = estimates.filter(estimate => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    const matchesName = estimate.name.toLowerCase().includes(query);
+    const matchesMaterials = estimate.materials.some(mat => 
+      mat.name.toLowerCase().includes(query)
+    );
+    const matchesTotal = estimate.total.toString().includes(query);
+    
+    // Check if linked to a job that matches
+    const linkedJob = jobs.find(job => job.id === estimate.jobId);
+    const matchesJob = linkedJob && (linkedJob.title || linkedJob.name || '').toLowerCase().includes(query);
+    
+    return matchesName || matchesMaterials || matchesTotal || matchesJob;
+  });
 
   if (loading) {
     return (
@@ -216,283 +148,123 @@ useEffect(() => {
       paddingBottom: '5rem'
     }}>
       <div style={{ padding: '1rem' }}>
-        {/* New/Edit Estimate Form */}
+        {/* Search Bar */}
         <div style={{
           background: colors.cardBg,
           borderRadius: '0.75rem',
           border: `1px solid ${colors.border}`,
-          boxShadow: 'none',
           marginBottom: '1rem',
-          overflow: 'hidden'
+          padding: '0.75rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
         }}>
-          <button
-            onClick={() => setShowNewEstimate(!showNewEstimate)}
+          <Search size={20} style={{ color: colors.subtext, flexShrink: 0 }} />
+          <input
+            type="text"
+            placeholder="Search estimates..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             style={{
-              width: '100%',
-              padding: '1rem',
-              background: 'transparent',
+              flex: 1,
               border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              color: colors.text
+              background: 'transparent',
+              color: colors.text,
+              fontSize: '0.9375rem',
+              outline: 'none',
+              padding: '0.25rem 0'
             }}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '1.125rem',
-              fontWeight: '600'
-            }}>
-              <Plus size={20} />
-              {editingEstimate ? 'Edit Estimate' : 'New Estimate'}
-            </div>
-            <ChevronDown 
-              size={20} 
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
               style={{
-                transform: showNewEstimate ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s'
+                background: 'transparent',
+                border: 'none',
+                color: colors.subtext,
+                cursor: 'pointer',
+                padding: '0.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                flexShrink: 0
               }}
-            />
-          </button>
-
-          {showNewEstimate && (
-            <div style={{
-              padding: '0 1rem 1rem 1rem',
-              borderTop: `1px solid ${colors.border}`
-            }}>
-              <div style={{ paddingTop: '1rem' }}>
-                <input
-                  type="text"
-                  placeholder="Estimate Name *"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({...prev, name: e.target.value}))}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    marginBottom: '0.75rem',
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '0.5rem',
-                    fontSize: '0.9375rem',
-                    background: colors.inputBg,
-                    color: colors.text,
-                    boxSizing: 'border-box'
-                  }}
-                />
-
-                <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', fontWeight: '600', color: colors.text }}>
-                  Labor
-                </h4>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                  <input
-                    type="number"
-                    placeholder="Hours"
-                    value={formData.laborHours}
-                    onChange={(e) => setFormData(prev => ({...prev, laborHours: e.target.value}))}
-                    style={{
-                      padding: '0.75rem',
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: '0.5rem',
-                      fontSize: '0.9375rem',
-                      background: colors.inputBg,
-                      color: colors.text,
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                  <input
-                    type="number"
-                    placeholder="Rate ($/hr)"
-                    value={formData.laborRate}
-                    onChange={(e) => setFormData(prev => ({...prev, laborRate: e.target.value}))}
-                    style={{
-                      padding: '0.75rem',
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: '0.5rem',
-                      fontSize: '0.9375rem',
-                      background: colors.inputBg,
-                      color: colors.text,
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-
-                <h4 style={{ margin: '1rem 0 0.5rem 0', fontSize: '0.875rem', fontWeight: '600', color: colors.text }}>
-                  Materials
-                </h4>
-
-                {formData.materials.map((material, idx) => (
-                  <div key={idx} style={{
-                    display: 'flex',
-                    gap: '0.5rem',
-                    marginBottom: '0.5rem',
-                    padding: '0.75rem',
-                    background: colors.bg,
-                    borderRadius: '0.5rem'
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.text }}>
-                        {material.name}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: colors.subtext }}>
-                        ${parseFloat(material.cost).toFixed(2)}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => removeMaterial(idx)}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#ef4444',
-                        cursor: 'pointer',
-                        padding: '0.25rem'
-                      }}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                ))}
-
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                  <input
-                    type="text"
-                    placeholder="Material name"
-                    value={newMaterial.name}
-                    onChange={(e) => setNewMaterial(prev => ({...prev, name: e.target.value}))}
-                    style={{
-                      flex: 1,
-                      padding: '0.75rem',
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: '0.5rem',
-                      fontSize: '0.875rem',
-                      background: colors.inputBg,
-                      color: colors.text,
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                  <input
-                    type="number"
-                    placeholder="Cost"
-                    value={newMaterial.cost}
-                    onChange={(e) => setNewMaterial(prev => ({...prev, cost: e.target.value}))}
-                    style={{
-                      width: '100px',
-                      padding: '0.75rem',
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: '0.5rem',
-                      fontSize: '0.875rem',
-                      background: colors.inputBg,
-                      color: colors.text,
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                  <button
-                    onClick={addMaterial}
-                    style={{
-                      padding: '0.75rem',
-                      background: '#2563eb',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '0.5rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}
-                  >
-                    <Plus size={16} />
-                  </button>
-                </div>
-
-                <div style={{
-                  padding: '0.75rem',
-                  background: colors.bg,
-                  borderRadius: '0.5rem',
-                  marginBottom: '0.75rem'
-                }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    fontSize: '1.125rem',
-                    fontWeight: '600',
-                    color: colors.text
-                  }}>
-                    <span>Total:</span>
-                    <span>${currentTotal.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    onClick={saveEstimate}
-                    disabled={!formData.name}
-                    style={{
-                      flex: 1,
-                      padding: '0.75rem',
-                      background: !formData.name ? colors.border : '#2563eb',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '0.5rem',
-                      fontSize: '0.9375rem',
-                      fontWeight: '600',
-                      cursor: !formData.name ? 'not-allowed' : 'pointer',
-                      opacity: !formData.name ? 0.5 : 1
-                    }}
-                  >
-                    {editingEstimate ? 'Update' : 'Save'} Estimate
-                  </button>
-                  <button
-                    onClick={resetForm}
-                    style={{
-                      flex: 1,
-                      padding: '0.75rem',
-                      background: 'transparent',
-                      color: colors.text,
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: '0.5rem',
-                      fontSize: '0.9375rem',
-                      fontWeight: '600',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
+              aria-label="Clear search"
+            >
+              <X size={18} />
+            </button>
           )}
         </div>
 
-        {/* Saved Estimates List */}
+        {/* Estimate Form Component */}
+        <EstimateForm
+          isDarkMode={isDarkMode}
+          editingEstimate={editingEstimate}
+          onSave={saveEstimate}
+          onCancel={cancelEdit}
+        />
+
+        {/* Estimates List Header */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '1rem',
-          padding: '0 0.25rem'
+          marginBottom: '0.75rem',
+          paddingLeft: '0.25rem'
         }}>
-          <h3 style={{ 
-            margin: 0, 
-            color: colors.text, 
+          <h2 style={{
+            margin: 0,
+            color: colors.text,
             fontSize: '1.125rem',
             fontWeight: '600'
           }}>
-            Saved Estimates
-          </h3>
+            {searchQuery ? 'Search Results' : 'All Estimates'}
+          </h2>
           <span style={{
-            fontSize: '0.875rem',
             color: colors.subtext,
-            background: colors.cardBg,
+            fontSize: '0.875rem',
             padding: '0.25rem 0.75rem',
             borderRadius: '1rem',
             border: `1px solid ${colors.border}`
           }}>
-            {estimates.length}
+            {filteredEstimates.length}
           </span>
         </div>
 
-        {estimates.length === 0 ? (
+        {/* No Results Message */}
+        {searchQuery && filteredEstimates.length === 0 && (
+          <div style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '0.75rem',
+            textAlign: 'center',
+            padding: '3rem 1rem',
+            color: colors.subtext
+          }}>
+            <Search size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+            <p style={{ margin: 0, fontSize: '0.9375rem' }}>
+              No estimates found matching "{searchQuery}"
+            </p>
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                marginTop: '1rem',
+                padding: '0.5rem 1rem',
+                background: '#2563eb',
+                border: 'none',
+                borderRadius: '0.5rem',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}
+            >
+              Clear Search
+            </button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!searchQuery && estimates.length === 0 && (
           <div style={{
             background: colors.cardBg,
             border: `1px solid ${colors.border}`,
@@ -504,212 +276,20 @@ useEffect(() => {
             <FileText size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
             <p style={{ margin: 0, fontSize: '0.9375rem' }}>No estimates yet. Create one above!</p>
           </div>
-        ) : (
-          estimates.map((estimate) => (
-            <div
-              key={estimate.id}
-              style={{
-                background: colors.cardBg,
-                border: `1px solid ${colors.border}`,
-                borderRadius: '0.75rem',
-                padding: '1rem',
-                marginBottom: '0.75rem',
-                boxShadow: 'none'
-              }}
-            >
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                marginBottom: '0.75rem'
-              }}>
-                <div>
-                  <h3 style={{
-                    margin: '0 0 0.25rem 0',
-                    color: colors.text,
-                    fontSize: '1rem',
-                    fontWeight: '600'
-                  }}>
-                    {estimate.name}
-                  </h3>
-                  <p style={{
-                    margin: 0,
-                    color: colors.subtext,
-                    fontSize: '0.75rem'
-                  }}>
-                    {estimate.createdAt?.toLocaleDateString() || 'N/A'}
-                  </p>
-                </div>
-                <div style={{
-                  fontSize: '1.25rem',
-                  fontWeight: '700',
-                  color: '#10b981'
-                }}>
-                  ${estimate.total.toFixed(2)}
-                </div>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.5rem',
-                color: colors.subtext,
-                fontSize: '0.875rem'
-              }}>
-                <Clock size={16} />
-                <span>{estimate.laborHours}h × ${estimate.laborRate}/hr = ${(estimate.laborHours * estimate.laborRate).toFixed(2)}</span>
-              </div>
-
-              {estimate.materials.length > 0 && (
-                <div style={{
-                  padding: '0.75rem',
-                  background: colors.bg,
-                  borderRadius: '0.5rem',
-                  marginBottom: '0.75rem'
-                }}>
-                  {estimate.materials.map((mat, idx) => (
-                    <div key={idx} style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: '0.875rem',
-                      color: colors.subtext,
-                      marginBottom: idx < estimate.materials.length - 1 ? '0.25rem' : 0
-                    }}>
-                      <span>{mat.name}</span>
-                      <span>${parseFloat(mat.cost).toFixed(2)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <div style={{ position: 'relative', flex: 1 }}>
-                  <button
-                    onClick={() => setShowJobDropdown(showJobDropdown === estimate.id ? null : estimate.id)}
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      background: '#2563eb',
-                      border: 'none',
-                      borderRadius: '0.5rem',
-                      color: 'white',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.25rem',
-                      fontSize: '0.875rem',
-                      fontWeight: '500'
-                    }}
-                  >
-                    <DollarSign size={16} />
-                    Add to Job
-                    <ChevronDown size={14} />
-                  </button>
-
-                  {showJobDropdown === estimate.id && (
-                    <>
-                      <div 
-                        onClick={() => setShowJobDropdown(null)}
-                        style={{
-                          position: 'fixed',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          zIndex: 9998
-                        }}
-                      />
-                      <div style={{
-                        position: 'absolute',
-                        bottom: '100%',
-                        left: 0,
-                        right: 0,
-                        marginBottom: '0.5rem',
-                        background: colors.cardBg,
-                        border: `1px solid ${colors.border}`,
-                        borderRadius: '0.5rem',
-                        boxShadow: isDarkMode ? '0 4px 12px rgba(0,0,0,0.6)' : '0 4px 12px rgba(0,0,0,0.15)',
-                        maxHeight: '200px',
-                        overflowY: 'auto',
-                        zIndex: 9999
-                      }}>
-                        <button
-                          onClick={() => handleApplyToJob(estimate, 'new')}
-                          style={{
-                            width: '100%',
-                            padding: '0.75rem',
-                            background: 'transparent',
-                            border: 'none',
-                            borderBottom: `1px solid ${colors.border}`,
-                            color: '#2563eb',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                            fontSize: '0.875rem',
-                            fontWeight: '500'
-                          }}
-                        >
-                          + Create New Job
-                        </button>
-                        {jobs.map(job => (
-                          <button
-                            key={job.id}
-                            onClick={() => handleApplyToJob(estimate, job.id)}
-                            style={{
-                              width: '100%',
-                              padding: '0.75rem',
-                              background: 'transparent',
-                              border: 'none',
-                              borderBottom: `1px solid ${colors.border}`,
-                              color: colors.text,
-                              cursor: 'pointer',
-                              textAlign: 'left',
-                              fontSize: '0.875rem'
-                            }}
-                          >
-                            {job.title || job.name}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-                
-                <button
-                  onClick={() => startEdit(estimate)}
-                  style={{
-                    padding: '0.5rem',
-                    background: 'transparent',
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '0.5rem',
-                    color: colors.text,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                >
-                  <Edit size={16} />
-                </button>
-                <button
-                  onClick={() => deleteEstimate(estimate.id, estimate.name)}
-                  style={{
-                    padding: '0.5rem',
-                    background: 'transparent',
-                    border: '1px solid #ef4444',
-                    borderRadius: '0.5rem',
-                    color: '#ef4444',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-          ))
         )}
+
+        {/* Estimates List - Using EstimateCard Component */}
+        {filteredEstimates.length > 0 && filteredEstimates.map((estimate) => (
+          <EstimateCard
+            key={estimate.id}
+            estimate={estimate}
+            isDarkMode={isDarkMode}
+            jobs={jobs}
+            onEdit={startEdit}
+            onDelete={deleteEstimate}
+            onApplyToJob={handleApplyToJob}
+          />
+        ))}
       </div>
     </div>
   );

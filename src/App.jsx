@@ -393,7 +393,7 @@ useEffect(() => {
                     paddingTop: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'verify-email' ? '0' : '1rem',
                     paddingRight: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'verify-email' ? '0' : '1rem',
                     paddingLeft: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'verify-email' ? '0' : '1rem',
-                    paddingBottom: showBottomNav ? '5rem' : '0'
+                    paddingBottom: '0'
                   }}>
                     {renderCalculator()}
                 </div>
