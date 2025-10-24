@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown, Box, ArrowDown, ArrowUp, Ruler, Minus, Sun, Zap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown, Box, ArrowDown, ArrowUp, Ruler, Minus, Sun, Zap, Clock } from 'lucide-react';
 import styles from './Calculator.module.css';
 
 function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [recentlyUsed, setRecentlyUsed] = useState([]);
 
   const calculatorCategories = [
   {
@@ -80,13 +81,56 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
     headerGradient: isDarkMode 
       ? 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)'
       : 'linear-gradient(135deg, #2563eb 0%, #60a5fa 100%)',
-    categoryHeaderText: isDarkMode ? '#cccccc' : '#4b5563'
+    categoryHeaderText: isDarkMode ? '#cccccc' : '#4b5563',
+    recentBg: isDarkMode ? '#1a1a1a' : '#f9fafb',
+    recentBorder: isDarkMode ? '#2a2a2a' : '#e5e7eb'
   };
 
   // Flatten all calculators for searching
   const allCalculators = calculatorCategories.flatMap(category => 
     category.calculators.map(calc => ({ ...calc, category: category.name }))
   );
+
+  // Load recently used calculators from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('recentCalculators');
+    if (stored) {
+      try {
+        const storedIds = JSON.parse(stored);
+        // Convert IDs back to full calculator objects
+        const calculators = storedIds
+          .map(id => allCalculators.find(c => c.id === id))
+          .filter(Boolean); // Remove any null/undefined
+        setRecentlyUsed(calculators);
+      } catch (e) {
+        console.error('Failed to parse recent calculators:', e);
+      }
+    }
+  }, []); // Empty dependency array - only run once on mount
+
+  // Handle calculator selection and update recently used
+  const handleCalculatorClick = (calcId) => {
+    console.log('Clicked calculator:', calcId);
+    
+    // Find the full calculator object
+    const calculator = allCalculators.find(c => c.id === calcId);
+    
+    if (calculator) {
+      // Update recently used list
+      const newRecent = [
+        calculator,
+        ...recentlyUsed.filter(c => c.id !== calcId)
+      ].slice(0, 3); // Keep only last 3
+      
+      setRecentlyUsed(newRecent);
+      
+      // Store only IDs in localStorage (not the full objects with React components)
+      const recentIds = newRecent.map(c => c.id);
+      localStorage.setItem('recentCalculators', JSON.stringify(recentIds));
+    }
+    
+    onSelectCalculator(calcId);
+  };
 
   const filteredResults = searchTerm 
     ? allCalculators.filter(calc => {
@@ -154,6 +198,120 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
               }}
             />
           </div>
+
+          {/* Recently Used Section - Only show when not searching and has recent items */}
+          {!searchTerm && recentlyUsed.length > 0 && (
+            <div style={{ marginBottom: '2rem' }}>
+              {/* Header */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '0.75rem',
+                paddingLeft: '0'
+              }}>
+                <Clock size={16} color={colors.placeholderText} />
+                <h3 style={{
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: colors.placeholderText,
+                  margin: 0,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }}>
+                  Recently Used
+                </h3>
+              </div>
+
+              {/* Recent Calculator Grid */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                gap: '1.25rem',
+                padding: '1rem',
+                backgroundColor: colors.recentBg,
+                border: `1px solid ${colors.recentBorder}`,
+                borderRadius: '12px',
+                boxSizing: 'border-box'
+              }}>
+                {recentlyUsed.map(calc => {
+                  const IconComponent = calc.icon;
+                  const iconColor = categoryColors[calc.category];
+                  
+                  return (
+                    <div
+                      key={calc.id}
+                      onClick={() => handleCalculatorClick(calc.id)}
+                      style={{
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}
+                    >
+                      {/* Square Button with Icon Only */}
+                      <button
+                        style={{
+                          backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+                          border: `2px solid ${isDarkMode ? '#2a2a2a' : '#d1d5db'}`,
+                          borderRadius: '12px',
+                          padding: '0',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '70px',
+                          height: '70px',
+                          minWidth: '70px',      
+                          minHeight: '70px',     
+                          maxWidth: '70px',      
+                          maxHeight: '70px',     
+                          flexShrink: 0,         
+                          boxShadow: isDarkMode ? '0 1px 3px rgba(0, 0, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)',
+                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+                          e.currentTarget.style.backgroundColor = isDarkMode ? '#252525' : '#ffffff';
+                          e.currentTarget.style.borderColor = iconColor;
+                          e.currentTarget.style.boxShadow = `0 8px 16px ${iconColor}30, 0 4px 6px ${iconColor}20`;
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                          e.currentTarget.style.backgroundColor = isDarkMode ? '#1a1a1a' : '#ffffff';
+                          e.currentTarget.style.borderColor = isDarkMode ? '#2a2a2a' : '#d1d5db';
+                          e.currentTarget.style.boxShadow = isDarkMode ? '0 1px 3px rgba(0, 0, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)';
+                        }}
+                        onMouseDown={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px) scale(0.95)';
+                        }}
+                        onMouseUp={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+                        }}
+                      >
+                        <IconComponent size={28} strokeWidth={2} color={iconColor} />
+                      </button>
+                      
+                      {/* Title Below Button */}
+                      <div style={{ 
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        textAlign: 'center',
+                        lineHeight: '1.2',
+                        color: colors.cardText,
+                        maxWidth: '90px'
+                      }}>
+                        {calc.name}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           
           {/* Search Results or Categorized Grid */}
           {filteredResults ? (
@@ -167,13 +325,12 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
               }}>
                 {filteredResults.length} {filteredResults.length === 1 ? 'result' : 'results'} found
               </div>
+              
               <div style={{ 
                 display: 'grid', 
                 gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
                 gap: '1.25rem',
-                marginBottom: '1rem',
-                boxSizing: 'border-box',
-                width: '100%'
+                boxSizing: 'border-box'
               }}>
                 {filteredResults.length > 0 ? (
                   filteredResults.map(calc => {
@@ -183,10 +340,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                     return (
                       <div
                         key={calc.id}
-                        onClick={() => {
-                          console.log('Clicked calculator:', calc.id);
-                          onSelectCalculator(calc.id);
-                        }}
+                        onClick={() => handleCalculatorClick(calc.id)}
                         style={{
                           cursor: 'pointer',
                           display: 'flex',
@@ -312,10 +466,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                     return (
                       <div
                         key={calc.id}
-                        onClick={() => {
-                          console.log('Clicked calculator:', calc.id);
-                          onSelectCalculator(calc.id);
-                        }}
+                        onClick={() => handleCalculatorClick(calc.id)}
                         style={{
                           cursor: 'pointer',
                           display: 'flex',

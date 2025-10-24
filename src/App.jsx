@@ -13,7 +13,7 @@ import TransformerSizingCalculator from './features/calculators/TransformerSizin
 import ServiceEntranceSizing from './features/calculators/ServiceEntranceSizing.jsx';
 import GroundingBondingCalculator from './features/calculators/GroundingBondingCalculator.jsx';
 import ConduitBendingCalculator from './features/calculators/ConduitBendingCalculator.jsx';
-import LightingCalculator from './features/calculators/LightingCalculator.jsx';
+import LightingCalculator from './features/calculators/lighting/LightingCalculator.jsx';
 import ReceptacleCalculator from './features/calculators/ReceptacleCalculator.jsx';
 import BottomNavigation from './components/BottomNavigation.jsx';
 import VFDSizingCalculator from './features/calculators/VFDSizingCalculator.jsx';

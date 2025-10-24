@@ -325,7 +325,7 @@ const MotorProtectionCalculator = ({ protectionData, setProtectionData, colors }
   const protection = calculateProtection();
 
   return (
-    <div>
+    <div className={styles.menu}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
         <div>
           <label style={{ 
@@ -905,7 +905,8 @@ const MotorCalculations = forwardRef(({ isDarkMode = false }, ref) => {
           gap: '0.5rem',
           flexWrap: 'wrap'
         }}>
-          <button 
+          <button
+          className={styles.btn} 
             onClick={() => setActiveCalculator('flc')}
             style={{
               flex: '1 1 auto',
@@ -923,7 +924,8 @@ const MotorCalculations = forwardRef(({ isDarkMode = false }, ref) => {
           >
             Full Load Current
           </button>
-          <button 
+          <button
+          className={styles.btn} 
             onClick={() => setActiveCalculator('protection')}
             style={{
               flex: '1 1 auto',
@@ -942,6 +944,7 @@ const MotorCalculations = forwardRef(({ isDarkMode = false }, ref) => {
             Circuit Protection
           </button>
           <button 
+          className={styles.btn}
             onClick={() => setActiveCalculator('wiresize')}
             style={{
               flex: '1 1 auto',
