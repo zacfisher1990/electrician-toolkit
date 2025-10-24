@@ -12,7 +12,8 @@ const EstimateSelector = ({
   onRemoveEstimate,
   menuRef,
   isDarkMode,
-  colors 
+  colors,
+  hideButton = false  // NEW: Add this prop to hide the button
 }) => {
   if (linkedEstimate) {
     return (
@@ -80,36 +81,39 @@ const EstimateSelector = ({
 
   return (
     <div style={{ position: 'relative', marginBottom: '0.75rem' }} ref={showMenu ? menuRef : null}>
-      <button
-        type="button"
-        onClick={() => setShowMenu(!showMenu)}
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          background: colors.inputBg,
-          border: `1px solid ${colors.border}`,
-          borderRadius: '0.5rem',
-          color: '#2563eb',
-          cursor: 'pointer',
-          fontSize: '0.9375rem',
-          fontWeight: '600',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.5rem'
-        }}
-      >
-        <Plus size={18} />
-        Add Estimate
-      </button>
+      {/* Only show button if hideButton is false */}
+      {!hideButton && (
+        <button
+          type="button"
+          onClick={() => setShowMenu(!showMenu)}
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            background: colors.inputBg,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '0.5rem',
+            color: '#2563eb',
+            cursor: 'pointer',
+            fontSize: '0.9375rem',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          <Plus size={18} />
+          Add Estimate
+        </button>
+      )}
 
       {showMenu && (
         <div style={{
           position: 'absolute',
-          top: '100%',
+          top: hideButton ? '0' : '100%',  // Adjust position if button is hidden
           left: 0,
           right: 0,
-          marginTop: '0.5rem',
+          marginTop: hideButton ? '0' : '0.5rem',  // Adjust margin if button is hidden
           background: colors.cardBg,
           border: `1px solid ${colors.border}`,
           borderRadius: '0.5rem',

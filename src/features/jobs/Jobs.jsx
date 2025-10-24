@@ -20,7 +20,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [showEstimateMenu, setShowEstimateMenu] = useState(false);
   const [estimates, setEstimates] = useState([]);
   const estimateMenuRef = useRef(null);
-  const [linkedEstimate, setLinkedEstimate] = useState(null);
+  const [linkedEstimates, setLinkedEstimates] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStatusTab, setActiveStatusTab] = useState('all');
   const [showAuthModal, setShowAuthModal] = useState(false); // Add this state
@@ -34,7 +34,8 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     time: '',
     estimatedCost: '',
     duration: '',
-    notes: ''
+    notes: '',
+    estimateIds: []
   });
 
   const colors = {
@@ -115,12 +116,13 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
       time: '',
       estimatedCost: '',
       duration: '',
-      notes: ''
+      notes: '',
+      estimateIds: []
     });
     setShowAddForm(false);
     setEditingJob(null);
     setViewingJob(null);
-    setLinkedEstimate(null);
+    setLinkedEstimates([]);
   };
 
   // New function to handle add job button click with auth check
@@ -146,7 +148,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
           estimatedCost: formData.estimatedCost,
           duration: formData.duration,
           notes: formData.notes,
-          estimateId: linkedEstimate?.id || null
+          estimateIds: formData.estimateIds || []
         };
 
         await createJob(jobData);
@@ -174,7 +176,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
           estimatedCost: formData.estimatedCost,
           duration: formData.duration,
           notes: formData.notes,
-          estimateId: linkedEstimate?.id || null
+          estimateIds: formData.estimateIds || []
         };
 
         await updateJob(editingJob.id, jobData);
@@ -212,16 +214,17 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
       time: job.time || '',
       estimatedCost: job.estimatedCost || '',
       duration: job.duration || '',
-      notes: job.notes || ''
+      notes: job.notes || '',
+      estimateIds: job.estimateIds || []
     });
     
     if (job.estimateId) {
       const estimate = estimates.find(e => e.id === job.estimateId);
       if (estimate) {
-        setLinkedEstimate(estimate);
+        setLinkedEstimates([estimate]);
       }
     } else {
-      setLinkedEstimate(null);
+      setLinkedEstimates([]);
     }
   };
 
@@ -241,16 +244,32 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   };
 
   const handleSelectEstimate = (estimate) => {
-    if (estimate) {
-      setFormData(prev => ({
-        ...prev,
-        estimatedCost: estimate.total.toString(),
-        estimateId: estimate.id
-      }));
-      setLinkedEstimate(estimate);
-    }
+  // Check if estimate is already linked
+  if (formData.estimateIds.includes(estimate.id)) {
+    alert('This estimate is already linked to this job');
     setShowEstimateMenu(false);
-  };
+    return;
+  }
+
+  // Add estimate to the array
+  const newEstimateIds = [...formData.estimateIds, estimate.id];
+  const newLinkedEstimates = [...linkedEstimates, estimate];
+  
+  setLinkedEstimates(newLinkedEstimates);
+  
+  // Calculate new total cost
+  const totalCost = calculateTotalFromEstimates(newEstimateIds);
+  
+  setFormData(prev => ({
+    ...prev,
+    title: prev.title || estimate.title,
+    client: prev.client || estimate.client,
+    location: prev.location || estimate.location,
+    estimatedCost: totalCost.toString(),
+    estimateIds: newEstimateIds
+  }));
+  setShowEstimateMenu(false);
+};
 
   const handleCreateNewEstimate = async () => {
     setShowEstimateMenu(false);
@@ -309,10 +328,27 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     }
   };
 
-  const handleRemoveEstimate = () => {
-    setLinkedEstimate(null);
-    setFormData(prev => ({...prev, estimatedCost: '', estimateId: null}));
-  };
+  const handleRemoveEstimate = (estimateId) => {
+  // Remove estimate from the array
+  const newEstimateIds = formData.estimateIds.filter(id => id !== estimateId);
+  const newLinkedEstimates = linkedEstimates.filter(e => e.id !== estimateId);
+  
+  setLinkedEstimates(newLinkedEstimates);
+  
+  // Recalculate total cost
+  const totalCost = calculateTotalFromEstimates(newEstimateIds);
+  
+  setFormData(prev => ({
+    ...prev,
+    estimatedCost: totalCost.toString(),
+    estimateIds: newEstimateIds
+  }));
+};
+
+const handleAddAdditionalEstimate = () => {
+  console.log('handleAddAdditionalEstimate called'); // Add this
+  setShowEstimateMenu(true);
+};
 
   const handleEstimateMenuOpen = async (value) => {
     setShowEstimateMenu(value);
@@ -425,6 +461,19 @@ const handleClockInOut = async (jobId, clockIn) => {
   }
 };
 
+
+const calculateTotalFromEstimates = (estimateIds) => {
+  if (!estimateIds || estimateIds.length === 0) return 0;
+  
+  return estimateIds.reduce((total, estimateId) => {
+    const estimate = estimates.find(e => e.id === estimateId);
+    if (estimate) {
+      return total + Number(estimate.total || estimate.estimatedCost || 0);
+    }
+    return total;
+  }, 0);
+};
+
   return (
     <div className="jobs-container">
       {/* Auth Modal */}
@@ -443,7 +492,8 @@ const handleClockInOut = async (jobId, clockIn) => {
           viewingJob={viewingJob}
           formData={formData}
           setFormData={setFormData}
-          linkedEstimate={linkedEstimate}
+          linkedEstimate={linkedEstimates.length > 0 ? linkedEstimates[0] : null}  // For backward compatibility
+          linkedEstimates={linkedEstimates}  // NEW: Add this
           estimates={estimates}
           showEstimateMenu={showEstimateMenu}
           setShowEstimateMenu={handleEstimateMenuOpen}
@@ -451,6 +501,7 @@ const handleClockInOut = async (jobId, clockIn) => {
           onCreateNewEstimate={handleCreateNewEstimate}
           onViewEstimate={handleViewEstimate}
           onRemoveEstimate={handleRemoveEstimate}
+          onAddAdditionalEstimate={handleAddAdditionalEstimate}  // NEW: Add this
           estimateMenuRef={estimateMenuRef}
           onClose={resetForm}
           onSave={handleEditJob}
@@ -595,7 +646,8 @@ const handleClockInOut = async (jobId, clockIn) => {
                   <JobForm
                     formData={formData}
                     setFormData={setFormData}
-                    linkedEstimate={linkedEstimate}
+                    linkedEstimate={linkedEstimates.length > 0 ? linkedEstimates[0] : null}  // For backward compatibility
+                    linkedEstimates={linkedEstimates}  // NEW: Pass the array
                     estimates={estimates}
                     showEstimateMenu={showEstimateMenu}
                     setShowEstimateMenu={handleEstimateMenuOpen}
@@ -603,6 +655,7 @@ const handleClockInOut = async (jobId, clockIn) => {
                     onCreateNewEstimate={handleCreateNewEstimate}
                     onViewEstimate={handleViewEstimate}
                     onRemoveEstimate={handleRemoveEstimate}
+                    onAddAdditionalEstimate={handleAddAdditionalEstimate}  // NEW: Pass the handler
                     estimateMenuRef={estimateMenuRef}
                     isDarkMode={isDarkMode}
                     colors={colors}
