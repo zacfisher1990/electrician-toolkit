@@ -12,13 +12,17 @@ const Home = ({ isDarkMode }) => {
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
-    cardBg: isDarkMode ? '#0a0a0a' : '#ffffff',
+    cardBg: isDarkMode ? '#1a1a1a' : '#ffffff',  // Changed from #0a0a0a to #1a1a1a for better contrast
     text: isDarkMode ? '#ffffff' : '#111827',
-    subtext: isDarkMode ? '#666666' : '#6b7280',
-    border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
-    calendarBg: isDarkMode ? '#000000' : '#ffffff',
+    subtext: isDarkMode ? '#999999' : '#6b7280',  // Changed from #666666 to #999999 for better readability
+    border: isDarkMode ? '#2a2a2a' : '#e5e7eb',  // Changed from #1a1a1a to #2a2a2a for visible borders
+    calendarBg: isDarkMode ? '#1a1a1a' : '#ffffff',
+    calendarBorder: isDarkMode ? '#2a2a2a' : '#e5e7eb',
+    dayNameText: isDarkMode ? '#999999' : '#6b7280',
     selectedDay: '#3b82f6',
-    todayBg: isDarkMode ? '#1a1a1a' : '#f3f4f6',
+    todayBg: isDarkMode ? '#262626' : '#f3f4f6',
+    emptyDay: isDarkMode ? '#0a0a0a' : 'transparent',
+    jobCardBg: isDarkMode ? '#0f0f0f' : '#f9fafb',  // New: for job cards nested inside sections
   };
 
   const statusColors = {
@@ -53,6 +57,9 @@ const Home = ({ isDarkMode }) => {
     ...job,
     dateObj: job.date ? new Date(job.date + 'T00:00:00') : null
   }));
+
+  const scheduledJobs = jobs.filter(job => job.status === 'scheduled');
+  const scheduledCount = scheduledJobs.length;
 
   // Calendar functions
   const getDaysInMonth = (date) => {
@@ -108,8 +115,14 @@ const Home = ({ isDarkMode }) => {
 
   const selectedDayJobs = getJobsForDate(selectedDate);
   const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
+  
   const upcomingJobs = jobsWithDates
-    .filter(job => job.dateObj && job.dateObj >= today && job.status === 'scheduled')
+    .filter(job => {
+      if (!job.dateObj) return false;
+      // Include all future jobs, excluding completed ones
+      return job.dateObj >= today && job.status !== 'completed';
+    })
     .sort((a, b) => a.dateObj - b.dateObj)
     .slice(0, 5);
 
@@ -135,7 +148,7 @@ const Home = ({ isDarkMode }) => {
       maxWidth: '100vw',
       overflowX: 'hidden'
     }}>
-      <div style={{ padding: '1rem' }}>
+      <div style={{ padding: '0.5rem' }}>
         {/* Quick Stats */}
         <div style={{ 
           display: 'grid', 
@@ -161,7 +174,7 @@ const Home = ({ isDarkMode }) => {
               overflow: 'hidden',
               textOverflow: 'ellipsis'
             }}>
-              {upcomingJobs.length}
+              {scheduledCount}
             </div>
             <div style={{ 
               fontSize: '0.75rem', 
@@ -170,7 +183,7 @@ const Home = ({ isDarkMode }) => {
               overflow: 'hidden',
               textOverflow: 'ellipsis'
             }}>
-              Upcoming
+              Scheduled
             </div>
           </div>
           <div style={{
@@ -231,10 +244,85 @@ const Home = ({ isDarkMode }) => {
           </div>
         </div>
 
-        {/* Calendar */}
+        {/* Upcoming Jobs - MOVED HERE (above calendar) */}
         <div style={{
           background: colors.cardBg,
           border: `1px solid ${colors.border}`,
+          borderRadius: '0.75rem',
+          padding: '1rem',
+          marginBottom: '1rem',
+          boxShadow: 'none'
+        }}>
+          <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.125rem', fontWeight: '600', color: colors.text }}>
+            Upcoming Jobs
+          </h3>
+
+          {upcomingJobs.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '2rem 1rem',
+              color: colors.subtext
+            }}>
+              <p style={{ margin: 0, fontSize: '0.875rem' }}>No upcoming jobs scheduled</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              {upcomingJobs.map(job => (
+                <div
+                  key={job.id}
+                  style={{
+                    background: colors.jobCardBg,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.5rem',
+                    padding: '1rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{
+                      margin: '0 0 0.25rem 0',
+                      fontSize: '0.9375rem',
+                      fontWeight: '600',
+                      color: colors.text
+                    }}>
+                      {job.title || job.name}
+                    </h4>
+                    <p style={{
+                      margin: '0 0 0.25rem 0',
+                      fontSize: '0.8125rem',
+                      color: colors.subtext
+                    }}>
+                      {job.client}
+                    </p>
+                    <div style={{
+                      fontSize: '0.75rem',
+                      color: colors.subtext,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
+                    }}>
+                      <CalendarIcon size={12} />
+                      {job.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{job.time && ` at ${job.time}`}
+                    </div>
+                  </div>
+                  <div style={{
+                    width: '4px',
+                    height: '40px',
+                    borderRadius: '2px',
+                    background: statusColors[job.status]
+                  }} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Calendar - NOW BELOW UPCOMING JOBS */}
+        <div style={{
+          background: colors.calendarBg,
+          border: `1px solid ${colors.calendarBorder}`,
           borderRadius: '0.75rem',
           padding: '1rem',
           marginBottom: '1rem',
@@ -247,41 +335,48 @@ const Home = ({ isDarkMode }) => {
             alignItems: 'center',
             marginBottom: '1rem'
           }}>
-            <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: '600', color: colors.text }}>
+            <button
+              onClick={previousMonth}
+              style={{
+                background: 'transparent',
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                padding: '0.5rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: colors.text
+              }}
+            >
+              <ChevronLeft size={20} />
+            </button>
+            
+            <h3 style={{
+              margin: 0,
+              fontSize: '1.125rem',
+              fontWeight: '600',
+              color: colors.text
+            }}>
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h3>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={previousMonth}
-                style={{
-                  background: colors.bg,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '0.5rem',
-                  padding: '0.5rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  color: colors.text
-                }}
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <button
-                onClick={nextMonth}
-                style={{
-                  background: colors.bg,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '0.5rem',
-                  padding: '0.5rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  color: colors.text
-                }}
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
+            
+            <button
+              onClick={nextMonth}
+              style={{
+                background: 'transparent',
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                padding: '0.5rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: colors.text
+              }}
+            >
+              <ChevronRight size={20} />
+            </button>
           </div>
 
           {/* Day Names */}
@@ -289,16 +384,16 @@ const Home = ({ isDarkMode }) => {
             display: 'grid',
             gridTemplateColumns: 'repeat(7, 1fr)',
             gap: '0.25rem',
-            marginBottom: '0.5rem'
+            marginBottom: '0.5rem',
+            textAlign: 'center'
           }}>
             {dayNames.map(day => (
               <div
                 key={day}
                 style={{
-                  textAlign: 'center',
                   fontSize: '0.75rem',
                   fontWeight: '600',
-                  color: colors.subtext,
+                  color: colors.dayNameText,
                   padding: '0.5rem 0'
                 }}
               >
@@ -307,21 +402,29 @@ const Home = ({ isDarkMode }) => {
             ))}
           </div>
 
-          {/* Calendar Days */}
+          {/* Calendar Grid */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(7, 1fr)',
-            gap: '0.125rem'
+            gap: '0.25rem'
           }}>
             {calendarDays.map((date, index) => {
               if (!date) {
-                return <div key={`empty-${index}`} />;
+                return (
+                  <div
+                    key={`empty-${index}`}
+                    style={{
+                      aspectRatio: '1',
+                      background: colors.emptyDay
+                    }}
+                  />
+                );
               }
-              
+
               const isSelected = isSameDay(date, selectedDate);
               const isTodayDate = isToday(date);
               const hasJobs = hasJobsOnDate(date);
-              
+
               return (
                 <button
                   key={index}
@@ -329,8 +432,12 @@ const Home = ({ isDarkMode }) => {
                   style={{
                     aspectRatio: '1',
                     border: 'none',
-                    borderRadius: '0.375rem',
-                    background: isSelected ? colors.selectedDay : isTodayDate ? colors.todayBg : 'transparent',
+                    borderRadius: '0.5rem',
+                    background: isSelected 
+                      ? colors.selectedDay 
+                      : isTodayDate 
+                        ? colors.todayBg 
+                        : 'transparent',
                     color: isSelected ? 'white' : colors.text,
                     cursor: 'pointer',
                     fontSize: '0.75rem',
@@ -392,7 +499,6 @@ const Home = ({ isDarkMode }) => {
           border: `1px solid ${colors.border}`,
           borderRadius: '0.75rem',
           padding: '1rem',
-          marginBottom: '1rem',
           boxShadow: 'none'
         }}>
           <div style={{
@@ -430,7 +536,7 @@ const Home = ({ isDarkMode }) => {
                 <div
                   key={job.id}
                   style={{
-                    background: colors.bg,
+                    background: colors.jobCardBg,
                     border: `1px solid ${colors.border}`,
                     borderLeft: `4px solid ${statusColors[job.status]}`,
                     borderRadius: '0.5rem',
@@ -482,80 +588,6 @@ const Home = ({ isDarkMode }) => {
                       </div>
                     )}
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Upcoming Jobs */}
-        <div style={{
-          background: colors.cardBg,
-          border: `1px solid ${colors.border}`,
-          borderRadius: '0.75rem',
-          padding: '1rem',
-          boxShadow: 'none'
-        }}>
-          <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.125rem', fontWeight: '600', color: colors.text }}>
-            Upcoming Jobs
-          </h3>
-
-          {upcomingJobs.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '2rem 1rem',
-              color: colors.subtext
-            }}>
-              <p style={{ margin: 0, fontSize: '0.875rem' }}>No upcoming jobs scheduled</p>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gap: '0.75rem' }}>
-              {upcomingJobs.map(job => (
-                <div
-                  key={job.id}
-                  style={{
-                    background: colors.bg,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '0.5rem',
-                    padding: '1rem',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{
-                      margin: '0 0 0.25rem 0',
-                      fontSize: '0.9375rem',
-                      fontWeight: '600',
-                      color: colors.text
-                    }}>
-                      {job.title || job.name}
-                    </h4>
-                    <p style={{
-                      margin: '0 0 0.25rem 0',
-                      fontSize: '0.8125rem',
-                      color: colors.subtext
-                    }}>
-                      {job.client}
-                    </p>
-                    <div style={{
-                      fontSize: '0.75rem',
-                      color: colors.subtext,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.25rem'
-                    }}>
-                      <CalendarIcon size={12} />
-                      {job.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{job.time && ` at ${job.time}`}
-                    </div>
-                  </div>
-                  <div style={{
-                    width: '4px',
-                    height: '40px',
-                    borderRadius: '2px',
-                    background: statusColors[job.status]
-                  }} />
                 </div>
               ))}
             </div>
