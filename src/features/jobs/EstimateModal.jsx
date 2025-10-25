@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Clock, DollarSign, FileText, Calendar } from 'lucide-react';
+import { formatDate } from '../../utils/dateUtils';
 
 const EstimateModal = ({ estimate, isDarkMode, onClose }) => {
   if (!estimate) return null;
@@ -59,7 +60,8 @@ const EstimateModal = ({ estimate, isDarkMode, onClose }) => {
             borderBottom: `1px solid ${colors.border}`,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            flexShrink: 0
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <FileText size={24} style={{ color: '#2563eb' }} />
@@ -90,11 +92,15 @@ const EstimateModal = ({ estimate, isDarkMode, onClose }) => {
             </button>
           </div>
 
-          {/* Content */}
+          {/* Scrollable Content */}
           <div style={{
             padding: '1.25rem',
+            paddingBottom: '5rem', // Extra padding to clear the bottom nav bar
             overflowY: 'auto',
-            flex: 1
+            overflowX: 'hidden',
+            flex: '1 1 auto',
+            minHeight: 0,
+            WebkitOverflowScrolling: 'touch'
           }}>
             {/* Estimate Name */}
             <div style={{ marginBottom: '1.5rem' }}>
@@ -115,7 +121,7 @@ const EstimateModal = ({ estimate, isDarkMode, onClose }) => {
                   fontSize: '0.875rem'
                 }}>
                   <Calendar size={16} />
-                  <span>Created {estimate.createdAt.toLocaleDateString()}</span>
+                  <span>Created {formatDate(estimate.createdAt)}</span>
                 </div>
               )}
             </div>
@@ -306,7 +312,8 @@ const EstimateModal = ({ estimate, isDarkMode, onClose }) => {
               background: colors.bg,
               borderRadius: '0.75rem',
               padding: '1rem',
-              border: `1px solid ${colors.border}`
+              border: `1px solid ${colors.border}`,
+              marginBottom: '1rem'
             }}>
               <div style={{
                 display: 'flex',
@@ -349,27 +356,21 @@ const EstimateModal = ({ estimate, isDarkMode, onClose }) => {
                 </span>
               </div>
             </div>
-          </div>
 
-          {/* Footer */}
-          <div style={{
-            padding: '1rem 1.25rem',
-            borderTop: `1px solid ${colors.border}`,
-            display: 'flex',
-            gap: '0.5rem'
-          }}>
+            {/* Close Button - inside scrollable area */}
             <button
               onClick={onClose}
               style={{
-                flex: 1,
-                padding: '0.75rem',
+                width: '100%',
+                padding: '0.875rem',
                 background: '#2563eb',
                 border: 'none',
                 borderRadius: '0.5rem',
                 color: 'white',
                 cursor: 'pointer',
                 fontSize: '0.9375rem',
-                fontWeight: '600'
+                fontWeight: '600',
+                marginBottom: '1rem'
               }}
             >
               Close

@@ -6,6 +6,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import EstimateCard from './EstimateCard';
 import EstimateForm from './EstimateForm';
 import styles from './Estimates.module.css';
+import { saveEstimates, getEstimates, clearEstimatesCache } from '../../utils/localStorageUtils';
 
 const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, onClearPendingData, navigationData }) => {
   const [estimates, setEstimates] = useState([]);
@@ -24,17 +25,16 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
 
   // Load estimates from Firebase
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        loadEstimates();
-      } else {
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loadEstimates();
+    } else {
+      setLoading(false);
+      clearEstimatesCache(); // Clear cache on logout
+    }
+  });
+  return () => unsubscribe();
+}, []);
   // Handle pending estimate data from Jobs page
   useEffect(() => {
     if (pendingEstimateData && onClearPendingData) {
@@ -54,18 +54,33 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
   }, [navigationData, estimates]);
 
   const loadEstimates = async () => {
-    setLoading(true);
-    try {
-      const userEstimates = await getUserEstimates();
-      setEstimates(userEstimates);
-    } catch (error) {
-      console.error('Error loading estimates:', error);
-      alert('Failed to load estimates. Please try again.');
-    } finally {
+  try {
+    // First, load from cache for instant display
+    const cachedEstimates = getEstimates();
+    if (cachedEstimates) {
+      setEstimates(cachedEstimates);
       setLoading(false);
     }
-  };
 
+    // Then fetch fresh data from Firebase
+    const userEstimates = await getUserEstimates();
+    setEstimates(userEstimates);
+    
+    // Save fresh data to cache
+    saveEstimates(userEstimates);
+  } catch (error) {
+    console.error('Error loading estimates:', error);
+    
+    const cachedEstimates = getEstimates();
+    if (cachedEstimates && cachedEstimates.length > 0) {
+      console.log('Using cached estimates due to error');
+    } else {
+      alert('Failed to load estimates. Please try again.');
+    }
+  } finally {
+    setLoading(false);
+  }
+};
   const saveEstimate = async (estimateData) => {
     try {
       if (editingEstimate) {
@@ -75,6 +90,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
       }
       
       setEditingEstimate(null);
+      clearEstimatesCache();
       loadEstimates();
     } catch (error) {
       console.error('Error saving estimate:', error);

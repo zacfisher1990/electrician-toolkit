@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Trash2, Edit, ChevronDown, DollarSign, Clock } from 'lucide-react';
+import { formatDate } from '../../utils/dateUtils';
 
 const EstimateCard = ({ 
   estimate, 
@@ -58,7 +59,7 @@ const EstimateCard = ({
             color: colors.subtext,
             fontSize: '0.75rem'
           }}>
-            {estimate.createdAt?.toLocaleDateString() || 'N/A'}
+            {formatDate(estimate.createdAt)}
           </p>
         </div>
         <div style={{

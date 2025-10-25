@@ -7,6 +7,7 @@ const JobModal = ({
   formData,
   setFormData,
   linkedEstimate,
+  linkedEstimates = [], // Add linkedEstimates array prop
   estimates,
   showEstimateMenu,
   setShowEstimateMenu,
@@ -14,6 +15,7 @@ const JobModal = ({
   onCreateNewEstimate,
   onViewEstimate,
   onRemoveEstimate,
+  onAddAdditionalEstimate, // Add this new prop
   estimateMenuRef,
   onClose,
   onSave,
@@ -95,6 +97,7 @@ const JobModal = ({
             formData={formData}
             setFormData={setFormData}
             linkedEstimate={linkedEstimate}
+            linkedEstimates={linkedEstimates} // Pass the array
             estimates={estimates}
             showEstimateMenu={showEstimateMenu}
             setShowEstimateMenu={setShowEstimateMenu}
@@ -102,6 +105,7 @@ const JobModal = ({
             onCreateNewEstimate={onCreateNewEstimate}
             onViewEstimate={onViewEstimate}
             onRemoveEstimate={onRemoveEstimate}
+            onAddAdditionalEstimate={onAddAdditionalEstimate} // Pass this prop
             estimateMenuRef={estimateMenuRef}
             isDarkMode={isDarkMode}
             colors={colors}

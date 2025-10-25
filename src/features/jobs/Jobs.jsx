@@ -10,6 +10,8 @@ import JobModal from './JobModal';
 import JobForm from './JobForm';
 import StatusTabs from './StatusTabs';
 import AuthModal from '../profile/AuthModal';
+import { saveJobs, getJobs, clearJobsCache } from '../../utils/localStorageUtils';
+import { saveEstimates, getEstimates, clearEstimatesCache } from '../../utils/localStorageUtils';
 
 const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [jobs, setJobs] = useState([]);
@@ -21,6 +23,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [showEstimateMenu, setShowEstimateMenu] = useState(false);
   const [estimates, setEstimates] = useState([]);
   const estimateMenuRef = useRef(null);
+  const lastSyncedJobId = useRef(null);
   const [linkedEstimates, setLinkedEstimates] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStatusTab, setActiveStatusTab] = useState('all');
@@ -55,33 +58,21 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsUserLoggedIn(true); // Update login state
-        loadJobs();
-      } else {
-        setIsUserLoggedIn(false); // Update login state
-        setLoading(false);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const loadEstimates = async () => {
-      try {
-        const { getUserEstimates } = await import('../estimates/estimatesService');
-        const userEstimates = await getUserEstimates();
-        setEstimates(userEstimates);
-      } catch (error) {
-        console.error('Error loading estimates:', error);
-      }
-    };
-
-    if (auth.currentUser) {
-      loadEstimates();
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      setIsUserLoggedIn(true);
+      loadJobs();
+      loadEstimatesWithCache();
+    } else {
+      setIsUserLoggedIn(false);
+      setLoading(false);
+      // Clear cache on logout
+      clearJobsCache();
+      clearEstimatesCache();
     }
-  }, []);
+  });
+  return () => unsubscribe();
+}, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -94,18 +85,72 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+useEffect(() => {
+  // Only sync estimates when opening a NEW job (editingJob.id changes)
+  if (editingJob && estimates.length > 0 && editingJob.estimateIds?.length > 0) {
+    // Check if this is a different job than last time
+    if (editingJob.id !== lastSyncedJobId.current) {
+      const linkedEstimatesArray = estimates.filter(est => 
+        editingJob.estimateIds.includes(est.id)
+      );
+      
+      setLinkedEstimates(linkedEstimatesArray);
+      lastSyncedJobId.current = editingJob.id; // Mark this job as synced
+    }
+  } else if (!editingJob) {
+    // Reset when closing the modal
+    lastSyncedJobId.current = null;
+  }
+}, [estimates, editingJob]);
+
   const loadJobs = async () => {
-    setLoading(true);
-    try {
-      const userJobs = await getUserJobs();
-      setJobs(userJobs);
-    } catch (error) {
-      console.error('Error loading jobs:', error);
-      alert('Failed to load jobs. Please try again.');
-    } finally {
+  try {
+    // First, load from cache for instant display
+    const cachedJobs = getJobs();
+    if (cachedJobs) {
+      setJobs(cachedJobs);
       setLoading(false);
     }
-  };
+
+    // Then fetch fresh data from Firebase
+    const userJobs = await getUserJobs();
+    setJobs(userJobs);
+    
+    // Save fresh data to cache
+    saveJobs(userJobs);
+  } catch (error) {
+    console.error('Error loading jobs:', error);
+    
+    // If Firebase fails but we have cache, keep using it
+    const cachedJobs = getJobs();
+    if (cachedJobs && cachedJobs.length > 0) {
+      console.log('Using cached jobs due to error');
+    } else {
+      alert('Failed to load jobs. Please try again.');
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
+const loadEstimatesWithCache = async () => {
+  try {
+    const cachedEstimates = getEstimates();
+    if (cachedEstimates) {
+      setEstimates(cachedEstimates);
+    }
+
+    const userEstimates = await getUserEstimates();
+    setEstimates(userEstimates);
+    saveEstimates(userEstimates);
+  } catch (error) {
+    console.error('Error loading estimates:', error);
+    const cachedEstimates = getEstimates();
+    if (cachedEstimates) {
+      console.log('Using cached estimates due to error');
+    }
+  }
+};
 
   const resetForm = () => {
     setFormData({
@@ -154,6 +199,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
 
         await createJob(jobData);
         resetForm();
+        clearJobsCache();
         loadJobs();
       } catch (error) {
         console.error('Error adding job:', error);
@@ -203,31 +249,42 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     }
   };
 
-  const openJobView = (job) => {
-    setViewingJob(job);
-    setEditingJob(job);
-    setFormData({
-      title: job.title || job.name,
-      client: job.client,
-      location: job.location || '',
-      status: job.status,
-      date: job.date || '',
-      time: job.time || '',
-      estimatedCost: job.estimatedCost || '',
-      duration: job.duration || '',
-      notes: job.notes || '',
-      estimateIds: job.estimateIds || []
-    });
-    
+const openJobView = (job) => {
+  setViewingJob(job);
+  setEditingJob(job);
+  setFormData({
+    title: job.title || job.name,
+    client: job.client,
+    location: job.location || '',
+    status: job.status,
+    date: job.date || '',
+    time: job.time || '',
+    estimatedCost: job.estimatedCost || '',
+    duration: job.duration || '',
+    notes: job.notes || '',
+    estimateIds: job.estimateIds || []
+  });
+  
+  // Load linked estimates based on estimateIds array
+  if (job.estimateIds && job.estimateIds.length > 0) {
+    const linkedEstimatesArray = estimates.filter(est => 
+      job.estimateIds.includes(est.id)
+    );
+    setLinkedEstimates(linkedEstimatesArray);
+  } else {
+    // Fallback: check for old singular estimateId format
     if (job.estimateId) {
       const estimate = estimates.find(e => e.id === job.estimateId);
       if (estimate) {
         setLinkedEstimates([estimate]);
+      } else {
+        setLinkedEstimates([]);
       }
     } else {
       setLinkedEstimates([]);
     }
-  };
+  }
+};
 
   const handleDeleteJob = async (id, jobTitle) => {
     if (window.confirm(`Are you sure you want to delete "${jobTitle}"?`)) {
