@@ -1,4 +1,3 @@
-// src/features/estimates/MaterialAutocomplete.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
 
@@ -8,7 +7,7 @@ const MaterialAutocomplete = ({
   isDarkMode,
   colors 
 }) => {
-  const [newMaterial, setNewMaterial] = useState({ name: '', cost: '' });
+  const [newMaterial, setNewMaterial] = useState({ name: '', quantity: '1', cost: '' });
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredMaterials, setFilteredMaterials] = useState([]);
   const autocompleteRef = useRef(null);
@@ -40,14 +39,18 @@ const MaterialAutocomplete = ({
   }, []);
 
   const handleSelectMaterial = (material) => {
-    setNewMaterial({ name: material.name, cost: material.cost.toString() });
+    setNewMaterial({ 
+      name: material.name, 
+      quantity: '1',
+      cost: material.cost.toString() 
+    });
     setShowSuggestions(false);
   };
 
   const handleAdd = () => {
-    if (newMaterial.name && newMaterial.cost) {
+    if (newMaterial.name && newMaterial.quantity && newMaterial.cost) {
       onAdd(newMaterial);
-      setNewMaterial({ name: '', cost: '' });
+      setNewMaterial({ name: '', quantity: '1', cost: '' });
       setShowSuggestions(false);
     }
   };
@@ -152,8 +155,30 @@ const MaterialAutocomplete = ({
           value={newMaterial.cost}
           onChange={(e) => setNewMaterial({ ...newMaterial, cost: e.target.value })}
           onKeyPress={handleKeyPress}
+          step="0.01"
           style={{
-            width: '90px',
+            width: '75px',
+            flexShrink: 0,
+            padding: '0.5rem',
+            background: colors.cardBg,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '0.5rem',
+            color: colors.text,
+            fontSize: '0.875rem',
+            boxSizing: 'border-box'
+          }}
+        />
+
+        {/* Quantity Input */}
+        <input
+          type="number"
+          placeholder="Qty"
+          value={newMaterial.quantity}
+          onChange={(e) => setNewMaterial({ ...newMaterial, quantity: e.target.value })}
+          onKeyPress={handleKeyPress}
+          min="1"
+          style={{
+            width: '50px',
             flexShrink: 0,
             padding: '0.5rem',
             background: colors.cardBg,
@@ -168,20 +193,20 @@ const MaterialAutocomplete = ({
         {/* Add Button */}
         <button
           onClick={handleAdd}
-          disabled={!newMaterial.name || !newMaterial.cost}
+          disabled={!newMaterial.name || !newMaterial.quantity || !newMaterial.cost}
           style={{
             width: '40px',
             flexShrink: 0,
             padding: '0.5rem',
-            background: (newMaterial.name && newMaterial.cost) ? '#10b981' : colors.border,
+            background: (newMaterial.name && newMaterial.quantity && newMaterial.cost) ? '#10b981' : colors.border,
             border: 'none',
             borderRadius: '0.5rem',
             color: 'white',
-            cursor: (newMaterial.name && newMaterial.cost) ? 'pointer' : 'not-allowed',
+            cursor: (newMaterial.name && newMaterial.quantity && newMaterial.cost) ? 'pointer' : 'not-allowed',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            opacity: (newMaterial.name && newMaterial.cost) ? 1 : 0.5
+            opacity: (newMaterial.name && newMaterial.quantity && newMaterial.cost) ? 1 : 0.5
           }}
           aria-label="Add material"
         >

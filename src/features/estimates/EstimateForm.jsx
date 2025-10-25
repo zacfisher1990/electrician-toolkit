@@ -58,10 +58,14 @@ const EstimateForm = ({
     }, []);
 
   const calculateTotal = (laborHours, laborRate, materials) => {
-    const labor = (parseFloat(laborHours) || 0) * (parseFloat(laborRate) || 0);
-    const materialsCost = materials.reduce((sum, m) => sum + (parseFloat(m.cost) || 0), 0);
-    return labor + materialsCost;
-  };
+  const labor = (parseFloat(laborHours) || 0) * (parseFloat(laborRate) || 0);
+  const materialsCost = materials.reduce((sum, m) => {
+    const quantity = parseFloat(m.quantity) || 1;
+    const cost = parseFloat(m.cost) || 0;
+    return sum + (quantity * cost);
+  }, 0);
+  return labor + materialsCost;
+};
 
   const currentTotal = calculateTotal(formData.laborHours, formData.laborRate, formData.materials);
 
@@ -161,7 +165,7 @@ const EstimateForm = ({
       {/* Form Content */}
       {showForm && (
         <div style={{ 
-          padding: '1rem',
+          padding: '1rem 0.5rem',
           borderTop: `1px solid ${colors.border}`
         }}>
 
@@ -242,42 +246,48 @@ const EstimateForm = ({
             </p>
 
             {/* Existing Materials */}
-            {formData.materials.map((mat, idx) => (
-              <div key={idx} style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0.5rem',
-                background: colors.cardBg,
-                border: `1px solid ${colors.border}`,
-                borderRadius: '0.5rem',
-                marginBottom: '0.5rem'
-              }}>
-                <span style={{ color: colors.text, fontSize: '0.875rem' }}>
-                  {mat.name}
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ color: colors.text, fontSize: '0.875rem', fontWeight: '600' }}>
-                    ${parseFloat(mat.cost).toFixed(2)}
-                  </span>
-                  <button
-                    onClick={() => removeMaterial(idx)}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#ef4444',
-                      cursor: 'pointer',
-                      padding: '0.25rem',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}
-                    aria-label={`Remove ${mat.name}`}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-            ))}
+            {formData.materials.map((mat, idx) => {
+                const quantity = parseFloat(mat.quantity) || 1;
+                const unitCost = parseFloat(mat.cost) || 0;
+                const totalCost = quantity * unitCost;
+                
+                return (
+                    <div key={idx} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '0.5rem',
+                    background: colors.cardBg,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.5rem',
+                    marginBottom: '0.5rem'
+                    }}>
+                    <span style={{ color: colors.text, fontSize: '0.875rem' }}>
+                        {mat.name} {quantity > 1 ? `x${quantity}` : ''}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ color: colors.text, fontSize: '0.875rem', fontWeight: '600' }}>
+                        ${totalCost.toFixed(2)}
+                        </span>
+                        <button
+                        onClick={() => removeMaterial(idx)}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#ef4444',
+                            cursor: 'pointer',
+                            padding: '0.25rem',
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}
+                        aria-label={`Remove ${mat.name}`}
+                        >
+                        <Trash2 size={14} />
+                        </button>
+                    </div>
+                    </div>
+                );
+                })}
 
             {/* Add New Material with Autocomplete */}
             <MaterialAutocomplete
@@ -290,7 +300,7 @@ const EstimateForm = ({
 
           {/* Total Display */}
           <div style={{
-            padding: '0.75rem',
+            padding: '0.75rem 0.25rem',
             background: colors.bg,
             borderRadius: '0.5rem',
             marginBottom: '0.75rem',
