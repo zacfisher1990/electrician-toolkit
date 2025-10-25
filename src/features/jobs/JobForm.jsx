@@ -15,6 +15,7 @@ const JobForm = ({
   onViewEstimate,
   onRemoveEstimate,
   onAddAdditionalEstimate, // New prop for adding additional estimates
+  onViewAllEstimates,
   estimateMenuRef,
   isDarkMode,
   colors
@@ -219,6 +220,28 @@ const JobForm = ({
                   ${totalFromEstimates.toLocaleString()}
                 </div>
               </div>
+            )}
+
+                {/* View All Estimates Summary Button */}
+            {linkedEstimates.length > 1 && (
+              <button
+                type="button"
+                onClick={onViewAllEstimates}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  background: '#10b981',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  color: 'white',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  marginBottom: '0.5rem'
+                }}
+              >
+                📊 View Combined Summary
+              </button>
             )}
 
             {/* Add Additional Estimate Button */}

@@ -16,6 +16,7 @@ const JobModal = ({
   onViewEstimate,
   onRemoveEstimate,
   onAddAdditionalEstimate, // Add this new prop
+  onViewAllEstimates,
   estimateMenuRef,
   onClose,
   onSave,
@@ -106,6 +107,7 @@ const JobModal = ({
             onViewEstimate={onViewEstimate}
             onRemoveEstimate={onRemoveEstimate}
             onAddAdditionalEstimate={onAddAdditionalEstimate} // Pass this prop
+            onViewAllEstimates={onViewAllEstimates}
             estimateMenuRef={estimateMenuRef}
             isDarkMode={isDarkMode}
             colors={colors}

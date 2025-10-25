@@ -7,6 +7,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import styles from './Jobs.module.css';
 import JobCard from './JobCard';
 import JobModal from './JobModal';
+import JobEstimatesSummaryModal from './JobEstimatesSummaryModal';
+import EstimateModal from './EstimateModal';
 import JobForm from './JobForm';
 import StatusTabs from './StatusTabs';
 import AuthModal from '../profile/AuthModal';
@@ -27,8 +29,10 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [linkedEstimates, setLinkedEstimates] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStatusTab, setActiveStatusTab] = useState('all');
-  const [showAuthModal, setShowAuthModal] = useState(false); // Add this state
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false); // Add this state
+  const [showAuthModal, setShowAuthModal] = useState(false); 
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [showCombinedEstimatesModal, setShowCombinedEstimatesModal] = useState(false);
+  const [viewingSingleEstimate, setViewingSingleEstimate] = useState(null); 
   const [formData, setFormData] = useState({
     title: '',
     client: '',
@@ -380,6 +384,20 @@ const openJobView = (job) => {
     }
   };
 
+  const handleViewCombinedEstimates = () => {
+  setShowCombinedEstimatesModal(true);
+};
+
+const handleViewSingleEstimateFromCombined = (estimate) => {
+  setShowCombinedEstimatesModal(false);
+  setViewingSingleEstimate(estimate);
+};
+
+const handleCloseSingleEstimate = () => {
+  setViewingSingleEstimate(null);
+  setShowCombinedEstimatesModal(true); // Return to combined view
+};
+
   const handleViewEstimate = (estimateId) => {
     if (onNavigateToEstimates) {
       onNavigateToEstimates({ viewEstimateId: estimateId });
@@ -560,6 +578,7 @@ const calculateTotalFromEstimates = (estimateIds) => {
           onViewEstimate={handleViewEstimate}
           onRemoveEstimate={handleRemoveEstimate}
           onAddAdditionalEstimate={handleAddAdditionalEstimate}  // NEW: Add this
+          onViewAllEstimates={handleViewCombinedEstimates}
           estimateMenuRef={estimateMenuRef}
           onClose={resetForm}
           onSave={handleEditJob}
@@ -713,7 +732,8 @@ const calculateTotalFromEstimates = (estimateIds) => {
                     onCreateNewEstimate={handleCreateNewEstimate}
                     onViewEstimate={handleViewEstimate}
                     onRemoveEstimate={handleRemoveEstimate}
-                    onAddAdditionalEstimate={handleAddAdditionalEstimate}  // NEW: Pass the handler
+                    onAddAdditionalEstimate={handleAddAdditionalEstimate}
+                    onViewAllEstimates={handleViewCombinedEstimates}
                     estimateMenuRef={estimateMenuRef}
                     isDarkMode={isDarkMode}
                     colors={colors}
@@ -794,11 +814,31 @@ const calculateTotalFromEstimates = (estimateIds) => {
                   setStatusDropdownOpen={setStatusDropdownOpen}
                   onUpdateStatus={handleUpdateStatus}
                   onViewJob={openJobView}
+                  
                   onViewEstimate={(job) => {
-                    if (job.estimateId && onNavigateToEstimates) {
-                      onNavigateToEstimates({ viewEstimateId: job.estimateId });
+                  // If job has multiple estimates, show combined summary
+                  if (job.estimateIds && job.estimateIds.length > 1) {
+                    const jobEstimates = estimates.filter(est => 
+                      job.estimateIds.includes(est.id)
+                    );
+                    setLinkedEstimates(jobEstimates);
+                    setShowCombinedEstimatesModal(true);
+                  } 
+                  // If job has exactly 1 estimate, show single estimate modal
+                  else if (job.estimateIds && job.estimateIds.length === 1) {
+                    const estimate = estimates.find(e => e.id === job.estimateIds[0]);
+                    if (estimate) {
+                      setViewingSingleEstimate(estimate);
                     }
-                  }}
+                  }
+                  // Fallback for old estimateId format
+                  else if (job.estimateId) {
+                    const estimate = estimates.find(e => e.id === job.estimateId);
+                    if (estimate) {
+                      setViewingSingleEstimate(estimate);
+                    }
+                  }
+                }}
                   onViewInvoice={(job) => {
                     if (job.invoiceId) {
                       console.log('View invoice:', job.invoiceId);
@@ -811,8 +851,28 @@ const calculateTotalFromEstimates = (estimateIds) => {
                 />
               ))
           )}
+          
         </div>
       </div>
+
+              {/* Combined Estimates Summary Modal */}
+        {showCombinedEstimatesModal && (
+          <JobEstimatesSummaryModal
+            estimates={linkedEstimates}
+            isDarkMode={isDarkMode}
+            onClose={() => setShowCombinedEstimatesModal(false)}
+            onViewSingleEstimate={handleViewSingleEstimateFromCombined}
+          />
+        )}
+
+        {/* Single Estimate Detail Modal */}
+        {viewingSingleEstimate && (
+          <EstimateModal
+            estimate={viewingSingleEstimate}
+            isDarkMode={isDarkMode}
+            onClose={handleCloseSingleEstimate}
+          />
+        )}
     </div>
   );
 };

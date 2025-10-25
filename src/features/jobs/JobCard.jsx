@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { MapPin, Calendar, Edit, FileText, Receipt, DollarSign, ChevronDown, ChevronUp, Play, Square } from 'lucide-react';
 import styles from './JobCard.module.css';
-import EstimateModal from './EstimateModal';
+
 
 const JobCard = ({ 
   job, 
@@ -20,7 +20,7 @@ const JobCard = ({
   const statusDropdownRef = useRef(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
-  const [showEstimateModal, setShowEstimateModal] = useState(false);
+  
   
   const StatusIcon = statusConfig[job.status].icon;
   const jobTitle = job.title || job.name;
@@ -77,17 +77,14 @@ const JobCard = ({
     }
   };
 
-  // FIXED: Added this function
   const handleEstimateClick = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    
-    if (linkedEstimate) {
-      setShowEstimateModal(true);
-    } else if (onViewEstimate) {
-      onViewEstimate(job);
-    }
-  };
+  e.stopPropagation();
+  e.preventDefault();
+  
+  if (linkedEstimates.length > 0 && onViewEstimate) {
+    onViewEstimate(job);
+  }
+};
 
   const totalHours = calculateTotalHours();
   const currentSessionSeconds = getCurrentSessionDuration();
@@ -413,7 +410,7 @@ const JobCard = ({
             fontWeight: '600',
             opacity: linkedEstimate ? 1 : 0.5
           }}
-          disabled={!linkedEstimate}
+          disabled={linkedEstimates.length === 0}
         >
           <FileText size={16} />
           <span style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Estimate</span>
@@ -447,14 +444,7 @@ const JobCard = ({
         
       </div>
 
-      {/* Estimate Modal */}
-      {showEstimateModal && linkedEstimate && (
-        <EstimateModal
-          estimate={linkedEstimate}
-          isDarkMode={isDarkMode}
-          onClose={() => setShowEstimateModal(false)}
-        />
-      )}
+      
     </div>
   );
 };
