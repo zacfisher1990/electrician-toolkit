@@ -627,7 +627,7 @@ const calculateTotalFromEstimates = (estimateIds) => {
                 fontWeight: '600'
               }}>
                 <Plus size={18} />
-                Add New Job
+                Add Job
               </div>
               <ChevronDown 
                 size={18} 

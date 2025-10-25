@@ -1,0 +1,58 @@
+.formContainer {
+  background: var(--card-bg);
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.toggleButton {
+  width: 100%;
+  padding: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.formContent {
+  padding: 0 1rem 1rem 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  color: var(--text-color);
+  font-size: 0.9375rem;
+  box-sizing: border-box;
+}
+
+.gridInput {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  color: var(--text-color);
+  font-size: 0.9375rem;
+  box-sizing: border-box;
+}
+
+.inputGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}

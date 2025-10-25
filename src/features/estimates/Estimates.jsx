@@ -5,6 +5,7 @@ import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import EstimateCard from './EstimateCard';
 import EstimateForm from './EstimateForm';
+import styles from './Estimates.module.css';
 
 const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, onClearPendingData, navigationData }) => {
   const [estimates, setEstimates] = useState([]);
@@ -96,7 +97,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
         await deleteEstimateFromFirebase(id);
         loadEstimates();
       } catch (error) {
-        console.error('Error deleting estimate:', error);
+        console.error('Error deleting estimate. Please try again.');
         alert('Failed to delete estimate. Please try again.');
       }
     }
@@ -142,12 +143,14 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
   }
 
   return (
-    <div style={{ 
+    <div
+      className={styles.loadingContainer} 
+      style={{ 
       background: colors.bg,
       minHeight: '100vh',
       paddingBottom: '5rem'
     }}>
-      <div style={{ padding: '1rem' }}>
+      <div style={{ padding: '0.25rem' }}>
         {/* Search Bar */}
         <div style={{
           background: colors.cardBg,
