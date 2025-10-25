@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, ChevronDown, Check } from 'lucide-react';
+import MaterialAutocomplete from './MaterialAutocomplete';
+import { getUserMaterials, saveMaterial } from './materialsService';
 
 const EstimateForm = ({ 
   isDarkMode, 
@@ -15,52 +17,8 @@ const EstimateForm = ({
     materials: editingEstimate?.materials || [],
     jobId: editingEstimate?.jobId || null
   });
-  const [newMaterial, setNewMaterial] = useState({ name: '', cost: '' });
-
-  const templates = [
-    { 
-      name: 'Outlet Installation', 
-      laborHours: 2, 
-      laborRate: 85, 
-      materials: [
-        { name: 'GFCI Outlets (6)', cost: 120 }, 
-        { name: 'Wire & Boxes', cost: 45 }
-      ] 
-    },
-    { 
-      name: 'Panel Upgrade', 
-      laborHours: 8, 
-      laborRate: 85, 
-      materials: [
-        { name: '200A Panel', cost: 350 }, 
-        { name: 'Wire & Conduit', cost: 180 }
-      ] 
-    },
-    { 
-      name: 'Service Call', 
-      laborHours: 1, 
-      laborRate: 125, 
-      materials: [] 
-    },
-    { 
-      name: 'Lighting Install', 
-      laborHours: 4, 
-      laborRate: 85, 
-      materials: [
-        { name: 'Fixtures', cost: 200 }, 
-        { name: 'Wire & Switches', cost: 60 }
-      ] 
-    },
-    { 
-      name: 'Rewiring Room', 
-      laborHours: 16, 
-      laborRate: 85, 
-      materials: [
-        { name: 'Wire (500ft)', cost: 180 }, 
-        { name: 'Boxes & Devices', cost: 150 }
-      ] 
-    }
-  ];
+  const [savedMaterials, setSavedMaterials] = useState([]);
+  
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -85,6 +43,20 @@ const EstimateForm = ({
     }
   }, [editingEstimate]);
 
+  // Add this after the other useEffect hooks
+    useEffect(() => {
+    const loadMaterials = async () => {
+        try {
+        const materials = await getUserMaterials();
+        setSavedMaterials(materials);
+        } catch (error) {
+        console.error('Error loading saved materials:', error);
+        }
+    };
+    
+    loadMaterials();
+    }, []);
+
   const calculateTotal = (laborHours, laborRate, materials) => {
     const labor = (parseFloat(laborHours) || 0) * (parseFloat(laborRate) || 0);
     const materialsCost = materials.reduce((sum, m) => sum + (parseFloat(m.cost) || 0), 0);
@@ -93,25 +65,24 @@ const EstimateForm = ({
 
   const currentTotal = calculateTotal(formData.laborHours, formData.laborRate, formData.materials);
 
-  const applyTemplate = (template) => {
-    setFormData({
-      ...formData,
-      name: template.name,
-      laborHours: template.laborHours,
-      laborRate: template.laborRate,
-      materials: [...template.materials]
-    });
-  };
-
-  const addMaterial = () => {
-    if (newMaterial.name && newMaterial.cost) {
-      setFormData(prev => ({
-        ...prev,
-        materials: [...prev.materials, { ...newMaterial }]
-      }));
-      setNewMaterial({ name: '', cost: '' });
-    }
-  };
+  const addMaterial = async (material) => {
+  // Add to form
+  setFormData(prev => ({
+    ...prev,
+    materials: [...prev.materials, { ...material }]
+  }));
+  
+  // Save to database for future use
+  try {
+    await saveMaterial(material);
+    // Reload saved materials to get updated list
+    const materials = await getUserMaterials();
+    setSavedMaterials(materials);
+  } catch (error) {
+    console.error('Error saving material:', error);
+    // Still add to form even if save fails
+  }
+};
 
   const removeMaterial = (index) => {
     setFormData(prev => ({
@@ -140,7 +111,6 @@ const EstimateForm = ({
 
   const handleReset = () => {
     setFormData({ name: '', laborHours: '', laborRate: '', materials: [], jobId: null });
-    setNewMaterial({ name: '', cost: '' });
     setShowForm(false);
   };
 
@@ -191,44 +161,9 @@ const EstimateForm = ({
       {/* Form Content */}
       {showForm && (
         <div style={{ 
-          padding: '0 1rem 1rem 1rem',
+          padding: '1rem',
           borderTop: `1px solid ${colors.border}`
         }}>
-          {/* Quick Templates */}
-          <div style={{ marginBottom: '1rem', paddingTop: '1rem' }}>
-            <p style={{ 
-              margin: '0 0 0.5rem 0',
-              color: colors.subtext,
-              fontSize: '0.875rem',
-              fontWeight: '500'
-            }}>
-              Quick Start Templates
-            </p>
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '0.5rem'
-            }}>
-              {templates.map((template, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => applyTemplate(template)}
-                  style={{
-                    padding: '0.5rem 0.75rem',
-                    background: colors.bg,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '0.5rem',
-                    color: colors.text,
-                    cursor: 'pointer',
-                    fontSize: '0.75rem',
-                    fontWeight: '500'
-                  }}
-                >
-                  {template.name}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Estimate Name */}
           <input
@@ -344,64 +279,13 @@ const EstimateForm = ({
               </div>
             ))}
 
-            {/* Add New Material */}
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <input
-                type="text"
-                placeholder="Material name"
-                value={newMaterial.name}
-                onChange={(e) => setNewMaterial({ ...newMaterial, name: e.target.value })}
-                onKeyPress={(e) => e.key === 'Enter' && addMaterial()}
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  padding: '0.5rem',
-                  background: colors.cardBg,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '0.5rem',
-                  color: colors.text,
-                  fontSize: '0.875rem',
-                  boxSizing: 'border-box'
-                }}
-              />
-              <input
-                type="number"
-                placeholder="Cost"
-                value={newMaterial.cost}
-                onChange={(e) => setNewMaterial({ ...newMaterial, cost: e.target.value })}
-                onKeyPress={(e) => e.key === 'Enter' && addMaterial()}
-                style={{
-                  width: '90px',
-                  flexShrink: 0,
-                  padding: '0.5rem',
-                  background: colors.cardBg,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '0.5rem',
-                  color: colors.text,
-                  fontSize: '0.875rem',
-                  boxSizing: 'border-box'
-                }}
-              />
-              <button
-                onClick={addMaterial}
-                style={{
-                  width: '40px',
-                  flexShrink: 0,
-                  padding: '0.5rem',
-                  background: '#10b981',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  color: 'white',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                aria-label="Add material"
-              >
-                <Plus size={16} />
-              </button>
-            </div>
+            {/* Add New Material with Autocomplete */}
+            <MaterialAutocomplete
+            savedMaterials={savedMaterials}
+            onAdd={addMaterial}
+            isDarkMode={isDarkMode}
+            colors={colors}
+            />
           </div>
 
           {/* Total Display */}
