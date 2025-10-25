@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { MapPin, Calendar, Edit, FileText, Receipt, DollarSign, ChevronDown, ChevronUp, Play, Square } from 'lucide-react';
 import styles from './JobCard.module.css';
+import EstimateModal from './EstimateModal';
 
 const JobCard = ({ 
   job, 
@@ -13,13 +14,22 @@ const JobCard = ({
   onViewInvoice,
   onClockInOut,
   isDarkMode,
-  colors 
+  colors,
+  estimates = [] // FIXED: Added this prop with default empty array
 }) => {
   const statusDropdownRef = useRef(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
+  const [showEstimateModal, setShowEstimateModal] = useState(false);
+  
   const StatusIcon = statusConfig[job.status].icon;
   const jobTitle = job.title || job.name;
+  
+  // FIXED: Check for estimates in the estimateIds array (not singular estimateId)
+  const linkedEstimates = estimates.filter(est => 
+    job.estimateIds && job.estimateIds.includes(est.id)
+  );
+  const linkedEstimate = linkedEstimates.length > 0 ? linkedEstimates[0] : null;
 
   // Update timer every second when clocked in
   useEffect(() => {
@@ -64,6 +74,18 @@ const JobCard = ({
     e.preventDefault();
     if (onClockInOut) {
       onClockInOut(job.id, !job.clockedIn);
+    }
+  };
+
+  // FIXED: Added this function
+  const handleEstimateClick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    if (linkedEstimate) {
+      setShowEstimateModal(true);
+    } else if (onViewEstimate) {
+      onViewEstimate(job);
     }
   };
 
@@ -346,7 +368,9 @@ const JobCard = ({
           }}
         >
           {job.clockedIn ? <Square size={16} /> : <Play size={16} />}
-          <span>{job.clockedIn ? 'Clock Out' : 'Clock In'}</span>
+          <span style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
+            {job.clockedIn ? 'Clock Out' : 'Clock In'}
+          </span>
         </button>
 
         <button
@@ -370,33 +394,29 @@ const JobCard = ({
           }}
         >
           <Edit size={16} />
-          <span>Edit</span>
+          <span style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Edit</span>
         </button>
 
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            onViewEstimate(job);
-          }}
-          title={job.estimateId ? "View Estimate" : "No estimate linked"}
+          onClick={handleEstimateClick}
+          title={linkedEstimate ? "View Estimate" : "No estimate linked"}
           style={{
-            background: job.estimateId ? '#10b981' : colors.border,
+            background: linkedEstimate ? '#10b981' : colors.border,
             border: 'none',
             borderRadius: '0.5rem',
             color: 'white',
-            cursor: job.estimateId ? 'pointer' : 'not-allowed',
+            cursor: linkedEstimate ? 'pointer' : 'not-allowed',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             fontWeight: '600',
-            opacity: job.estimateId ? 1 : 0.5
+            opacity: linkedEstimate ? 1 : 0.5
           }}
-          disabled={!job.estimateId}
+          disabled={!linkedEstimate}
         >
           <FileText size={16} />
-          <span>Estimate</span>
+          <span style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Estimate</span>
         </button>
 
         <button
@@ -422,9 +442,19 @@ const JobCard = ({
           disabled={!job.invoiceId}
         >
           <Receipt size={16} />
-          <span>Invoice</span>
+          <span style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Invoice</span>
         </button>
+        
       </div>
+
+      {/* Estimate Modal */}
+      {showEstimateModal && linkedEstimate && (
+        <EstimateModal
+          estimate={linkedEstimate}
+          isDarkMode={isDarkMode}
+          onClose={() => setShowEstimateModal(false)}
+        />
+      )}
     </div>
   );
 };

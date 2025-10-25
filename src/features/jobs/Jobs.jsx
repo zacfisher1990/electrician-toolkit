@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Clock, CheckCircle, AlertCircle, Briefcase, ChevronDown, X, Search } from 'lucide-react';
 import { getUserJobs, createJob, deleteJob as deleteJobFromFirebase } from './jobsService';
+import { getUserEstimates } from '../estimates/estimatesService';
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import styles from './Jobs.module.css';
@@ -749,6 +750,7 @@ const calculateTotalFromEstimates = (estimateIds) => {
                   onClockInOut={handleClockInOut}
                   isDarkMode={isDarkMode}
                   colors={colors}
+                  estimates={estimates}
                 />
               ))
           )}
