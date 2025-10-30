@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, ChevronDown, Check } from 'lucide-react';
 import MaterialAutocomplete from './MaterialAutocomplete';
-import { getUserMaterials, saveMaterial } from './materialsService';
+import { getUserMaterials, saveMaterial, initializeCommonMaterials } from './materialsService';
 
 const EstimateForm = ({ 
   isDarkMode, 
@@ -43,19 +43,23 @@ const EstimateForm = ({
     }
   }, [editingEstimate]);
 
-  // Add this after the other useEffect hooks
-    useEffect(() => {
-    const loadMaterials = async () => {
-        try {
-        const materials = await getUserMaterials();
-        setSavedMaterials(materials);
-        } catch (error) {
-        console.error('Error loading saved materials:', error);
-        }
-    };
-    
-    loadMaterials();
-    }, []);
+ useEffect(() => {
+  const loadMaterials = async () => {
+    try {
+      // Initialize common materials if needed (one-time)
+      await initializeCommonMaterials();
+      
+      // Load user's materials
+      const materials = await getUserMaterials();
+      console.log('Loaded materials:', materials.length);
+      setSavedMaterials(materials);
+    } catch (error) {
+      console.error('Error loading saved materials:', error);
+    }
+  };
+  
+  loadMaterials();
+}, []);
 
   const calculateTotal = (laborHours, laborRate, materials) => {
   const labor = (parseFloat(laborHours) || 0) * (parseFloat(laborRate) || 0);
@@ -170,15 +174,24 @@ const EstimateForm = ({
         }}>
 
           {/* Estimate Name */}
+        <div style={{ marginBottom: '0.75rem' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '0.25rem',
+            color: colors.subtext,
+            fontSize: '0.875rem',
+            fontWeight: '500'
+          }}>
+            Estimate Name *
+          </label>
           <input
             type="text"
-            placeholder="Estimate Name *"
+            placeholder="Enter estimate name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             style={{
               width: '100%',
               padding: '0.75rem',
-              marginBottom: '0.75rem',
               background: colors.inputBg,
               border: `1px solid ${colors.border}`,
               borderRadius: '0.5rem',
@@ -187,17 +200,28 @@ const EstimateForm = ({
               boxSizing: 'border-box'
             }}
           />
+        </div>
 
           {/* Labor Hours and Rate */}
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: '1fr 1fr', 
-            gap: '0.75rem',
-            marginBottom: '0.75rem'
-          }}>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1fr 1fr', 
+          gap: '0.75rem',
+          marginBottom: '0.75rem'
+        }}>
+          <div>
+            <label style={{
+              display: 'block',
+              marginBottom: '0.25rem',
+              color: colors.subtext,
+              fontSize: '0.875rem',
+              fontWeight: '500'
+            }}>
+              Labor Hours
+            </label>
             <input
               type="number"
-              placeholder="Labor Hours"
+              placeholder="Hours"
               value={formData.laborHours}
               onChange={(e) => setFormData({ ...formData, laborHours: e.target.value })}
               style={{
@@ -211,9 +235,20 @@ const EstimateForm = ({
                 boxSizing: 'border-box'
               }}
             />
+          </div>
+          <div>
+            <label style={{
+              display: 'block',
+              marginBottom: '0.25rem',
+              color: colors.subtext,
+              fontSize: '0.875rem',
+              fontWeight: '500'
+            }}>
+              Rate/Hour ($)
+            </label>
             <input
               type="number"
-              placeholder="Rate/Hour ($)"
+              placeholder="Rate"
               value={formData.laborRate}
               onChange={(e) => setFormData({ ...formData, laborRate: e.target.value })}
               style={{
@@ -228,7 +263,7 @@ const EstimateForm = ({
               }}
             />
           </div>
-
+        </div>
           {/* Materials Section */}
           <div style={{
             padding: '0.75rem',

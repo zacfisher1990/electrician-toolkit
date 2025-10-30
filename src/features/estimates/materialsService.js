@@ -11,6 +11,8 @@ import {
   where,
   serverTimestamp 
 } from 'firebase/firestore';
+import { getCommonMaterialsAsObjects } from './commonMaterials';
+import { COMMON_ELECTRICAL_MATERIALS } from './commonMaterials';
 
 const MATERIALS_COLLECTION = 'materials';
 
@@ -48,6 +50,48 @@ export const getUserMaterials = async () => {
   } catch (error) {
     console.error('Error getting materials:', error);
     throw error;
+  }
+};
+
+/**
+ * Initialize common materials for a new user (one-time setup)
+ */
+export const initializeCommonMaterials = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    // Check if user already has materials
+    const existingMaterials = await getUserMaterials();
+    if (existingMaterials.length > 0) {
+      // User already has materials, don't initialize
+      return;
+    }
+
+    // Add common materials
+    const commonMaterials = getCommonMaterialsAsObjects();
+    const batch = [];
+    
+    for (const material of commonMaterials) {
+      const promise = addDoc(collection(db, MATERIALS_COLLECTION), {
+        userId: user.uid,
+        name: material.name,
+        cost: 0, // No price yet
+        usageCount: 0,
+        isCommon: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      batch.push(promise);
+    }
+
+    await Promise.all(batch);
+    console.log(`Initialized ${commonMaterials.length} common materials`);
+  } catch (error) {
+    console.error('Error initializing common materials:', error);
+    // Don't throw - this is not critical
   }
 };
 

@@ -1,5 +1,8 @@
+// Updated MaterialAutocomplete.jsx with client-side common materials
+
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { COMMON_ELECTRICAL_MATERIALS } from './commonMaterials';
 
 const MaterialAutocomplete = ({ 
   savedMaterials = [], 
@@ -12,14 +15,34 @@ const MaterialAutocomplete = ({
   const [filteredMaterials, setFilteredMaterials] = useState([]);
   const autocompleteRef = useRef(null);
 
-  // Filter materials based on input
+  // Filter materials based on input - MERGE saved materials with common materials
   useEffect(() => {
     if (newMaterial.name.trim().length > 0) {
-      const filtered = savedMaterials.filter(material =>
-        material.name.toLowerCase().includes(newMaterial.name.toLowerCase())
+      const searchTerm = newMaterial.name.toLowerCase();
+      
+      // Filter saved materials (these have prices)
+      const savedFiltered = savedMaterials.filter(material =>
+        material.name.toLowerCase().includes(searchTerm)
       );
-      setFilteredMaterials(filtered);
-      setShowSuggestions(filtered.length > 0);
+      
+      // Filter common materials
+      const commonFiltered = COMMON_ELECTRICAL_MATERIALS
+        .filter(name => name.toLowerCase().includes(searchTerm))
+        .map(name => {
+          // Check if this common material already exists in saved materials
+          const existing = savedMaterials.find(m => m.name === name);
+          return existing || { name, cost: 0, isCommon: true };
+        })
+        .filter(mat => {
+          // Remove duplicates (already in savedFiltered)
+          return !savedFiltered.some(saved => saved.name === mat.name);
+        });
+      
+      // Combine: saved materials first (they have prices), then common materials
+      const combined = [...savedFiltered, ...commonFiltered].slice(0, 10); // Limit to 10 results
+      
+      setFilteredMaterials(combined);
+      setShowSuggestions(combined.length > 0);
     } else {
       setFilteredMaterials([]);
       setShowSuggestions(false);
@@ -42,7 +65,7 @@ const MaterialAutocomplete = ({
     setNewMaterial({ 
       name: material.name, 
       quantity: '1',
-      cost: material.cost.toString() 
+      cost: material.cost > 0 ? material.cost.toString() : ''
     });
     setShowSuggestions(false);
   };
@@ -110,7 +133,7 @@ const MaterialAutocomplete = ({
             }}>
               {filteredMaterials.map((material, idx) => (
                 <button
-                  key={material.id || idx}
+                  key={material.id || material.name || idx}
                   onClick={() => handleSelectMaterial(material)}
                   style={{
                     width: '100%',
@@ -128,19 +151,19 @@ const MaterialAutocomplete = ({
                     transition: 'background 0.2s'
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6';
+                    e.currentTarget.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6';
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.background = 'transparent';
+                    e.currentTarget.style.background = 'transparent';
                   }}
                 >
                   <span>{material.name}</span>
                   <span style={{ 
-                    color: '#10b981', 
+                    color: material.cost > 0 ? '#10b981' : colors.subtext, 
                     fontWeight: '600',
                     fontSize: '0.8125rem'
                   }}>
-                    ${parseFloat(material.cost).toFixed(2)}
+                    {material.cost > 0 ? `$${parseFloat(material.cost).toFixed(2)}` : 'Set price'}
                   </span>
                 </button>
               ))}
