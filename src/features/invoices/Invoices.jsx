@@ -1,33 +1,15 @@
-import React, { useState } from 'react';
-import { FileText, Plus, Search, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText } from 'lucide-react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../../firebase/firebase';
+import { getUserInvoices, createInvoice, updateInvoice, deleteInvoice } from './invoicesService';
+import { saveInvoices, getInvoices, clearInvoicesCache } from '../../utils/localStorageUtils';
+import InvoiceForm from './InvoiceForm';
 
-function Invoices({ isDarkMode = false }) {
-  const [invoices, setInvoices] = useState([
-    {
-      id: 1,
-      invoiceNumber: 'INV-001',
-      client: 'ABC Construction',
-      date: '2025-10-01',
-      amount: 2500.00,
-      status: 'Paid'
-    },
-    {
-      id: 2,
-      invoiceNumber: 'INV-002',
-      client: 'Smith Residence',
-      date: '2025-10-10',
-      amount: 1200.00,
-      status: 'Pending'
-    },
-    {
-      id: 3,
-      invoiceNumber: 'INV-003',
-      client: 'Downtown Office Building',
-      date: '2025-10-12',
-      amount: 4800.00,
-      status: 'Overdue'
-    }
-  ]);
+function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editingInvoice, setEditingInvoice] = useState(null);
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -43,6 +25,87 @@ function Invoices({ isDarkMode = false }) {
     pendingText: isDarkMode ? '#fcd34d' : '#92400e',
     overdueBg: isDarkMode ? '#7f1d1d' : '#fee2e2',
     overdueText: isDarkMode ? '#fca5a5' : '#991b1b'
+  };
+
+  // Load invoices from Firebase
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loadInvoices();
+      } else {
+        setLoading(false);
+        clearInvoicesCache();
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const loadInvoices = async () => {
+    try {
+      // First, load from cache for instant display
+      const cachedInvoices = getInvoices();
+      if (cachedInvoices) {
+        setInvoices(cachedInvoices);
+        setLoading(false);
+      }
+
+      // Then fetch fresh data from Firebase
+      const userInvoices = await getUserInvoices();
+      setInvoices(userInvoices);
+      
+      // Save fresh data to cache
+      saveInvoices(userInvoices);
+    } catch (error) {
+      console.error('Error loading invoices:', error);
+      
+      const cachedInvoices = getInvoices();
+      if (cachedInvoices && cachedInvoices.length > 0) {
+        console.log('Using cached invoices due to error');
+      } else {
+        alert('Failed to load invoices. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveInvoice = async (invoiceData) => {
+    try {
+      if (editingInvoice) {
+        await updateInvoice(editingInvoice.id, invoiceData);
+      } else {
+        await createInvoice(invoiceData);
+      }
+      
+      setEditingInvoice(null);
+      clearInvoicesCache();
+      loadInvoices();
+    } catch (error) {
+      console.error('Error saving invoice:', error);
+      alert('Failed to save invoice. Please try again.');
+    }
+  };
+
+  const startEdit = (invoice) => {
+    setEditingInvoice(invoice);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingInvoice(null);
+  };
+
+  const handleDeleteInvoice = async (id, invoiceNumber) => {
+    if (window.confirm(`Delete invoice ${invoiceNumber}?`)) {
+      try {
+        await deleteInvoice(id);
+        clearInvoicesCache();
+        loadInvoices();
+      } catch (error) {
+        console.error('Error deleting invoice:', error);
+        alert('Failed to delete invoice. Please try again.');
+      }
+    }
   };
 
   const getStatusStyle = (status) => {
@@ -67,40 +130,56 @@ function Invoices({ isDarkMode = false }) {
     }
   };
 
+  if (loading) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: colors.bg,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingBottom: '5rem'
+      }}>
+        <div style={{ color: colors.textSecondary }}>Loading invoices...</div>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
       background: colors.bg,
-      paddingTop: '1rem'
+      paddingTop: '1rem',
+      paddingBottom: '5rem' 
     }}>
       <div style={{
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: '0 1rem'
+        padding: '0 0.25rem'
       }}>
         {/* Header Stats */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-          gap: '1rem',
-          marginBottom: '1.5rem'
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: '0.5rem',
+          marginBottom: '1rem'
         }}>
           <div style={{
             background: colors.cardBg,
             border: `1px solid ${colors.border}`,
             borderRadius: '0.5rem',
-            padding: '1rem',
+            padding: '0.75rem',
             textAlign: 'center'
           }}>
             <div style={{
-              fontSize: '0.875rem',
+              fontSize: '0.75rem',
               color: colors.textSecondary,
               marginBottom: '0.25rem'
             }}>
               Total
             </div>
             <div style={{
-              fontSize: '1.5rem',
+              fontSize: '1.25rem',
               fontWeight: '600',
               color: colors.text
             }}>
@@ -112,18 +191,18 @@ function Invoices({ isDarkMode = false }) {
             background: colors.cardBg,
             border: `1px solid ${colors.border}`,
             borderRadius: '0.5rem',
-            padding: '1rem',
+            padding: '0.75rem',
             textAlign: 'center'
           }}>
             <div style={{
-              fontSize: '0.875rem',
+              fontSize: '0.75rem',
               color: colors.textSecondary,
               marginBottom: '0.25rem'
             }}>
               Paid
             </div>
             <div style={{
-              fontSize: '1.5rem',
+              fontSize: '1.25rem',
               fontWeight: '600',
               color: colors.paidText
             }}>
@@ -135,18 +214,18 @@ function Invoices({ isDarkMode = false }) {
             background: colors.cardBg,
             border: `1px solid ${colors.border}`,
             borderRadius: '0.5rem',
-            padding: '1rem',
+            padding: '0.75rem',
             textAlign: 'center'
           }}>
             <div style={{
-              fontSize: '0.875rem',
+              fontSize: '0.75rem',
               color: colors.textSecondary,
               marginBottom: '0.25rem'
             }}>
               Pending
             </div>
             <div style={{
-              fontSize: '1.5rem',
+              fontSize: '1.25rem',
               fontWeight: '600',
               color: colors.pendingText
             }}>
@@ -155,40 +234,28 @@ function Invoices({ isDarkMode = false }) {
           </div>
         </div>
 
-        {/* Add New Invoice Button */}
-        <button
-          style={{
-            width: '100%',
-            background: colors.buttonBg,
-            color: colors.buttonText,
-            border: 'none',
-            borderRadius: '0.5rem',
-            padding: '0.875rem',
-            fontSize: '0.875rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            marginBottom: '1.5rem'
-          }}
-        >
-          <Plus size={20} />
-          <span>Create New Invoice</span>
-        </button>
+        {/* Invoice Form */}
+        <InvoiceForm
+          isDarkMode={isDarkMode}
+          editingInvoice={editingInvoice}
+          onSave={saveInvoice}
+          onCancel={cancelEdit}
+          estimates={estimates}
+          jobs={jobs}
+          invoices={invoices}
+        />
 
         {/* Invoices List */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '1rem'
+          gap: '0.75rem'
         }}>
           {invoices.length === 0 ? (
             <div style={{
               background: colors.cardBg,
               border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
+              borderRadius: '0.75rem',
               padding: '3rem 1rem',
               textAlign: 'center'
             }}>
@@ -209,10 +276,11 @@ function Invoices({ isDarkMode = false }) {
             invoices.map(invoice => (
               <div
                 key={invoice.id}
+                onClick={() => startEdit(invoice)} 
                 style={{
                   background: colors.cardBg,
                   border: `1px solid ${colors.border}`,
-                  borderRadius: '0.5rem',
+                  borderRadius: '0.75rem',
                   padding: '1rem',
                   cursor: 'pointer',
                   transition: 'transform 0.2s',

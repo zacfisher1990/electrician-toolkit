@@ -184,3 +184,40 @@ export default {
   clearEstimatesCache,
   clearAllCache
 };
+
+// Add these functions to your existing src/utils/localStorageUtils.js
+
+/**
+ * Save invoices to localStorage
+ */
+export const saveInvoices = (invoices) => {
+  try {
+    localStorage.setItem('invoices', JSON.stringify(invoices));
+  } catch (error) {
+    console.error('Error saving invoices to localStorage:', error);
+  }
+};
+
+/**
+ * Get invoices from localStorage
+ */
+export const getInvoices = () => {
+  try {
+    const invoices = localStorage.getItem('invoices');
+    return invoices ? JSON.parse(invoices) : null;
+  } catch (error) {
+    console.error('Error getting invoices from localStorage:', error);
+    return null;
+  }
+};
+
+/**
+ * Clear invoices cache
+ */
+export const clearInvoicesCache = () => {
+  try {
+    localStorage.removeItem('invoices');
+  } catch (error) {
+    console.error('Error clearing invoices cache:', error);
+  }
+};
