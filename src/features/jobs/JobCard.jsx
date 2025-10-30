@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { MapPin, Calendar, Edit, FileText, Receipt, DollarSign, ChevronDown, ChevronUp, Play, Square } from 'lucide-react';
+import { MapPin, Calendar, Edit, FileText, Receipt, DollarSign, ChevronDown, ChevronUp, Play, Square, Trash2 } from 'lucide-react';
 import styles from './JobCard.module.css';
 
 
@@ -398,7 +398,7 @@ const JobCard = ({
           onClick={handleEstimateClick}
           title={linkedEstimate ? "View Estimate" : "No estimate linked"}
           style={{
-            background: linkedEstimate ? '#10b981' : colors.border,
+            background: linkedEstimate ? '#f97316' : colors.border,
             border: 'none',
             borderRadius: '0.5rem',
             color: 'white',
@@ -416,30 +416,42 @@ const JobCard = ({
           <span style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Estimate</span>
         </button>
 
+        {/* Invoice Button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
-            e.preventDefault();
             onViewInvoice(job);
           }}
-          title={job.invoiceId ? "View Invoice" : "No invoice linked"}
+          disabled={!job.estimateIds || job.estimateIds.length === 0}
           style={{
-            background: job.invoiceId ? '#f59e0b' : colors.border,
+            flex: 1,
+            padding: '0.625rem 1rem',
+            background: (job.estimateIds && job.estimateIds.length > 0) 
+              ? (job.invoiceId ? '#10b981' : '#10b981')  // Always green if has estimate
+              : colors.border,  // Gray if no estimate
+            color: (job.estimateIds && job.estimateIds.length > 0) ? 'white' : colors.subtext,
             border: 'none',
             borderRadius: '0.5rem',
-            color: 'white',
-            cursor: job.invoiceId ? 'pointer' : 'not-allowed',
+            fontSize: '0.8125rem',
+            fontWeight: '600',
+            cursor: (job.estimateIds && job.estimateIds.length > 0) ? 'pointer' : 'not-allowed',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            fontWeight: '600',
-            opacity: job.invoiceId ? 1 : 0.5
+            gap: '0.375rem',
+            opacity: (job.estimateIds && job.estimateIds.length === 0) ? 0.5 : 1
           }}
-          disabled={!job.invoiceId}
+          title={
+            !job.estimateIds || job.estimateIds.length === 0 
+              ? "Add an estimate first" 
+              : job.invoiceId 
+                ? "View Invoice" 
+                : "Create Invoice"
+          }
         >
-          <Receipt size={16} />
-          <span style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Invoice</span>
+          <FileText size={16} />
+          Invoice
         </button>
         
       </div>

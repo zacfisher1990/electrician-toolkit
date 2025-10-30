@@ -20,7 +20,8 @@ const InvoiceForm = ({
     dueDate: editingInvoice?.dueDate || '',
     lineItems: editingInvoice?.lineItems || [],
     notes: editingInvoice?.notes || '',
-    status: editingInvoice?.status || 'Pending'
+    status: editingInvoice?.status || 'Pending',
+    jobId: editingInvoice?.jobId || null 
   });
   const [newLineItem, setNewLineItem] = useState({ description: '', quantity: '1', rate: '' });
 
@@ -44,41 +45,32 @@ const InvoiceForm = ({
         dueDate: editingInvoice.dueDate || '',
         lineItems: [...editingInvoice.lineItems],
         notes: editingInvoice.notes || '',
-        status: editingInvoice.status
+        status: editingInvoice.status,
+        jobId: editingInvoice.jobId || null
       });
       setShowForm(true);
     }
   }, [editingInvoice]);
 
-  // Generate next invoice number
-useEffect(() => {
-  if (!editingInvoice && showForm && !formData.invoiceNumber) {
-    // Get the highest invoice number from existing invoices
-    const getNextInvoiceNumber = () => {
-      if (invoices.length === 0) {
-        return 'INV-001';
-      }
-      
-      // Extract numbers from existing invoice numbers
-      const numbers = invoices
-        .map(inv => {
-          const match = inv.invoiceNumber.match(/INV-(\d+)/);
-          return match ? parseInt(match[1]) : 0;
-        })
-        .filter(num => num > 0);
-      
-      if (numbers.length === 0) {
-        return 'INV-001';
-      }
-      
-      const maxNumber = Math.max(...numbers);
-      const nextNumber = maxNumber + 1;
-      return `INV-${String(nextNumber).padStart(3, '0')}`;
+// Generate next invoice number
+    useEffect(() => {
+    const generateInvoiceNumber = async () => {
+        if (!editingInvoice && showForm && !formData.invoiceNumber) {
+        try {
+            const { getNextInvoiceNumber } = await import('./invoicesService');
+            const nextNumber = await getNextInvoiceNumber();
+            setFormData(prev => ({ ...prev, invoiceNumber: nextNumber }));
+        } catch (error) {
+            console.error('Error generating invoice number:', error);
+            // Fallback to timestamp if error
+            const fallbackNumber = `INV-${String(Date.now()).slice(-6)}`;
+            setFormData(prev => ({ ...prev, invoiceNumber: fallbackNumber }));
+        }
+        }
     };
     
-    setFormData(prev => ({ ...prev, invoiceNumber: getNextInvoiceNumber() }));
-  }
-}, [showForm, editingInvoice, formData.invoiceNumber]);
+    generateInvoiceNumber();
+    }, [showForm, editingInvoice, formData.invoiceNumber]);
 
   const calculateTotal = (lineItems) => {
     return lineItems.reduce((sum, item) => {
@@ -128,7 +120,8 @@ useEffect(() => {
       dueDate: '',
       lineItems: [], 
       notes: '',
-      status: 'Pending'
+      status: 'Pending',
+      jobId: null 
     });
     setShowForm(false);
   };
@@ -403,6 +396,69 @@ useEffect(() => {
               </select>
             </div>
           )}
+
+          {/* Link to Job */}
+            {jobs.length > 0 && (
+            <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{
+                display: 'block',
+                marginBottom: '0.25rem',
+                color: colors.subtext,
+                fontSize: '0.875rem',
+                fontWeight: '500'
+                }}>
+                Link to Job (optional)
+                </label>
+                <select
+                value={formData.jobId || ''}
+                onChange={(e) => {
+                    const selectedJobId = e.target.value;
+                    setFormData({ ...formData, jobId: selectedJobId || null });
+                    
+                    // Auto-fill client name from job if not already filled
+                    if (selectedJobId && !formData.client) {
+                    const selectedJob = jobs.find(j => j.id === selectedJobId);
+                    if (selectedJob) {
+                        setFormData(prev => ({
+                        ...prev,
+                        jobId: selectedJobId,
+                        client: selectedJob.client
+                        }));
+                    }
+                    }
+                }}
+                style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    background: colors.inputBg,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.5rem',
+                    color: colors.text,
+                    fontSize: '0.9375rem',
+                    boxSizing: 'border-box'
+                }}
+                >
+                <option value="">None - Standalone invoice</option>
+                {jobs.map(job => (
+                    <option key={job.id} value={job.id}>
+                    {job.title || job.name} - {job.client}
+                    </option>
+                ))}
+                </select>
+                {formData.jobId && (
+                <div style={{
+                    marginTop: '0.25rem',
+                    fontSize: '0.75rem',
+                    color: '#10b981',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
+                }}>
+                    ✓ Invoice will be linked to this job
+                </div>
+                )}
+            </div>
+            )}
 
           {/* Line Items Section */}
           <div style={{

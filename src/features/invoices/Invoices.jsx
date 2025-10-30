@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText } from 'lucide-react';
+import { FileText, Briefcase } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase/firebase';
 import { getUserInvoices, createInvoice, updateInvoice, deleteInvoice } from './invoicesService';
@@ -10,6 +10,8 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingInvoice, setEditingInvoice] = useState(null);
+  const [attachingInvoice, setAttachingInvoice] = useState(null);
+  const [showJobSelector, setShowJobSelector] = useState(false);
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -145,6 +147,44 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
     );
   }
 
+  const handleAttachToJob = (invoice, e) => {
+  e.stopPropagation(); // Prevent card click
+  setAttachingInvoice(invoice);
+  setShowJobSelector(true);
+};
+
+const handleSelectJob = async (jobId) => {
+  if (!attachingInvoice) return;
+  
+  try {
+    // Update invoice with jobId
+    await updateInvoice(attachingInvoice.id, {
+      ...attachingInvoice,
+      jobId: jobId
+    });
+    
+    // Also update the job with invoiceId
+    const { updateJob } = await import('../jobs/jobsService');
+    const job = jobs.find(j => j.id === jobId);
+    if (job) {
+      await updateJob(jobId, {
+        ...job,
+        invoiceId: attachingInvoice.id
+      });
+    }
+    
+    setShowJobSelector(false);
+    setAttachingInvoice(null);
+    clearInvoicesCache();
+    loadInvoices();
+    
+    alert('Invoice attached to job successfully!');
+  } catch (error) {
+    console.error('Error attaching invoice to job:', error);
+    alert('Failed to attach invoice. Please try again.');
+  }
+};
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -233,6 +273,8 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
             </div>
           </div>
         </div>
+
+        
 
         {/* Invoice Form */}
         <InvoiceForm
@@ -357,6 +399,123 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
           )}
         </div>
       </div>
+{/* Job Selector Modal */}
+{showJobSelector && (
+  <div style={{
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: '1rem'
+  }}>
+    <div style={{
+      background: colors.cardBg,
+      borderRadius: '0.75rem',
+      padding: '1.5rem',
+      maxWidth: '500px',
+      width: '100%',
+      maxHeight: '80vh',
+      overflow: 'auto'
+    }}>
+      <h3 style={{
+        margin: '0 0 1rem 0',
+        color: colors.text,
+        fontSize: '1.125rem',
+        fontWeight: '600'
+      }}>
+        Attach to Job
+      </h3>
+      
+      {jobs.length === 0 ? (
+        <p style={{
+          color: colors.textSecondary,
+          fontSize: '0.875rem',
+          textAlign: 'center',
+          padding: '2rem 0'
+        }}>
+          No jobs available. Create a job first.
+        </p>
+      ) : (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem'
+        }}>
+          {jobs.map(job => (
+            <button
+              key={job.id}
+              onClick={() => handleSelectJob(job.id)}
+              style={{
+                padding: '1rem',
+                background: colors.bg,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                color: colors.text,
+                cursor: 'pointer',
+                textAlign: 'left',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+            >
+              <div>
+                <div style={{
+                  fontWeight: '600',
+                  fontSize: '0.9375rem',
+                  marginBottom: '0.25rem'
+                }}>
+                  {job.title || job.name}
+                </div>
+                <div style={{
+                  fontSize: '0.8125rem',
+                  color: colors.textSecondary
+                }}>
+                  {job.client}
+                </div>
+              </div>
+              {job.invoiceId && (
+                <span style={{
+                  fontSize: '0.75rem',
+                  color: colors.textSecondary
+                }}>
+                  (Has invoice)
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+      
+      <button
+        onClick={() => {
+          setShowJobSelector(false);
+          setAttachingInvoice(null);
+        }}
+        style={{
+          width: '100%',
+          marginTop: '1rem',
+          padding: '0.75rem',
+          background: 'transparent',
+          border: `1px solid ${colors.border}`,
+          borderRadius: '0.5rem',
+          color: colors.text,
+          cursor: 'pointer',
+          fontSize: '0.9375rem',
+          fontWeight: '600'
+        }}
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

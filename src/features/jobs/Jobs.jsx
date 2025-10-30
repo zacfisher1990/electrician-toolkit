@@ -14,6 +14,7 @@ import StatusTabs from './StatusTabs';
 import AuthModal from '../profile/AuthModal';
 import { saveJobs, getJobs, clearJobsCache } from '../../utils/localStorageUtils';
 import { saveEstimates, getEstimates, clearEstimatesCache } from '../../utils/localStorageUtils';
+import InvoiceViewModal from './InvoiceViewModal';
 
 const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [jobs, setJobs] = useState([]);
@@ -32,7 +33,8 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [showAuthModal, setShowAuthModal] = useState(false); 
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [showCombinedEstimatesModal, setShowCombinedEstimatesModal] = useState(false);
-  const [viewingSingleEstimate, setViewingSingleEstimate] = useState(null); 
+  const [viewingSingleEstimate, setViewingSingleEstimate] = useState(null);
+  const [viewingInvoice, setViewingInvoice] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     client: '',
@@ -550,6 +552,92 @@ const calculateTotalFromEstimates = (estimateIds) => {
   }, 0);
 };
 
+const generateInvoiceFromJob = async (job) => {
+  // Get linked estimates
+  const jobEstimates = estimates.filter(est => 
+    job.estimateIds?.includes(est.id)
+  );
+  
+  // Build line items from estimates
+  const lineItems = [];
+  
+  jobEstimates.forEach(estimate => {
+    // Add labor as line item
+    if (estimate.laborHours && estimate.laborRate) {
+      lineItems.push({
+        description: `Labor: ${estimate.laborHours} hours @ $${estimate.laborRate}/hr`,
+        quantity: 1,
+        rate: estimate.laborHours * estimate.laborRate
+      });
+    }
+    
+    // Add materials as line items
+    if (estimate.materials && estimate.materials.length > 0) {
+      estimate.materials.forEach(material => {
+        lineItems.push({
+          description: material.name,
+          quantity: material.quantity || 1,
+          rate: parseFloat(material.cost) || 0
+        });
+      });
+    }
+  });
+  
+  // Calculate total
+  const total = lineItems.reduce((sum, item) => 
+    sum + (item.quantity * item.rate), 0
+  );
+  
+  // Generate invoice number - FIXED: Use sequential numbering
+  const { getNextInvoiceNumber } = await import('../invoices/invoicesService');
+  const invoiceNumber = await getNextInvoiceNumber();
+  
+  return {
+    invoiceNumber: invoiceNumber,
+    client: job.client,
+    clientEmail: '',
+    date: new Date().toISOString().split('T')[0],
+    dueDate: '',
+    lineItems: lineItems,
+    notes: `Invoice for job: ${job.title || job.name}`,
+    status: 'Pending',
+    amount: total,
+    jobId: job.id,
+    isNew: true
+  };
+};
+const handleSaveInvoice = async (invoiceData) => {
+  try {
+    const { createInvoice } = await import('../invoices/invoicesService');
+    
+    // Remove the isNew flag
+    const { isNew, ...dataToSave } = invoiceData;
+    
+    // Save invoice
+    const invoiceId = await createInvoice(dataToSave);
+    
+    // Update job with invoice ID
+    const { updateJob } = await import('./jobsService');
+    const job = jobs.find(j => j.id === invoiceData.jobId);
+    if (job) {
+      await updateJob(invoiceData.jobId, {
+        ...job,
+        invoiceId: invoiceId
+      });
+    }
+    
+    // Close modal and refresh
+    setViewingInvoice(null);
+    clearJobsCache();
+    loadJobs();
+    
+    alert('Invoice saved successfully!');
+  } catch (error) {
+    console.error('Error saving invoice:', error);
+    alert('Failed to save invoice. Please try again.');
+  }
+};
+
   return (
     <div className="jobs-container">
       {/* Auth Modal */}
@@ -814,7 +902,6 @@ const calculateTotalFromEstimates = (estimateIds) => {
                   setStatusDropdownOpen={setStatusDropdownOpen}
                   onUpdateStatus={handleUpdateStatus}
                   onViewJob={openJobView}
-                  
                   onViewEstimate={(job) => {
                   // If job has multiple estimates, show combined summary
                   if (job.estimateIds && job.estimateIds.length > 1) {
@@ -839,12 +926,29 @@ const calculateTotalFromEstimates = (estimateIds) => {
                     }
                   }
                 }}
-                  onViewInvoice={(job) => {
+                  onViewInvoice={async (job) => {
                     if (job.invoiceId) {
-                      console.log('View invoice:', job.invoiceId);
+                      // Load and show existing invoice
+                      const { getUserInvoices } = await import('../invoices/invoicesService');
+                      const invoices = await getUserInvoices();
+                      const invoice = invoices.find(inv => inv.id === job.invoiceId);
+                      if (invoice) {
+                        setViewingInvoice(invoice);
+                      }
+                    } else {
+                      // Generate new invoice from job's estimates
+                      if (!job.estimateIds || job.estimateIds.length === 0) {
+                        alert('This job has no estimates. Add an estimate first.');
+                        return;
+                      }
+                      
+                      // Generate invoice from estimates
+                      // Generate invoice from estimates
+                      const generatedInvoice = await generateInvoiceFromJob(job);
+                      setViewingInvoice(generatedInvoice);
                     }
                   }}
-                  onClockInOut={handleClockInOut}
+                  lockInOut={handleClockInOut}
                   isDarkMode={isDarkMode}
                   colors={colors}
                   estimates={estimates}
@@ -854,6 +958,8 @@ const calculateTotalFromEstimates = (estimateIds) => {
           
         </div>
       </div>
+
+      
 
               {/* Combined Estimates Summary Modal */}
         {showCombinedEstimatesModal && (
@@ -873,6 +979,15 @@ const calculateTotalFromEstimates = (estimateIds) => {
             onClose={handleCloseSingleEstimate}
           />
         )}
+        {/* Invoice View Modal */}
+{viewingInvoice && (
+  <InvoiceViewModal
+    invoice={viewingInvoice}
+    onClose={() => setViewingInvoice(null)}
+    onSave={handleSaveInvoice}
+    isDarkMode={isDarkMode}
+  />
+)}
     </div>
   );
 };
