@@ -416,41 +416,44 @@ const JobCard = ({
           <span style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Estimate</span>
         </button>
 
-        {/* Invoice Button */}
+        {/* Invoice Button - FIXED to work with estimatedCost OR estimates */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             onViewInvoice(job);
           }}
-          disabled={!job.estimateIds || job.estimateIds.length === 0}
+          disabled={
+            !job.invoiceId && 
+            !(job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0))
+          }
           style={{
             flex: 1,
             padding: '0.625rem 1rem',
-            background: (job.estimateIds && job.estimateIds.length > 0) 
-              ? (job.invoiceId ? '#10b981' : '#10b981')  // Always green if has estimate
-              : colors.border,  // Gray if no estimate
-            color: (job.estimateIds && job.estimateIds.length > 0) ? 'white' : colors.subtext,
+            background: (job.invoiceId || job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0))
+              ? '#10b981'  // Green if has invoice, estimate, or cost
+              : colors.border,  // Gray if none
+            color: (job.invoiceId || job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0)) ? 'white' : colors.subtext,
             border: 'none',
             borderRadius: '0.5rem',
             fontSize: '0.8125rem',
             fontWeight: '600',
-            cursor: (job.estimateIds && job.estimateIds.length > 0) ? 'pointer' : 'not-allowed',
+            cursor: (job.invoiceId || job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0)) ? 'pointer' : 'not-allowed',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '0.375rem',
-            opacity: (job.estimateIds && job.estimateIds.length === 0) ? 0.5 : 1
+            opacity: (!job.invoiceId && !job.estimateIds?.length && (!job.estimatedCost || parseFloat(job.estimatedCost) === 0)) ? 0.5 : 1
           }}
           title={
-            !job.estimateIds || job.estimateIds.length === 0 
-              ? "Add an estimate first" 
-              : job.invoiceId 
-                ? "View Invoice" 
-                : "Create Invoice"
+            job.invoiceId 
+              ? "View Invoice" 
+              : (job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0))
+                ? "Create Invoice"
+                : "Add an estimate or cost first"
           }
         >
-          <FileText size={16} />
+          <Receipt size={16} />
           Invoice
         </button>
         
