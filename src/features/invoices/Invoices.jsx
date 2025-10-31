@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Briefcase } from 'lucide-react';
+import { FileText, Briefcase, Search } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase/firebase';
 import { getUserInvoices, createInvoice, updateInvoice, deleteInvoice } from './invoicesService';
 import { saveInvoices, getInvoices, clearInvoicesCache } from '../../utils/localStorageUtils';
 import InvoiceForm from './InvoiceForm';
+import InvoiceCard from './InvoiceCard';
 
 function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [invoices, setInvoices] = useState([]);
@@ -12,6 +13,8 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [attachingInvoice, setAttachingInvoice] = useState(null);
   const [showJobSelector, setShowJobSelector] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState(''); // NEW: Search query state
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -110,6 +113,37 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
     }
   };
 
+  const handleUpdateInvoiceStatus = async (invoiceId, newStatus) => {
+    try {
+      // Find the invoice
+      const invoice = invoices.find(inv => inv.id === invoiceId);
+      
+      if (!invoice) {
+        console.error('Invoice not found');
+        return;
+      }
+      
+      // Update the invoice with the new status
+      await updateInvoice(invoiceId, {
+        ...invoice,
+        status: newStatus
+      });
+      
+      // Reload invoices to reflect the change
+      clearInvoicesCache();
+      loadInvoices();
+      
+    } catch (error) {
+      console.error('Error updating invoice status:', error);
+      alert('Failed to update invoice status. Please try again.');
+    }
+  };
+
+  // Handler for viewing invoice (opens edit mode)
+  const handleViewInvoice = (invoice) => {
+    startEdit(invoice);
+  };
+
   const getStatusStyle = (status) => {
     switch(status) {
       case 'Paid':
@@ -148,42 +182,42 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   }
 
   const handleAttachToJob = (invoice, e) => {
-  e.stopPropagation(); // Prevent card click
-  setAttachingInvoice(invoice);
-  setShowJobSelector(true);
-};
+    e.stopPropagation(); // Prevent card click
+    setAttachingInvoice(invoice);
+    setShowJobSelector(true);
+  };
 
-const handleSelectJob = async (jobId) => {
-  if (!attachingInvoice) return;
-  
-  try {
-    // Update invoice with jobId
-    await updateInvoice(attachingInvoice.id, {
-      ...attachingInvoice,
-      jobId: jobId
-    });
+  const handleSelectJob = async (jobId) => {
+    if (!attachingInvoice) return;
     
-    // Also update the job with invoiceId
-    const { updateJob } = await import('../jobs/jobsService');
-    const job = jobs.find(j => j.id === jobId);
-    if (job) {
-      await updateJob(jobId, {
-        ...job,
-        invoiceId: attachingInvoice.id
+    try {
+      // Update invoice with jobId
+      await updateInvoice(attachingInvoice.id, {
+        ...attachingInvoice,
+        jobId: jobId
       });
+      
+      // Also update the job with invoiceId
+      const { updateJob } = await import('../jobs/jobsService');
+      const job = jobs.find(j => j.id === jobId);
+      if (job) {
+        await updateJob(jobId, {
+          ...job,
+          invoiceId: attachingInvoice.id
+        });
+      }
+      
+      setShowJobSelector(false);
+      setAttachingInvoice(null);
+      clearInvoicesCache();
+      loadInvoices();
+      
+      alert('Invoice attached to job successfully!');
+    } catch (error) {
+      console.error('Error attaching invoice to job:', error);
+      alert('Failed to attach invoice. Please try again.');
     }
-    
-    setShowJobSelector(false);
-    setAttachingInvoice(null);
-    clearInvoicesCache();
-    loadInvoices();
-    
-    alert('Invoice attached to job successfully!');
-  } catch (error) {
-    console.error('Error attaching invoice to job:', error);
-    alert('Failed to attach invoice. Please try again.');
-  }
-};
+  };
 
   return (
     <div style={{
@@ -197,84 +231,224 @@ const handleSelectJob = async (jobId) => {
         margin: '0 auto',
         padding: '0 0.25rem'
       }}>
-        {/* Header Stats */}
+        {/* Header Stats - Matching Job Log StatusTabs Style */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gap: '0.5rem',
+          gridTemplateColumns: 'repeat(5, 1fr)',
+          gap: '0.375rem',
           marginBottom: '1rem'
         }}>
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.5rem',
-            padding: '0.75rem',
-            textAlign: 'center'
-          }}>
-            <div style={{
+          {/* All */}
+          <button
+            onClick={() => setStatusFilter('all')}
+            style={{
+              padding: '0.5rem 0.25rem',
+              borderRadius: '0.5rem',
+              border: `1px solid ${statusFilter === 'all' ? colors.text : colors.border}`,
+              background: statusFilter === 'all' ? colors.text : 'transparent',
+              color: statusFilter === 'all' ? colors.bg : colors.text,
               fontSize: '0.75rem',
-              color: colors.textSecondary,
-              marginBottom: '0.25rem'
-            }}>
-              Total
-            </div>
-            <div style={{
-              fontSize: '1.25rem',
               fontWeight: '600',
-              color: colors.text
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.375rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span>All</span>
+            <span style={{
+              background: statusFilter === 'all' ? colors.bg : colors.cardBg,
+              color: statusFilter === 'all' ? colors.text : colors.textSecondary,
+              padding: '0.125rem 0.375rem',
+              borderRadius: '1rem',
+              fontSize: '0.7rem',
+              fontWeight: '700',
+              minWidth: '1.25rem',
+              textAlign: 'center'
             }}>
               {invoices.length}
-            </div>
-          </div>
+            </span>
+          </button>
 
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.5rem',
-            padding: '0.75rem',
-            textAlign: 'center'
-          }}>
-            <div style={{
-              fontSize: '0.75rem',
-              color: colors.textSecondary,
-              marginBottom: '0.25rem'
-            }}>
-              Paid
-            </div>
-            <div style={{
-              fontSize: '1.25rem',
+          {/* Paid */}
+          <button
+            onClick={() => setStatusFilter('Paid')}
+            style={{
+              padding: '0.5rem 0.25rem',
+              borderRadius: '0.5rem',
+              border: `1px solid ${statusFilter === 'Paid' ? '#10b981' : colors.border}`,
+              background: statusFilter === 'Paid' ? '#10b98120' : 'transparent',
+              color: statusFilter === 'Paid' ? '#10b981' : colors.text,
+              fontSize: '0.7rem',
               fontWeight: '600',
-              color: colors.paidText
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.125rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span style={{
+              background: statusFilter === 'Paid' ? '#10b981' : colors.cardBg,
+              color: statusFilter === 'Paid' ? 'white' : colors.textSecondary,
+              padding: '0.125rem 0.3rem',
+              borderRadius: '1rem',
+              fontSize: '0.65rem',
+              fontWeight: '700',
+              minWidth: '1.25rem',
+              textAlign: 'center'
             }}>
               {invoices.filter(inv => inv.status === 'Paid').length}
-            </div>
-          </div>
+            </span>
+            <span style={{ fontSize: '0.65rem' }}>Paid</span>
+          </button>
 
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.5rem',
-            padding: '0.75rem',
-            textAlign: 'center'
-          }}>
-            <div style={{
-              fontSize: '0.75rem',
-              color: colors.textSecondary,
-              marginBottom: '0.25rem'
-            }}>
-              Pending
-            </div>
-            <div style={{
-              fontSize: '1.25rem',
+          {/* Pending */}
+          <button
+            onClick={() => setStatusFilter('Pending')}
+            style={{
+              padding: '0.5rem 0.25rem',
+              borderRadius: '0.5rem',
+              border: `1px solid ${statusFilter === 'Pending' ? '#f59e0b' : colors.border}`,
+              background: statusFilter === 'Pending' ? '#f59e0b20' : 'transparent',
+              color: statusFilter === 'Pending' ? '#f59e0b' : colors.text,
+              fontSize: '0.7rem',
               fontWeight: '600',
-              color: colors.pendingText
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.125rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span style={{
+              background: statusFilter === 'Pending' ? '#f59e0b' : colors.cardBg,
+              color: statusFilter === 'Pending' ? 'white' : colors.textSecondary,
+              padding: '0.125rem 0.3rem',
+              borderRadius: '1rem',
+              fontSize: '0.65rem',
+              fontWeight: '700',
+              minWidth: '1.25rem',
+              textAlign: 'center'
             }}>
               {invoices.filter(inv => inv.status === 'Pending').length}
-            </div>
-          </div>
+            </span>
+            <span style={{ fontSize: '0.65rem' }}>Pending</span>
+          </button>
+
+          {/* Overdue */}
+          <button
+            onClick={() => setStatusFilter('Overdue')}
+            style={{
+              padding: '0.5rem 0.25rem',
+              borderRadius: '0.5rem',
+              border: `1px solid ${statusFilter === 'Overdue' ? '#ef4444' : colors.border}`,
+              background: statusFilter === 'Overdue' ? '#ef444420' : 'transparent',
+              color: statusFilter === 'Overdue' ? '#ef4444' : colors.text,
+              fontSize: '0.7rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.125rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span style={{
+              background: statusFilter === 'Overdue' ? '#ef4444' : colors.cardBg,
+              color: statusFilter === 'Overdue' ? 'white' : colors.textSecondary,
+              padding: '0.125rem 0.3rem',
+              borderRadius: '1rem',
+              fontSize: '0.65rem',
+              fontWeight: '700',
+              minWidth: '1.25rem',
+              textAlign: 'center'
+            }}>
+              {invoices.filter(inv => inv.status === 'Overdue').length}
+            </span>
+            <span style={{ fontSize: '0.65rem' }}>Overdue</span>
+          </button>
+
+          {/* Canceled */}
+          <button
+            onClick={() => setStatusFilter('Canceled')}
+            style={{
+              padding: '0.5rem 0.25rem',
+              borderRadius: '0.5rem',
+              border: `1px solid ${statusFilter === 'Canceled' ? '#6b7280' : colors.border}`,
+              background: statusFilter === 'Canceled' ? '#6b728020' : 'transparent',
+              color: statusFilter === 'Canceled' ? '#6b7280' : colors.text,
+              fontSize: '0.7rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.125rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span style={{
+              background: statusFilter === 'Canceled' ? '#6b7280' : colors.cardBg,
+              color: statusFilter === 'Canceled' ? 'white' : colors.textSecondary,
+              padding: '0.125rem 0.3rem',
+              borderRadius: '1rem',
+              fontSize: '0.65rem',
+              fontWeight: '700',
+              minWidth: '1.25rem',
+              textAlign: 'center'
+            }}>
+              {invoices.filter(inv => inv.status === 'Canceled').length}
+            </span>
+            <span style={{ fontSize: '0.65rem' }}>Canceled</span>
+          </button>
         </div>
 
-        
+        {/* Search Bar - NEW: Matching Job Log Style */}
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ position: 'relative' }}>
+            <Search 
+              size={20}
+              color={colors.textSecondary}
+              style={{
+                position: 'absolute',
+                left: '1rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none'
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Search invoices..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem 0.75rem 3rem',
+                background: colors.cardBg,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                color: colors.text,
+                fontSize: '0.9375rem',
+                outline: 'none',
+                transition: 'border-color 0.2s'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#3b82f6';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = colors.border;
+              }}
+            />
+          </div>
+        </div>
 
         {/* Invoice Form */}
         <InvoiceForm
@@ -287,235 +461,273 @@ const handleSelectJob = async (jobId) => {
           invoices={invoices}
         />
 
-        {/* Invoices List */}
+        {/* Section Header with Title and Count */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+          padding: '0 0.25rem'
+        }}>
+          <h3 style={{ 
+            margin: 0, 
+            color: colors.text, 
+            fontSize: '1.125rem',
+            fontWeight: '600'
+          }}>
+            {statusFilter === 'all' ? 'All Invoices' : 
+             statusFilter === 'Paid' ? 'Paid Invoices' :
+             statusFilter === 'Pending' ? 'Pending Invoices' :
+             statusFilter === 'Overdue' ? 'Overdue Invoices' :
+             'Canceled Invoices'}
+          </h3>
+          <span style={{
+            fontSize: '0.875rem',
+            color: colors.textSecondary,
+            background: colors.cardBg,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '1rem',
+            border: `1px solid ${colors.border}`
+          }}>
+            {(() => {
+              // Filter by status
+              const statusFiltered = statusFilter === 'all' 
+                ? invoices 
+                : invoices.filter(inv => inv.status === statusFilter);
+              
+              // Then filter by search query
+              const filtered = statusFiltered.filter(inv => {
+                if (!searchQuery) return true;
+                const query = searchQuery.toLowerCase();
+                return (
+                  inv.invoiceNumber?.toLowerCase().includes(query) ||
+                  inv.clientName?.toLowerCase().includes(query) ||
+                  inv.client?.toLowerCase().includes(query) ||
+                  inv.description?.toLowerCase().includes(query) ||
+                  inv.status?.toLowerCase().includes(query)
+                );
+              });
+              
+              return `${filtered.length} ${filtered.length === 1 ? 'invoice' : 'invoices'}`;
+            })()}
+          </span>
+        </div>
+
+        {/* Invoices List with InvoiceCard components */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           gap: '0.75rem'
         }}>
-          {invoices.length === 0 ? (
-            <div style={{
-              background: colors.cardBg,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.75rem',
-              padding: '3rem 1rem',
-              textAlign: 'center'
-            }}>
-              <FileText 
-                size={48} 
-                color={colors.textSecondary} 
-                style={{ margin: '0 auto 1rem' }}
-              />
-              <p style={{
-                color: colors.textSecondary,
-                fontSize: '0.875rem',
-                margin: 0
-              }}>
-                No invoices yet. Create your first invoice!
-              </p>
-            </div>
-          ) : (
-            invoices.map(invoice => (
-              <div
-                key={invoice.id}
-                onClick={() => startEdit(invoice)} 
-                style={{
+          {(() => {
+            // Filter invoices based on selected status
+            const statusFiltered = statusFilter === 'all' 
+              ? invoices 
+              : invoices.filter(inv => inv.status === statusFilter);
+
+            // Then filter by search query
+            const filteredInvoices = statusFiltered.filter(inv => {
+              if (!searchQuery) return true;
+              const query = searchQuery.toLowerCase();
+              return (
+                inv.invoiceNumber?.toLowerCase().includes(query) ||
+                inv.clientName?.toLowerCase().includes(query) ||
+                inv.client?.toLowerCase().includes(query) ||
+                inv.description?.toLowerCase().includes(query) ||
+                inv.status?.toLowerCase().includes(query)
+              );
+            });
+
+            if (filteredInvoices.length === 0) {
+              // Show different message if search is active
+              if (searchQuery) {
+                return (
+                  <div style={{
+                    background: colors.cardBg,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.75rem',
+                    padding: '3rem 1rem',
+                    textAlign: 'center'
+                  }}>
+                    <Search 
+                      size={48} 
+                      color={colors.textSecondary} 
+                      style={{ margin: '0 auto 1rem' }}
+                    />
+                    <p style={{
+                      color: colors.textSecondary,
+                      fontSize: '0.875rem',
+                      margin: 0
+                    }}>
+                      No invoices found matching "{searchQuery}"
+                    </p>
+                  </div>
+                );
+              }
+
+              const emptyMessages = {
+                'all': 'No invoices yet. Create your first invoice!',
+                'Paid': 'No paid invoices.',
+                'Pending': 'No pending invoices.',
+                'Overdue': 'No overdue invoices.',
+                'Canceled': 'No canceled invoices.'
+              };
+
+              return (
+                <div style={{
                   background: colors.cardBg,
                   border: `1px solid ${colors.border}`,
                   borderRadius: '0.75rem',
-                  padding: '1rem',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '0.75rem'
+                  padding: '3rem 1rem',
+                  textAlign: 'center'
                 }}>
-                  <div>
-                    <div style={{
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      color: colors.text,
-                      marginBottom: '0.25rem'
-                    }}>
-                      {invoice.invoiceNumber}
-                    </div>
-                    <div style={{
-                      fontSize: '0.875rem',
-                      color: colors.textSecondary
-                    }}>
-                      {invoice.client}
-                    </div>
-                  </div>
-                  <div style={{
-                    ...getStatusStyle(invoice.status),
-                    padding: '0.25rem 0.75rem',
-                    borderRadius: '1rem',
-                    fontSize: '0.75rem',
-                    fontWeight: '600'
-                  }}>
-                    {invoice.status}
-                  </div>
-                </div>
-                
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingTop: '0.75rem',
-                  borderTop: `1px solid ${colors.border}`
-                }}>
-                  <div style={{
+                  <FileText 
+                    size={48} 
+                    color={colors.textSecondary} 
+                    style={{ margin: '0 auto 1rem' }}
+                  />
+                  <p style={{
+                    color: colors.textSecondary,
                     fontSize: '0.875rem',
-                    color: colors.textSecondary
+                    margin: 0
                   }}>
-                    {new Date(invoice.date).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
-                  </div>
-                  <div style={{
-                    fontSize: '1.125rem',
-                    fontWeight: '600',
-                    color: colors.text
-                  }}>
-                    ${invoice.amount.toFixed(2)}
-                  </div>
+                    {emptyMessages[statusFilter]}
+                  </p>
                 </div>
-              </div>
-            ))
-          )}
+              );
+            }
+
+            return filteredInvoices.map(invoice => (
+              <InvoiceCard
+                key={invoice.id}
+                invoice={invoice}
+                onUpdateStatus={handleUpdateInvoiceStatus}
+                onViewInvoice={handleViewInvoice}
+                onDeleteInvoice={handleDeleteInvoice}
+                isDarkMode={isDarkMode}
+                colors={colors}
+              />
+            ));
+          })()}
         </div>
       </div>
-{/* Job Selector Modal */}
-{showJobSelector && (
-  <div style={{
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0, 0, 0, 0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    padding: '1rem'
-  }}>
-    <div style={{
-      background: colors.cardBg,
-      borderRadius: '0.75rem',
-      padding: '1.5rem',
-      maxWidth: '500px',
-      width: '100%',
-      maxHeight: '80vh',
-      overflow: 'auto'
-    }}>
-      <h3 style={{
-        margin: '0 0 1rem 0',
-        color: colors.text,
-        fontSize: '1.125rem',
-        fontWeight: '600'
-      }}>
-        Attach to Job
-      </h3>
-      
-      {jobs.length === 0 ? (
-        <p style={{
-          color: colors.textSecondary,
-          fontSize: '0.875rem',
-          textAlign: 'center',
-          padding: '2rem 0'
-        }}>
-          No jobs available. Create a job first.
-        </p>
-      ) : (
+
+      {/* Job Selector Modal */}
+      {showJobSelector && (
         <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
           display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem'
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
         }}>
-          {jobs.map(job => (
+          <div style={{
+            background: colors.cardBg,
+            borderRadius: '0.75rem',
+            padding: '1.5rem',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <h3 style={{
+              margin: '0 0 1rem 0',
+              color: colors.text,
+              fontSize: '1.125rem',
+              fontWeight: '600'
+            }}>
+              Attach to Job
+            </h3>
+            
+            {jobs.length === 0 ? (
+              <p style={{
+                color: colors.textSecondary,
+                fontSize: '0.875rem',
+                textAlign: 'center',
+                padding: '2rem 0'
+              }}>
+                No jobs available. Create a job first.
+              </p>
+            ) : (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem'
+              }}>
+                {jobs.map(job => (
+                  <button
+                    key={job.id}
+                    onClick={() => handleSelectJob(job.id)}
+                    style={{
+                      padding: '1rem',
+                      background: colors.bg,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '0.5rem',
+                      color: colors.text,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <div>
+                      <div style={{
+                        fontWeight: '600',
+                        fontSize: '0.9375rem',
+                        marginBottom: '0.25rem'
+                      }}>
+                        {job.title || job.name}
+                      </div>
+                      <div style={{
+                        fontSize: '0.8125rem',
+                        color: colors.textSecondary
+                      }}>
+                        {job.client}
+                      </div>
+                    </div>
+                    {job.invoiceId && (
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: colors.textSecondary
+                      }}>
+                        (Has invoice)
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            
             <button
-              key={job.id}
-              onClick={() => handleSelectJob(job.id)}
+              onClick={() => {
+                setShowJobSelector(false);
+                setAttachingInvoice(null);
+              }}
               style={{
-                padding: '1rem',
-                background: colors.bg,
+                width: '100%',
+                marginTop: '1rem',
+                padding: '0.75rem',
+                background: 'transparent',
                 border: `1px solid ${colors.border}`,
                 borderRadius: '0.5rem',
                 color: colors.text,
                 cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
+                fontSize: '0.9375rem',
+                fontWeight: '600'
               }}
             >
-              <div>
-                <div style={{
-                  fontWeight: '600',
-                  fontSize: '0.9375rem',
-                  marginBottom: '0.25rem'
-                }}>
-                  {job.title || job.name}
-                </div>
-                <div style={{
-                  fontSize: '0.8125rem',
-                  color: colors.textSecondary
-                }}>
-                  {job.client}
-                </div>
-              </div>
-              {job.invoiceId && (
-                <span style={{
-                  fontSize: '0.75rem',
-                  color: colors.textSecondary
-                }}>
-                  (Has invoice)
-                </span>
-              )}
+              Cancel
             </button>
-          ))}
+          </div>
         </div>
       )}
-      
-      <button
-        onClick={() => {
-          setShowJobSelector(false);
-          setAttachingInvoice(null);
-        }}
-        style={{
-          width: '100%',
-          marginTop: '1rem',
-          padding: '0.75rem',
-          background: 'transparent',
-          border: `1px solid ${colors.border}`,
-          borderRadius: '0.5rem',
-          color: colors.text,
-          cursor: 'pointer',
-          fontSize: '0.9375rem',
-          fontWeight: '600'
-        }}
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-)}
-
     </div>
   );
 }
