@@ -6,6 +6,8 @@ import { getUserInvoices, createInvoice, updateInvoice, deleteInvoice } from './
 import { saveInvoices, getInvoices, clearInvoicesCache } from '../../utils/localStorageUtils';
 import InvoiceForm from './InvoiceForm';
 import InvoiceCard from './InvoiceCard';
+import SendInvoiceModal from './SendInvoiceModal';
+import { sendInvoiceViaEmail, downloadInvoice, getUserBusinessInfo } from './invoiceSendService';
 
 function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [invoices, setInvoices] = useState([]);
@@ -15,6 +17,8 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [showJobSelector, setShowJobSelector] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState(''); // NEW: Search query state
+  const [sendingInvoice, setSendingInvoice] = useState(null); // NEW: For send invoice modal
+  const [userBusinessInfo, setUserBusinessInfo] = useState(null); // NEW: User business info for PDF
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -37,6 +41,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         loadInvoices();
+        loadUserBusinessInfo(); // Load business info when user is authenticated
       } else {
         setLoading(false);
         clearInvoicesCache();
@@ -44,6 +49,16 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
     });
     return () => unsubscribe();
   }, []);
+
+  // Load user business info for PDF generation
+  const loadUserBusinessInfo = async () => {
+    try {
+      const info = await getUserBusinessInfo(auth.currentUser?.uid);
+      setUserBusinessInfo(info);
+    } catch (error) {
+      console.error('Error loading user business info:', error);
+    }
+  };
 
   const loadInvoices = async () => {
     try {
@@ -142,6 +157,28 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   // Handler for viewing invoice (opens edit mode)
   const handleViewInvoice = (invoice) => {
     startEdit(invoice);
+  };
+
+  // Handler for sending invoice
+  const handleSendInvoice = (invoice) => {
+    setSendingInvoice(invoice);
+  };
+
+  // Handler for sending invoice via email
+  const handleSendInvoiceEmail = async (email, message) => {
+    try {
+      await sendInvoiceViaEmail(sendingInvoice, email, message, userBusinessInfo);
+      return { success: true };
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // Handler for downloading invoice
+  const handleDownloadInvoice = () => {
+    if (sendingInvoice) {
+      downloadInvoice(sendingInvoice, userBusinessInfo);
+    }
   };
 
   const getStatusStyle = (status) => {
@@ -604,6 +641,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
                 onUpdateStatus={handleUpdateInvoiceStatus}
                 onViewInvoice={handleViewInvoice}
                 onDeleteInvoice={handleDeleteInvoice}
+                onSendInvoice={handleSendInvoice}
                 isDarkMode={isDarkMode}
                 colors={colors}
               />
@@ -611,6 +649,16 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
           })()}
         </div>
       </div>
+
+      {/* Send Invoice Modal */}
+      {sendingInvoice && (
+        <SendInvoiceModal
+          invoice={sendingInvoice}
+          onClose={() => setSendingInvoice(null)}
+          onSend={handleSendInvoiceEmail}
+          isDarkMode={isDarkMode}
+        />
+      )}
 
       {/* Job Selector Modal */}
       {showJobSelector && (

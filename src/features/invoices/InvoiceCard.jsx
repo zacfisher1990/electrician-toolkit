@@ -1,11 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Edit, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit, Trash2, Send } from 'lucide-react';
 
 const InvoiceCard = ({ 
   invoice, 
   onUpdateStatus,
   onViewInvoice,
   onDeleteInvoice,
+  onSendInvoice, // Added this prop
   isDarkMode,
   colors 
 }) => {
@@ -306,6 +307,34 @@ const InvoiceCard = ({
               <Edit size={16} />
               Edit
             </button>
+
+            {onSendInvoice && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSendInvoice(invoice);
+                }}
+                style={{
+                  padding: '0.625rem 0.75rem',
+                  background: '#3b82f6',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  color: 'white',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.375rem',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#2563eb'}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#3b82f6'}
+              >
+                <Send size={16} />
+                Send
+              </button>
+            )}
 
             {onDeleteInvoice && (
               <button
