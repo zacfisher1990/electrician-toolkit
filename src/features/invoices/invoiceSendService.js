@@ -47,10 +47,10 @@ export const downloadInvoice = (invoice, userInfo) => {
  */
 export const getUserBusinessInfo = async (userId) => {
   // TODO: Implement fetching user business info from Firestore
-  // For now, return default values
+  // For now, return default values that will work
   return {
-    businessName: 'Your Business Name',
-    email: 'your-email@example.com',
+    businessName: 'Electrician Toolkit',
+    email: 'onboarding@resend.dev', // Using Resend's test email
     phone: '(555) 123-4567',
     address: '123 Main St, City, State 12345',
     paymentInstructions: 'Payment can be made via check, cash, or bank transfer. Please include invoice number on payment.'

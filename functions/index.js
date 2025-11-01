@@ -19,7 +19,7 @@ const { jsPDF } = require('jspdf');
  */
 exports.sendInvoiceEmail = functions.https.onCall(async (data, context) => {
   // Initialize Resend inside the function where config is available
-  const resend = new Resend(functions.config().resend.api_key);
+  const resend = new Resend(process.env.RESEND_API_KEY);
   
   // Verify user is authenticated
   if (!context.auth) {
