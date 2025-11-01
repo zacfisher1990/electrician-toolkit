@@ -1,87 +1,95 @@
 /**
- * Firebase Cloud Functions for Invoice Email Sending
+ * Firebase Cloud Functions v2 for Invoice Email Sending
  * 
  * Installation:
  * 1. cd functions
  * 2. npm install resend jspdf
- * 3. Set environment variable: firebase functions:config:set resend.api_key="YOUR_RESEND_API_KEY"
+ * 3. Create functions/.env with: RESEND_API_KEY=your_key_here
  * 4. Deploy: firebase deploy --only functions:sendInvoiceEmail
  */
 
-const functions = require('firebase-functions');
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { setGlobalOptions } = require('firebase-functions/v2');
 const { Resend } = require('resend');
 const { jsPDF } = require('jspdf');
 
-// Don't initialize Resend here - it will be initialized inside the function
+// Set global options
+setGlobalOptions({
+  maxInstances: 10,
+  region: 'us-central1'
+});
 
 /**
  * Cloud Function to send invoice via email with PDF attachment
  */
-exports.sendInvoiceEmail = functions.https.onCall(async (data, context) => {
-  // Initialize Resend inside the function where config is available
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  
-  // Verify user is authenticated
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      'unauthenticated',
-      'User must be authenticated to send invoices.'
-    );
-  }
-
-  const { invoice, recipientEmail, message, userInfo } = data;
-
-  if (!invoice || !recipientEmail) {
-    throw new functions.https.HttpsError(
-      'invalid-argument',
-      'Invoice data and recipient email are required.'
-    );
-  }
-
-  try {
-    console.log('Generating PDF for invoice:', invoice.invoiceNumber);
+exports.sendInvoiceEmail = onCall(
+  { cors: true },
+  async (request) => {
+    // Initialize Resend with environment variable
+    const resend = new Resend(process.env.RESEND_API_KEY);
     
-    // Generate PDF
-    const pdfBuffer = generateInvoicePDFBuffer(invoice, userInfo);
+    // Verify user is authenticated
+    if (!request.auth) {
+      throw new HttpsError(
+        'unauthenticated',
+        'User must be authenticated to send invoices.'
+      );
+    }
 
-    // Convert buffer to base64 for Resend
-    const pdfBase64 = pdfBuffer.toString('base64');
+    const { invoice, recipientEmail, message, userInfo } = request.data;
 
-    console.log('Sending email to:', recipientEmail);
+    if (!invoice || !recipientEmail) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Invoice data and recipient email are required.'
+      );
+    }
 
-    // Send email via Resend
-    const emailData = await resend.emails.send({
-      from: userInfo.email || 'invoices@yourdomain.com', // CHANGE THIS to your verified domain
-      to: recipientEmail,
-      subject: `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Your Business'}`,
-      html: generateEmailHTML(invoice, message, userInfo),
-      attachments: [
-        {
-          filename: `Invoice-${invoice.invoiceNumber || 'draft'}.pdf`,
-          content: pdfBase64,
-        }
-      ]
-    });
+    try {
+      console.log('Generating PDF for invoice:', invoice.invoiceNumber);
+      
+      // Generate PDF
+      const pdfBuffer = generateInvoicePDFBuffer(invoice, userInfo);
 
-    console.log('Email sent successfully:', emailData.id);
+      // Convert buffer to base64
+      const pdfBase64 = pdfBuffer.toString('base64');
 
-    return {
-      success: true,
-      messageId: emailData.id,
-      message: 'Invoice sent successfully!'
-    };
+      console.log('Sending email to:', recipientEmail);
 
-  } catch (error) {
-    console.error('Error sending invoice:', error);
-    throw new functions.https.HttpsError(
-      'internal',
-      `Failed to send invoice: ${error.message}`
-    );
+      // Send email via Resend
+      const emailData = await resend.emails.send({
+        from: 'Electrician Toolkit <onboarding@resend.dev>',
+        to: recipientEmail,
+        subject: `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Electrician Toolkit'}`,
+        html: generateEmailHTML(invoice, message, userInfo),
+        attachments: [
+          {
+            filename: `Invoice-${invoice.invoiceNumber || 'draft'}.pdf`,
+            content: pdfBase64,
+          }
+        ]
+      });
+
+      console.log('Email sent successfully:', emailData.id);
+
+      return {
+        success: true,
+        messageId: emailData.id,
+        message: 'Invoice sent successfully!'
+      };
+
+    } catch (error) {
+      console.error('Error sending invoice:', error);
+      throw new HttpsError(
+        'internal',
+        `Failed to send invoice: ${error.message}`
+      );
+    }
   }
-});
+);
 
 /**
- * Generate PDF buffer for the invoice (server-side)
+ * Generate PDF buffer for the invoice
  */
 function generateInvoicePDFBuffer(invoice, userInfo = {}) {
   const doc = new jsPDF();
@@ -102,7 +110,7 @@ function generateInvoicePDFBuffer(invoice, userInfo = {}) {
   doc.setFontSize(20);
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.text(userInfo.businessName || 'Your Business Name', margin, 15);
+  doc.text(userInfo.businessName || 'Electrician Toolkit', margin, 15);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
@@ -300,7 +308,7 @@ function generateEmailHTML(invoice, customMessage, userInfo) {
             <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
               <tr>
                 <td style="background-color: #3b82f6; padding: 30px; text-align: center;">
-                  <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Your Business'}</h1>
+                  <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Toolkit'}</h1>
                   <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px;">${userInfo.email || ''}</p>
                 </td>
               </tr>
