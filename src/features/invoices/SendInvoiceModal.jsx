@@ -9,7 +9,7 @@ const SendInvoiceModal = ({
 }) => {
   const [email, setEmail] = useState(invoice.clientEmail || '');
   const [message, setMessage] = useState(
-    `Hi ${invoice.clientName || invoice.client || 'there'},\n\nPlease find attached invoice #${invoice.invoiceNumber || 'N/A'} for $${parseFloat(invoice.total || 0).toFixed(2)}.\n\nThank you for your business!`
+    `Hi ${invoice.clientName || invoice.client || 'there'},\n\nPlease find attached invoice #${invoice.invoiceNumber || 'N/A'} for $${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}.\n\nThank you for your business!`
   );
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -208,7 +208,7 @@ const SendInvoiceModal = ({
                   fontSize: '1.125rem',
                   fontWeight: '700'
                 }}>
-                  ${parseFloat(invoice.total || 0).toFixed(2)}
+                  ${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}
                 </span>
               </div>
             </div>
