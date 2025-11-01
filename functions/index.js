@@ -12,14 +12,15 @@ const functions = require('firebase-functions');
 const { Resend } = require('resend');
 const { jsPDF } = require('jspdf');
 
-// Initialize Resend - using Firebase config
-// Use: firebase functions:config:set resend.api_key="YOUR_KEY"
-const resend = new Resend(functions.config().resend?.api_key || process.env.RESEND_API_KEY);
+// Don't initialize Resend here - it will be initialized inside the function
 
 /**
  * Cloud Function to send invoice via email with PDF attachment
  */
 exports.sendInvoiceEmail = functions.https.onCall(async (data, context) => {
+  // Initialize Resend inside the function where config is available
+  const resend = new Resend(functions.config().resend.api_key);
+  
   // Verify user is authenticated
   if (!context.auth) {
     throw new functions.https.HttpsError(
@@ -50,7 +51,7 @@ exports.sendInvoiceEmail = functions.https.onCall(async (data, context) => {
 
     // Send email via Resend
     const emailData = await resend.emails.send({
-      from: 'Electrician Toolkit <onboarding@resend.dev>',
+      from: userInfo.email || 'invoices@yourdomain.com', // CHANGE THIS to your verified domain
       to: recipientEmail,
       subject: `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Your Business'}`,
       html: generateEmailHTML(invoice, message, userInfo),
