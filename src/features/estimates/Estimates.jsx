@@ -1,19 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Search, X, Plus, ChevronDown } from 'lucide-react';
 import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as deleteEstimateFromFirebase } from './estimatesService';
+import { sendEstimateViaEmail, downloadEstimate, getUserBusinessInfo } from './estimateSendService';
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import EstimateCard from './EstimateCard';
 import EstimateForm from './EstimateForm';
+import SendEstimateModal from './SendEstimateModal';
 import styles from './Estimates.module.css';
 import { saveEstimates, getEstimates, clearEstimatesCache } from '../../utils/localStorageUtils';
 
-const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, onClearPendingData, navigationData }) => {
+const Estimates = ({ 
+  isDarkMode, 
+  jobs = [], 
+  onApplyToJob, 
+  pendingEstimateData, 
+  onClearPendingData, 
+  navigationData 
+}) => {
   const [estimates, setEstimates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingEstimate, setEditingEstimate] = useState(null);
+  const [sendingEstimate, setSendingEstimate] = useState(null); // NEW: For send modal
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [userInfo, setUserInfo] = useState(null); // NEW: Store user business info
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -23,6 +34,22 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
     border: isDarkMode ? '#2a2a2a' : '#e5e7eb',
     inputBg: isDarkMode ? '#000000' : '#ffffff',
   };
+
+  // Load user business info
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        const info = await getUserBusinessInfo(auth.currentUser?.uid);
+        setUserInfo(info);
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    };
+
+    if (auth.currentUser) {
+      loadUserInfo();
+    }
+  }, []);
 
   // Load estimates from Firebase
   useEffect(() => {
@@ -111,11 +138,70 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
     if (window.confirm(`Delete "${estimateName}"?`)) {
       try {
         await deleteEstimateFromFirebase(id);
+        clearEstimatesCache();
         loadEstimates();
       } catch (error) {
         console.error('Error deleting estimate. Please try again.');
         alert('Failed to delete estimate. Please try again.');
       }
+    }
+  };
+
+  // NEW: Handle opening send modal
+  const handleSendEstimate = (estimate) => {
+    setSendingEstimate(estimate);
+  };
+
+  // NEW: Handle actual sending from modal
+  const handleSendFromModal = async (email, message) => {
+    try {
+      // Ensure we have userInfo before sending
+      let businessInfo = userInfo;
+      
+      if (!businessInfo) {
+        console.log('Loading user info...');
+        businessInfo = await getUserBusinessInfo(auth.currentUser?.uid);
+        setUserInfo(businessInfo);
+      }
+      
+      // Double check we have valid info with fallback
+      if (!businessInfo || !businessInfo.businessName) {
+        businessInfo = {
+          businessName: 'Electrician Toolkit',
+          email: 'onboarding@resend.dev',
+          phone: '(555) 123-4567',
+          address: ''
+        };
+      }
+      
+      console.log('Sending with userInfo:', businessInfo);
+      
+      await sendEstimateViaEmail(sendingEstimate, email, message, businessInfo);
+      
+      // Update estimate status to "Sent"
+      await updateEstimate(sendingEstimate.id, {
+        ...sendingEstimate,
+        status: 'Sent',
+        sentDate: new Date().toISOString(),
+        sentTo: email
+      });
+      
+      // Reload estimates
+      clearEstimatesCache();
+      await loadEstimates();
+    } catch (error) {
+      console.error('Error sending estimate:', error);
+      throw error; // Let modal handle the error display
+    }
+  };
+
+  // NEW: Handle download from modal
+  const handleDownloadFromModal = async () => {
+    try {
+      await downloadEstimate(sendingEstimate, userInfo);
+    } catch (error) {
+      console.error('Error downloading estimate:', error);
+      throw error;
     }
   };
 
@@ -131,9 +217,9 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
     
     const query = searchQuery.toLowerCase();
     const matchesName = estimate.name.toLowerCase().includes(query);
-    const matchesMaterials = estimate.materials.some(mat => 
+    const matchesMaterials = estimate.materials?.some(mat => 
       mat.name.toLowerCase().includes(query)
-    );
+    ) || false;
     const matchesTotal = estimate.total.toString().includes(query);
     
     const linkedJob = jobs.find(job => job.id === estimate.jobId);
@@ -164,7 +250,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
       paddingBottom: '5rem'
     }}>
       <div style={{ padding: '1rem 0.25rem' }}>
-        {/* Search Bar - Matching Jobs exact style */}
+        {/* Search Bar */}
         <div style={{ marginBottom: '1rem', position: 'relative' }}>
           <input
             type="text"
@@ -217,7 +303,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
           )}
         </div>
 
-        {/* Section Header - Matching Jobs exact style */}
+        {/* Section Header */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -245,7 +331,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
           </span>
         </div>
 
-        {/* Add Estimate Button - Matching AddJobSection exact style */}
+        {/* Add Estimate Button */}
         <div className={styles.addEstimateContainer} style={{
           background: colors.cardBg,
           border: `1px solid ${colors.border}`
@@ -291,8 +377,8 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
           )}
         </div>
 
-        {/* Edit Estimate Modal - Matching Invoice style for better bottom visibility */}
-        {editingEstimate && (
+        {/* Edit Estimate Modal */}
+        {editingEstimate && !sendingEstimate && (
           <div style={{
             position: 'fixed',
             top: 0,
@@ -356,6 +442,17 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
           </div>
         )}
 
+        {/* Send Estimate Modal */}
+        {sendingEstimate && (
+          <SendEstimateModal
+            estimate={sendingEstimate}
+            isDarkMode={isDarkMode}
+            onClose={() => setSendingEstimate(null)}
+            onSend={handleSendFromModal}
+            onDownload={handleDownloadFromModal}
+          />
+        )}
+
         {/* No Results Message */}
         {searchQuery && filteredEstimates.length === 0 && (
           <div style={{
@@ -394,10 +491,10 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
             key={estimate.id}
             estimate={estimate}
             isDarkMode={isDarkMode}
-            jobs={jobs}
+            colors={colors}
             onEdit={startEdit}
             onDelete={deleteEstimate}
-            onApplyToJob={handleApplyToJob}
+            onSendEstimate={handleSendEstimate}
           />
         ))}
       </div>

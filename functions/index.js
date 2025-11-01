@@ -1,11 +1,11 @@
 /**
- * Firebase Cloud Functions v2 for Invoice Email Sending
+ * Firebase Cloud Functions v2 for Invoice & Estimate Email Sending
  * 
  * Installation:
  * 1. cd functions
  * 2. npm install resend jspdf
  * 3. Create functions/.env with: RESEND_API_KEY=your_key_here
- * 4. Deploy: firebase deploy --only functions:sendInvoiceEmail
+ * 4. Deploy: firebase deploy --only functions:sendInvoiceEmail,sendEstimateEmail
  */
 
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
@@ -61,7 +61,7 @@ exports.sendInvoiceEmail = onCall(
         from: 'Electrician Toolkit <onboarding@resend.dev>',
         to: recipientEmail,
         subject: `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Electrician Toolkit'}`,
-        html: generateEmailHTML(invoice, message, userInfo),
+        html: generateInvoiceEmailHTML(invoice, message, userInfo),
         attachments: [
           {
             filename: `Invoice-${invoice.invoiceNumber || 'draft'}.pdf`,
@@ -83,6 +83,75 @@ exports.sendInvoiceEmail = onCall(
       throw new HttpsError(
         'internal',
         `Failed to send invoice: ${error.message}`
+      );
+    }
+  }
+);
+
+/**
+ * Cloud Function to send estimate via email with PDF attachment
+ */
+exports.sendEstimateEmail = onCall(
+  { cors: true },
+  async (request) => {
+    // Initialize Resend with environment variable
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    
+    // Verify user is authenticated
+    if (!request.auth) {
+      throw new HttpsError(
+        'unauthenticated',
+        'User must be authenticated to send estimates.'
+      );
+    }
+
+    const { estimate, recipientEmail, message, userInfo } = request.data;
+
+    if (!estimate || !recipientEmail) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Estimate data and recipient email are required.'
+      );
+    }
+
+    try {
+      console.log('Generating PDF for estimate:', estimate.name);
+      
+      // Generate PDF
+      const pdfBuffer = generateEstimatePDFBuffer(estimate, userInfo);
+
+      // Convert buffer to base64
+      const pdfBase64 = pdfBuffer.toString('base64');
+
+      console.log('Sending email to:', recipientEmail);
+
+      // Send email via Resend
+      const emailData = await resend.emails.send({
+        from: 'Electrician Toolkit <onboarding@resend.dev>',
+        to: recipientEmail,
+        subject: `Estimate: ${estimate.name || 'Untitled'} from ${userInfo.businessName || 'Electrician Toolkit'}`,
+        html: generateEstimateEmailHTML(estimate, message, userInfo),
+        attachments: [
+          {
+            filename: `Estimate-${estimate.name || 'draft'}.pdf`,
+            content: pdfBase64,
+          }
+        ]
+      });
+
+      console.log('Email sent successfully:', emailData.id);
+
+      return {
+        success: true,
+        messageId: emailData.id,
+        message: 'Estimate sent successfully!'
+      };
+
+    } catch (error) {
+      console.error('Error sending estimate:', error);
+      throw new HttpsError(
+        'internal',
+        `Failed to send estimate: ${error.message}`
       );
     }
   }
@@ -290,9 +359,207 @@ function generateInvoicePDFBuffer(invoice, userInfo = {}) {
 }
 
 /**
- * Generate HTML email content
+ * Generate PDF buffer for the estimate
  */
-function generateEmailHTML(invoice, customMessage, userInfo) {
+function generateEstimatePDFBuffer(estimate, userInfo = {}) {
+  const doc = new jsPDF();
+  
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 20;
+  let yPosition = margin;
+
+  const primaryColor = [16, 185, 129]; // Green for estimates
+  const darkGray = [31, 41, 55];
+  const lightGray = [107, 114, 128];
+
+  // Header
+  doc.setFillColor(...primaryColor);
+  doc.rect(0, 0, pageWidth, 40, 'F');
+  
+  doc.setFontSize(20);
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.text(userInfo.businessName || 'Electrician Toolkit', margin, 15);
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  if (userInfo.email) doc.text(userInfo.email, margin, 25);
+  if (userInfo.phone) doc.text(userInfo.phone, margin, 32);
+
+  yPosition = 55;
+
+  // Estimate Title
+  doc.setFontSize(24);
+  doc.setTextColor(...primaryColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text('ESTIMATE', margin, yPosition);
+
+  doc.setFontSize(12);
+  doc.setTextColor(...darkGray);
+  doc.text(estimate.name || 'Untitled', pageWidth - margin, yPosition, { align: 'right' });
+
+  yPosition += 15;
+
+  // Client info (if available)
+  if (estimate.clientName) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FOR:', margin, yPosition);
+    
+    yPosition += 7;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(estimate.clientName, margin, yPosition);
+    
+    if (estimate.clientEmail) {
+      yPosition += 6;
+      doc.setFontSize(9);
+      doc.setTextColor(...lightGray);
+      doc.text(estimate.clientEmail, margin, yPosition);
+    }
+  }
+
+  // Right column - Estimate Details
+  const rightColX = pageWidth - margin - 60;
+  let rightYPosition = 70;
+
+  doc.setFontSize(9);
+  doc.setTextColor(...lightGray);
+  doc.text('Estimate Date:', rightColX, rightYPosition);
+  doc.setTextColor(...darkGray);
+  const estimateDate = estimate.createdAt ? new Date(estimate.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
+  doc.text(estimateDate, pageWidth - margin, rightYPosition, { align: 'right' });
+
+  rightYPosition += 6;
+  doc.setTextColor(...lightGray);
+  doc.text('Valid Until:', rightColX, rightYPosition);
+  const validDate = (() => {
+    const date = estimate.createdAt ? new Date(estimate.createdAt) : new Date();
+    date.setDate(date.getDate() + 30);
+    return date.toLocaleDateString();
+  })();
+  doc.setTextColor(...darkGray);
+  doc.text(validDate, pageWidth - margin, rightYPosition, { align: 'right' });
+
+  yPosition = Math.max(yPosition, rightYPosition) + 15;
+
+  // Labor section
+  if (estimate.laborHours && estimate.laborRate) {
+    yPosition += 5;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...darkGray);
+    doc.text('LABOR', margin, yPosition);
+    yPosition += 7;
+
+    doc.setFillColor(249, 250, 251);
+    doc.rect(margin, yPosition - 4, pageWidth - (2 * margin), 8, 'F');
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${estimate.laborHours} hours × $${parseFloat(estimate.laborRate).toFixed(2)}/hr`, margin + 2, yPosition);
+    
+    const laborTotal = estimate.laborHours * estimate.laborRate;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`$${laborTotal.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+
+    yPosition += 10;
+  }
+
+  // Materials section
+  if (estimate.materials && estimate.materials.length > 0) {
+    yPosition += 5;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MATERIALS', margin, yPosition);
+    yPosition += 7;
+
+    // Table header
+    doc.setFillColor(249, 250, 251);
+    doc.rect(margin, yPosition, pageWidth - (2 * margin), 8, 'F');
+    
+    yPosition += 6;
+    doc.setFontSize(9);
+    doc.text('Description', margin + 2, yPosition);
+    doc.text('Qty', pageWidth - margin - 60, yPosition);
+    doc.text('Unit Cost', pageWidth - margin - 40, yPosition);
+    doc.text('Amount', pageWidth - margin, yPosition, { align: 'right' });
+
+    yPosition += 8;
+
+    // Materials list
+    doc.setFont('helvetica', 'normal');
+    estimate.materials.forEach((item, index) => {
+      const quantity = parseFloat(item.quantity) || 1;
+      const unitCost = parseFloat(item.cost) || 0;
+      const amount = quantity * unitCost;
+
+      doc.text(item.name || '', margin + 2, yPosition);
+      doc.text(String(quantity), pageWidth - margin - 60, yPosition);
+      doc.text(`$${unitCost.toFixed(2)}`, pageWidth - margin - 40, yPosition);
+      doc.text(`$${amount.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+
+      yPosition += 7;
+      
+      if (index < estimate.materials.length - 1) {
+        doc.setDrawColor(229, 231, 235);
+        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 5;
+      }
+    });
+
+    yPosition += 10;
+  }
+
+  // Total section
+  const totalsX = pageWidth - margin - 60;
+  
+  doc.setDrawColor(...darkGray);
+  doc.setLineWidth(0.5);
+  doc.line(totalsX, yPosition, pageWidth - margin, yPosition);
+  yPosition += 7;
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...darkGray);
+  doc.text('TOTAL ESTIMATE:', totalsX, yPosition);
+  doc.setFontSize(14);
+  doc.setTextColor(...primaryColor);
+  doc.text(`$${parseFloat(estimate.total || 0).toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+
+  // Notes
+  if (estimate.notes) {
+    yPosition += 15;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...darkGray);
+    doc.text('Notes:', margin, yPosition);
+    yPosition += 7;
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...lightGray);
+    const notesLines = doc.splitTextToSize(estimate.notes, pageWidth - (2 * margin));
+    doc.text(notesLines, margin, yPosition);
+  }
+
+  // Footer
+  const footerY = pageHeight - 15;
+  doc.setDrawColor(229, 231, 235);
+  doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+  
+  doc.setFontSize(9);
+  doc.setTextColor(...lightGray);
+  doc.text('Thank you for considering our services!', pageWidth / 2, footerY, { align: 'center' });
+
+  return Buffer.from(doc.output('arraybuffer'));
+}
+
+/**
+ * Generate HTML email content for invoice
+ */
+function generateInvoiceEmailHTML(invoice, customMessage, userInfo) {
   return `
     <!DOCTYPE html>
     <html>
@@ -346,6 +613,84 @@ function generateEmailHTML(invoice, customMessage, userInfo) {
                 <td style="background-color: #f9fafb; padding: 20px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
                   <p style="color: #9ca3af; margin: 0; font-size: 12px;">
                     Thank you for your business!
+                  </p>
+                  ${userInfo.phone ? `
+                    <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">
+                      ${userInfo.phone}
+                    </p>
+                  ` : ''}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+}
+
+/**
+ * Generate HTML email content for estimate
+ */
+function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Estimate: ${estimate.name}</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f9fafb;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; padding: 40px 20px;">
+        <tr>
+          <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <tr>
+                <td style="background-color: #10b981; padding: 30px; text-align: center;">
+                  <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Toolkit'}</h1>
+                  <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px;">${userInfo.email || ''}</p>
+                </td>
+              </tr>
+              
+              <tr>
+                <td style="padding: 40px 30px;">
+                  <h2 style="color: #111827; margin: 0 0 20px; font-size: 20px;">Estimate: ${estimate.name || 'Untitled'}</h2>
+                  
+                  ${customMessage ? `
+                    <p style="color: #6b7280; margin: 0 0 20px; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${customMessage}</p>
+                  ` : ''}
+                  
+                  <table width="100%" cellpadding="10" cellspacing="0" style="border: 1px solid #e5e7eb; border-radius: 6px; margin: 20px 0;">
+                    <tr style="background-color: #f9fafb;">
+                      <td style="color: #6b7280; font-size: 14px;">Estimate Date:</td>
+                      <td align="right" style="color: #111827; font-size: 14px; font-weight: 600;">${estimate.createdAt ? new Date(estimate.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</td>
+                    </tr>
+                    <tr>
+                      <td style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb;">Valid Until:</td>
+                      <td align="right" style="color: #111827; font-size: 14px; font-weight: 600; border-top: 1px solid #e5e7eb;">${(() => {
+                        const date = estimate.createdAt ? new Date(estimate.createdAt) : new Date();
+                        date.setDate(date.getDate() + 30);
+                        return date.toLocaleDateString();
+                      })()}</td>
+                    </tr>
+                    <tr style="background-color: #f9fafb;">
+                      <td style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb;">Total:</td>
+                      <td align="right" style="color: #10b981; font-size: 18px; font-weight: 700; border-top: 1px solid #e5e7eb;">$${parseFloat(estimate.total || 0).toFixed(2)}</td>
+                    </tr>
+                  </table>
+                  
+                  <p style="color: #6b7280; margin: 20px 0 0; font-size: 13px;">
+                    The estimate is attached as a PDF. This estimate is valid for 30 days. If you have any questions, please don't hesitate to reach out.
+                  </p>
+                </td>
+              </tr>
+              
+              <tr>
+                <td style="background-color: #f9fafb; padding: 20px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                  <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+                    Thank you for considering our services!
                   </p>
                   ${userInfo.phone ? `
                     <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">
