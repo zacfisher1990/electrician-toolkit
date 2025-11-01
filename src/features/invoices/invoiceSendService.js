@@ -1,8 +1,8 @@
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import app from '../../firebase/firebase'; // Import the app instance
+import app, { auth } from '../../firebase/firebase'; // Import both app and auth
 import { downloadInvoicePDF } from './generateInvoicePDF';
 
-// Initialize Firebase Functions
+// Initialize Firebase Functions with the app instance
 const functions = getFunctions(app);
 
 /**
@@ -10,6 +10,11 @@ const functions = getFunctions(app);
  */
 export const sendInvoiceViaEmail = async (invoice, recipientEmail, message, userInfo) => {
   try {
+    // Make sure user is authenticated
+    if (!auth.currentUser) {
+      throw new Error('User must be logged in to send invoices');
+    }
+
     // Call the Cloud Function
     const sendInvoiceEmail = httpsCallable(functions, 'sendInvoiceEmail');
     
