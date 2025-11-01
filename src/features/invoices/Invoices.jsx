@@ -489,6 +489,58 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
           </div>
         </div>
 
+        {/* Section Header with Title and Count */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+          padding: '0 0.25rem'
+        }}>
+          <h3 style={{ 
+            margin: 0, 
+            color: colors.text, 
+            fontSize: '1.125rem',
+            fontWeight: '600'
+          }}>
+            {statusFilter === 'all' ? 'All Invoices' : 
+             statusFilter === 'Paid' ? 'Paid Invoices' :
+             statusFilter === 'Pending' ? 'Pending Invoices' :
+             statusFilter === 'Overdue' ? 'Overdue Invoices' :
+             'Canceled Invoices'}
+          </h3>
+          <span style={{
+            fontSize: '0.875rem',
+            color: colors.textSecondary,
+            background: colors.cardBg,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '1rem',
+            border: `1px solid ${colors.border}`
+          }}>
+            {(() => {
+              // Filter by status
+              const statusFiltered = statusFilter === 'all' 
+                ? invoices 
+                : invoices.filter(inv => inv.status === statusFilter);
+              
+              // Then filter by search query
+              const filtered = statusFiltered.filter(inv => {
+                if (!searchQuery) return true;
+                const query = searchQuery.toLowerCase();
+                return (
+                  inv.invoiceNumber?.toLowerCase().includes(query) ||
+                  inv.clientName?.toLowerCase().includes(query) ||
+                  inv.client?.toLowerCase().includes(query) ||
+                  inv.description?.toLowerCase().includes(query) ||
+                  inv.status?.toLowerCase().includes(query)
+                );
+              });
+              
+              return `${filtered.length} ${filtered.length === 1 ? 'invoice' : 'invoices'}`;
+            })()}
+          </span>
+        </div>
+
         {/* New Invoice Button - Always visible */}
         <div 
           onClick={() => setShowAddForm(!showAddForm)}
@@ -506,7 +558,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontSize: '1.25rem', color: colors.text }}>+</span>
-            <span style={{ fontSize: '1rem', fontWeight: '600', color: colors.text }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: '600', color: colors.text }}>
               New Invoice
             </span>
           </div>
@@ -514,6 +566,8 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
             {showAddForm ? '−' : '+'}
           </span>
         </div>
+
+        
 
         {/* New Invoice Form - Shown when Add button clicked */}
         {showAddForm && !editingInvoice && (
@@ -599,57 +653,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
           </div>
         )}
 
-        {/* Section Header with Title and Count */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1rem',
-          padding: '0 0.25rem'
-        }}>
-          <h3 style={{ 
-            margin: 0, 
-            color: colors.text, 
-            fontSize: '1.125rem',
-            fontWeight: '600'
-          }}>
-            {statusFilter === 'all' ? 'All Invoices' : 
-             statusFilter === 'Paid' ? 'Paid Invoices' :
-             statusFilter === 'Pending' ? 'Pending Invoices' :
-             statusFilter === 'Overdue' ? 'Overdue Invoices' :
-             'Canceled Invoices'}
-          </h3>
-          <span style={{
-            fontSize: '0.875rem',
-            color: colors.textSecondary,
-            background: colors.cardBg,
-            padding: '0.25rem 0.75rem',
-            borderRadius: '1rem',
-            border: `1px solid ${colors.border}`
-          }}>
-            {(() => {
-              // Filter by status
-              const statusFiltered = statusFilter === 'all' 
-                ? invoices 
-                : invoices.filter(inv => inv.status === statusFilter);
-              
-              // Then filter by search query
-              const filtered = statusFiltered.filter(inv => {
-                if (!searchQuery) return true;
-                const query = searchQuery.toLowerCase();
-                return (
-                  inv.invoiceNumber?.toLowerCase().includes(query) ||
-                  inv.clientName?.toLowerCase().includes(query) ||
-                  inv.client?.toLowerCase().includes(query) ||
-                  inv.description?.toLowerCase().includes(query) ||
-                  inv.status?.toLowerCase().includes(query)
-                );
-              });
-              
-              return `${filtered.length} ${filtered.length === 1 ? 'invoice' : 'invoices'}`;
-            })()}
-          </span>
-        </div>
+        
 
         {/* Invoices List with InvoiceCard components */}
         <div style={{

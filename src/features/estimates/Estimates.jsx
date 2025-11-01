@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Search, X } from 'lucide-react';
+import { FileText, Search, X, Plus, ChevronDown } from 'lucide-react';
 import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as deleteEstimateFromFirebase } from './estimatesService';
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -13,6 +13,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
   const [loading, setLoading] = useState(true);
   const [editingEstimate, setEditingEstimate] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -25,20 +26,20 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
 
   // Load estimates from Firebase
   useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    if (user) {
-      loadEstimates();
-    } else {
-      setLoading(false);
-      clearEstimatesCache(); // Clear cache on logout
-    }
-  });
-  return () => unsubscribe();
-}, []);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loadEstimates();
+      } else {
+        setLoading(false);
+        clearEstimatesCache();
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   // Handle pending estimate data from Jobs page
   useEffect(() => {
     if (pendingEstimateData && onClearPendingData) {
-      // Just trigger the form to open - EstimateForm will handle the data
       onClearPendingData();
     }
   }, [pendingEstimateData, onClearPendingData]);
@@ -54,33 +55,30 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
   }, [navigationData, estimates]);
 
   const loadEstimates = async () => {
-  try {
-    // First, load from cache for instant display
-    const cachedEstimates = getEstimates();
-    if (cachedEstimates) {
-      setEstimates(cachedEstimates);
+    try {
+      const cachedEstimates = getEstimates();
+      if (cachedEstimates) {
+        setEstimates(cachedEstimates);
+        setLoading(false);
+      }
+
+      const userEstimates = await getUserEstimates();
+      setEstimates(userEstimates);
+      saveEstimates(userEstimates);
+    } catch (error) {
+      console.error('Error loading estimates:', error);
+      
+      const cachedEstimates = getEstimates();
+      if (cachedEstimates && cachedEstimates.length > 0) {
+        console.log('Using cached estimates due to error');
+      } else {
+        alert('Failed to load estimates. Please try again.');
+      }
+    } finally {
       setLoading(false);
     }
+  };
 
-    // Then fetch fresh data from Firebase
-    const userEstimates = await getUserEstimates();
-    setEstimates(userEstimates);
-    
-    // Save fresh data to cache
-    saveEstimates(userEstimates);
-  } catch (error) {
-    console.error('Error loading estimates:', error);
-    
-    const cachedEstimates = getEstimates();
-    if (cachedEstimates && cachedEstimates.length > 0) {
-      console.log('Using cached estimates due to error');
-    } else {
-      alert('Failed to load estimates. Please try again.');
-    }
-  } finally {
-    setLoading(false);
-  }
-};
   const saveEstimate = async (estimateData) => {
     try {
       if (editingEstimate) {
@@ -90,6 +88,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
       }
       
       setEditingEstimate(null);
+      setShowAddForm(false);
       clearEstimatesCache();
       loadEstimates();
     } catch (error) {
@@ -105,6 +104,7 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
 
   const cancelEdit = () => {
     setEditingEstimate(null);
+    setShowAddForm(false);
   };
 
   const deleteEstimate = async (id, estimateName) => {
@@ -136,7 +136,6 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
     );
     const matchesTotal = estimate.total.toString().includes(query);
     
-    // Check if linked to a job that matches
     const linkedJob = jobs.find(job => job.id === estimate.jobId);
     const matchesJob = linkedJob && (linkedJob.title || linkedJob.name || '').toLowerCase().includes(query);
     
@@ -159,95 +158,203 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
   }
 
   return (
-    <div
-      className={styles.loadingContainer} 
-      style={{ 
+    <div style={{ 
       background: colors.bg,
       minHeight: '100vh',
       paddingBottom: '5rem'
     }}>
-      <div style={{ padding: '0.25rem' }}>
-        {/* Search Bar */}
-        <div style={{
-          background: colors.cardBg,
-          borderRadius: '0.75rem',
-          border: `1px solid ${colors.border}`,
-          marginBottom: '1rem',
-          padding: '0.75rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem'
-        }}>
-          <Search size={20} style={{ color: colors.subtext, flexShrink: 0 }} />
+      <div style={{ padding: '1rem 0.25rem' }}>
+        {/* Search Bar - Matching Jobs exact style */}
+        <div style={{ marginBottom: '1rem', position: 'relative' }}>
           <input
             type="text"
             placeholder="Search estimates..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
-              flex: 1,
-              border: 'none',
-              background: 'transparent',
-              color: colors.text,
+              width: '100%',
+              padding: '0.75rem',
+              paddingLeft: '2.5rem',
+              paddingRight: searchQuery ? '2.5rem' : '0.75rem',
+              border: `1px solid ${colors.border}`,
+              borderRadius: '0.5rem',
               fontSize: '0.9375rem',
-              outline: 'none',
-              padding: '0.25rem 0'
+              background: colors.inputBg,
+              color: colors.text,
+              boxSizing: 'border-box'
+            }}
+          />
+          <Search 
+            size={18} 
+            style={{
+              position: 'absolute',
+              left: '0.75rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: colors.subtext,
+              pointerEvents: 'none'
             }}
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
               style={{
+                position: 'absolute',
+                right: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
                 background: 'transparent',
                 border: 'none',
-                color: colors.subtext,
                 cursor: 'pointer',
+                color: colors.subtext,
                 padding: '0.25rem',
                 display: 'flex',
-                alignItems: 'center',
-                flexShrink: 0
+                alignItems: 'center'
               }}
-              aria-label="Clear search"
             >
               <X size={18} />
             </button>
           )}
         </div>
 
-        {/* Estimate Form Component */}
-        <EstimateForm
-          isDarkMode={isDarkMode}
-          editingEstimate={editingEstimate}
-          onSave={saveEstimate}
-          onCancel={cancelEdit}
-        />
-
-        {/* Estimates List Header */}
+        {/* Section Header - Matching Jobs exact style */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '0.75rem',
-          paddingLeft: '0.25rem'
+          marginBottom: '1rem',
+          padding: '0 0.25rem'
         }}>
-          <h2 style={{
-            margin: 0,
-            color: colors.text,
+          <h3 style={{ 
+            margin: 0, 
+            color: colors.text, 
             fontSize: '1.125rem',
             fontWeight: '600'
           }}>
             {searchQuery ? 'Search Results' : 'All Estimates'}
-          </h2>
+          </h3>
           <span style={{
-            color: colors.subtext,
             fontSize: '0.875rem',
+            color: colors.subtext,
+            background: colors.cardBg,
             padding: '0.25rem 0.75rem',
             borderRadius: '1rem',
             border: `1px solid ${colors.border}`
           }}>
-            {filteredEstimates.length}
+            {filteredEstimates.length} {filteredEstimates.length === 1 ? 'estimate' : 'estimates'}
           </span>
         </div>
+
+        {/* Add Estimate Button - Matching AddJobSection exact style */}
+        <div className={styles.addEstimateContainer} style={{
+          background: colors.cardBg,
+          border: `1px solid ${colors.border}`
+        }}>
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className={styles.addEstimateButton}
+            style={{ color: colors.text }}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: '0.875rem',
+              fontWeight: '600'
+            }}>
+              <Plus size={18} />
+              New Estimate
+            </div>
+            <ChevronDown 
+              size={18} 
+              style={{
+                transform: showAddForm ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s'
+              }}
+            />
+          </button>
+
+          {showAddForm && !editingEstimate && (
+            <div style={{
+              padding: '0 1rem 1rem 1rem',
+              borderTop: `1px solid ${colors.border}`
+            }}>
+              <div style={{ paddingTop: '1rem' }}>
+                <EstimateForm
+                  isDarkMode={isDarkMode}
+                  editingEstimate={null}
+                  onSave={saveEstimate}
+                  onCancel={() => setShowAddForm(false)}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Edit Estimate Modal - Matching Invoice style for better bottom visibility */}
+        {editingEstimate && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem',
+            paddingBottom: '6rem',
+            overflowY: 'auto'
+          }}>
+            <div style={{
+              background: colors.cardBg,
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: 'calc(100vh - 8rem)',
+              overflow: 'auto',
+              margin: 'auto'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem'
+              }}>
+                <h3 style={{
+                  margin: 0,
+                  color: colors.text,
+                  fontSize: '1.25rem',
+                  fontWeight: '600'
+                }}>
+                  Edit Estimate
+                </h3>
+                <button
+                  onClick={cancelEdit}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '0.25rem',
+                    color: colors.subtext
+                  }}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <EstimateForm
+                isDarkMode={isDarkMode}
+                editingEstimate={editingEstimate}
+                onSave={saveEstimate}
+                onCancel={cancelEdit}
+              />
+            </div>
+          </div>
+        )}
 
         {/* No Results Message */}
         {searchQuery && filteredEstimates.length === 0 && (
@@ -261,24 +368,8 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
           }}>
             <Search size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
             <p style={{ margin: 0, fontSize: '0.9375rem' }}>
-              No estimates found matching "{searchQuery}"
+              No estimates match your search.
             </p>
-            <button
-              onClick={() => setSearchQuery('')}
-              style={{
-                marginTop: '1rem',
-                padding: '0.5rem 1rem',
-                background: '#2563eb',
-                border: 'none',
-                borderRadius: '0.5rem',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}
-            >
-              Clear Search
-            </button>
           </div>
         )}
 
@@ -293,11 +384,11 @@ const Estimates = ({ isDarkMode, jobs = [], onApplyToJob, pendingEstimateData, o
             color: colors.subtext
           }}>
             <FileText size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-            <p style={{ margin: 0, fontSize: '0.9375rem' }}>No estimates yet. Create one above!</p>
+            <p style={{ margin: 0, fontSize: '0.9375rem' }}>No estimates yet. Create your first estimate above!</p>
           </div>
         )}
 
-        {/* Estimates List - Using EstimateCard Component */}
+        {/* Estimates List */}
         {filteredEstimates.length > 0 && filteredEstimates.map((estimate) => (
           <EstimateCard
             key={estimate.id}

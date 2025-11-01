@@ -27,65 +27,54 @@ const JobModal = ({
   if (!viewingJob) return null;
 
   return (
-    <>
-      {/* Backdrop */}
-      <div 
-        onClick={onClose}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 1000,
-          animation: 'fadeIn 0.2s'
-        }}
-      />
-      
-      {/* Modal */}
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '1rem',
+      paddingBottom: '6rem',
+      overflowY: 'auto'
+    }}>
       <div style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
         background: colors.cardBg,
-        borderRadius: '1rem',
+        borderRadius: '0.75rem',
         padding: '1.5rem',
-        paddingBottom: 'calc(100px + env(safe-area-inset-bottom))',
-        width: '90%',
-        maxWidth: '500px',
-        maxHeight: '80vh',
-        overflowY: 'auto',
-        zIndex: 1001,
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-        WebkitOverflowScrolling: 'touch'
+        maxWidth: '600px',
+        width: '100%',
+        maxHeight: 'calc(100vh - 8rem)',
+        overflow: 'auto',
+        margin: 'auto'
       }}>
         {/* Header */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '1.5rem'
+          marginBottom: '1rem'
         }}>
-          <h2 style={{
+          <h3 style={{
             margin: 0,
             fontSize: '1.25rem',
             fontWeight: '600',
             color: colors.text
           }}>
             Job Details
-          </h2>
+          </h3>
           <button
             onClick={onClose}
             style={{
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
-              padding: '0.5rem',
-              color: colors.subtext,
-              display: 'flex',
-              alignItems: 'center'
+              padding: '0.25rem',
+              color: colors.subtext
             }}
           >
             <X size={24} />
@@ -153,7 +142,7 @@ const JobModal = ({
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
