@@ -258,69 +258,93 @@ export const generateInvoicePDF = (invoice, userInfo = {}) => {
       }
     });
 
-    yPosition += 10;
+   // EXACT REPLACEMENT for generateInvoicePDF.js lines 227-287
+// This fixes the $0.00 subtotal and total issue
 
-    // Totals section
-    const totalsX = pageWidth - margin - 60;
+  yPosition += 10;
+
+  // Totals section
+  const totalsX = pageWidth - margin - 60;
+  
+  // Calculate subtotal from line items if not provided
+  const calculateSubtotal = () => {
+    // First, try to use provided subtotal
+    if (invoice.subtotal) return invoice.subtotal;
     
-    // Subtotal
-    addText('Subtotal:', totalsX, yPosition, {
+    // Otherwise, calculate from line items
+    if (invoice.lineItems && invoice.lineItems.length > 0) {
+      return invoice.lineItems.reduce((sum, item) => {
+        return sum + ((item.quantity || 1) * (item.rate || 0));
+      }, 0);
+    }
+    
+    // Fallback to amount or total
+    return invoice.amount || invoice.total || 0;
+  };
+  
+  const subtotal = calculateSubtotal();
+  const tax = parseFloat(invoice.tax || 0);
+  const discount = parseFloat(invoice.discount || 0);
+  const finalTotal = invoice.total || invoice.amount || (subtotal + tax - discount);
+  
+  // Subtotal
+  addText('Subtotal:', totalsX, yPosition, {
+    size: 10,
+    color: lightGray
+  });
+  addText(`$${parseFloat(subtotal).toFixed(2)}`, pageWidth - margin, yPosition, {
+    size: 10,
+    align: 'right'
+  });
+
+  yPosition += 7;
+
+  // Tax (if applicable)
+  if (tax > 0) {
+    addText(`Tax (${invoice.taxRate || 0}%):`, totalsX, yPosition, {
       size: 10,
       color: lightGray
     });
-    addText(`$${parseFloat(invoice.subtotal || 0).toFixed(2)}`, pageWidth - margin, yPosition, {
+    addText(`$${tax.toFixed(2)}`, pageWidth - margin, yPosition, {
       size: 10,
       align: 'right'
     });
-
     yPosition += 7;
+  }
 
-    // Tax (if applicable)
-    if (invoice.tax > 0) {
-      addText(`Tax (${invoice.taxRate || 0}%):`, totalsX, yPosition, {
-        size: 10,
-        color: lightGray
-      });
-      addText(`$${parseFloat(invoice.tax || 0).toFixed(2)}`, pageWidth - margin, yPosition, {
-        size: 10,
-        align: 'right'
-      });
-      yPosition += 7;
-    }
-
-    // Discount (if applicable)
-    if (invoice.discount > 0) {
-      addText('Discount:', totalsX, yPosition, {
-        size: 10,
-        color: lightGray
-      });
-      addText(`-$${parseFloat(invoice.discount || 0).toFixed(2)}`, pageWidth - margin, yPosition, {
-        size: 10,
-        color: [239, 68, 68],
-        align: 'right'
-      });
-      yPosition += 7;
-    }
-
-    // Line before total
-    doc.setDrawColor(...darkGray);
-    doc.setLineWidth(0.5);
-    doc.line(totalsX, yPosition, pageWidth - margin, yPosition);
-    yPosition += 7;
-
-    // Total
-    addText('TOTAL:', totalsX, yPosition, {
-      size: 12,
-      style: 'bold'
+  // Discount (if applicable)
+  if (discount > 0) {
+    addText('Discount:', totalsX, yPosition, {
+      size: 10,
+      color: lightGray
     });
-    addText(`$${parseFloat(invoice.total || 0).toFixed(2)}`, pageWidth - margin, yPosition, {
-      size: 14,
-      style: 'bold',
-      color: primaryColor,
+    addText(`-$${discount.toFixed(2)}`, pageWidth - margin, yPosition, {
+      size: 10,
+      color: [239, 68, 68],
       align: 'right'
     });
+    yPosition += 7;
+  }
 
-    yPosition += 15;
+  // Line before total
+  doc.setDrawColor(...darkGray);
+  doc.setLineWidth(0.5);
+  doc.line(totalsX, yPosition, pageWidth - margin, yPosition);
+  yPosition += 7;
+
+  // Total
+  addText('TOTAL:', totalsX, yPosition, {
+    size: 12,
+    style: 'bold'
+  });
+  addText(`$${parseFloat(finalTotal).toFixed(2)}`, pageWidth - margin, yPosition, {
+    size: 14,
+    style: 'bold',
+    color: primaryColor,
+    align: 'right'
+  });
+
+  yPosition += 15;
 
     // Notes section (if applicable)
     if (invoice.notes) {

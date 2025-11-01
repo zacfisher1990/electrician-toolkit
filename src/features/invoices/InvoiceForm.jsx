@@ -104,7 +104,9 @@ useEffect(() => {
       
       const invoiceData = {
         ...formData,
-        amount: total
+        amount: total,
+        subtotal: total, 
+        total: total  
       };
 
       onSave(invoiceData);
