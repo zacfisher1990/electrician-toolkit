@@ -1,21 +1,29 @@
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import app, { auth } from '../../firebase/firebase'; // Import both app and auth
+import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
+import app, { auth } from '../../firebase/firebase';
 import { downloadInvoicePDF } from './generateInvoicePDF';
 
-// Initialize Firebase Functions with the app instance
-const functions = getFunctions(app);
+// Initialize Firebase Functions with explicit region
+const functions = getFunctions(app, 'us-central1');
+
+// Uncomment for local testing:
+// if (window.location.hostname === 'localhost') {
+//   connectFunctionsEmulator(functions, 'localhost', 5001);
+// }
 
 /**
  * Send invoice via email using Firebase Cloud Function and Resend
  */
 export const sendInvoiceViaEmail = async (invoice, recipientEmail, message, userInfo) => {
   try {
-    // Make sure user is authenticated
-    if (!auth.currentUser) {
-      throw new Error('User must be logged in to send invoices');
+    // Verify user is authenticated
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('You must be logged in to send invoices');
     }
 
-    // Call the Cloud Function
+    console.log('Sending invoice email...', { invoice, recipientEmail });
+
+    // Call the Cloud Function with explicit region
     const sendInvoiceEmail = httpsCallable(functions, 'sendInvoiceEmail');
     
     const result = await sendInvoiceEmail({
@@ -25,9 +33,16 @@ export const sendInvoiceViaEmail = async (invoice, recipientEmail, message, user
       userInfo
     });
 
+    console.log('Invoice sent successfully:', result.data);
     return result.data;
   } catch (error) {
     console.error('Error sending invoice:', error);
+    
+    // Provide more helpful error messages
+    if (error.code === 'unauthenticated') {
+      throw new Error('Authentication failed. Please log out and log back in.');
+    }
+    
     throw new Error(error.message || 'Failed to send invoice');
   }
 };
