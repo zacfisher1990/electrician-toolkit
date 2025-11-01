@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Briefcase, Search, X } from 'lucide-react';
+import { FileText, Briefcase, Search, X, Plus, ChevronDown  } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase/firebase';
 import { getUserInvoices, createInvoice, updateInvoice, deleteInvoice } from './invoicesService';
@@ -8,6 +8,7 @@ import InvoiceForm from './InvoiceForm';
 import InvoiceCard from './InvoiceCard';
 import SendInvoiceModal from './SendInvoiceModal';
 import { sendInvoiceViaEmail, downloadInvoice, getUserBusinessInfo } from './invoiceSendService';
+import styles from './Invoices.module.css';
 
 function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [invoices, setInvoices] = useState([]);
@@ -168,20 +169,50 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
 
   // Handler for sending invoice via email
   const handleSendInvoiceEmail = async (email, message) => {
-    try {
-      await sendInvoiceViaEmail(sendingInvoice, email, message, userBusinessInfo);
-      return { success: true };
-    } catch (error) {
-      throw error;
+  try {
+    await sendInvoiceViaEmail(sendingInvoice, email, message, userBusinessInfo);
+    
+    // Automatically update status to "Sent" after successful email send
+    if (sendingInvoice.status === 'Unsent') {
+      await updateInvoice(sendingInvoice.id, {
+        ...sendingInvoice,
+        status: 'Sent'
+      });
+      
+      // Refresh the invoices list to show updated status
+      clearInvoicesCache();
+      loadInvoices();
     }
-  };
+    
+    return { success: true };
+  } catch (error) {
+    throw error;
+  }
+};
 
-  // Handler for downloading invoice
-  const handleDownloadInvoice = () => {
-    if (sendingInvoice) {
-      downloadInvoice(sendingInvoice, userBusinessInfo);
+ // Handler for downloading invoice
+const handleDownloadInvoice = async () => {
+  try {
+    if (!sendingInvoice) {
+      throw new Error('No invoice selected');
     }
-  };
+
+    // Ensure we have user business info
+    let businessInfo = userBusinessInfo;
+    if (!businessInfo) {
+      console.log('User business info not loaded, loading now...');
+      businessInfo = await getUserBusinessInfo(auth.currentUser?.uid);
+      setUserBusinessInfo(businessInfo);
+    }
+
+    console.log('Downloading invoice with:', { sendingInvoice, businessInfo });
+    downloadInvoice(sendingInvoice, businessInfo);
+    
+  } catch (error) {
+    console.error('Error downloading invoice:', error);
+    alert(`Failed to download invoice: ${error.message}`);
+  }
+};
 
   const getStatusStyle = (status) => {
     switch(status) {
@@ -270,184 +301,184 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
         margin: '0 auto',
         padding: '0 0.25rem'
       }}>
-        {/* Header Stats - Matching Job Log StatusTabs Style */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr)',
-          gap: '0.375rem',
-          marginBottom: '1rem'
-        }}>
-          {/* All */}
-          <button
-            onClick={() => setStatusFilter('all')}
-            style={{
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${statusFilter === 'all' ? colors.text : colors.border}`,
-              background: statusFilter === 'all' ? colors.text : 'transparent',
-              color: statusFilter === 'all' ? colors.bg : colors.text,
-              fontSize: '0.75rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.375rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <span>All</span>
-            <span style={{
-              background: statusFilter === 'all' ? colors.bg : colors.cardBg,
-              color: statusFilter === 'all' ? colors.text : colors.textSecondary,
-              padding: '0.125rem 0.375rem',
-              borderRadius: '1rem',
-              fontSize: '0.7rem',
-              fontWeight: '700',
-              minWidth: '1.25rem',
-              textAlign: 'center'
-            }}>
-              {invoices.length}
-            </span>
-          </button>
+        {/* Status Filter Tabs - Updated statuses */}
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(5, 1fr)',
+  gap: '0.375rem',
+  marginBottom: '1rem'
+}}>
+  {/* All */}
+  <button
+    onClick={() => setStatusFilter('all')}
+    style={{
+      padding: '0.5rem 0.25rem',
+      borderRadius: '0.5rem',
+      border: `1px solid ${statusFilter === 'all' ? colors.text : colors.border}`,
+      background: statusFilter === 'all' ? colors.text : 'transparent',
+      color: statusFilter === 'all' ? colors.bg : colors.text,
+      fontSize: '0.75rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '0.375rem',
+      transition: 'all 0.2s'
+    }}
+  >
+    <span>All</span>
+    <span style={{
+      background: statusFilter === 'all' ? colors.bg : colors.cardBg,
+      color: statusFilter === 'all' ? colors.text : colors.textSecondary,
+      padding: '0.125rem 0.375rem',
+      borderRadius: '1rem',
+      fontSize: '0.7rem',
+      fontWeight: '700',
+      minWidth: '1.25rem',
+      textAlign: 'center'
+    }}>
+      {invoices.length}
+    </span>
+  </button>
 
-          {/* Paid */}
-          <button
-            onClick={() => setStatusFilter('Paid')}
-            style={{
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${statusFilter === 'Paid' ? '#10b981' : colors.border}`,
-              background: statusFilter === 'Paid' ? '#10b98120' : 'transparent',
-              color: statusFilter === 'Paid' ? '#10b981' : colors.text,
-              fontSize: '0.7rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.125rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <span style={{
-              background: statusFilter === 'Paid' ? '#10b981' : colors.cardBg,
-              color: statusFilter === 'Paid' ? 'white' : colors.textSecondary,
-              padding: '0.125rem 0.3rem',
-              borderRadius: '1rem',
-              fontSize: '0.65rem',
-              fontWeight: '700',
-              minWidth: '1.25rem',
-              textAlign: 'center'
-            }}>
-              {invoices.filter(inv => inv.status === 'Paid').length}
-            </span>
-            <span style={{ fontSize: '0.65rem' }}>Paid</span>
-          </button>
+  {/* Unsent */}
+  <button
+    onClick={() => setStatusFilter('Unsent')}
+    style={{
+      padding: '0.5rem 0.25rem',
+      borderRadius: '0.5rem',
+      border: `1px solid ${statusFilter === 'Unsent' ? '#6b7280' : colors.border}`,
+      background: statusFilter === 'Unsent' ? '#6b728020' : 'transparent',
+      color: statusFilter === 'Unsent' ? '#6b7280' : colors.text,
+      fontSize: '0.7rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '0.125rem',
+      transition: 'all 0.2s'
+    }}
+  >
+    <span style={{
+      background: statusFilter === 'Unsent' ? '#6b7280' : colors.cardBg,
+      color: statusFilter === 'Unsent' ? 'white' : colors.textSecondary,
+      padding: '0.125rem 0.3rem',
+      borderRadius: '1rem',
+      fontSize: '0.65rem',
+      fontWeight: '700',
+      minWidth: '1.25rem',
+      textAlign: 'center'
+    }}>
+      {invoices.filter(inv => inv.status === 'Unsent').length}
+    </span>
+    <span style={{ fontSize: '0.65rem' }}>Unsent</span>
+  </button>
 
-          {/* Pending */}
-          <button
-            onClick={() => setStatusFilter('Pending')}
-            style={{
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${statusFilter === 'Pending' ? '#f59e0b' : colors.border}`,
-              background: statusFilter === 'Pending' ? '#f59e0b20' : 'transparent',
-              color: statusFilter === 'Pending' ? '#f59e0b' : colors.text,
-              fontSize: '0.7rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.125rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <span style={{
-              background: statusFilter === 'Pending' ? '#f59e0b' : colors.cardBg,
-              color: statusFilter === 'Pending' ? 'white' : colors.textSecondary,
-              padding: '0.125rem 0.3rem',
-              borderRadius: '1rem',
-              fontSize: '0.65rem',
-              fontWeight: '700',
-              minWidth: '1.25rem',
-              textAlign: 'center'
-            }}>
-              {invoices.filter(inv => inv.status === 'Pending').length}
-            </span>
-            <span style={{ fontSize: '0.65rem' }}>Pending</span>
-          </button>
+  {/* Sent */}
+  <button
+    onClick={() => setStatusFilter('Sent')}
+    style={{
+      padding: '0.5rem 0.25rem',
+      borderRadius: '0.5rem',
+      border: `1px solid ${statusFilter === 'Sent' ? '#3b82f6' : colors.border}`,
+      background: statusFilter === 'Sent' ? '#3b82f620' : 'transparent',
+      color: statusFilter === 'Sent' ? '#3b82f6' : colors.text,
+      fontSize: '0.7rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '0.125rem',
+      transition: 'all 0.2s'
+    }}
+  >
+    <span style={{
+      background: statusFilter === 'Sent' ? '#3b82f6' : colors.cardBg,
+      color: statusFilter === 'Sent' ? 'white' : colors.textSecondary,
+      padding: '0.125rem 0.3rem',
+      borderRadius: '1rem',
+      fontSize: '0.65rem',
+      fontWeight: '700',
+      minWidth: '1.25rem',
+      textAlign: 'center'
+    }}>
+      {invoices.filter(inv => inv.status === 'Sent').length}
+    </span>
+    <span style={{ fontSize: '0.65rem' }}>Sent</span>
+  </button>
 
-          {/* Overdue */}
-          <button
-            onClick={() => setStatusFilter('Overdue')}
-            style={{
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${statusFilter === 'Overdue' ? '#ef4444' : colors.border}`,
-              background: statusFilter === 'Overdue' ? '#ef444420' : 'transparent',
-              color: statusFilter === 'Overdue' ? '#ef4444' : colors.text,
-              fontSize: '0.7rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.125rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <span style={{
-              background: statusFilter === 'Overdue' ? '#ef4444' : colors.cardBg,
-              color: statusFilter === 'Overdue' ? 'white' : colors.textSecondary,
-              padding: '0.125rem 0.3rem',
-              borderRadius: '1rem',
-              fontSize: '0.65rem',
-              fontWeight: '700',
-              minWidth: '1.25rem',
-              textAlign: 'center'
-            }}>
-              {invoices.filter(inv => inv.status === 'Overdue').length}
-            </span>
-            <span style={{ fontSize: '0.65rem' }}>Overdue</span>
-          </button>
+  {/* Paid */}
+  <button
+    onClick={() => setStatusFilter('Paid')}
+    style={{
+      padding: '0.5rem 0.25rem',
+      borderRadius: '0.5rem',
+      border: `1px solid ${statusFilter === 'Paid' ? '#10b981' : colors.border}`,
+      background: statusFilter === 'Paid' ? '#10b98120' : 'transparent',
+      color: statusFilter === 'Paid' ? '#10b981' : colors.text,
+      fontSize: '0.7rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '0.125rem',
+      transition: 'all 0.2s'
+    }}
+  >
+    <span style={{
+      background: statusFilter === 'Paid' ? '#10b981' : colors.cardBg,
+      color: statusFilter === 'Paid' ? 'white' : colors.textSecondary,
+      padding: '0.125rem 0.3rem',
+      borderRadius: '1rem',
+      fontSize: '0.65rem',
+      fontWeight: '700',
+      minWidth: '1.25rem',
+      textAlign: 'center'
+    }}>
+      {invoices.filter(inv => inv.status === 'Paid').length}
+    </span>
+    <span style={{ fontSize: '0.65rem' }}>Paid</span>
+  </button>
 
-          {/* Canceled */}
-          <button
-            onClick={() => setStatusFilter('Canceled')}
-            style={{
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${statusFilter === 'Canceled' ? '#6b7280' : colors.border}`,
-              background: statusFilter === 'Canceled' ? '#6b728020' : 'transparent',
-              color: statusFilter === 'Canceled' ? '#6b7280' : colors.text,
-              fontSize: '0.7rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.125rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <span style={{
-              background: statusFilter === 'Canceled' ? '#6b7280' : colors.cardBg,
-              color: statusFilter === 'Canceled' ? 'white' : colors.textSecondary,
-              padding: '0.125rem 0.3rem',
-              borderRadius: '1rem',
-              fontSize: '0.65rem',
-              fontWeight: '700',
-              minWidth: '1.25rem',
-              textAlign: 'center'
-            }}>
-              {invoices.filter(inv => inv.status === 'Canceled').length}
-            </span>
-            <span style={{ fontSize: '0.65rem' }}>Canceled</span>
-          </button>
-        </div>
+  {/* Overdue */}
+  <button
+    onClick={() => setStatusFilter('Overdue')}
+    style={{
+      padding: '0.5rem 0.25rem',
+      borderRadius: '0.5rem',
+      border: `1px solid ${statusFilter === 'Overdue' ? '#ef4444' : colors.border}`,
+      background: statusFilter === 'Overdue' ? '#ef444420' : 'transparent',
+      color: statusFilter === 'Overdue' ? '#ef4444' : colors.text,
+      fontSize: '0.7rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '0.125rem',
+      transition: 'all 0.2s'
+    }}
+  >
+    <span style={{
+      background: statusFilter === 'Overdue' ? '#ef4444' : colors.cardBg,
+      color: statusFilter === 'Overdue' ? 'white' : colors.textSecondary,
+      padding: '0.125rem 0.3rem',
+      borderRadius: '1rem',
+      fontSize: '0.65rem',
+      fontWeight: '700',
+      minWidth: '1.25rem',
+      textAlign: 'center'
+    }}>
+      {invoices.filter(inv => inv.status === 'Overdue').length}
+    </span>
+    <span style={{ fontSize: '0.65rem' }}>Overdue</span>
+  </button>
+</div>
 
         {/* Search Bar - NEW: Matching Job Log Style */}
         <div style={{ marginBottom: '1rem' }}>
@@ -504,10 +535,10 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
             fontWeight: '600'
           }}>
             {statusFilter === 'all' ? 'All Invoices' : 
-             statusFilter === 'Paid' ? 'Paid Invoices' :
-             statusFilter === 'Pending' ? 'Pending Invoices' :
-             statusFilter === 'Overdue' ? 'Overdue Invoices' :
-             'Canceled Invoices'}
+            statusFilter === 'Paid' ? 'Paid Invoices' :
+            statusFilter === 'Sent' ? 'Sent Invoices' :
+            statusFilter === 'Overdue' ? 'Overdue Invoices' :
+            'Unsent Invoices'}
           </h3>
           <span style={{
             fontSize: '0.875rem',
@@ -541,31 +572,55 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
           </span>
         </div>
 
-        {/* New Invoice Button - Always visible */}
-        <div 
-          onClick={() => setShowAddForm(!showAddForm)}
-          style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.75rem',
-            padding: '1rem',
-            marginBottom: '1rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.25rem', color: colors.text }}>+</span>
-            <span style={{ fontSize: '0.875rem', fontWeight: '600', color: colors.text }}>
-              New Invoice
-            </span>
-          </div>
-          <span style={{ color: colors.textSecondary, fontSize: '1.25rem' }}>
-            {showAddForm ? '−' : '+'}
-          </span>
-        </div>
+        {/* New Invoice Button - Matching Jobs style */}
+<div className={styles.addInvoiceContainer} style={{
+  background: colors.cardBg,
+  border: `1px solid ${colors.border}`
+}}>
+  <button
+    onClick={() => setShowAddForm(!showAddForm)}
+    className={styles.addInvoiceButton}
+    style={{ color: colors.text }}
+  >
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      fontSize: '0.875rem',
+      fontWeight: '600'
+    }}>
+      <Plus size={18} />
+      New Invoice
+    </div>
+    <ChevronDown 
+      size={18} 
+      style={{
+        transform: showAddForm ? 'rotate(180deg)' : 'rotate(0deg)',
+        transition: 'transform 0.2s'
+      }}
+    />
+  </button>
+
+  {showAddForm && !editingInvoice && (
+    <div style={{
+      padding: '0 1rem 1rem 1rem',
+      borderTop: `1px solid ${colors.border}`
+    }}>
+      <div style={{ paddingTop: '1rem' }}>
+        <InvoiceForm
+          isDarkMode={isDarkMode}
+          editingInvoice={null}
+          onSave={saveInvoice}
+          onCancel={() => setShowAddForm(false)}
+          estimates={estimates}
+          jobs={jobs}
+          invoices={invoices}
+          showToggle={false}
+        />
+      </div>
+    </div>
+  )}
+</div>
 
         
 
@@ -708,12 +763,12 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
               }
 
               const emptyMessages = {
-                'all': 'No invoices yet. Create your first invoice!',
-                'Paid': 'No paid invoices.',
-                'Pending': 'No pending invoices.',
-                'Overdue': 'No overdue invoices.',
-                'Canceled': 'No canceled invoices.'
-              };
+              'all': 'No invoices yet. Create your first invoice!',
+              'Unsent': 'No unsent invoices.',
+              'Sent': 'No sent invoices.',
+              'Paid': 'No paid invoices.',
+              'Overdue': 'No overdue invoices.'
+            };
 
               return (
                 <div style={{
@@ -761,6 +816,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
           invoice={sendingInvoice}
           onClose={() => setSendingInvoice(null)}
           onSend={handleSendInvoiceEmail}
+          onDownload={handleDownloadInvoice}
           isDarkMode={isDarkMode}
         />
       )}

@@ -4,7 +4,8 @@ import { X, Mail, Download, Send, CheckCircle, AlertCircle } from 'lucide-react'
 const SendInvoiceModal = ({ 
   invoice, 
   onClose, 
-  onSend, 
+  onSend,
+  onDownload, // Add this prop
   isDarkMode = false 
 }) => {
   const [email, setEmail] = useState(invoice.clientEmail || '');
@@ -51,10 +52,16 @@ const SendInvoiceModal = ({
     }
   };
 
-  const handleDownload = () => {
-    // This will be handled by the parent component
-    onClose();
-  };
+  const handleDownload = async () => {
+  try {
+    if (onDownload) {
+      await onDownload();
+    }
+  } catch (error) {
+    console.error('Download error:', error);
+    setError(error.message || 'Failed to download invoice');
+  }
+};
 
   return (
     <div style={{

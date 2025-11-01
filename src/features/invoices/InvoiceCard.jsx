@@ -16,10 +16,15 @@ const InvoiceCard = ({
 
   // Status configuration
   const statusConfig = {
-    'Pending': { 
-      color: '#f59e0b', 
-      label: 'Pending',
-      bgColor: '#fef3c7'
+    'Unsent': { 
+      color: '#6b7280', 
+      label: 'Unsent',
+      bgColor: '#f3f4f6'
+    },
+    'Sent': { 
+      color: '#3b82f6', 
+      label: 'Sent',
+      bgColor: '#dbeafe'
     },
     'Paid': { 
       color: '#10b981', 
@@ -30,11 +35,6 @@ const InvoiceCard = ({
       color: '#ef4444', 
       label: 'Overdue',
       bgColor: '#fee2e2'
-    },
-    'Cancelled': { 
-      color: '#6b7280', 
-      label: 'Cancelled',
-      bgColor: '#f3f4f6'
     }
   };
 
@@ -52,8 +52,8 @@ const InvoiceCard = ({
     }
   }, [statusDropdownOpen]);
 
-  const currentStatus = invoice.status || 'Pending';
-  const statusStyle = statusConfig[currentStatus];
+  const currentStatus = invoice.status || 'Unsent';
+  const statusStyle = statusConfig[currentStatus] || statusConfig['Unsent'];
 
   return (
     <div
@@ -110,12 +110,12 @@ const InvoiceCard = ({
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.375rem',
-              padding: '0.375rem 0.75rem',
-              borderRadius: '9999px',
-              background: isDarkMode ? `${statusStyle.color}20` : statusStyle.bgColor,
+              gap: '0.25rem',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '0.375rem',
+              background: `${statusStyle.color}15`,
               color: statusStyle.color,
-              fontSize: '0.8125rem',
+              fontSize: '0.75rem',
               fontWeight: '600',
               border: 'none',
               cursor: 'pointer',
@@ -123,7 +123,7 @@ const InvoiceCard = ({
             }}
           >
             {statusStyle.label}
-            <ChevronDown size={14} />
+            <ChevronDown size={12} />
           </button>
 
           {/* Status Dropdown Menu */}
