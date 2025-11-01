@@ -9,7 +9,8 @@ const InvoiceForm = ({
   onCancel,
   jobs = [],
   estimates = [],
-  invoices = []
+  invoices = [],
+  showToggle = true
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -34,23 +35,23 @@ const InvoiceForm = ({
     inputBg: isDarkMode ? '#000000' : '#ffffff',
   };
 
-  // Open form if editing
-  useEffect(() => {
-    if (editingInvoice) {
-      setFormData({
-        invoiceNumber: editingInvoice.invoiceNumber,
-        client: editingInvoice.client,
-        clientEmail: editingInvoice.clientEmail || '',
-        date: editingInvoice.date,
-        dueDate: editingInvoice.dueDate || '',
-        lineItems: [...editingInvoice.lineItems],
-        notes: editingInvoice.notes || '',
-        status: editingInvoice.status,
-        jobId: editingInvoice.jobId || null
-      });
-      setShowForm(true);
-    }
-  }, [editingInvoice]);
+  // Open form if editing OR if showToggle is false (used inline)
+useEffect(() => {
+  if (editingInvoice || !showToggle) {
+    setFormData({
+      invoiceNumber: editingInvoice?.invoiceNumber || '',
+      client: editingInvoice?.client || '',
+      clientEmail: editingInvoice?.clientEmail || '',
+      date: editingInvoice?.date || new Date().toISOString().split('T')[0],
+      dueDate: editingInvoice?.dueDate || '',
+      lineItems: editingInvoice?.lineItems || [],
+      notes: editingInvoice?.notes || '',
+      status: editingInvoice?.status || 'Pending',
+      jobId: editingInvoice?.jobId || null
+    });
+    setShowForm(true);
+  }
+}, [editingInvoice, showToggle]);
 
 // Generate next invoice number
     useEffect(() => {
@@ -167,6 +168,7 @@ const InvoiceForm = ({
       overflow: 'hidden'
     }}>
       {/* Toggle Button */}
+      {showToggle && (
       <button
         onClick={() => setShowForm(!showForm)}
         style={{
@@ -195,6 +197,7 @@ const InvoiceForm = ({
           }}
         />
       </button>
+      )}
 
       {/* Form Content */}
       {showForm && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Briefcase, Search } from 'lucide-react';
+import { FileText, Briefcase, Search, X } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase/firebase';
 import { getUserInvoices, createInvoice, updateInvoice, deleteInvoice } from './invoicesService';
@@ -19,6 +19,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [searchQuery, setSearchQuery] = useState(''); // NEW: Search query state
   const [sendingInvoice, setSendingInvoice] = useState(null); // NEW: For send invoice modal
   const [userBusinessInfo, setUserBusinessInfo] = useState(null); // NEW: User business info for PDF
+  const [showAddForm, setShowAddForm] = useState(false); // NEW: For showing new invoice form
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -113,6 +114,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
 
   const cancelEdit = () => {
     setEditingInvoice(null);
+    setShowAddForm(false); // Also close add form when canceling
   };
 
   const handleDeleteInvoice = async (id, invoiceNumber) => {
@@ -487,16 +489,115 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
           </div>
         </div>
 
-        {/* Invoice Form */}
-        <InvoiceForm
-          isDarkMode={isDarkMode}
-          editingInvoice={editingInvoice}
-          onSave={saveInvoice}
-          onCancel={cancelEdit}
-          estimates={estimates}
-          jobs={jobs}
-          invoices={invoices}
-        />
+        {/* New Invoice Button - Always visible */}
+        <div 
+          onClick={() => setShowAddForm(!showAddForm)}
+          style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '0.75rem',
+            padding: '1rem',
+            marginBottom: '1rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1.25rem', color: colors.text }}>+</span>
+            <span style={{ fontSize: '1rem', fontWeight: '600', color: colors.text }}>
+              New Invoice
+            </span>
+          </div>
+          <span style={{ color: colors.textSecondary, fontSize: '1.25rem' }}>
+            {showAddForm ? '−' : '+'}
+          </span>
+        </div>
+
+        {/* New Invoice Form - Shown when Add button clicked */}
+        {showAddForm && !editingInvoice && (
+          <div style={{ marginBottom: '1rem' }}>
+            <InvoiceForm
+              isDarkMode={isDarkMode}
+              editingInvoice={null}
+              onSave={saveInvoice}
+              onCancel={() => setShowAddForm(false)}
+              estimates={estimates}
+              jobs={jobs}
+              invoices={invoices}
+              showToggle={false}
+            />
+          </div>
+        )}
+
+        {/* Edit Invoice Modal */}
+        {editingInvoice && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem',
+            paddingBottom: '6rem',
+            overflowY: 'auto'
+          }}>
+            <div style={{
+              background: colors.cardBg,
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: 'calc(100vh - 8rem)',
+              overflow: 'auto',
+              margin: 'auto'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem'
+              }}>
+                <h3 style={{
+                  margin: 0,
+                  color: colors.text,
+                  fontSize: '1.25rem',
+                  fontWeight: '600'
+                }}>
+                  Edit Invoice
+                </h3>
+                <button
+                  onClick={cancelEdit}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '0.25rem',
+                    color: colors.textSecondary
+                  }}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <InvoiceForm
+                isDarkMode={isDarkMode}
+                editingInvoice={editingInvoice}
+                onSave={saveInvoice}
+                onCancel={cancelEdit}
+                estimates={estimates}
+                jobs={jobs}
+                invoices={invoices}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Section Header with Title and Count */}
         <div style={{
