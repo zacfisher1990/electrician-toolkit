@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Search, X, Plus, ChevronDown } from 'lucide-react';
+import { FileText, Search, X } from 'lucide-react';
 import { getColors } from '../../theme';
 import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as deleteEstimateFromFirebase } from './estimatesService';
 import { sendEstimateViaEmail, downloadEstimate, getUserBusinessInfo } from './estimateSendService';
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import EstimateCard from './EstimateCard';
-import EstimateForm from './EstimateForm';
+import EstimateModal from './EstimateModal'; // Use the new modal
+import AddEstimateSection from './AddEstimateSection';
 import SendEstimateModal from './SendEstimateModal';
 import EstimateStatusTabs from './EstimateStatusTabs';
-import styles from './Estimates.module.css';
 import { saveEstimates, getEstimates, clearEstimatesCache } from '../../utils/localStorageUtils';
 
 const Estimates = ({ 
@@ -23,12 +23,12 @@ const Estimates = ({
   const [estimates, setEstimates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingEstimate, setEditingEstimate] = useState(null);
-  const [sendingEstimate, setSendingEstimate] = useState(null); // NEW: For send modal
+  const [sendingEstimate, setSendingEstimate] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [activeStatusTab, setActiveStatusTab] = useState('all'); // NEW: Status filter
-  const [userInfo, setUserInfo] = useState(null); // NEW: Store user business info
-  const lastHandledEstimateId = useRef(null); // NEW: Track last handled navigation
+  const [showAddForm, setShowAddForm] = useState(false); // NEW: For add modal
+  const [activeStatusTab, setActiveStatusTab] = useState('all');
+  const [userInfo, setUserInfo] = useState(null);
+  const lastHandledEstimateId = useRef(null);
 
   // Get colors from centralized theme
   const colors = getColors(isDarkMode);
@@ -73,19 +73,14 @@ const Estimates = ({
   useEffect(() => {
     const viewEstimateId = navigationData?.viewEstimateId;
     
-    // Only handle if:
-    // 1. We have a viewEstimateId
-    // 2. We have loaded estimates
-    // 3. We haven't already handled this specific estimate
     if (viewEstimateId && estimates.length > 0 && lastHandledEstimateId.current !== viewEstimateId) {
       const estimateToView = estimates.find(e => e.id === viewEstimateId);
       if (estimateToView) {
         setEditingEstimate(estimateToView);
-        lastHandledEstimateId.current = viewEstimateId; // Mark as handled
+        lastHandledEstimateId.current = viewEstimateId;
       }
     }
     
-    // Reset the tracking when navigationData is cleared
     if (!viewEstimateId && lastHandledEstimateId.current) {
       lastHandledEstimateId.current = null;
     }
@@ -136,7 +131,6 @@ const Estimates = ({
 
   const startEdit = (estimate) => {
     setEditingEstimate(estimate);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const cancelEdit = () => {
@@ -157,15 +151,14 @@ const Estimates = ({
     }
   };
 
-  // NEW: Handle opening send modal
+  // Handle opening send modal
   const handleSendEstimate = (estimate) => {
     setSendingEstimate(estimate);
   };
 
-  // NEW: Handle status update
+  // Handle status update
   const handleUpdateStatus = async (estimateId, newStatus) => {
     try {
-      // Find the estimate
       const estimate = estimates.find(est => est.id === estimateId);
       
       if (!estimate) {
@@ -173,13 +166,11 @@ const Estimates = ({
         return;
       }
       
-      // Update the estimate with the new status
       await updateEstimate(estimateId, {
         ...estimate,
         status: newStatus
       });
       
-      // Reload estimates to reflect the change
       clearEstimatesCache();
       loadEstimates();
       
@@ -189,10 +180,9 @@ const Estimates = ({
     }
   };
 
-  // NEW: Handle actual sending from modal
+  // Handle actual sending from modal
   const handleSendFromModal = async (email, message) => {
     try {
-      // Ensure we have userInfo before sending
       let businessInfo = userInfo;
       
       if (!businessInfo) {
@@ -201,7 +191,6 @@ const Estimates = ({
         setUserInfo(businessInfo);
       }
       
-      // Double check we have valid info with fallback
       if (!businessInfo || !businessInfo.businessName) {
         businessInfo = {
           businessName: 'Electrician Toolkit',
@@ -215,7 +204,6 @@ const Estimates = ({
       
       await sendEstimateViaEmail(sendingEstimate, email, message, businessInfo);
       
-      // Update estimate status to "Sent"
       await updateEstimate(sendingEstimate.id, {
         ...sendingEstimate,
         status: 'Sent',
@@ -223,16 +211,15 @@ const Estimates = ({
         sentTo: email
       });
       
-      // Reload estimates
       clearEstimatesCache();
       await loadEstimates();
     } catch (error) {
       console.error('Error sending estimate:', error);
-      throw error; // Let modal handle the error display
+      throw error;
     }
   };
 
-  // NEW: Handle download from modal
+  // Handle download from modal
   const handleDownloadFromModal = async () => {
     try {
       await downloadEstimate(sendingEstimate, userInfo);
@@ -242,10 +229,10 @@ const Estimates = ({
     }
   };
 
-  const handleApplyToJob = (estimate, jobId) => {
-    if (onApplyToJob) {
-      onApplyToJob(estimate, jobId);
-    }
+  // NEW: Handle add estimate click
+  const handleAddEstimateClick = () => {
+    setShowAddForm(true);
+    setEditingEstimate(null);
   };
 
   // Calculate status counts
@@ -255,29 +242,21 @@ const Estimates = ({
     sent: estimates.filter(est => est.status === 'Sent').length
   };
 
-  // Filter estimates based on status tab
-  const statusFilteredEstimates = activeStatusTab === 'all' 
-    ? estimates 
-    : estimates.filter(estimate => {
-        const status = estimate.status || 'Unsent';
-        return status.toLowerCase() === activeStatusTab.toLowerCase();
-      });
+  // Filter estimates
+  const filteredEstimates = estimates.filter(est => {
+    // Status filter
+    if (activeStatusTab === 'unsent' && est.status === 'Sent') return false;
+    if (activeStatusTab === 'sent' && (!est.status || est.status === 'Unsent')) return false;
 
-  // Then filter by search query
-  const filteredEstimates = statusFilteredEstimates.filter(estimate => {
-    if (!searchQuery.trim()) return true;
-    
-    const query = searchQuery.toLowerCase();
-    const matchesName = estimate.name.toLowerCase().includes(query);
-    const matchesMaterials = estimate.materials?.some(mat => 
-      mat.name.toLowerCase().includes(query)
-    ) || false;
-    const matchesTotal = estimate.total.toString().includes(query);
-    
-    const linkedJob = jobs.find(job => job.id === estimate.jobId);
-    const matchesJob = linkedJob && (linkedJob.title || linkedJob.name || '').toLowerCase().includes(query);
-    
-    return matchesName || matchesMaterials || matchesTotal || matchesJob;
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return (
+        est.name?.toLowerCase().includes(query) ||
+        est.clientName?.toLowerCase().includes(query)
+      );
+    }
+    return true;
   });
 
   if (loading) {
@@ -287,8 +266,7 @@ const Estimates = ({
         background: colors.mainBg,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        paddingBottom: '5rem'
+        justifyContent: 'center'
       }}>
         <div style={{ color: colors.subtext }}>Loading estimates...</div>
       </div>
@@ -296,268 +274,192 @@ const Estimates = ({
   }
 
   return (
-    <div style={{ 
-      background: colors.mainBg,
-      minHeight: '100vh',
-      paddingBottom: '5rem'
-    }}>
-      <div style={{ padding: '1rem 0.25rem' }}>
-        {/* Status Filter Tabs */}
-        <EstimateStatusTabs
-          activeStatusTab={activeStatusTab}
-          setActiveStatusTab={setActiveStatusTab}
-          statusCounts={statusCounts}
+    <div className="estimates-container">
+      {/* Add Estimate Modal */}
+      {showAddForm && !editingEstimate && (
+        <EstimateModal
+          editingEstimate={null}
+          onSave={saveEstimate}
+          onCancel={() => setShowAddForm(false)}
+          onDelete={null}
+          isDarkMode={isDarkMode}
           colors={colors}
+          isNewEstimate={true}
         />
+      )}
 
-        {/* Search Bar */}
-        <div style={{ marginBottom: '1rem', position: 'relative' }}>
-          <input
-            type="text"
-            placeholder="Search estimates..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              paddingLeft: '2.5rem',
-              paddingRight: searchQuery ? '2.5rem' : '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              fontSize: '0.9375rem',
-              background: colors.inputBg,
-              color: colors.text,
-              boxSizing: 'border-box'
-            }}
+      {/* Edit Estimate Modal */}
+      {editingEstimate && !showAddForm && !sendingEstimate && (
+        <EstimateModal
+          editingEstimate={editingEstimate}
+          onSave={saveEstimate}
+          onCancel={cancelEdit}
+          onDelete={deleteEstimate}
+          isDarkMode={isDarkMode}
+          colors={colors}
+          isNewEstimate={false}
+        />
+      )}
+
+      {/* Send Estimate Modal */}
+      {sendingEstimate && (
+        <SendEstimateModal
+          estimate={sendingEstimate}
+          isDarkMode={isDarkMode}
+          onClose={() => setSendingEstimate(null)}
+          onSend={handleSendFromModal}
+          onDownload={handleDownloadFromModal}
+        />
+      )}
+
+      <div style={{ 
+        minHeight: '100vh', 
+        background: colors.mainBg,
+        paddingBottom: '5rem'
+      }}>
+        <div style={{ padding: '1rem 0.25rem' }}>
+          {/* Status Tabs */}
+          <EstimateStatusTabs
+            activeStatusTab={activeStatusTab}
+            setActiveStatusTab={setActiveStatusTab}
+            statusCounts={statusCounts}
+            colors={colors}
           />
-          <Search 
-            size={18} 
-            style={{
-              position: 'absolute',
-              left: '0.75rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: colors.subtext,
-              pointerEvents: 'none'
-            }}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              style={{
-                position: 'absolute',
-                right: '0.75rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                color: colors.subtext,
-                padding: '0.25rem',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              <X size={18} />
-            </button>
-          )}
-        </div>
 
-        {/* Section Header */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1rem',
-          padding: '0 0.25rem'
-        }}>
-          <h3 style={{ 
-            margin: 0, 
-            color: colors.text, 
-            fontSize: '1.125rem',
-            fontWeight: '600'
-          }}>
-            {searchQuery ? 'Search Results' : 'All Estimates'}
-          </h3>
-          <span style={{
-            fontSize: '0.875rem',
-            color: colors.subtext,
-            background: colors.cardBg,
-            padding: '0.25rem 0.75rem',
-            borderRadius: '1rem',
-            border: `1px solid ${colors.border}`
-          }}>
-            {filteredEstimates.length} {filteredEstimates.length === 1 ? 'estimate' : 'estimates'}
-          </span>
-        </div>
-
-        {/* Add Estimate Button */}
-        <div className={styles.addEstimateContainer} style={{
-          background: isDarkMode ? '#1a1a1a' : '#3b82f6',
-          border: `1px solid ${colors.border}`
-        }}>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className={styles.addEstimateButton}
-            style={{ color: isDarkMode ? colors.text : '#ffffff' }}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.875rem',
-              fontWeight: '600'
-            }}>
-              <Plus size={18} />
-              New Estimate
-            </div>
-            <ChevronDown 
-              size={18} 
+          {/* Search Bar */}
+          <div style={{ marginBottom: '1rem', position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Search estimates..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               style={{
-                transform: showAddForm ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s'
+                width: '100%',
+                padding: '0.75rem',
+                paddingLeft: '2.5rem',
+                paddingRight: searchQuery ? '2.5rem' : '0.75rem',
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                fontSize: '0.9375rem',
+                background: colors.inputBg,
+                color: colors.text,
+                boxSizing: 'border-box'
               }}
             />
-          </button>
+            <Search 
+              size={18} 
+              style={{
+                position: 'absolute',
+                left: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: colors.subtext,
+                pointerEvents: 'none'
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: colors.subtext,
+                  padding: '0.25rem',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
 
-          {showAddForm && !editingEstimate && (
-            <div style={{
-              padding: '0 1rem 1rem 1rem',
-              borderTop: `1px solid ${colors.border}`
-            }}>
-              <div style={{ paddingTop: '1rem' }}>
-                <EstimateForm
-                  isDarkMode={isDarkMode}
-                  editingEstimate={null}
-                  onSave={saveEstimate}
-                  onCancel={() => setShowAddForm(false)}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Edit Estimate Modal */}
-        {editingEstimate && !sendingEstimate && (
+          {/* Section Header */}
           <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
             display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '1rem',
-            paddingBottom: '6rem',
-            overflowY: 'auto'
+            marginBottom: '1rem',
+            padding: '0 0.25rem'
           }}>
-            <div style={{
-              background: colors.cardBg,
-              borderRadius: '0.75rem',
-              padding: '1.5rem',
-              maxWidth: '600px',
-              width: '100%',
-              maxHeight: 'calc(100vh - 8rem)',
-              overflow: 'auto',
-              margin: 'auto'
+            <h3 style={{ 
+              margin: 0, 
+              color: colors.text, 
+              fontSize: '1.125rem',
+              fontWeight: '600'
             }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '1rem'
-              }}>
-                <h3 style={{
-                  margin: 0,
-                  color: colors.text,
-                  fontSize: '1.25rem',
-                  fontWeight: '600'
-                }}>
-                  Edit Estimate
-                </h3>
-                <button
-                  onClick={cancelEdit}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '0.25rem',
-                    color: colors.subtext
-                  }}
-                >
-                  <X size={24} />
-                </button>
-              </div>
-              
-              <EstimateForm
-                isDarkMode={isDarkMode}
-                editingEstimate={editingEstimate}
-                onSave={saveEstimate}
-                onCancel={cancelEdit}
-              />
-            </div>
+              {searchQuery ? 'Search Results' : 'All Estimates'}
+            </h3>
+            <span style={{
+              fontSize: '0.875rem',
+              color: colors.subtext,
+              background: colors.cardBg,
+              padding: '0.25rem 0.75rem',
+              borderRadius: '1rem',
+              border: `1px solid ${colors.border}`
+            }}>
+              {filteredEstimates.length} {filteredEstimates.length === 1 ? 'estimate' : 'estimates'}
+            </span>
           </div>
-        )}
 
-        {/* Send Estimate Modal */}
-        {sendingEstimate && (
-          <SendEstimateModal
-            estimate={sendingEstimate}
-            isDarkMode={isDarkMode}
-            onClose={() => setSendingEstimate(null)}
-            onSend={handleSendFromModal}
-            onDownload={handleDownloadFromModal}
-          />
-        )}
-
-        {/* No Results Message */}
-        {searchQuery && filteredEstimates.length === 0 && (
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.75rem',
-            textAlign: 'center',
-            padding: '3rem 1rem',
-            color: colors.subtext
-          }}>
-            <Search size={48} color={colors.subtext} style={{ margin: '0 auto 1rem' }} />
-            <p style={{ margin: 0, fontSize: '0.9375rem' }}>
-              No estimates match your search.
-            </p>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!searchQuery && estimates.length === 0 && (
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.75rem',
-            textAlign: 'center',
-            padding: '3rem 1rem',
-            color: colors.subtext
-          }}>
-            <FileText size={48} color={colors.subtext} style={{ margin: '0 auto 1rem' }} />
-            <p style={{ margin: 0, fontSize: '0.9375rem' }}>No estimates yet. Create your first estimate above!</p>
-          </div>
-        )}
-
-        {/* Estimates List */}
-        {filteredEstimates.length > 0 && filteredEstimates.map((estimate) => (
-          <EstimateCard
-            key={estimate.id}
-            estimate={estimate}
+          {/* Add Estimate Button */}
+          <AddEstimateSection
+            handleAddEstimateClick={handleAddEstimateClick}
             isDarkMode={isDarkMode}
             colors={colors}
-            onEdit={startEdit}
-            onDelete={deleteEstimate}
-            onSendEstimate={handleSendEstimate}
-            onUpdateStatus={handleUpdateStatus}
           />
-        ))}
+
+          {/* No Results Message */}
+          {searchQuery && filteredEstimates.length === 0 && (
+            <div style={{
+              background: colors.cardBg,
+              border: `1px solid ${colors.border}`,
+              borderRadius: '0.75rem',
+              textAlign: 'center',
+              padding: '3rem 1rem',
+              color: colors.subtext
+            }}>
+              <Search size={48} color={colors.subtext} style={{ margin: '0 auto 1rem' }} />
+              <p style={{ margin: 0, fontSize: '0.9375rem' }}>
+                No estimates match your search.
+              </p>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!searchQuery && estimates.length === 0 && (
+            <div style={{
+              background: colors.cardBg,
+              border: `1px solid ${colors.border}`,
+              borderRadius: '0.75rem',
+              textAlign: 'center',
+              padding: '3rem 1rem',
+              color: colors.subtext
+            }}>
+              <FileText size={48} color={colors.subtext} style={{ margin: '0 auto 1rem' }} />
+              <p style={{ margin: 0, fontSize: '0.9375rem' }}>No estimates yet. Create your first estimate above!</p>
+            </div>
+          )}
+
+          {/* Estimates List */}
+          {filteredEstimates.length > 0 && filteredEstimates.map((estimate) => (
+            <EstimateCard
+              key={estimate.id}
+              estimate={estimate}
+              isDarkMode={isDarkMode}
+              colors={colors}
+              onEdit={startEdit}
+              onDelete={deleteEstimate}
+              onSendEstimate={handleSendEstimate}
+              onUpdateStatus={handleUpdateStatus}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

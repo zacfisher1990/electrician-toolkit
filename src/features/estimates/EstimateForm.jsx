@@ -27,6 +27,27 @@ const EstimateForm = ({
     inputBg: isDarkMode ? '#000000' : '#ffffff',
   };
 
+  // Label style (matching JobForm)
+  const labelStyle = {
+    display: 'block',
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: '0.375rem'
+  };
+
+  // Input style
+  const inputStyle = {
+    width: '100%',
+    padding: '0.75rem',
+    border: `1px solid ${colors.border}`,
+    borderRadius: '0.5rem',
+    fontSize: '0.9375rem',
+    background: colors.inputBg,
+    color: colors.text,
+    boxSizing: 'border-box'
+  };
+
   // Update form when editing estimate changes
   useEffect(() => {
     if (editingEstimate) {
@@ -109,23 +130,18 @@ const EstimateForm = ({
   return (
     <>
       {/* Estimate Name */}
-      <input
-        type="text"
-        placeholder="Estimate Name *"
-        value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          marginBottom: '0.75rem',
-          border: `1px solid ${colors.border}`,
-          borderRadius: '0.5rem',
-          fontSize: '0.9375rem',
-          background: colors.inputBg,
-          color: colors.text,
-          boxSizing: 'border-box'
-        }}
-      />
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={labelStyle}>
+          Estimate Name <span style={{ color: '#ef4444' }}>*</span>
+        </label>
+        <input
+          type="text"
+          placeholder="Enter estimate name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          style={inputStyle}
+        />
+      </div>
 
       {/* Labor Hours and Rate */}
       <div style={{ 
@@ -134,95 +150,85 @@ const EstimateForm = ({
         gap: '0.75rem',
         marginBottom: '0.75rem'
       }}>
-        <input
-          type="number"
-          placeholder="Labor Hours"
-          value={formData.laborHours}
-          onChange={(e) => setFormData({ ...formData, laborHours: e.target.value })}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.5rem',
-            fontSize: '0.9375rem',
-            background: colors.inputBg,
-            color: colors.text,
-            boxSizing: 'border-box'
-          }}
-        />
-        <input
-          type="number"
-          placeholder="Rate/Hour ($)"
-          value={formData.laborRate}
-          onChange={(e) => setFormData({ ...formData, laborRate: e.target.value })}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.5rem',
-            fontSize: '0.9375rem',
-            background: colors.inputBg,
-            color: colors.text,
-            boxSizing: 'border-box'
-          }}
-        />
+        <div>
+          <label style={labelStyle}>Labor Hours</label>
+          <input
+            type="number"
+            placeholder="0"
+            value={formData.laborHours}
+            onChange={(e) => setFormData({ ...formData, laborHours: e.target.value })}
+            style={inputStyle}
+            step="0.5"
+            min="0"
+          />
+        </div>
+
+        <div>
+          <label style={labelStyle}>Rate/Hour ($)</label>
+          <input
+            type="number"
+            placeholder="0.00"
+            value={formData.laborRate}
+            onChange={(e) => setFormData({ ...formData, laborRate: e.target.value })}
+            style={inputStyle}
+            step="0.01"
+            min="0"
+          />
+        </div>
       </div>
 
       {/* Materials Section */}
       <div style={{ marginBottom: '0.75rem' }}>
-        <div style={{
-          fontSize: '0.875rem',
-          fontWeight: '500',
-          color: colors.subtext,
-          marginBottom: '0.5rem'
-        }}>
-          Materials
-        </div>
+        <label style={labelStyle}>Materials</label>
 
         {/* Existing Materials */}
-        {formData.materials.map((mat, idx) => {
-          const quantity = parseFloat(mat.quantity) || 1;
-          const unitCost = parseFloat(mat.cost) || 0;
-          const totalCost = quantity * unitCost;
-          
-          return (
-            <div key={idx} style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '0.75rem',
-              background: colors.bg,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              marginBottom: '0.5rem'
-            }}>
-              <span style={{ color: colors.text, fontSize: '0.875rem' }}>
-                {mat.name} {quantity > 1 ? `x${quantity}` : ''}
-              </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ color: colors.text, fontSize: '0.875rem', fontWeight: '600' }}>
-                  ${totalCost.toFixed(2)}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeMaterial(idx)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#ef4444',
-                    cursor: 'pointer',
-                    padding: '0.25rem',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                  aria-label={`Remove ${mat.name}`}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-          );
-        })}
+        {formData.materials.length > 0 && (
+          <div style={{ marginBottom: '0.5rem' }}>
+            {formData.materials.map((mat, idx) => {
+              const quantity = parseFloat(mat.quantity) || 1;
+              const unitCost = parseFloat(mat.cost) || 0;
+              const totalCost = quantity * unitCost;
+              
+              return (
+                <div key={idx} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.75rem',
+                  background: colors.bg,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '0.5rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  <span style={{ color: colors.text, fontSize: '0.875rem' }}>
+                    {mat.name} {quantity > 1 ? `x${quantity}` : ''}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: colors.text, fontSize: '0.875rem', fontWeight: '600' }}>
+                      ${totalCost.toFixed(2)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeMaterial(idx)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#ef4444',
+                        cursor: 'pointer',
+                        padding: '0.25rem',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                      aria-label={`Remove ${mat.name}`}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Add New Material */}
         <MaterialAutocomplete
