@@ -7,7 +7,7 @@ const JobModal = ({
   formData,
   setFormData,
   linkedEstimate,
-  linkedEstimates = [], // Add linkedEstimates array prop
+  linkedEstimates = [],
   estimates,
   showEstimateMenu,
   setShowEstimateMenu,
@@ -15,7 +15,7 @@ const JobModal = ({
   onCreateNewEstimate,
   onViewEstimate,
   onRemoveEstimate,
-  onAddAdditionalEstimate, // Add this new prop
+  onAddAdditionalEstimate,
   onViewAllEstimates,
   estimateMenuRef,
   onClose,
@@ -23,10 +23,10 @@ const JobModal = ({
   onDelete,
   isDarkMode,
   colors,
-  isNewJob = false // NEW: Add this prop to indicate if it's a new job
+  isNewJob = false
 }) => {
-  // Don't render if neither viewingJob nor isNewJob is true
-  if (!viewingJob && !isNewJob) return null;
+  // Only render if we're creating a new job OR viewing an existing job
+  if (!isNewJob && !viewingJob) return null;
 
   const modalTitle = isNewJob ? 'New Job' : 'Job Details';
   const saveButtonText = isNewJob ? 'Add Job' : 'Save Changes';
@@ -92,7 +92,7 @@ const JobModal = ({
             formData={formData}
             setFormData={setFormData}
             linkedEstimate={linkedEstimate}
-            linkedEstimates={linkedEstimates} // Pass the array
+            linkedEstimates={linkedEstimates}
             estimates={estimates}
             showEstimateMenu={showEstimateMenu}
             setShowEstimateMenu={setShowEstimateMenu}
@@ -100,7 +100,7 @@ const JobModal = ({
             onCreateNewEstimate={onCreateNewEstimate}
             onViewEstimate={onViewEstimate}
             onRemoveEstimate={onRemoveEstimate}
-            onAddAdditionalEstimate={onAddAdditionalEstimate} // Pass this prop
+            onAddAdditionalEstimate={onAddAdditionalEstimate}
             onViewAllEstimates={onViewAllEstimates}
             estimateMenuRef={estimateMenuRef}
             isDarkMode={isDarkMode}
@@ -126,7 +126,7 @@ const JobModal = ({
             >
               {saveButtonText}
             </button>
-            {!isNewJob && onDelete && (
+            {!isNewJob && onDelete && viewingJob && (
               <button
                 onClick={() => onDelete(viewingJob.id, viewingJob.title || viewingJob.name)}
                 style={{

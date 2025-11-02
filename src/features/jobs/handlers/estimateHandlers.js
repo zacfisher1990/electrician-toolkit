@@ -32,16 +32,26 @@ export const createEstimateHandlers = ({
   };
 
   const handleSelectEstimate = (estimate) => {
+    console.log('🔗 handleSelectEstimate called with:', estimate);
+    console.log('📋 Current formData.estimateIds:', formData.estimateIds);
+    console.log('📋 Current linkedEstimates:', linkedEstimates);
+    
+    // Ensure estimateIds is an array
+    const currentEstimateIds = Array.isArray(formData.estimateIds) ? formData.estimateIds : [];
+    
     // Check if estimate is already linked
-    if (formData.estimateIds.includes(estimate.id)) {
+    if (currentEstimateIds.includes(estimate.id)) {
       alert('This estimate is already linked to this job');
       setShowEstimateMenu(false);
       return;
     }
 
     // Add estimate to the array
-    const newEstimateIds = [...formData.estimateIds, estimate.id];
+    const newEstimateIds = [...currentEstimateIds, estimate.id];
     const newLinkedEstimates = [...linkedEstimates, estimate];
+    
+    console.log('✅ New estimateIds:', newEstimateIds);
+    console.log('✅ New linkedEstimates:', newLinkedEstimates);
     
     setLinkedEstimates(newLinkedEstimates);
     
@@ -50,19 +60,30 @@ export const createEstimateHandlers = ({
     
     setFormData(prev => ({
       ...prev,
-      title: prev.title || estimate.title,
+      title: prev.title || estimate.title || estimate.name,
       client: prev.client || estimate.client,
       location: prev.location || estimate.location,
       estimatedCost: totalCost.toString(),
       estimateIds: newEstimateIds
     }));
     setShowEstimateMenu(false);
+    
+    console.log('✅ Estimate added successfully');
   };
 
   const handleRemoveEstimate = (estimateId) => {
+    console.log('🗑️ handleRemoveEstimate called with:', estimateId);
+    console.log('📋 Current formData.estimateIds:', formData.estimateIds);
+    
+    // Ensure estimateIds is an array
+    const currentEstimateIds = Array.isArray(formData.estimateIds) ? formData.estimateIds : [];
+    
     // Remove estimate from the array
-    const newEstimateIds = formData.estimateIds.filter(id => id !== estimateId);
+    const newEstimateIds = currentEstimateIds.filter(id => id !== estimateId);
     const newLinkedEstimates = linkedEstimates.filter(e => e.id !== estimateId);
+    
+    console.log('✅ New estimateIds after removal:', newEstimateIds);
+    console.log('✅ New linkedEstimates after removal:', newLinkedEstimates);
     
     setLinkedEstimates(newLinkedEstimates);
     
@@ -74,9 +95,12 @@ export const createEstimateHandlers = ({
       estimatedCost: totalCost.toString(),
       estimateIds: newEstimateIds
     }));
+    
+    console.log('✅ Estimate removed successfully');
   };
 
   const handleCreateNewEstimate = async () => {
+    console.log('🆕 handleCreateNewEstimate called');
     setShowEstimateMenu(false);
     
     if (showAddForm && formData.title && formData.client) {
@@ -91,7 +115,8 @@ export const createEstimateHandlers = ({
           time: formData.time,
           estimatedCost: formData.estimatedCost,
           duration: formData.duration,
-          notes: formData.notes
+          notes: formData.notes,
+          estimateIds: formData.estimateIds || []
         };
 
         const jobId = await createJob(jobData);
@@ -128,11 +153,13 @@ export const createEstimateHandlers = ({
   };
 
   const handleEstimateMenuOpen = async (value) => {
+    console.log('📂 handleEstimateMenuOpen called with:', value);
     setShowEstimateMenu(value);
     
     if (value === true) {
       try {
         const userEstimates = await getUserEstimates();
+        console.log('📊 Loaded estimates:', userEstimates.length);
         setEstimates(userEstimates);
       } catch (error) {
         console.error('Error loading estimates:', error);
@@ -141,13 +168,14 @@ export const createEstimateHandlers = ({
   };
 
   const handleAddAdditionalEstimate = () => {
-    console.log('handleAddAdditionalEstimate called');
+    console.log('➕ handleAddAdditionalEstimate called');
     setShowEstimateMenu(true);
   };
 
-  const handleViewEstimate = (estimateId) => {
+  const handleViewEstimate = (estimate) => {
+    console.log('👁️ handleViewEstimate called with:', estimate);
     if (onNavigateToEstimates) {
-      onNavigateToEstimates({ viewEstimateId: estimateId });
+      onNavigateToEstimates({ viewEstimateId: estimate.id });
     }
   };
 

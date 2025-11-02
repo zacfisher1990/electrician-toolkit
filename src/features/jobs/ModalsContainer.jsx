@@ -60,8 +60,8 @@ const ModalsContainer = ({
         isDarkMode={isDarkMode}
       />
 
-      {/* Add Job Modal */}
-      {showAddForm && (
+      {/* Add Job Modal - only show when adding a new job */}
+      {showAddForm && !viewingJob && (
         <JobModal
           viewingJob={null}
           formData={formData}
@@ -90,29 +90,32 @@ const ModalsContainer = ({
         />
       )}
 
-      {/* Job Modal (for viewing/editing existing jobs) */}
-      <JobModal
-        viewingJob={viewingJob}
-        formData={formData}
-        setFormData={setFormData}
-        linkedEstimate={linkedEstimates.length > 0 ? linkedEstimates[0] : null}
-        linkedEstimates={linkedEstimates}
-        estimates={estimates}
-        showEstimateMenu={showEstimateMenu}
-        setShowEstimateMenu={handleEstimateMenuOpen}
-        onSelectEstimate={onSelectEstimate}
-        onCreateNewEstimate={onCreateNewEstimate}
-        onViewEstimate={onViewEstimate}
-        onRemoveEstimate={onRemoveEstimate}
-        onAddAdditionalEstimate={onAddAdditionalEstimate}
-        onViewAllEstimates={handleViewCombinedEstimates}
-        estimateMenuRef={estimateMenuRef}
-        onClose={resetForm}
-        onSave={handleEditJob}
-        onDelete={handleDeleteJob}
-        isDarkMode={isDarkMode}
-        colors={colors}
-      />
+      {/* Job Modal (for viewing/editing existing jobs) - only show when viewing a job */}
+      {viewingJob && !showAddForm && (
+        <JobModal
+          viewingJob={viewingJob}
+          formData={formData}
+          setFormData={setFormData}
+          linkedEstimate={linkedEstimates.length > 0 ? linkedEstimates[0] : null}
+          linkedEstimates={linkedEstimates}
+          estimates={estimates}
+          showEstimateMenu={showEstimateMenu}
+          setShowEstimateMenu={handleEstimateMenuOpen}
+          onSelectEstimate={onSelectEstimate}
+          onCreateNewEstimate={onCreateNewEstimate}
+          onViewEstimate={onViewEstimate}
+          onRemoveEstimate={onRemoveEstimate}
+          onAddAdditionalEstimate={onAddAdditionalEstimate}
+          onViewAllEstimates={handleViewCombinedEstimates}
+          estimateMenuRef={estimateMenuRef}
+          onClose={resetForm}
+          onSave={handleEditJob}
+          onDelete={handleDeleteJob}
+          isDarkMode={isDarkMode}
+          colors={colors}
+          isNewJob={false}
+        />
+      )}
 
       {/* Combined Estimates Summary Modal */}
       {showCombinedEstimatesModal && (

@@ -14,92 +14,150 @@ export const createJobHandlers = ({
 }) => {
   
   const handleAddJob = async () => {
-    if (formData.title && formData.client) {
-      try {
-        const jobData = {
-          name: formData.title,
-          title: formData.title,
-          client: formData.client,
-          location: formData.location,
-          status: formData.status,
-          date: formData.date,
-          time: formData.time,
-          estimatedCost: formData.estimatedCost,
-          duration: formData.duration,
-          notes: formData.notes,
-          estimateIds: formData.estimateIds || []
-        };
+    console.log('💾 handleAddJob called');
+    console.log('📋 formData:', formData);
+    
+    if (!formData.title || !formData.client) {
+      console.error('❌ Missing required fields: title or client');
+      alert('Please fill in both Job Title and Client Name');
+      return;
+    }
 
-        await createJob(jobData);
-        resetForm();
-        clearJobsCache();
-        loadJobs();
-      } catch (error) {
-        console.error('Error adding job:', error);
-        alert('Failed to add job. Please try again.');
-      }
+    try {
+      // Ensure estimateIds is an array
+      const estimateIds = Array.isArray(formData.estimateIds) ? formData.estimateIds : [];
+      
+      const jobData = {
+        name: formData.title,
+        title: formData.title,
+        client: formData.client,
+        location: formData.location || '',
+        status: formData.status || 'scheduled',
+        date: formData.date || '',
+        time: formData.time || '',
+        estimatedCost: formData.estimatedCost || '',
+        duration: formData.duration || '',
+        notes: formData.notes || '',
+        estimateIds: estimateIds
+      };
+
+      console.log('✅ Creating job with data:', jobData);
+      const jobId = await createJob(jobData);
+      console.log('✅ Job created successfully with ID:', jobId);
+      
+      resetForm();
+      clearJobsCache();
+      await loadJobs();
+      
+      console.log('✅ Job add complete');
+    } catch (error) {
+      console.error('❌ Error adding job:', error);
+      alert('Failed to add job. Please try again. Error: ' + error.message);
     }
   };
 
   const handleEditJob = async () => {
-    if (formData.title && formData.client && editingJob) {
-      try {
-        const { updateJob } = await import('./../jobsService');
-        const jobData = {
-          name: formData.title,
-          title: formData.title,
-          client: formData.client,
-          location: formData.location,
-          status: formData.status,
-          date: formData.date,
-          time: formData.time,
-          estimatedCost: formData.estimatedCost,
-          duration: formData.duration,
-          notes: formData.notes,
-          estimateIds: formData.estimateIds || []
-        };
+    console.log('💾 handleEditJob called');
+    console.log('📋 formData:', formData);
+    console.log('📋 editingJob:', editingJob);
+    
+    if (!formData.title || !formData.client) {
+      console.error('❌ Missing required fields: title or client');
+      alert('Please fill in both Job Title and Client Name');
+      return;
+    }
+    
+    if (!editingJob || !editingJob.id) {
+      console.error('❌ No editing job found');
+      alert('Error: No job selected for editing');
+      return;
+    }
 
-        await updateJob(editingJob.id, jobData);
-        resetForm();
-        loadJobs();
-      } catch (error) {
-        console.error('Error updating job:', error);
-        alert('Failed to update job. Please try again.');
-      }
+    try {
+      const { updateJob } = await import('./../jobsService');
+      
+      // Ensure estimateIds is an array
+      const estimateIds = Array.isArray(formData.estimateIds) ? formData.estimateIds : [];
+      
+      const jobData = {
+        name: formData.title,
+        title: formData.title,
+        client: formData.client,
+        location: formData.location || '',
+        status: formData.status || 'scheduled',
+        date: formData.date || '',
+        time: formData.time || '',
+        estimatedCost: formData.estimatedCost || '',
+        duration: formData.duration || '',
+        notes: formData.notes || '',
+        estimateIds: estimateIds
+      };
+
+      console.log('✅ Updating job with data:', jobData);
+      await updateJob(editingJob.id, jobData);
+      console.log('✅ Job updated successfully');
+      
+      resetForm();
+      await loadJobs();
+      
+      console.log('✅ Job edit complete');
+    } catch (error) {
+      console.error('❌ Error updating job:', error);
+      alert('Failed to update job. Please try again. Error: ' + error.message);
     }
   };
 
   const handleDeleteJob = async (id, jobTitle) => {
+    console.log('🗑️ handleDeleteJob called for:', jobTitle, id);
+    
     if (window.confirm(`Are you sure you want to delete "${jobTitle}"?`)) {
       try {
         await deleteJobFromFirebase(id);
+        console.log('✅ Job deleted successfully');
+        
         if (viewingJob && viewingJob.id === id) {
           resetForm();
         }
-        loadJobs();
+        await loadJobs();
       } catch (error) {
-        console.error('Error deleting job:', error);
-        alert('Failed to delete job. Please try again.');
+        console.error('❌ Error deleting job:', error);
+        alert('Failed to delete job. Please try again. Error: ' + error.message);
       }
     }
   };
 
   const handleUpdateStatus = async (jobId, newStatus, jobs) => {
+    console.log('🔄 handleUpdateStatus called:', jobId, newStatus);
+    
     try {
       const { updateJob } = await import('./../jobsService');
       const job = jobs.find(j => j.id === jobId);
+      
+      if (!job) {
+        console.error('❌ Job not found:', jobId);
+        return;
+      }
+      
       await updateJob(jobId, { ...job, status: newStatus });
-      loadJobs();
+      console.log('✅ Status updated successfully');
+      await loadJobs();
     } catch (error) {
-      console.error('Error updating status:', error);
-      alert('Failed to update status. Please try again.');
+      console.error('❌ Error updating status:', error);
+      alert('Failed to update status. Please try again. Error: ' + error.message);
     }
   };
 
   const handleClockInOut = async (jobId, clockIn, jobs, setJobs) => {
+    console.log('⏰ handleClockInOut called:', jobId, clockIn ? 'CLOCK IN' : 'CLOCK OUT');
+    
     try {
       const { updateJob } = await import('./../jobsService');
       const job = jobs.find(j => j.id === jobId);
+      
+      if (!job) {
+        console.error('❌ Job not found:', jobId);
+        return;
+      }
       
       if (clockIn) {
         // CLOCK IN - First check if already clocked into another job
@@ -140,6 +198,7 @@ export const createJobHandlers = ({
           
           // Update the other job in database
           await updateJob(currentlyClockedInJob.id, clockedOutJob);
+          console.log('✅ Clocked out of previous job');
         }
         
         // Now clock IN to the new job
@@ -156,6 +215,7 @@ export const createJobHandlers = ({
         
         // Update in database
         await updateJob(jobId, updatedJob);
+        console.log('✅ Clocked in successfully');
         
       } else {
         // CLOCK OUT - end current session
@@ -183,13 +243,14 @@ export const createJobHandlers = ({
         
         // Then update in database in the background
         await updateJob(jobId, updatedJob);
+        console.log('✅ Clocked out successfully');
       }
       
     } catch (error) {
-      console.error('Error updating clock status:', error);
-      alert('Failed to update clock status. Please try again.');
+      console.error('❌ Error updating clock status:', error);
+      alert('Failed to update clock status. Please try again. Error: ' + error.message);
       // Reload jobs on error to ensure consistency
-      loadJobs();
+      await loadJobs();
     }
   };
 

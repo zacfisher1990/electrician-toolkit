@@ -31,98 +31,96 @@ const JobForm = ({
 
   const totalFromEstimates = calculateTotalFromEstimates();
 
+  // Label style
+  const labelStyle = {
+    display: 'block',
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: '0.375rem'
+  };
+
+  // Input style
+  const inputStyle = {
+    width: '100%',
+    padding: '0.75rem',
+    border: `1px solid ${colors.border}`,
+    borderRadius: '0.5rem',
+    fontSize: '0.9375rem',
+    background: colors.inputBg,
+    color: colors.text,
+    boxSizing: 'border-box'
+  };
+
   return (
     <>
-      <input
-        type="text"
-        placeholder="Job Title *"
-        value={formData.title}
-        onChange={(e) => setFormData(prev => ({...prev, title: e.target.value}))}
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          marginBottom: '0.75rem',
-          border: `1px solid ${colors.border}`,
-          borderRadius: '0.5rem',
-          fontSize: '0.9375rem',
-          background: colors.inputBg,
-          color: colors.text,
-          boxSizing: 'border-box'
-        }}
-      />
+      {/* Job Title */}
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={labelStyle}>
+          Job Title <span style={{ color: '#ef4444' }}>*</span>
+        </label>
+        <input
+          type="text"
+          placeholder="Enter job title"
+          value={formData.title}
+          onChange={(e) => setFormData(prev => ({...prev, title: e.target.value}))}
+          style={inputStyle}
+        />
+      </div>
 
-      <input
-        type="text"
-        placeholder="Client Name *"
-        value={formData.client}
-        onChange={(e) => setFormData(prev => ({...prev, client: e.target.value}))}
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          marginBottom: '0.75rem',
-          border: `1px solid ${colors.border}`,
-          borderRadius: '0.5rem',
-          fontSize: '0.9375rem',
-          background: colors.inputBg,
-          color: colors.text,
-          boxSizing: 'border-box'
-        }}
-      />
+      {/* Client Name */}
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={labelStyle}>
+          Client Name <span style={{ color: '#ef4444' }}>*</span>
+        </label>
+        <input
+          type="text"
+          placeholder="Enter client name"
+          value={formData.client}
+          onChange={(e) => setFormData(prev => ({...prev, client: e.target.value}))}
+          style={inputStyle}
+        />
+      </div>
 
-      <input
-        type="text"
-        placeholder="Location"
-        value={formData.location}
-        onChange={(e) => setFormData(prev => ({...prev, location: e.target.value}))}
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          marginBottom: '0.75rem',
-          border: `1px solid ${colors.border}`,
-          borderRadius: '0.5rem',
-          fontSize: '0.9375rem',
-          background: colors.inputBg,
-          color: colors.text,
-          boxSizing: 'border-box'
-        }}
-      />
+      {/* Location */}
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={labelStyle}>Location</label>
+        <input
+          type="text"
+          placeholder="Enter location"
+          value={formData.location}
+          onChange={(e) => setFormData(prev => ({...prev, location: e.target.value}))}
+          style={inputStyle}
+        />
+      </div>
 
+      {/* Date and Time */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-        <input
-          type="date"
-          value={formData.date}
-          onChange={(e) => setFormData(prev => ({...prev, date: e.target.value}))}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.5rem',
-            fontSize: '0.9375rem',
-            background: colors.inputBg,
-            color: colors.text,
-            boxSizing: 'border-box'
-          }}
-        />
+        <div>
+          <label style={labelStyle}>Date</label>
+          <input
+            type="date"
+            value={formData.date}
+            onChange={(e) => setFormData(prev => ({...prev, date: e.target.value}))}
+            style={inputStyle}
+          />
+        </div>
 
-        <input
-          type="time"
-          value={formData.time}
-          onChange={(e) => setFormData(prev => ({...prev, time: e.target.value}))}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.5rem',
-            fontSize: '0.9375rem',
-            background: colors.inputBg,
-            color: colors.text,
-            boxSizing: 'border-box'
-          }}
-        />
+        <div>
+          <label style={labelStyle}>Time</label>
+          <input
+            type="time"
+            value={formData.time}
+            onChange={(e) => setFormData(prev => ({...prev, time: e.target.value}))}
+            style={inputStyle}
+          />
+        </div>
       </div>
 
       {/* Estimate Section */}
       <div style={{ marginBottom: '0.75rem' }}>
+        <label style={labelStyle}>Estimate</label>
+        
         {/* Show linked estimates if any */}
         {linkedEstimates && linkedEstimates.length > 0 ? (
           <div>
@@ -222,7 +220,7 @@ const JobForm = ({
               </div>
             )}
 
-                {/* View All Estimates Summary Button */}
+            {/* View All Estimates Summary Button */}
             {linkedEstimates.length > 1 && (
               <button
                 type="button"
@@ -307,41 +305,30 @@ const JobForm = ({
         )}
       </div>
 
+      {/* Cost and Duration */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-        <input
-          type="number"
-          placeholder="Cost ($)"
-          value={formData.estimatedCost}
-          onChange={(e) => setFormData(prev => ({...prev, estimatedCost: e.target.value}))}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.5rem',
-            fontSize: '0.9375rem',
-            background: colors.inputBg,
-            color: colors.text,
-            boxSizing: 'border-box'
-          }}
-          disabled={linkedEstimates && linkedEstimates.length > 0}
-        />
+        <div>
+          <label style={labelStyle}>Cost ($)</label>
+          <input
+            type="number"
+            placeholder="0.00"
+            value={formData.estimatedCost}
+            onChange={(e) => setFormData(prev => ({...prev, estimatedCost: e.target.value}))}
+            style={inputStyle}
+            disabled={linkedEstimates && linkedEstimates.length > 0}
+          />
+        </div>
 
-        <input
-          type="text"
-          placeholder="Duration"
-          value={formData.duration}
-          onChange={(e) => setFormData(prev => ({...prev, duration: e.target.value}))}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.5rem',
-            fontSize: '0.9375rem',
-            background: colors.inputBg,
-            color: colors.text,
-            boxSizing: 'border-box'
-          }}
-        />
+        <div>
+          <label style={labelStyle}>Duration</label>
+          <input
+            type="text"
+            placeholder="e.g., 4 hours"
+            value={formData.duration}
+            onChange={(e) => setFormData(prev => ({...prev, duration: e.target.value}))}
+            style={inputStyle}
+          />
+        </div>
       </div>
 
       {linkedEstimates && linkedEstimates.length > 0 && (
@@ -356,44 +343,34 @@ const JobForm = ({
         </div>
       )}
 
-      <select
-        value={formData.status}
-        onChange={(e) => setFormData(prev => ({...prev, status: e.target.value}))}
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          marginBottom: '0.75rem',
-          border: `1px solid ${colors.border}`,
-          borderRadius: '0.5rem',
-          fontSize: '0.9375rem',
-          background: colors.inputBg,
-          color: colors.text,
-          boxSizing: 'border-box'
-        }}
-      >
-        <option value="scheduled">Scheduled</option>
-        <option value="in-progress">In Progress</option>
-        <option value="completed">Completed</option>
-      </select>
+      {/* Status */}
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={labelStyle}>Status</label>
+        <select
+          value={formData.status}
+          onChange={(e) => setFormData(prev => ({...prev, status: e.target.value}))}
+          style={inputStyle}
+        >
+          <option value="scheduled">Scheduled</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
 
-      <textarea
-        placeholder="Notes"
-        value={formData.notes}
-        onChange={(e) => setFormData(prev => ({...prev, notes: e.target.value}))}
-        rows="3"
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          marginBottom: '0.75rem',
-          border: `1px solid ${colors.border}`,
-          borderRadius: '0.5rem',
-          fontSize: '0.9375rem',
-          background: colors.inputBg,
-          color: colors.text,
-          boxSizing: 'border-box',
-          resize: 'vertical'
-        }}
-      />
+      {/* Notes */}
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={labelStyle}>Notes</label>
+        <textarea
+          placeholder="Add any additional notes..."
+          value={formData.notes}
+          onChange={(e) => setFormData(prev => ({...prev, notes: e.target.value}))}
+          rows="3"
+          style={{
+            ...inputStyle,
+            resize: 'vertical'
+          }}
+        />
+      </div>
     </>
   );
 };
