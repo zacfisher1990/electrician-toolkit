@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { getColors } from '../../theme'; // Import theme
 import styles from './Jobs.module.css';
 import StatusTabs from './StatusTabs';
 import JobsHeader from './JobsHeader';
@@ -70,25 +71,30 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange }) => {
   const [activeStatusTab, setActiveStatusTab] = useState('all');
 
   // Create a function to clear estimate modals
-const clearEstimateModals = () => {
-  setViewingSingleEstimate(null);
-  setShowCombinedEstimatesModal(false);
-};
-
-  // Colors
-  const colors = {
-    bg: isDarkMode ? '#000000' : '#f9fafb',
-    cardBg: isDarkMode ? '#1a1a1a' : '#ffffff',
-    text: isDarkMode ? '#ffffff' : '#111827',
-    subtext: isDarkMode ? '#999999' : '#6b7280',
-    border: isDarkMode ? '#2a2a2a' : '#e5e7eb',
-    inputBg: isDarkMode ? '#000000' : '#ffffff',
+  const clearEstimateModals = () => {
+    setViewingSingleEstimate(null);
+    setShowCombinedEstimatesModal(false);
   };
 
+  // Get colors from centralized theme
+  const colors = getColors(isDarkMode);
+
   const statusConfig = {
-    'scheduled': { color: '#3b82f6', icon: Clock, label: 'Scheduled' },
-    'in-progress': { color: '#f59e0b', icon: AlertCircle, label: 'In Progress' },
-    'completed': { color: '#10b981', icon: CheckCircle, label: 'Completed' }
+    'scheduled': { 
+      color: colors.blue, 
+      icon: Clock, 
+      label: 'Scheduled' 
+    },
+    'in-progress': { 
+      color: colors.amber, 
+      icon: AlertCircle, 
+      label: 'In Progress' 
+    },
+    'completed': { 
+      color: colors.green, 
+      icon: CheckCircle, 
+      label: 'Completed' 
+    }
   };
 
   // Sync estimates when editing a job
@@ -165,20 +171,20 @@ const clearEstimateModals = () => {
   };
 
   const handleOpenJobView = (job) => {
-    console.log('🔓 Opening job, clearing estimate modals');
-      // FORCE CLEAR everything before opening
-      setViewingSingleEstimate(null);
-      setShowCombinedEstimatesModal(false);
-      
-      openJobView({
-        job,
-        estimates,
-        setViewingJob,
-        setEditingJob,
-        setFormData,
-        setLinkedEstimates
-      });
-    };
+    console.log('📂 Opening job, clearing estimate modals');
+    // FORCE CLEAR everything before opening
+    setViewingSingleEstimate(null);
+    setShowCombinedEstimatesModal(false);
+    
+    openJobView({
+      job,
+      estimates,
+      setViewingJob,
+      setEditingJob,
+      setFormData,
+      setLinkedEstimates
+    });
+  };
 
   const handleViewEstimateFromCardWrapper = (job) => {
     handleViewEstimateFromCard({
@@ -199,13 +205,14 @@ const clearEstimateModals = () => {
     setViewingSingleEstimate(estimate);
   };
 
- const handleCloseSingleEstimate = () => {
-  setViewingSingleEstimate(null);
-  // Only reopen combined modal if NOT currently editing/viewing a job
-  if (!editingJob && !viewingJob) {
-    setShowCombinedEstimatesModal(true);
-  }
-};
+  const handleCloseSingleEstimate = () => {
+    setViewingSingleEstimate(null);
+    // Only reopen combined modal if NOT currently editing/viewing a job
+    if (!editingJob && !viewingJob) {
+      setShowCombinedEstimatesModal(true);
+    }
+  };
+
   // Filter and count
   const filteredJobs = filterJobs(jobs, searchQuery, activeStatusTab);
   const statusCounts = getStatusCounts(jobs);
@@ -214,7 +221,7 @@ const clearEstimateModals = () => {
     return (
       <div style={{ 
         minHeight: '100vh', 
-        background: colors.bg,
+        background: colors.mainBg,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
@@ -260,7 +267,7 @@ const clearEstimateModals = () => {
 
       <div style={{ 
         minHeight: '100vh', 
-        background: colors.bg,
+        background: colors.mainBg,
         paddingBottom: '5rem'
       }}>
         <div style={{ padding: '1rem 0.25rem' }}>

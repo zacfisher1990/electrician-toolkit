@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Briefcase, Search, X, Plus, ChevronDown  } from 'lucide-react';
+import { getColors } from '../../theme';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase/firebase';
 import { getUserInvoices, createInvoice, updateInvoice, deleteInvoice } from './invoicesService';
@@ -22,20 +23,18 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [userBusinessInfo, setUserBusinessInfo] = useState(null); // NEW: User business info for PDF
   const [showAddForm, setShowAddForm] = useState(false); // NEW: For showing new invoice form
 
+  // Get colors from centralized theme
   const colors = {
-    bg: isDarkMode ? '#000000' : '#f9fafb',
-    cardBg: isDarkMode ? '#111111' : '#ffffff',
-    border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
-    text: isDarkMode ? '#ffffff' : '#111827',
-    textSecondary: isDarkMode ? '#9ca3af' : '#6b7280',
-    buttonBg: '#3b82f6',
-    buttonText: '#ffffff',
+    ...getColors(isDarkMode),
+    // Invoice-specific status colors
     paidBg: isDarkMode ? '#064e3b' : '#d1fae5',
     paidText: isDarkMode ? '#6ee7b7' : '#065f46',
     pendingBg: isDarkMode ? '#78350f' : '#fef3c7',
     pendingText: isDarkMode ? '#fcd34d' : '#92400e',
     overdueBg: isDarkMode ? '#7f1d1d' : '#fee2e2',
-    overdueText: isDarkMode ? '#fca5a5' : '#991b1b'
+    overdueText: isDarkMode ? '#fca5a5' : '#991b1b',
+    buttonBg: '#3b82f6',
+    buttonText: '#ffffff'
   };
 
   // Load invoices from Firebase
@@ -240,13 +239,13 @@ const handleDownloadInvoice = async () => {
     return (
       <div style={{ 
         minHeight: '100vh', 
-        background: colors.bg,
+        background: colors.mainBg,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         paddingBottom: '5rem'
       }}>
-        <div style={{ color: colors.textSecondary }}>Loading invoices...</div>
+        <div style={{ color: colors.subtext }}>Loading invoices...</div>
       </div>
     );
   }
@@ -292,7 +291,7 @@ const handleDownloadInvoice = async () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: colors.bg,
+      background: colors.mainBg,
       paddingTop: '1rem',
       paddingBottom: '5rem' 
     }}>
@@ -316,7 +315,7 @@ const handleDownloadInvoice = async () => {
       borderRadius: '0.5rem',
       border: `1px solid ${statusFilter === 'all' ? colors.text : colors.border}`,
       background: statusFilter === 'all' ? colors.text : 'transparent',
-      color: statusFilter === 'all' ? colors.bg : colors.text,
+      color: statusFilter === 'all' ? colors.mainBg : colors.text,
       fontSize: '0.75rem',
       fontWeight: '600',
       cursor: 'pointer',
@@ -330,8 +329,8 @@ const handleDownloadInvoice = async () => {
   >
     <span>All</span>
     <span style={{
-      background: statusFilter === 'all' ? colors.bg : colors.cardBg,
-      color: statusFilter === 'all' ? colors.text : colors.textSecondary,
+      background: statusFilter === 'all' ? colors.mainBg : colors.cardBg,
+      color: statusFilter === 'all' ? colors.text : colors.subtext,
       padding: '0.125rem 0.375rem',
       borderRadius: '1rem',
       fontSize: '0.7rem',
@@ -364,7 +363,7 @@ const handleDownloadInvoice = async () => {
   >
     <span style={{
       background: statusFilter === 'Unsent' ? '#6b7280' : colors.cardBg,
-      color: statusFilter === 'Unsent' ? 'white' : colors.textSecondary,
+      color: statusFilter === 'Unsent' ? 'white' : colors.subtext,
       padding: '0.125rem 0.3rem',
       borderRadius: '1rem',
       fontSize: '0.65rem',
@@ -398,7 +397,7 @@ const handleDownloadInvoice = async () => {
   >
     <span style={{
       background: statusFilter === 'Sent' ? '#3b82f6' : colors.cardBg,
-      color: statusFilter === 'Sent' ? 'white' : colors.textSecondary,
+      color: statusFilter === 'Sent' ? 'white' : colors.subtext,
       padding: '0.125rem 0.3rem',
       borderRadius: '1rem',
       fontSize: '0.65rem',
@@ -432,7 +431,7 @@ const handleDownloadInvoice = async () => {
   >
     <span style={{
       background: statusFilter === 'Paid' ? '#10b981' : colors.cardBg,
-      color: statusFilter === 'Paid' ? 'white' : colors.textSecondary,
+      color: statusFilter === 'Paid' ? 'white' : colors.subtext,
       padding: '0.125rem 0.3rem',
       borderRadius: '1rem',
       fontSize: '0.65rem',
@@ -466,7 +465,7 @@ const handleDownloadInvoice = async () => {
   >
     <span style={{
       background: statusFilter === 'Overdue' ? '#ef4444' : colors.cardBg,
-      color: statusFilter === 'Overdue' ? 'white' : colors.textSecondary,
+      color: statusFilter === 'Overdue' ? 'white' : colors.subtext,
       padding: '0.125rem 0.3rem',
       borderRadius: '1rem',
       fontSize: '0.65rem',
@@ -484,11 +483,11 @@ const handleDownloadInvoice = async () => {
         <div style={{ marginBottom: '1rem' }}>
           <div style={{ position: 'relative' }}>
             <Search 
-              size={20}
-              color={colors.textSecondary}
+              size={18}
+              color={colors.subtext}
               style={{
                 position: 'absolute',
-                left: '1rem',
+                left: '0.75rem',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 pointerEvents: 'none'
@@ -501,14 +500,17 @@ const handleDownloadInvoice = async () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 width: '100%',
-                padding: '0.75rem 1rem 0.75rem 3rem',
+                padding: '0.75rem',
+                paddingLeft: '2.5rem',
+                paddingRight: searchQuery ? '2.5rem' : '0.75rem',
                 background: colors.cardBg,
                 border: `1px solid ${colors.border}`,
                 borderRadius: '0.5rem',
                 color: colors.text,
                 fontSize: '0.9375rem',
                 outline: 'none',
-                transition: 'border-color 0.2s'
+                transition: 'border-color 0.2s',
+                boxSizing: 'border-box'
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = '#3b82f6';
@@ -517,6 +519,26 @@ const handleDownloadInvoice = async () => {
                 e.target.style.borderColor = colors.border;
               }}
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: colors.subtext,
+                  padding: '0.25rem',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <X size={18} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -542,7 +564,7 @@ const handleDownloadInvoice = async () => {
           </h3>
           <span style={{
             fontSize: '0.875rem',
-            color: colors.textSecondary,
+            color: colors.subtext,
             background: colors.cardBg,
             padding: '0.25rem 0.75rem',
             borderRadius: '1rem',
@@ -574,13 +596,13 @@ const handleDownloadInvoice = async () => {
 
         {/* New Invoice Button - Matching Jobs style */}
 <div className={styles.addInvoiceContainer} style={{
-  background: colors.cardBg,
+  background: isDarkMode ? '#1a1a1a' : '#3b82f6',
   border: `1px solid ${colors.border}`
 }}>
   <button
     onClick={() => setShowAddForm(!showAddForm)}
     className={styles.addInvoiceButton}
-    style={{ color: colors.text }}
+    style={{ color: isDarkMode ? colors.text : '#ffffff' }}
   >
     <div style={{
       display: 'flex',
@@ -688,7 +710,7 @@ const handleDownloadInvoice = async () => {
                     border: 'none',
                     cursor: 'pointer',
                     padding: '0.25rem',
-                    color: colors.textSecondary
+                    color: colors.subtext
                   }}
                 >
                   <X size={24} />
@@ -748,11 +770,11 @@ const handleDownloadInvoice = async () => {
                   }}>
                     <Search 
                       size={48} 
-                      color={colors.textSecondary} 
+                      color={colors.subtext} 
                       style={{ margin: '0 auto 1rem' }}
                     />
                     <p style={{
-                      color: colors.textSecondary,
+                      color: colors.subtext,
                       fontSize: '0.875rem',
                       margin: 0
                     }}>
@@ -780,11 +802,11 @@ const handleDownloadInvoice = async () => {
                 }}>
                   <FileText 
                     size={48} 
-                    color={colors.textSecondary} 
+                    color={colors.subtext} 
                     style={{ margin: '0 auto 1rem' }}
                   />
                   <p style={{
-                    color: colors.textSecondary,
+                    color: colors.subtext,
                     fontSize: '0.875rem',
                     margin: 0
                   }}>
@@ -856,7 +878,7 @@ const handleDownloadInvoice = async () => {
             
             {jobs.length === 0 ? (
               <p style={{
-                color: colors.textSecondary,
+                color: colors.subtext,
                 fontSize: '0.875rem',
                 textAlign: 'center',
                 padding: '2rem 0'
@@ -875,7 +897,7 @@ const handleDownloadInvoice = async () => {
                     onClick={() => handleSelectJob(job.id)}
                     style={{
                       padding: '1rem',
-                      background: colors.bg,
+                      background: colors.mainBg,
                       border: `1px solid ${colors.border}`,
                       borderRadius: '0.5rem',
                       color: colors.text,
@@ -896,7 +918,7 @@ const handleDownloadInvoice = async () => {
                       </div>
                       <div style={{
                         fontSize: '0.8125rem',
-                        color: colors.textSecondary
+                        color: colors.subtext
                       }}>
                         {job.client}
                       </div>
@@ -904,7 +926,7 @@ const handleDownloadInvoice = async () => {
                     {job.invoiceId && (
                       <span style={{
                         fontSize: '0.75rem',
-                        color: colors.textSecondary
+                        color: colors.subtext
                       }}>
                         (Has invoice)
                       </span>

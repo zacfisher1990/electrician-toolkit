@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FileText, Search, X, Plus, ChevronDown } from 'lucide-react';
+import { getColors } from '../../theme';
 import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as deleteEstimateFromFirebase } from './estimatesService';
 import { sendEstimateViaEmail, downloadEstimate, getUserBusinessInfo } from './estimateSendService';
 import { auth } from '../../firebase/firebase';
@@ -7,6 +8,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import EstimateCard from './EstimateCard';
 import EstimateForm from './EstimateForm';
 import SendEstimateModal from './SendEstimateModal';
+import EstimateStatusTabs from './EstimateStatusTabs';
 import styles from './Estimates.module.css';
 import { saveEstimates, getEstimates, clearEstimatesCache } from '../../utils/localStorageUtils';
 
@@ -24,17 +26,12 @@ const Estimates = ({
   const [sendingEstimate, setSendingEstimate] = useState(null); // NEW: For send modal
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [activeStatusTab, setActiveStatusTab] = useState('all'); // NEW: Status filter
   const [userInfo, setUserInfo] = useState(null); // NEW: Store user business info
   const lastHandledEstimateId = useRef(null); // NEW: Track last handled navigation
 
-  const colors = {
-    bg: isDarkMode ? '#000000' : '#f9fafb',
-    cardBg: isDarkMode ? '#1a1a1a' : '#ffffff',
-    text: isDarkMode ? '#ffffff' : '#111827',
-    subtext: isDarkMode ? '#999999' : '#6b7280',
-    border: isDarkMode ? '#2a2a2a' : '#e5e7eb',
-    inputBg: isDarkMode ? '#000000' : '#ffffff',
-  };
+  // Get colors from centralized theme
+  const colors = getColors(isDarkMode);
 
   // Load user business info
   useEffect(() => {
@@ -165,6 +162,33 @@ const Estimates = ({
     setSendingEstimate(estimate);
   };
 
+  // NEW: Handle status update
+  const handleUpdateStatus = async (estimateId, newStatus) => {
+    try {
+      // Find the estimate
+      const estimate = estimates.find(est => est.id === estimateId);
+      
+      if (!estimate) {
+        console.error('Estimate not found');
+        return;
+      }
+      
+      // Update the estimate with the new status
+      await updateEstimate(estimateId, {
+        ...estimate,
+        status: newStatus
+      });
+      
+      // Reload estimates to reflect the change
+      clearEstimatesCache();
+      loadEstimates();
+      
+    } catch (error) {
+      console.error('Error updating estimate status:', error);
+      alert('Failed to update estimate status. Please try again.');
+    }
+  };
+
   // NEW: Handle actual sending from modal
   const handleSendFromModal = async (email, message) => {
     try {
@@ -224,8 +248,23 @@ const Estimates = ({
     }
   };
 
-  // Filter estimates based on search query
-  const filteredEstimates = estimates.filter(estimate => {
+  // Calculate status counts
+  const statusCounts = {
+    all: estimates.length,
+    unsent: estimates.filter(est => est.status === 'Unsent' || !est.status).length,
+    sent: estimates.filter(est => est.status === 'Sent').length
+  };
+
+  // Filter estimates based on status tab
+  const statusFilteredEstimates = activeStatusTab === 'all' 
+    ? estimates 
+    : estimates.filter(estimate => {
+        const status = estimate.status || 'Unsent';
+        return status.toLowerCase() === activeStatusTab.toLowerCase();
+      });
+
+  // Then filter by search query
+  const filteredEstimates = statusFilteredEstimates.filter(estimate => {
     if (!searchQuery.trim()) return true;
     
     const query = searchQuery.toLowerCase();
@@ -245,7 +284,7 @@ const Estimates = ({
     return (
       <div style={{ 
         minHeight: '100vh', 
-        background: colors.bg,
+        background: colors.mainBg,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -258,11 +297,19 @@ const Estimates = ({
 
   return (
     <div style={{ 
-      background: colors.bg,
+      background: colors.mainBg,
       minHeight: '100vh',
       paddingBottom: '5rem'
     }}>
       <div style={{ padding: '1rem 0.25rem' }}>
+        {/* Status Filter Tabs */}
+        <EstimateStatusTabs
+          activeStatusTab={activeStatusTab}
+          setActiveStatusTab={setActiveStatusTab}
+          statusCounts={statusCounts}
+          colors={colors}
+        />
+
         {/* Search Bar */}
         <div style={{ marginBottom: '1rem', position: 'relative' }}>
           <input
@@ -346,13 +393,13 @@ const Estimates = ({
 
         {/* Add Estimate Button */}
         <div className={styles.addEstimateContainer} style={{
-          background: colors.cardBg,
+          background: isDarkMode ? '#1a1a1a' : '#3b82f6',
           border: `1px solid ${colors.border}`
         }}>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
             className={styles.addEstimateButton}
-            style={{ color: colors.text }}
+            style={{ color: isDarkMode ? colors.text : '#ffffff' }}
           >
             <div style={{
               display: 'flex',
@@ -476,7 +523,7 @@ const Estimates = ({
             padding: '3rem 1rem',
             color: colors.subtext
           }}>
-            <Search size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+            <Search size={48} color={colors.subtext} style={{ margin: '0 auto 1rem' }} />
             <p style={{ margin: 0, fontSize: '0.9375rem' }}>
               No estimates match your search.
             </p>
@@ -493,7 +540,7 @@ const Estimates = ({
             padding: '3rem 1rem',
             color: colors.subtext
           }}>
-            <FileText size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+            <FileText size={48} color={colors.subtext} style={{ margin: '0 auto 1rem' }} />
             <p style={{ margin: 0, fontSize: '0.9375rem' }}>No estimates yet. Create your first estimate above!</p>
           </div>
         )}
@@ -508,6 +555,7 @@ const Estimates = ({
             onEdit={startEdit}
             onDelete={deleteEstimate}
             onSendEstimate={handleSendEstimate}
+            onUpdateStatus={handleUpdateStatus}
           />
         ))}
       </div>

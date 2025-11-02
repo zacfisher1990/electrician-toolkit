@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Trash2, Edit, Send, ChevronDown, ChevronUp } from 'lucide-react';
+import { getColors } from '../../theme';
 import { formatDate } from '../../utils/dateUtils';
 
 const EstimateCard = ({ 
@@ -8,18 +9,46 @@ const EstimateCard = ({
   onEdit, 
   onDelete, 
   onSendEstimate, // NEW: Add send handler prop
+  onUpdateStatus, // NEW: Add status update handler
   colors 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const statusDropdownRef = useRef(null);
 
-  // Use provided colors or fallback to defaults
-  const cardColors = colors || {
-    bg: isDarkMode ? '#000000' : '#f9fafb',
-    cardBg: isDarkMode ? '#1a1a1a' : '#ffffff',
-    text: isDarkMode ? '#ffffff' : '#111827',
-    subtext: isDarkMode ? '#999999' : '#6b7280',
-    border: isDarkMode ? '#2a2a2a' : '#e5e7eb',
+  // Use provided colors from parent, or get from theme if not provided
+  const cardColors = colors || getColors(isDarkMode);
+
+  // Status configuration
+  const statusConfig = {
+    'Unsent': { 
+      color: '#6b7280', 
+      label: 'Unsent',
+      bgColor: '#f3f4f6'
+    },
+    'Sent': { 
+      color: '#3b82f6', 
+      label: 'Sent',
+      bgColor: '#dbeafe'
+    }
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target)) {
+        setStatusDropdownOpen(false);
+      }
+    };
+
+    if (statusDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [statusDropdownOpen]);
+
+  const currentStatus = estimate.status || 'Unsent';
+  const statusStyle = statusConfig[currentStatus] || statusConfig['Unsent'];
 
   return (
     <div
@@ -43,10 +72,10 @@ const EstimateCard = ({
           marginBottom: isExpanded ? '0.75rem' : 0
         }}
       >
-        {/* Estimate Name and Date */}
+        {/* Estimate Name */}
         <div style={{ flex: 1 }}>
           <h3 style={{
-            margin: '0 0 0.25rem 0',
+            margin: '0',
             color: cardColors.text,
             fontSize: '1rem',
             fontWeight: '600',
@@ -57,26 +86,125 @@ const EstimateCard = ({
             {estimate.name}
             {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </h3>
-          <p style={{
-            margin: 0,
-            color: cardColors.subtext,
-            fontSize: '0.875rem'
-          }}>
-            {formatDate(estimate.createdAt)}
-          </p>
         </div>
 
-        {/* Total Amount */}
-        <div style={{
+        {/* Status Badge with Dropdown */}
+        <div style={{ position: 'relative' }} ref={statusDropdownRef}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setStatusDropdownOpen(!statusDropdownOpen);
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '0.375rem',
+              background: `${statusStyle.color}15`,
+              color: statusStyle.color,
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            {statusStyle.label}
+            <ChevronDown size={12} />
+          </button>
+
+          {/* Status Dropdown Menu */}
+          {statusDropdownOpen && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              right: 0,
+              marginTop: '0.5rem',
+              background: cardColors.cardBg,
+              border: `1px solid ${cardColors.border}`,
+              borderRadius: '0.5rem',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              zIndex: 100,
+              minWidth: '140px',
+              overflow: 'hidden'
+            }}>
+              {Object.entries(statusConfig).map(([key, config]) => (
+                <button
+                  key={key}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onUpdateStatus) {
+                      onUpdateStatus(estimate.id, key);
+                    }
+                    setStatusDropdownOpen(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.625rem 0.75rem',
+                    background: currentStatus === key 
+                      ? (isDarkMode ? `${config.color}20` : config.bgColor)
+                      : 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    color: config.color,
+                    fontSize: '0.875rem',
+                    fontWeight: currentStatus === key ? '600' : '500',
+                    transition: 'background 0.2s',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currentStatus !== key) {
+                      e.currentTarget.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentStatus !== key) {
+                      e.currentTarget.style.background = 'transparent';
+                    }
+                  }}
+                >
+                  <span>{config.label}</span>
+                  {currentStatus === key && (
+                    <span style={{ fontSize: '1rem' }}>✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Date and Amount - Always visible */}
+      <div 
+        onClick={() => setIsExpanded(!isExpanded)}
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          cursor: 'pointer',
+          marginTop: '0.5rem'
+        }}
+      >
+        <span style={{
+          color: cardColors.subtext,
+          fontSize: '0.875rem'
+        }}>
+          {formatDate(estimate.createdAt)}
+        </span>
+        <span style={{
           fontSize: '1.125rem',
           fontWeight: '600',
-          color: '#10b981'
+          color: cardColors.text
         }}>
           ${Number(estimate.total || 0).toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
           })}
-        </div>
+        </span>
       </div>
 
       {/* Expanded Details */}
@@ -126,7 +254,7 @@ const EstimateCard = ({
             <div style={{
               marginBottom: '0.75rem',
               padding: '0.75rem',
-              background: cardColors.bg,
+              background: cardColors.mainBg,
               borderRadius: '0.5rem',
               fontSize: '0.875rem',
               color: cardColors.text

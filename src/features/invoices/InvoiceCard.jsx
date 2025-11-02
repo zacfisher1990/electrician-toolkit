@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Edit, Trash2, Send } from 'lucide-react';
+import { getColors } from '../../theme';
 
 const InvoiceCard = ({ 
   invoice, 
@@ -66,19 +67,24 @@ const InvoiceCard = ({
         transition: 'all 0.2s'
       }}
     >
-      {/* Header - Always visible, clickable to expand/collapse */}
+      {/* Header - Invoice Number, Client/Description, and Status Badge */}
       <div 
-        onClick={() => setIsExpanded(!isExpanded)}
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
           cursor: 'pointer',
-          marginBottom: isExpanded ? '0.75rem' : 0
+          marginBottom: '0.5rem'
         }}
+        onClick={() => setIsExpanded(!isExpanded)}
       >
-        {/* Invoice Number and Client */}
-        <div style={{ flex: 1 }}>
+        {/* Invoice Number and Client/Description */}
+        <div style={{ 
+          flex: 1, 
+          minWidth: 0,
+          maxWidth: 'calc(100% - 120px)', // Leave space for status badge
+          paddingRight: '0.5rem'
+        }}>
           <h3 style={{
             margin: '0 0 0.25rem 0',
             color: colors.text,
@@ -91,17 +97,28 @@ const InvoiceCard = ({
             {invoice.invoiceNumber}
             {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </h3>
-          <p style={{
-            margin: 0,
-            color: colors.textSecondary,
-            fontSize: '0.875rem'
-          }}>
-            {invoice.client}
-          </p>
+          {(invoice.description || invoice.client) && (
+            <p style={{
+              margin: 0,
+              color: colors.subtext,
+              fontSize: '0.875rem',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              width: '100%',
+              textAlign: 'left'
+            }}>
+              {invoice.description || invoice.client}
+            </p>
+          )}
         </div>
 
         {/* Status Badge with Dropdown */}
-        <div style={{ position: 'relative' }} ref={statusDropdownRef}>
+        <div style={{ 
+          position: 'relative',
+          flexShrink: 0,
+          marginLeft: 'auto'
+        }} ref={statusDropdownRef}>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -199,7 +216,7 @@ const InvoiceCard = ({
         }}
       >
         <span style={{
-          color: colors.textSecondary,
+          color: colors.subtext,
           fontSize: '0.875rem'
         }}>
           {invoice.date ? new Date(invoice.date).toLocaleDateString('en-US', { 
@@ -238,7 +255,7 @@ const InvoiceCard = ({
                     justifyContent: 'space-between',
                     padding: '0.375rem 0',
                     fontSize: '0.875rem',
-                    color: colors.textSecondary
+                    color: colors.subtext
                   }}
                 >
                   <span>{item.description}</span>
@@ -252,7 +269,7 @@ const InvoiceCard = ({
           {invoice.dueDate && (
             <div style={{
               fontSize: '0.875rem',
-              color: colors.textSecondary,
+              color: colors.subtext,
               marginBottom: '0.5rem'
             }}>
               Due: {new Date(invoice.dueDate).toLocaleDateString('en-US', { 
@@ -268,7 +285,7 @@ const InvoiceCard = ({
             <div style={{
               marginBottom: '0.75rem',
               padding: '0.75rem',
-              background: colors.bg,
+              background: colors.mainBg,
               borderRadius: '0.5rem',
               fontSize: '0.875rem',
               color: colors.text

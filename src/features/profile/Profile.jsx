@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Lock, LogOut, Settings, Bell, Shield, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { getColors } from '../../theme';
 import { auth } from "../../firebase/firebase";
 import { 
   createUserWithEmailAndPassword, 
@@ -26,14 +27,8 @@ const Profile = ({ isDarkMode }) => {
   const [sendingVerification, setSendingVerification] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
 
-  const colors = {
-    bg: isDarkMode ? '#000000' : '#f9fafb',
-    cardBg: isDarkMode ? '#0a0a0a' : '#ffffff',
-    text: isDarkMode ? '#ffffff' : '#111827',
-    subtext: isDarkMode ? '#666666' : '#6b7280',
-    border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
-    inputBg: isDarkMode ? '#000000' : '#ffffff',
-  };
+  // Get colors from centralized theme
+  const colors = getColors(isDarkMode);
 
   // Password validation
   const passwordRequirements = {
@@ -163,7 +158,7 @@ useEffect(() => {
   if (loading) {
     return (
       <div style={{
-        background: colors.bg,
+        background: colors.mainBg,
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
@@ -178,7 +173,7 @@ useEffect(() => {
   if (user) {
     return (
       <div style={{ 
-        background: colors.bg,
+        background: colors.mainBg,
         paddingBottom: '5rem'
       }}>
         <div style={{ padding: '1rem' }}>
@@ -448,7 +443,7 @@ useEffect(() => {
   // If user is not logged in, show login/signup form
   return (
     <div style={{ 
-      background: colors.bg,
+      background: colors.mainBg,
       minHeight: '100vh',
       paddingBottom: '5rem'
     }}>

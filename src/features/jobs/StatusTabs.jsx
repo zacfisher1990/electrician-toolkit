@@ -22,7 +22,7 @@ const StatusTabs = ({
           borderRadius: '0.5rem',
           border: `1px solid ${activeStatusTab === 'all' ? colors.text : colors.border}`,
           background: activeStatusTab === 'all' ? colors.text : 'transparent',
-          color: activeStatusTab === 'all' ? colors.bg : colors.text,
+          color: activeStatusTab === 'all' ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') : colors.text,
           fontSize: '0.75rem',
           fontWeight: '600',
           cursor: 'pointer',
@@ -36,7 +36,7 @@ const StatusTabs = ({
       >
         <span>All</span>
         <span style={{
-          background: activeStatusTab === 'all' ? colors.bg : colors.cardBg,
+          background: activeStatusTab === 'all' ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') : colors.cardBg,
           color: activeStatusTab === 'all' ? colors.text : colors.subtext,
           padding: '0.125rem 0.375rem',
           borderRadius: '1rem',

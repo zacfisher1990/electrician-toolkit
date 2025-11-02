@@ -26,13 +26,13 @@ const AddJobSection = ({
 }) => {
   return (
     <div className={styles.addJobContainer} style={{
-      background: colors.cardBg,
+      background: isDarkMode ? '#1a1a1a' : '#3b82f6',
       border: `1px solid ${colors.border}`
     }}>
       <button
         onClick={handleAddJobClick}
         className={styles.addJobButton}
-        style={{ color: colors.text }}
+        style={{ color: isDarkMode ? colors.text : '#ffffff' }}
       >
         <div style={{
           display: 'flex',
@@ -42,7 +42,7 @@ const AddJobSection = ({
           fontWeight: '600'
         }}>
           <Plus size={18} />
-          Add Job
+          New Job
         </div>
         <ChevronDown 
           size={18} 

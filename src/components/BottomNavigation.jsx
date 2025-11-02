@@ -1,14 +1,10 @@
 import React from 'react';
 import { Home, Calculator, Briefcase, FileText, Receipt } from 'lucide-react';
+import { getColors } from '../theme';
 
 function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
-  // Dark mode colors
-  const colors = {
-    bg: isDarkMode ? '#1a1a1a' : '#ffffff', // Changed from #000000 to #1a1a1a for dark mode
-    border: isDarkMode ? '#2a2a2a' : '#e5e7eb', // Slightly lighter border for dark mode
-    activeText: '#3b82f6',
-    inactiveText: isDarkMode ? '#999999' : '#6b7280' // Slightly lighter inactive text for better contrast
-  };
+  // Get colors from centralized theme
+  const colors = getColors(isDarkMode);
 
   const buttonStyle = (isActive) => ({
     background: 'transparent',
@@ -16,7 +12,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
     borderWidth: '0',
     outline: 'none',
     boxShadow: 'none',
-    color: isActive ? colors.activeText : colors.inactiveText,
+    color: isActive ? colors.blue : colors.subtext,
     cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
@@ -54,7 +50,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
       left: 0,
       right: 0,
       width: '100%',
-      background: colors.bg,
+      background: colors.cardBg,
       borderTop: `1px solid ${colors.border}`,
       display: 'flex',
       justifyContent: 'space-between',

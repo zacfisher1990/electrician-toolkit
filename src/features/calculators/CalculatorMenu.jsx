@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown, Box, ArrowDown, ArrowUp, Ruler, Minus, Sun, Zap, Clock } from 'lucide-react';
+import { getColors } from '../../theme';
 import styles from './Calculator.module.css';
 
 function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
@@ -68,22 +69,17 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
     'Safety': '#ef4444'                 // Red
   };
 
-  // Dark mode colors - PURE BLACK
+  // Get colors from centralized theme
   const colors = {
-    mainBg: isDarkMode ? '#000000' : '#f3f4f6',
-    cardBg: isDarkMode ? '#0a0a0a' : '#ffffff',
-    cardBorder: isDarkMode ? '#1a1a1a' : '#d1d5db',
-    cardText: isDarkMode ? '#ffffff' : '#111827',
-    inputBg: isDarkMode ? '#0a0a0a' : '#ffffff',
-    inputBorder: isDarkMode ? '#1a1a1a' : '#d1d5db',
-    inputText: isDarkMode ? '#ffffff' : '#111827',
-    placeholderText: isDarkMode ? '#666666' : '#6b7280',
+    ...getColors(isDarkMode),
+    // Calculator-specific colors for styling
     headerGradient: isDarkMode 
       ? 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)'
       : 'linear-gradient(135deg, #2563eb 0%, #60a5fa 100%)',
     categoryHeaderText: isDarkMode ? '#cccccc' : '#4b5563',
     recentBg: isDarkMode ? '#1a1a1a' : '#f9fafb',
-    recentBorder: isDarkMode ? '#2a2a2a' : '#e5e7eb'
+    recentBorder: isDarkMode ? '#2a2a2a' : '#e5e7eb',
+    placeholderText: isDarkMode ? '#666666' : '#6b7280'
   };
 
   // Flatten all calculators for searching
@@ -178,10 +174,10 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                 width: '100%',
                 padding: '0.875rem 1rem 0.875rem 3rem',
                 fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
+                border: `1px solid ${colors.border}`,
                 borderRadius: '12px',
                 backgroundColor: colors.inputBg,
-                color: colors.inputText,
+                color: colors.text,
                 boxSizing: 'border-box',
                 outline: 'none',
                 transition: 'all 0.2s ease'
@@ -192,7 +188,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                 e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = colors.inputBorder;
+                e.target.style.borderColor = colors.border;
                 e.target.style.backgroundColor = colors.inputBg;
                 e.target.style.boxShadow = 'none';
               }}
@@ -301,7 +297,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                         fontWeight: '600',
                         textAlign: 'center',
                         lineHeight: '1.2',
-                        color: colors.cardText,
+                        color: colors.text,
                         maxWidth: '90px'
                       }}>
                         {calc.name}
@@ -400,7 +396,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                           fontWeight: '600',
                           textAlign: 'center',
                           lineHeight: '1.2',
-                          color: colors.cardText,
+                          color: colors.text,
                           maxWidth: '90px'
                         }}>
                           {calc.name}
@@ -526,7 +522,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                           fontWeight: '600',
                           textAlign: 'center',
                           lineHeight: '1.2',
-                          color: colors.cardText,
+                          color: colors.text,
                           maxWidth: '90px'
                         }}>
                           {calc.name}

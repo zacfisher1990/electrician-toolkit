@@ -34,6 +34,7 @@ import Estimates from './features/estimates/Estimates.jsx';
 import Invoices from './features/invoices/Invoices.jsx';
 import VerifyEmail from './pages/VerifyEmail.jsx';
 import Header from './components/Header.jsx';
+import { getColors } from './theme';
 import './App.css';
 
 function App() {
@@ -104,7 +105,7 @@ function App() {
   }, [isDarkMode]);
 
  useEffect(() => {
-  const newColor = isDarkMode ? '#000000' : '#f5f5f5';
+  const newColor = isDarkMode ? '#121212' : '#f9fafb';
   
   // Update meta theme-color
   const metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -125,7 +126,7 @@ function App() {
     const updateThemeColor = () => {
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', isDarkMode ? '#1a1a1a' : '#2563eb');
+        metaThemeColor.setAttribute('content', isDarkMode ? '#1e1e1e' : '#2563eb');
       }
     };
 
@@ -366,7 +367,7 @@ useEffect(() => {
   const showBottomNav = activeCalculator !== 'verify-email';
 
   return (
-    <div className="App" style={{ background: isDarkMode ? '#000000' : '#ffffff', overscrollBehavior: 'none' }}>
+    <div className="App" style={{ background: isDarkMode ? '#121212' : '#f9fafb', overscrollBehavior: 'none' }}>
       <Header 
         headerInfo={headerInfo}
         isDarkMode={isDarkMode}
