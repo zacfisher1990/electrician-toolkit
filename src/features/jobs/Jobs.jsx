@@ -157,7 +157,21 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange }) => {
     if (!isUserLoggedIn) {
       setShowAuthModal(true);
     } else {
-      setShowAddForm(!showAddForm);
+      // Set showAddForm to true to trigger the add job modal
+      setShowAddForm(true);
+      // Reset form data for new job
+      setFormData({
+        title: '',
+        client: '',
+        location: '',
+        status: 'scheduled',
+        cost: '',
+        duration: '',
+        scheduledDate: '',
+        scheduledTime: '',
+        notes: ''
+      });
+      setLinkedEstimates([]);
     }
   };
 
@@ -236,6 +250,8 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange }) => {
       <ModalsContainer
         showAuthModal={showAuthModal}
         setShowAuthModal={setShowAuthModal}
+        showAddForm={showAddForm}
+        setShowAddForm={setShowAddForm}
         viewingJob={viewingJob}
         formData={formData}
         setFormData={setFormData}
@@ -251,6 +267,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange }) => {
         handleViewCombinedEstimates={handleViewCombinedEstimates}
         estimateMenuRef={estimateMenuRef}
         resetForm={() => resetForm(clearEstimateModals)}
+        handleAddJob={jobHandlers.handleAddJob}
         handleEditJob={jobHandlers.handleEditJob}
         handleDeleteJob={jobHandlers.handleDeleteJob}
         showCombinedEstimatesModal={showCombinedEstimatesModal}
@@ -289,23 +306,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange }) => {
           />
 
           <AddJobSection
-            showAddForm={showAddForm}
             handleAddJobClick={handleAddJobClick}
-            formData={formData}
-            setFormData={setFormData}
-            linkedEstimates={linkedEstimates}
-            estimates={estimates}
-            showEstimateMenu={showEstimateMenu}
-            handleEstimateMenuOpen={estimateHandlers.handleEstimateMenuOpen}
-            onSelectEstimate={estimateHandlers.handleSelectEstimate}
-            onCreateNewEstimate={estimateHandlers.handleCreateNewEstimate}
-            onViewEstimate={estimateHandlers.handleViewEstimate}
-            onRemoveEstimate={estimateHandlers.handleRemoveEstimate}
-            onAddAdditionalEstimate={estimateHandlers.handleAddAdditionalEstimate}
-            onViewAllEstimates={handleViewCombinedEstimates}
-            estimateMenuRef={estimateMenuRef}
-            handleAddJob={jobHandlers.handleAddJob}
-            resetForm={resetForm}
             isDarkMode={isDarkMode}
             colors={colors}
           />

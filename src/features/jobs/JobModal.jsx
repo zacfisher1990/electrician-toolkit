@@ -22,9 +22,14 @@ const JobModal = ({
   onSave,
   onDelete,
   isDarkMode,
-  colors
+  colors,
+  isNewJob = false // NEW: Add this prop to indicate if it's a new job
 }) => {
-  if (!viewingJob) return null;
+  // Don't render if neither viewingJob nor isNewJob is true
+  if (!viewingJob && !isNewJob) return null;
+
+  const modalTitle = isNewJob ? 'New Job' : 'Job Details';
+  const saveButtonText = isNewJob ? 'Add Job' : 'Save Changes';
 
   return (
     <div style={{
@@ -65,7 +70,7 @@ const JobModal = ({
             fontWeight: '600',
             color: colors.text
           }}>
-            Job Details
+            {modalTitle}
           </h3>
           <button
             onClick={onClose}
@@ -119,26 +124,28 @@ const JobModal = ({
                 opacity: (!formData.title || !formData.client) ? 0.5 : 1
               }}
             >
-              Save Changes
+              {saveButtonText}
             </button>
-            <button
-              onClick={() => onDelete(viewingJob.id, viewingJob.title || viewingJob.name)}
-              style={{
-                padding: '0.75rem',
-                background: 'transparent',
-                color: '#ef4444',
-                border: `1px solid #ef4444`,
-                borderRadius: '0.5rem',
-                fontSize: '0.9375rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.25rem'
-              }}
-            >
-              <Trash2 size={16} />
-            </button>
+            {!isNewJob && onDelete && (
+              <button
+                onClick={() => onDelete(viewingJob.id, viewingJob.title || viewingJob.name)}
+                style={{
+                  padding: '0.75rem',
+                  background: 'transparent',
+                  color: '#ef4444',
+                  border: `1px solid #ef4444`,
+                  borderRadius: '0.5rem',
+                  fontSize: '0.9375rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
+                }}
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
           </div>
         </div>
       </div>

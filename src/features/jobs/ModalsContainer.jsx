@@ -10,6 +10,11 @@ const ModalsContainer = ({
   showAuthModal,
   setShowAuthModal,
   
+  // Add Job Modal
+  showAddForm,
+  setShowAddForm,
+  handleAddJob,
+  
   // Job Modal
   viewingJob,
   formData,
@@ -55,7 +60,37 @@ const ModalsContainer = ({
         isDarkMode={isDarkMode}
       />
 
-      {/* Job Modal */}
+      {/* Add Job Modal */}
+      {showAddForm && (
+        <JobModal
+          viewingJob={null}
+          formData={formData}
+          setFormData={setFormData}
+          linkedEstimate={linkedEstimates.length > 0 ? linkedEstimates[0] : null}
+          linkedEstimates={linkedEstimates}
+          estimates={estimates}
+          showEstimateMenu={showEstimateMenu}
+          setShowEstimateMenu={handleEstimateMenuOpen}
+          onSelectEstimate={onSelectEstimate}
+          onCreateNewEstimate={onCreateNewEstimate}
+          onViewEstimate={onViewEstimate}
+          onRemoveEstimate={onRemoveEstimate}
+          onAddAdditionalEstimate={onAddAdditionalEstimate}
+          onViewAllEstimates={handleViewCombinedEstimates}
+          estimateMenuRef={estimateMenuRef}
+          onClose={() => {
+            setShowAddForm(false);
+            resetForm();
+          }}
+          onSave={handleAddJob}
+          onDelete={null}
+          isDarkMode={isDarkMode}
+          colors={colors}
+          isNewJob={true}
+        />
+      )}
+
+      {/* Job Modal (for viewing/editing existing jobs) */}
       <JobModal
         viewingJob={viewingJob}
         formData={formData}
