@@ -58,6 +58,7 @@ function App() {
   const [navigationData, setNavigationData] = useState(null);
   const [headerVisible, setHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [clockedInJob, setClockedInJob] = useState(null); // NEW: Track clocked-in job instantly
   
   // Handle browser back/forward buttons
   useEffect(() => {
@@ -286,6 +287,7 @@ useEffect(() => {
         return <Jobs 
           isDarkMode={isDarkMode}
           onNavigateToEstimates={(data) => handleNavigate('estimates', data)}
+          onClockedInJobChange={setClockedInJob} // NEW: Instant callback
         />;
       case 'estimates':
         return <Estimates 
@@ -373,12 +375,13 @@ useEffect(() => {
         setShowMenu={setShowMenu}
         onNavigate={handleNavigate}
         setIsDarkMode={setIsDarkMode}
+        clockedInJob={clockedInJob} // NEW: Just pass the job
       />
 
       {/* Content Area */}
       <div style={{ 
         paddingBottom: showBottomNav ? 'calc(65px + env(safe-area-inset-bottom))' : '0',
-        paddingTop: 'calc(48px + env(safe-area-inset-top))',
+        paddingTop: 'calc(48px + env(safe-area-inset-top)',
         paddingLeft: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-left)',
         paddingRight: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-right)',
         position: 'relative',

@@ -101,17 +101,64 @@ export const createJobHandlers = ({
       const { updateJob } = await import('./../jobsService');
       const job = jobs.find(j => j.id === jobId);
       
-      let updatedJob;
-      
       if (clockIn) {
-        // Clock IN - start new session
-        updatedJob = {
+        // CLOCK IN - First check if already clocked into another job
+        const currentlyClockedInJob = jobs.find(j => j.clockedIn === true && j.id !== jobId);
+        
+        if (currentlyClockedInJob) {
+          // Ask user if they want to clock out of the other job
+          const confirmed = window.confirm(
+            `You're currently clocked into "${currentlyClockedInJob.title}". ` +
+            `Clock out and switch to "${job.title}"?`
+          );
+          
+          if (!confirmed) {
+            return; // User cancelled, don't do anything
+          }
+          
+          // Clock out the other job first
+          const sessionEnd = new Date().toISOString();
+          const sessionStart = currentlyClockedInJob.currentSessionStart;
+          
+          const workSessions = currentlyClockedInJob.workSessions || [];
+          workSessions.push({
+            startTime: sessionStart,
+            endTime: sessionEnd
+          });
+          
+          const clockedOutJob = {
+            ...currentlyClockedInJob,
+            clockedIn: false,
+            currentSessionStart: null,
+            workSessions: workSessions
+          };
+          
+          // Update the other job in local state
+          setJobs(prevJobs => 
+            prevJobs.map(j => j.id === currentlyClockedInJob.id ? clockedOutJob : j)
+          );
+          
+          // Update the other job in database
+          await updateJob(currentlyClockedInJob.id, clockedOutJob);
+        }
+        
+        // Now clock IN to the new job
+        const updatedJob = {
           ...job,
           clockedIn: true,
           currentSessionStart: new Date().toISOString()
         };
+        
+        // Update local state IMMEDIATELY (optimistic update)
+        setJobs(prevJobs => 
+          prevJobs.map(j => j.id === jobId ? updatedJob : j)
+        );
+        
+        // Update in database
+        await updateJob(jobId, updatedJob);
+        
       } else {
-        // Clock OUT - end current session
+        // CLOCK OUT - end current session
         const sessionEnd = new Date().toISOString();
         const sessionStart = job.currentSessionStart;
         
@@ -122,21 +169,21 @@ export const createJobHandlers = ({
           endTime: sessionEnd
         });
         
-        updatedJob = {
+        const updatedJob = {
           ...job,
           clockedIn: false,
           currentSessionStart: null,
           workSessions: workSessions
         };
+        
+        // Update local state IMMEDIATELY (optimistic update)
+        setJobs(prevJobs => 
+          prevJobs.map(j => j.id === jobId ? updatedJob : j)
+        );
+        
+        // Then update in database in the background
+        await updateJob(jobId, updatedJob);
       }
-      
-      // Update local state IMMEDIATELY (optimistic update)
-      setJobs(prevJobs => 
-        prevJobs.map(j => j.id === jobId ? updatedJob : j)
-      );
-      
-      // Then update in database in the background
-      await updateJob(jobId, updatedJob);
       
     } catch (error) {
       console.error('Error updating clock status:', error);

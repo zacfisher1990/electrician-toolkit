@@ -21,7 +21,7 @@ import { createInvoiceHandlers } from './handlers/invoiceHandlers';
 import { filterJobs, getStatusCounts } from './utils/jobsUtils';
 import { openJobView, handleViewEstimateFromCard } from './utils/jobViewHelpers';
 
-const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
+const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange }) => {
   // State from custom hooks
   const {
     jobs,
@@ -105,6 +105,14 @@ const clearEstimateModals = () => {
       lastSyncedJobId.current = null;
     }
   }, [estimates, editingJob, setLinkedEstimates, lastSyncedJobId]);
+
+  // NEW: Notify parent of clocked-in job changes INSTANTLY
+  useEffect(() => {
+    const clockedJob = jobs.find(job => job.clockedIn === true) || null;
+    if (onClockedInJobChange) {
+      onClockedInJobChange(clockedJob);
+    }
+  }, [jobs, onClockedInJobChange]);
 
   // Create handlers
   const jobHandlers = createJobHandlers({

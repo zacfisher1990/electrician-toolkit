@@ -8,7 +8,8 @@ function Header({
   showMenu, 
   setShowMenu, 
   onNavigate, 
-  setIsDarkMode 
+  setIsDarkMode,
+  clockedInJob // NEW: Pass the clocked-in job
 }) {
   const HeaderIcon = headerInfo.icon;
 
@@ -21,6 +22,15 @@ function Header({
     cardText: isDarkMode ? '#ffffff' : '#111827',
   };
 
+  // Use red when clocked in, blue when not
+  const headerBgColor = clockedInJob 
+    ? '#ef4444' // Red when clocked in
+    : (isDarkMode ? '#1a1a1a' : '#2563eb'); // Normal blue/dark
+
+  const notchColor = clockedInJob
+    ? '#ef4444' // Red notch when clocked in
+    : (isDarkMode ? '#1a1a1a' : '#2563eb'); // Normal
+
   return (
     <>
       {/* Notch Area Cover - Always Visible */}
@@ -30,13 +40,14 @@ function Header({
         left: 0,
         right: 0,
         height: 'env(safe-area-inset-top)',
-        background: isDarkMode ? '#1a1a1a' : '#2563eb',
-        zIndex: 101
+        background: notchColor,
+        zIndex: 101,
+        transition: 'background 0.3s ease'
       }} />
 
-      {/* Persistent Header - Hides on scroll */}
+      {/* Persistent Header */}
       <div style={{ 
-        background: isDarkMode ? '#1a1a1a' : '#2563eb',
+        background: headerBgColor,
         padding: '0.5rem 1rem',
         borderBottom: `1px solid ${colors.headerBorder}`,
         position: 'fixed',
@@ -49,29 +60,82 @@ function Header({
         alignItems: 'center',
         minHeight: '48px',
         transform: headerVisible ? 'translateY(0)' : 'translateY(calc(-100% - env(safe-area-inset-top)))',
-        transition: 'transform 0.3s ease-in-out',
+        transition: 'all 0.3s ease-in-out',
         paddingLeft: 'max(1rem, env(safe-area-inset-left))',
         paddingRight: 'max(1rem, env(safe-area-inset-right))'
       }}>
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
-          gap: '0.5rem' 
+          gap: '0.5rem',
+          flex: 1,
+          minWidth: 0
         }}>
-          <HeaderIcon size={20} color="white" strokeWidth={2} />
-          <h1 style={{ 
-            fontSize: '1rem', 
-            fontWeight: '600',
-            color: 'white',
-            margin: 0,
-            letterSpacing: '-0.01em'
+          <HeaderIcon size={20} color="white" strokeWidth={2} style={{ flexShrink: 0 }} />
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            flex: 1,
+            minWidth: 0
           }}>
-            {headerInfo.title}
-          </h1>
+            <h1 style={{ 
+              fontSize: '1rem', 
+              fontWeight: '600',
+              color: 'white',
+              margin: 0,
+              letterSpacing: '-0.01em',
+              flexShrink: 0
+            }}>
+              {headerInfo.title}
+            </h1>
+            
+            {/* Clocked-in job indicator */}
+            {clockedInJob && (
+              <>
+                <span style={{ 
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  fontSize: '1rem',
+                  flexShrink: 0
+                }}>
+                  •
+                </span>
+                <span style={{ 
+                  fontSize: '0.75rem', 
+                  fontWeight: '700',
+                  color: 'rgba(255, 255, 255, 0.95)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  flexShrink: 0
+                }}>
+                  CLOCKED IN
+                </span>
+                <span style={{ 
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  fontSize: '1rem',
+                  flexShrink: 0
+                }}>
+                  •
+                </span>
+                <span style={{ 
+                  fontSize: '0.875rem', 
+                  fontWeight: '500',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  flex: 1,
+                  minWidth: 0
+                }}>
+                  {clockedInJob.title}
+                </span>
+              </>
+            )}
+          </div>
         </div>
         
         {/* Menu Button */}
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', flexShrink: 0 }}>
           <button 
             onClick={() => setShowMenu(!showMenu)}
             style={{ 
