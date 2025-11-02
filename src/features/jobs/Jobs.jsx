@@ -69,6 +69,12 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStatusTab, setActiveStatusTab] = useState('all');
 
+  // Create a function to clear estimate modals
+const clearEstimateModals = () => {
+  setViewingSingleEstimate(null);
+  setShowCombinedEstimatesModal(false);
+};
+
   // Colors
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -151,15 +157,20 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
   };
 
   const handleOpenJobView = (job) => {
-    openJobView({
-      job,
-      estimates,
-      setViewingJob,
-      setEditingJob,
-      setFormData,
-      setLinkedEstimates
-    });
-  };
+    console.log('🔓 Opening job, clearing estimate modals');
+      // FORCE CLEAR everything before opening
+      setViewingSingleEstimate(null);
+      setShowCombinedEstimatesModal(false);
+      
+      openJobView({
+        job,
+        estimates,
+        setViewingJob,
+        setEditingJob,
+        setFormData,
+        setLinkedEstimates
+      });
+    };
 
   const handleViewEstimateFromCardWrapper = (job) => {
     handleViewEstimateFromCard({
@@ -180,11 +191,13 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
     setViewingSingleEstimate(estimate);
   };
 
-  const handleCloseSingleEstimate = () => {
-    setViewingSingleEstimate(null);
+ const handleCloseSingleEstimate = () => {
+  setViewingSingleEstimate(null);
+  // Only reopen combined modal if NOT currently editing/viewing a job
+  if (!editingJob && !viewingJob) {
     setShowCombinedEstimatesModal(true);
-  };
-
+  }
+};
   // Filter and count
   const filteredJobs = filterJobs(jobs, searchQuery, activeStatusTab);
   const statusCounts = getStatusCounts(jobs);
@@ -222,7 +235,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates }) => {
         onAddAdditionalEstimate={estimateHandlers.handleAddAdditionalEstimate}
         handleViewCombinedEstimates={handleViewCombinedEstimates}
         estimateMenuRef={estimateMenuRef}
-        resetForm={resetForm}
+        resetForm={() => resetForm(clearEstimateModals)}
         handleEditJob={jobHandlers.handleEditJob}
         handleDeleteJob={jobHandlers.handleDeleteJob}
         showCombinedEstimatesModal={showCombinedEstimatesModal}

@@ -25,7 +25,7 @@ export const useJobForm = () => {
   const estimateMenuRef = useRef(null);
   const lastSyncedJobId = useRef(null);
 
-  const resetForm = () => {
+  const resetForm = (clearModals) => {
     setFormData({
       title: '',
       client: '',
@@ -42,6 +42,11 @@ export const useJobForm = () => {
     setEditingJob(null);
     setViewingJob(null);
     setLinkedEstimates([]);
+    
+    // Clear estimate-related modals if callback provided
+    if (clearModals) {
+      clearModals();
+    }
   };
 
   // Handle click outside estimate menu

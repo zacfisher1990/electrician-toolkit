@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FileText, Search, X, Plus, ChevronDown } from 'lucide-react';
 import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as deleteEstimateFromFirebase } from './estimatesService';
 import { sendEstimateViaEmail, downloadEstimate, getUserBusinessInfo } from './estimateSendService';
@@ -25,6 +25,7 @@ const Estimates = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [userInfo, setUserInfo] = useState(null); // NEW: Store user business info
+  const lastHandledEstimateId = useRef(null); // NEW: Track last handled navigation
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -73,11 +74,23 @@ const Estimates = ({
 
   // Handle viewing an existing estimate from navigation
   useEffect(() => {
-    if (navigationData?.viewEstimateId) {
-      const estimateToView = estimates.find(e => e.id === navigationData.viewEstimateId);
+    const viewEstimateId = navigationData?.viewEstimateId;
+    
+    // Only handle if:
+    // 1. We have a viewEstimateId
+    // 2. We have loaded estimates
+    // 3. We haven't already handled this specific estimate
+    if (viewEstimateId && estimates.length > 0 && lastHandledEstimateId.current !== viewEstimateId) {
+      const estimateToView = estimates.find(e => e.id === viewEstimateId);
       if (estimateToView) {
         setEditingEstimate(estimateToView);
+        lastHandledEstimateId.current = viewEstimateId; // Mark as handled
       }
+    }
+    
+    // Reset the tracking when navigationData is cleared
+    if (!viewEstimateId && lastHandledEstimateId.current) {
+      lastHandledEstimateId.current = null;
     }
   }, [navigationData, estimates]);
 
