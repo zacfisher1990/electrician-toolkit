@@ -1,5 +1,5 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 import OhmsLawBasic from './OhmsLawBasic';
 import OhmsLawSeries from './OhmsLawSeries';
 import OhmsLawParallel from './OhmsLawParallel';

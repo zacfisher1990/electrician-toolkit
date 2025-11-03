@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Activity, Info, TrendingUp } from 'lucide-react';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 import styles from './Calculator.module.css';
 
 const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {

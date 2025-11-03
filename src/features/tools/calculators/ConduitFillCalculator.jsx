@@ -2,7 +2,7 @@ import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Plus, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { conduitTypes, conduitSizeLabels, conduitData, getAvailableSizes, getConduitInfo } from './conduitData';
 import { wireTypes, wireSizeOrder, wireData, getWireArea, getAvailableWireSizes } from './wireData';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 
 const ConduitFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   // Separate state for conduit type, size, and wire type

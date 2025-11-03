@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Triangle, Info, CheckCircle } from 'lucide-react';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 import styles from './Calculator.module.css';
 
 const PowerTriangleCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {

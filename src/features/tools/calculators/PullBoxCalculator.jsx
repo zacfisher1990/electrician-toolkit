@@ -8,8 +8,8 @@ import {
   calculateAnglePull,
   calculateUPull,
   necReferences
-} from './data/pullBoxData';
-import { exportToPDF } from '../../utils/pdfExport';
+} from '../data/pullBoxData';
+import { exportToPDF } from '../../../utils/pdfExport';
 
 const PullBoxCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [pullType, setPullType] = useState('straight');

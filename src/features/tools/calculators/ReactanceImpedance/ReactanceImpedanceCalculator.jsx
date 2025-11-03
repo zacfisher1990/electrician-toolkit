@@ -1,5 +1,5 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { exportToPDF } from '../../../utils/pdfExport';
+import { exportToPDF } from '../../../../utils/pdfExport';
 import styles from '../Calculator.module.css';
 
 // Import calculation utilities

@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { AlertTriangle, CheckCircle, Info, Zap, Plus, Trash2 } from 'lucide-react';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 
 // Load types for neutral calculation
 const loadTypes = [

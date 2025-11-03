@@ -9,7 +9,7 @@ import {
   getWireVolumeAllowance,
   necReferences 
 } from './boxFillData';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 
 const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [boxType, setBoxType] = useState('4x1.5-square');

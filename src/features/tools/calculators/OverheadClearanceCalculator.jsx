@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 
 // NEC Table 225.18 & 225.19 - Overhead Clearance Requirements
 const conductorTypes = [

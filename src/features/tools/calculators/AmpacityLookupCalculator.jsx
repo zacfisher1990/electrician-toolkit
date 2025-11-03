@@ -14,7 +14,7 @@ import {
   formatWireSize,
   necReferences
 } from './data/ampacityData';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 
 const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [wireSize, setWireSize] = useState('12');

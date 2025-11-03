@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { AlertTriangle, CheckCircle, Info, Sun, Zap } from 'lucide-react';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 
 // PV Module specifications (common examples)
 const moduleTypes = [

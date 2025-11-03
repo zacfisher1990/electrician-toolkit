@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Info, Plus, Trash2, Calculator, FileDown, Briefcase } from 'lucide-react';
-import { getUserJobs, addCalculationToJob } from '../jobs/jobsService';
+import { getUserJobs, addCalculationToJob } from '../../jobs/jobsService';
 import styles from './Calculator.module.css';
 
-const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
-  const [seriesComponents, setSeriesComponents] = useState([
+const OhmsLawParallel = ({ isDarkMode, colors, onExport }) => {
+  const [parallelComponents, setParallelComponents] = useState([
     { id: 1, R: '', V: '', I: '', P: '' }
   ]);
-  const [seriesTotals, setSeriesTotals] = useState({ R: '', V: '', I: '', P: '' });
+  const [parallelTotals, setParallelTotals] = useState({ R: '', V: '', I: '', P: '' });
   const [showJobSelector, setShowJobSelector] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [loadingJobs, setLoadingJobs] = useState(false);
@@ -23,32 +23,32 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
     return filledFields.length >= 2;
   };
 
-  const addSeriesComponent = () => {
-    const newId = Math.max(...seriesComponents.map(c => c.id), 0) + 1;
-    setSeriesComponents([...seriesComponents, { id: newId, R: '', V: '', I: '', P: '' }]);
+  const addParallelComponent = () => {
+    const newId = Math.max(...parallelComponents.map(c => c.id), 0) + 1;
+    setParallelComponents([...parallelComponents, { id: newId, R: '', V: '', I: '', P: '' }]);
   };
 
-  const removeSeriesComponent = (id) => {
-    if (seriesComponents.length > 1) {
-      setSeriesComponents(seriesComponents.filter(c => c.id !== id));
+  const removeParallelComponent = (id) => {
+    if (parallelComponents.length > 1) {
+      setParallelComponents(parallelComponents.filter(c => c.id !== id));
     }
   };
 
-  const updateSeriesComponent = (id, field, value) => {
-    setSeriesComponents(seriesComponents.map(c => 
+  const updateParallelComponent = (id, field, value) => {
+    setParallelComponents(parallelComponents.map(c => 
       c.id === id ? { ...c, [field]: value } : c
     ));
   };
 
-  const validateSeriesTotals = (components, totals) => {
+  const validateParallelTotals = (components, totals) => {
     const conflicts = [];
-    if (totals.I && totals.I !== '') {
-      const totalI = parseFloat(totals.I);
+    if (totals.V && totals.V !== '') {
+      const totalV = parseFloat(totals.V);
       components.forEach((comp, idx) => {
-        if (comp.I && comp.I !== '') {
-          const compI = parseFloat(comp.I);
-          if (Math.abs(compI - totalI) > 0.01) {
-            conflicts.push(`Total current (${totalI}A) conflicts with Component ${idx + 1} current (${compI}A)`);
+        if (comp.V && comp.V !== '') {
+          const compV = parseFloat(comp.V);
+          if (Math.abs(compV - totalV) > 0.01) {
+            conflicts.push(`Total voltage (${totalV}V) conflicts with Component ${idx + 1} voltage (${compV}V)`);
           }
         }
       });
@@ -56,20 +56,20 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
     return conflicts;
   };
 
-  const calculateSeries = () => {
-    const conflicts = validateSeriesTotals(seriesComponents, seriesTotals);
+  const calculateParallel = () => {
+    const conflicts = validateParallelTotals(parallelComponents, parallelTotals);
     if (conflicts.length > 0) {
       alert('Conflicts detected:\n' + conflicts.join('\n'));
       return;
     }
 
-    let components = [...seriesComponents];
+    let components = [...parallelComponents];
     
-    if (seriesTotals.I && seriesTotals.I !== '') {
-      const totalI = parseFloat(seriesTotals.I);
+    if (parallelTotals.V && parallelTotals.V !== '') {
+      const totalV = parseFloat(parallelTotals.V);
       components = components.map(comp => {
-        if (!comp.I || comp.I === '') {
-          return { ...comp, I: totalI.toFixed(1) };
+        if (!comp.V || comp.V === '') {
+          return { ...comp, V: totalV.toFixed(1) };
         }
         return comp;
       });
@@ -83,38 +83,38 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
       changed = false;
       iterations++;
       
-      let knownCurrent = null;
+      let knownVoltage = null;
       for (let comp of components) {
-        if (comp.I && !isNaN(parseFloat(comp.I))) {
-          knownCurrent = parseFloat(comp.I);
+        if (comp.V && !isNaN(parseFloat(comp.V))) {
+          knownVoltage = parseFloat(comp.V);
           break;
         }
       }
 
-      if (knownCurrent === null) {
+      if (knownVoltage === null) {
         for (let comp of components) {
-          const V = parseFloat(comp.V);
+          const I = parseFloat(comp.I);
           const R = parseFloat(comp.R);
           const P = parseFloat(comp.P);
           
-          if (!isNaN(V) && !isNaN(R) && R !== 0) {
-            knownCurrent = V / R;
+          if (!isNaN(I) && !isNaN(R)) {
+            knownVoltage = I * R;
             break;
-          } else if (!isNaN(P) && !isNaN(V) && V !== 0) {
-            knownCurrent = P / V;
+          } else if (!isNaN(P) && !isNaN(I) && I !== 0) {
+            knownVoltage = P / I;
             break;
-          } else if (!isNaN(P) && !isNaN(R) && R !== 0) {
-            knownCurrent = Math.sqrt(P / R);
+          } else if (!isNaN(P) && !isNaN(R)) {
+            knownVoltage = Math.sqrt(P * R);
             break;
           }
         }
       }
 
-      if (knownCurrent !== null) {
+      if (knownVoltage !== null) {
         components = components.map(comp => {
-          if (!comp.I || comp.I === '') {
+          if (!comp.V || comp.V === '') {
             changed = true;
-            return { ...comp, I: knownCurrent.toFixed(1) };
+            return { ...comp, V: knownVoltage.toFixed(1) };
           }
           return comp;
         });
@@ -139,19 +139,19 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
         }
 
         const newR = parseFloat(newComp.R);
-        const newI = parseFloat(newComp.I);
-        if ((comp.V === '' || isNaN(V)) && !isNaN(newI) && !isNaN(newR)) {
-          newComp.V = (newI * newR).toFixed(1);
+        const newV = parseFloat(newComp.V);
+        if ((comp.I === '' || isNaN(I)) && !isNaN(newV) && !isNaN(newR) && newR !== 0) {
+          newComp.I = (newV / newR).toFixed(1);
           changed = true;
-        } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newI) && newI !== 0) {
-          newComp.V = (P / newI).toFixed(1);
+        } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newV) && newV !== 0) {
+          newComp.I = (P / newV).toFixed(1);
           changed = true;
-        } else if ((comp.V === '' || isNaN(V)) && !isNaN(P) && !isNaN(newR)) {
-          newComp.V = Math.sqrt(P * newR).toFixed(1);
+        } else if ((comp.I === '' || isNaN(I)) && !isNaN(P) && !isNaN(newR) && newR !== 0) {
+          newComp.I = Math.sqrt(P / newR).toFixed(1);
           changed = true;
         }
 
-        const newV = parseFloat(newComp.V);
+        const newI = parseFloat(newComp.I);
         if ((comp.P === '' || isNaN(P)) && !isNaN(newV) && !isNaN(newI)) {
           newComp.P = (newV * newI).toFixed(1);
           changed = true;
@@ -167,32 +167,32 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
       });
     }
 
-    setSeriesComponents(components);
+    setParallelComponents(components);
   };
 
-  const clearSeries = () => {
-    setSeriesComponents([{ id: 1, R: '', V: '', I: '', P: '' }]);
-    setSeriesTotals({ R: '', V: '', I: '', P: '' });
+  const clearParallel = () => {
+    setParallelComponents([{ id: 1, R: '', V: '', I: '', P: '' }]);
+    setParallelTotals({ R: '', V: '', I: '', P: '' });
   };
 
-  const getTotalsSeries = () => {
-    const totalR = seriesComponents.reduce((sum, c) => {
-      const r = parseFloat(c.R);
-      return sum + (isNaN(r) ? 0 : r);
+  const getTotalsParallel = () => {
+    const totalI = parallelComponents.reduce((sum, c) => {
+      const i = parseFloat(c.I);
+      return sum + (isNaN(i) ? 0 : i);
     }, 0);
     
-    const totalV = seriesComponents.reduce((sum, c) => {
-      const v = parseFloat(c.V);
-      return sum + (isNaN(v) ? 0 : v);
-    }, 0);
-    
-    const totalP = seriesComponents.reduce((sum, c) => {
+    const totalP = parallelComponents.reduce((sum, c) => {
       const p = parseFloat(c.P);
       return sum + (isNaN(p) ? 0 : p);
     }, 0);
     
-    const firstI = seriesComponents.find(c => !isNaN(parseFloat(c.I)));
-    const totalI = firstI ? parseFloat(firstI.I) : 0;
+    const firstV = parallelComponents.find(c => !isNaN(parseFloat(c.V)));
+    const totalV = firstV ? parseFloat(firstV.V) : 0;
+    
+    const resistances = parallelComponents.map(c => parseFloat(c.R)).filter(r => !isNaN(r) && r > 0);
+    const totalR = resistances.length > 0 
+      ? 1 / resistances.reduce((sum, r) => sum + 1/r, 0)
+      : 0;
     
     return { totalR, totalV, totalI, totalP };
   };
@@ -213,11 +213,11 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
 
   const handleAttachToJob = async (jobId) => {
     try {
-      const totals = getTotalsSeries();
+      const totals = getTotalsParallel();
       const calculationData = {
-        type: 'ohms-law-series',
+        type: 'ohms-law-parallel',
         data: {
-          components: seriesComponents,
+          components: parallelComponents,
           totals: totals
         }
       };
@@ -232,16 +232,16 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
   };
 
   const handleExport = () => {
-    const hasData = seriesComponents.some(c => c.R || c.V || c.I || c.P);
+    const hasData = parallelComponents.some(c => c.R || c.V || c.I || c.P);
     
     if (!hasData) {
       alert('Please enter component values before exporting');
       return;
     }
 
-    const totals = getTotalsSeries();
+    const totals = getTotalsParallel();
     const inputs = {};
-    seriesComponents.forEach((comp, idx) => {
+    parallelComponents.forEach((comp, idx) => {
       const values = [];
       if (comp.R) values.push(`R=${comp.R}Ω`);
       if (comp.V) values.push(`V=${comp.V}V`);
@@ -253,24 +253,24 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
     });
 
     const pdfData = {
-      calculatorName: "Ohm's Law Calculator - Series Circuit",
+      calculatorName: "Ohm's Law Calculator - Parallel Circuit",
       inputs,
       results: {
         totalResistance: `${totals.totalR.toFixed(1)} Ω`,
-        totalVoltage: `${totals.totalV.toFixed(1)} V`,
-        current: `${totals.totalI.toFixed(1)} A (constant)`,
+        voltage: `${totals.totalV.toFixed(1)} V (constant)`,
+        totalCurrent: `${totals.totalI.toFixed(1)} A`,
         totalPower: `${totals.totalP.toFixed(1)} W`
       },
       additionalInfo: {
-        circuitType: 'Series Circuit',
-        principle: 'Current is constant across all components',
-        totalResistanceFormula: 'R_total = R1 + R2 + R3 + ...',
-        totalVoltageFormula: 'V_total = V1 + V2 + V3 + ...'
+        circuitType: 'Parallel Circuit',
+        principle: 'Voltage is constant across all components',
+        totalResistanceFormula: '1/R_total = 1/R1 + 1/R2 + 1/R3 + ...',
+        totalCurrentFormula: 'I_total = I1 + I2 + I3 + ...'
       },
       necReferences: [
-        'Series circuits: Current is the same through all components',
-        'Total resistance = Sum of all resistances',
-        'Total voltage = Sum of voltage drops across components',
+        'Parallel circuits: Voltage is the same across all components',
+        'Total resistance = 1 ÷ (1/R1 + 1/R2 + 1/R3 + ...)',
+        'Total current = Sum of currents through each branch',
         'Total power = Sum of power dissipated in each component'
       ]
     };
@@ -278,27 +278,27 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
     onExport(pdfData);
   };
 
-  const hasResults = seriesComponents.some(c => c.R || c.V || c.I || c.P);
+  const hasResults = parallelComponents.some(c => c.R || c.V || c.I || c.P);
 
   return (
     <div>
       {/* Info Box */}
       <div style={{
-        background: '#dbeafe',
-        border: '1px solid #3b82f6',
+        background: '#faf5ff',
+        border: '1px solid #a855f7',
         borderRadius: '8px',
         padding: '1rem',
         marginBottom: '1rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-          <Info size={20} color="#1e40af" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+          <Info size={20} color="#7e22ce" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
           <p style={{ 
             margin: 0, 
             fontSize: '0.875rem', 
-            color: '#1e40af',
+            color: '#7e22ce',
             lineHeight: '1.5'
           }}>
-            Series Circuit: Current is constant across all components
+            Parallel Circuit: Voltage is constant across all components
           </p>
         </div>
       </div>
@@ -345,20 +345,20 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
                 </label>
                 <input
                   type="number"
-                  value={seriesTotals[field]}
-                  onChange={(e) => setSeriesTotals({...seriesTotals, [field]: e.target.value})}
+                  value={parallelTotals[field]}
+                  onChange={(e) => setParallelTotals({...parallelTotals, [field]: e.target.value})}
                   placeholder="Optional"
-                  disabled={isTotalFieldDisabled(seriesTotals, field)}
+                  disabled={isTotalFieldDisabled(parallelTotals, field)}
                   style={{ 
                     width: '100%', 
                     padding: '0.625rem',
                     fontSize: '0.9375rem',
                     border: `1px solid ${colors.inputBorder}`, 
                     borderRadius: '8px',
-                    backgroundColor: isTotalFieldDisabled(seriesTotals, field) ? colors.sectionBg : colors.inputBg,
+                    backgroundColor: isTotalFieldDisabled(parallelTotals, field) ? colors.sectionBg : colors.inputBg,
                     color: colors.cardText,
                     boxSizing: 'border-box',
-                    cursor: isTotalFieldDisabled(seriesTotals, field) ? 'not-allowed' : 'text'
+                    cursor: isTotalFieldDisabled(parallelTotals, field) ? 'not-allowed' : 'text'
                   }}
                 />
               </div>
@@ -371,12 +371,12 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
           margin: 0,
           fontStyle: 'italic'
         }}>
-          Enter known total values to help solve the circuit. Current is constant in series.
+          Enter known total values to help solve the circuit. Voltage is constant in parallel.
         </p>
       </div>
 
       {/* Components */}
-      {seriesComponents.map((comp, index) => (
+      {parallelComponents.map((comp, index) => (
         <div key={comp.id} style={{ 
           background: colors.sectionBg,
           padding: '1rem',
@@ -399,9 +399,9 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
             }}>
               Component {index + 1}
             </h4>
-            {seriesComponents.length > 1 && (
+            {parallelComponents.length > 1 && (
               <button
-                onClick={() => removeSeriesComponent(comp.id)}
+                onClick={() => removeParallelComponent(comp.id)}
                 style={{ 
                   color: '#dc2626', 
                   background: 'none', 
@@ -437,7 +437,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
                 <input
                   type="number"
                   value={comp[field]}
-                  onChange={(e) => updateSeriesComponent(comp.id, field, e.target.value)}
+                  onChange={(e) => updateParallelComponent(comp.id, field, e.target.value)}
                   style={{ 
                     width: '100%', 
                     padding: '0.5rem',
@@ -456,7 +456,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
       ))}
 
       <button
-        onClick={addSeriesComponent}
+        onClick={addParallelComponent}
         style={{
           width: '100%',
           background: '#3b82f6',
@@ -480,7 +480,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
 
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
         <button
-          onClick={calculateSeries}
+          onClick={calculateParallel}
           style={{
             flex: 1,
             background: '#3b82f6',
@@ -501,7 +501,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
           Calculate
         </button>
         <button
-          onClick={clearSeries}
+          onClick={clearParallel}
           style={{
             flex: 1,
             background: '#6b7280',
@@ -547,7 +547,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
               Voltage
             </div>
             <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
-              {getTotalsSeries().totalV.toFixed(1)}
+              {getTotalsParallel().totalV.toFixed(1)}
             </div>
             <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
               E
@@ -563,7 +563,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
               Amperage
             </div>
             <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
-              {getTotalsSeries().totalI.toFixed(1)}
+              {getTotalsParallel().totalI.toFixed(1)}
             </div>
             <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
               I
@@ -579,7 +579,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
               Resistance
             </div>
             <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
-              {getTotalsSeries().totalR.toFixed(1)}
+              {getTotalsParallel().totalR.toFixed(1)}
             </div>
             <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
               R
@@ -595,7 +595,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
               Wattage
             </div>
             <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
-              {getTotalsSeries().totalP.toFixed(1)}
+              {getTotalsParallel().totalP.toFixed(1)}
             </div>
             <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
               P
@@ -777,4 +777,4 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
   );
 };
 
-export default OhmsLawSeries;
+export default OhmsLawParallel;

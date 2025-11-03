@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { AlertTriangle, CheckCircle, Info, Zap } from 'lucide-react';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 
 // NEC Table 110.26(A)(1) - Working Space Dimensions
 const voltageRanges = [

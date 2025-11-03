@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Plug, CheckCircle, AlertCircle } from 'lucide-react';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 import styles from './Calculator.module.css';
 
 // Move calculator components OUTSIDE to prevent recreation on each render

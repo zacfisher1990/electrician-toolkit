@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Plus, Trash2, CheckCircle, AlertTriangle, Info } from 'lucide-react';
-import { exportToPDF } from '../../utils/pdfExport';
+import { exportToPDF } from '../../../utils/pdfExport';
 
 const EVChargingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   // State for EVSE inputs

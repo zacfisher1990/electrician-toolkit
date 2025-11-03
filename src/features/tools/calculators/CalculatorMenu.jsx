@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, AlertTriangle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, TrendingDown, Box, ArrowDown, ArrowUp, Ruler, Minus, Sun, Zap, Clock } from 'lucide-react';
-import { getColors } from '../../theme';
+import { getColors } from '../../../theme';
 import styles from './Calculator.module.css';
 
 function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
