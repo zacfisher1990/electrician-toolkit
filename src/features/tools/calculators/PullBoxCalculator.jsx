@@ -8,7 +8,7 @@ import {
   calculateAnglePull,
   calculateUPull,
   necReferences
-} from '../data/pullBoxData';
+} from './data/pullBoxData';
 import { exportToPDF } from '../../../utils/pdfExport';
 
 const PullBoxCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {

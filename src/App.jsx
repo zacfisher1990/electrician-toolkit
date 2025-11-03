@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, FileDown, Omega, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap } from 'lucide-react';
+import { Menu, FileDown, Omega, Wrench, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap } from 'lucide-react';
 import CalculatorMenu from './features/tools/calculators/CalculatorMenu.jsx';
 import VoltageDropCalculator from './features/tools/calculators/VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './features/tools/calculators/OhmsLawCalculator.jsx';
@@ -7,27 +7,28 @@ import BoxFillCalculator from './features/tools/calculators/BoxFillCalculator.js
 import PullBoxCalculator from './features/tools/calculators/PullBoxCalculator.jsx';
 import ConduitFillCalculator from './features/tools/calculators/ConduitFillCalculator.jsx';
 import AmpacityLookupCalculator from './features/tools/calculators/AmpacityLookupCalculator.jsx';
-import MotorCalculations from './features/calculators/MotorCalculations.jsx';
-import LoadCalculations from './features/calculators/LoadCalculations.jsx';
-import TransformerSizingCalculator from './features/calculators/TransformerSizingCalculator.jsx';
-import ServiceEntranceSizing from './features/calculators/ServiceEntranceSizing.jsx';
-import GroundingBondingCalculator from './features/calculators/GroundingBondingCalculator.jsx';
-import ConduitBendingCalculator from './features/calculators/ConduitBendingCalculator.jsx';
-import LightingCalculator from './features/calculators/lighting/LightingCalculator.jsx';
-import ReceptacleCalculator from './features/calculators/ReceptacleCalculator.jsx';
+import MotorCalculations from './features/tools/calculators/MotorCalculations.jsx';
+import LoadCalculations from './features/tools/calculators/LoadCalculations.jsx';
+import TransformerSizingCalculator from './features/tools/calculators/TransformerSizingCalculator.jsx';
+import ServiceEntranceSizing from './features/tools/calculators/ServiceEntranceSizing.jsx';
+import GroundingBondingCalculator from './features/tools/calculators/GroundingBondingCalculator.jsx';
+import ConduitBendingCalculator from './features/tools/calculators/ConduitBendingCalculator.jsx';
+import LightingCalculator from './features/tools/calculators/lighting/LightingCalculator.jsx';
+import ReceptacleCalculator from './features/tools/calculators/ReceptacleCalculator.jsx';
 import BottomNavigation from './components/BottomNavigation.jsx';
-import VFDSizingCalculator from './features/calculators/VFDSizingCalculator.jsx';
-import ReactanceImpedanceCalculator from './features/calculators/ReactanceImpedance/ReactanceImpedanceCalculator.jsx';
-import PowerFactorCorrection from './features/calculators/PowerFactorCorrection.jsx';
-import PowerTriangleCalculator from './features/calculators/PowerTriangleCalculator.jsx';
-import ThreePhasePowerCalculator from './features/calculators/ThreePhasePowerCalculator.jsx';
-import UndergroundDepthCalculator from './features/calculators/UndergroundDepthCalculator.jsx';
-import OverheadClearanceCalculator from './features/calculators/OverheadClearanceCalculator.jsx';
-import WorkingSpaceCalculator from './features/calculators/WorkingSpaceCalculator.jsx';
-import NeutralSizingCalculator from './features/calculators/NeutralSizingCalculator.jsx';
-import SolarPVCalculator from './features/calculators/SolarPVCalculator.jsx';
-import EVChargingCalculator from './features/calculators/EVChargingCalculator.jsx';
+import VFDSizingCalculator from './features/tools/calculators/VFDSizingCalculator.jsx';
+import ReactanceImpedanceCalculator from './features/tools/calculators/ReactanceImpedance/ReactanceImpedanceCalculator.jsx';
+import PowerFactorCorrection from './features/tools/calculators/PowerFactorCorrection.jsx';
+import PowerTriangleCalculator from './features/tools/calculators/PowerTriangleCalculator.jsx';
+import ThreePhasePowerCalculator from './features/tools/calculators/ThreePhasePowerCalculator.jsx';
+import UndergroundDepthCalculator from './features/tools/calculators/UndergroundDepthCalculator.jsx';
+import OverheadClearanceCalculator from './features/tools/calculators/OverheadClearanceCalculator.jsx';
+import WorkingSpaceCalculator from './features/tools/calculators/WorkingSpaceCalculator.jsx';
+import NeutralSizingCalculator from './features/tools/calculators/NeutralSizingCalculator.jsx';
+import SolarPVCalculator from './features/tools/calculators/SolarPVCalculator.jsx';
+import EVChargingCalculator from './features/tools/calculators/EVChargingCalculator.jsx';
 import Home from './features/home/Home.jsx';
+import Tools from './features/tools/Tools';
 import Profile from './features/profile/Profile.jsx';
 import Jobs from './features/jobs/Jobs.jsx';
 import Estimates from './features/estimates/Estimates.jsx';
@@ -278,10 +279,10 @@ useEffect(() => {
       case 'ev-charging':
         return <EVChargingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'calculators':
-        return <CalculatorMenu 
-          isDarkMode={isDarkMode} 
-          onSelectCalculator={setActiveCalculator}
-        />;
+  return <Tools 
+    isDarkMode={isDarkMode} 
+    onSelectCalculator={setActiveCalculator}
+  />;
       case 'profile':
         return <Profile isDarkMode={isDarkMode} />;
       case 'jobs':
@@ -312,8 +313,8 @@ useEffect(() => {
       return { title: 'Home', icon: HomeIcon };
     }
     if (activeCalculator === 'calculators') {
-      return { title: 'Calculator Menu', icon: Calculator };
-    }
+  return { title: 'Tools', icon: Wrench };
+}
     if (activeCalculator === 'profile') {
       return { title: 'Profile', icon: User };
     }

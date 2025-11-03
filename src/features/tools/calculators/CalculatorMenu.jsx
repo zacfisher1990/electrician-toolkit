@@ -151,7 +151,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
           boxSizing: 'border-box'
         }}>
           {/* Search Bar */}
-          <div style={{ 
+          {/* <div style={{ 
             marginBottom: '1.5rem',
             position: 'relative'
           }}>
@@ -193,7 +193,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode }) {
                 e.target.style.boxShadow = 'none';
               }}
             />
-          </div>
+          </div> */}
 
           {/* Recently Used Section - Only show when not searching and has recent items */}
           {!searchTerm && recentlyUsed.length > 0 && (

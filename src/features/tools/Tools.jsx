@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Search, X, Calculator, Table, FileCode, Code } from 'lucide-react';
 import { getColors } from '../../theme';
-import CalculatorMenu from './CalculatorMenu';
+import CalculatorMenu from './calculators/CalculatorMenu';
 
-const Tools = ({ isDarkMode = false }) => {
+const Tools = ({ isDarkMode = false, onSelectCalculator }) => { 
   const [activeTab, setActiveTab] = useState('Calculators');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -182,6 +182,7 @@ const Tools = ({ isDarkMode = false }) => {
           <CalculatorMenu 
             isDarkMode={isDarkMode}
             searchQuery={searchQuery}
+            onSelectCalculator={onSelectCalculator}
           />
         )}
 

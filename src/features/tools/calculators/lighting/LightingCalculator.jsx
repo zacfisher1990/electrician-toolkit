@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Lightbulb } from 'lucide-react';
-import { exportToPDF } from "../../../utils/pdfExport";
+import { exportToPDF } from "../../../../utils/pdfExport";
 import LumensCalculator from './LumensCalculator';
 import FixtureSpacingCalculator from './FixtureSpacingCalculator';
 import WattsPerSqFtCalculator from './WattsPerSqFtCalculator';

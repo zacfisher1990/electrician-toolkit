@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Calculator, Briefcase, FileText, Receipt } from 'lucide-react';
+import { Home, Calculator, Briefcase, FileText, Receipt, Wrench } from 'lucide-react';
 import { getColors } from '../theme';
 
 function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
@@ -74,8 +74,8 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
         onClick={() => onNavigate('calculators')}
         style={buttonStyle(currentView === 'calculators')}
       >
-        <Calculator size={22} strokeWidth={currentView === 'calculators' ? 2.5 : 2} />
-        <span style={labelStyle}>Calculators</span>
+        <Wrench size={22} strokeWidth={currentView === 'calculators' ? 2.5 : 2} />
+        <span style={labelStyle}>Tools</span>
       </button>
 
       <button
