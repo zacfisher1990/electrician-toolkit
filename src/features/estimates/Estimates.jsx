@@ -6,7 +6,7 @@ import { sendEstimateViaEmail, downloadEstimate, getUserBusinessInfo } from './e
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import EstimateCard from './EstimateCard';
-import EstimateModal from './EstimateModal'; // Use the new modal
+import EstimateModal from './EstimateModal';
 import AddEstimateSection from './AddEstimateSection';
 import SendEstimateModal from './SendEstimateModal';
 import EstimateStatusTabs from './EstimateStatusTabs';
@@ -25,7 +25,7 @@ const Estimates = ({
   const [editingEstimate, setEditingEstimate] = useState(null);
   const [sendingEstimate, setSendingEstimate] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showAddForm, setShowAddForm] = useState(false); // NEW: For add modal
+  const [showAddForm, setShowAddForm] = useState(false);
   const [activeStatusTab, setActiveStatusTab] = useState('all');
   const [userInfo, setUserInfo] = useState(null);
   const lastHandledEstimateId = useRef(null);
@@ -204,9 +204,10 @@ const Estimates = ({
       
       await sendEstimateViaEmail(sendingEstimate, email, message, businessInfo);
       
+      // Update estimate status to "Pending" when sent
       await updateEstimate(sendingEstimate.id, {
         ...sendingEstimate,
-        status: 'Sent',
+        status: 'Pending',
         sentDate: new Date().toISOString(),
         sentTo: email
       });
@@ -229,7 +230,7 @@ const Estimates = ({
     }
   };
 
-  // NEW: Handle add estimate click
+  // Handle add estimate click
   const handleAddEstimateClick = () => {
     setShowAddForm(true);
     setEditingEstimate(null);
@@ -238,15 +239,17 @@ const Estimates = ({
   // Calculate status counts
   const statusCounts = {
     all: estimates.length,
-    unsent: estimates.filter(est => est.status === 'Unsent' || !est.status).length,
-    sent: estimates.filter(est => est.status === 'Sent').length
+    Draft: estimates.filter(est => est.status === 'Draft' || !est.status).length,
+    Pending: estimates.filter(est => est.status === 'Pending').length,
+    Accepted: estimates.filter(est => est.status === 'Accepted').length
   };
 
   // Filter estimates
   const filteredEstimates = estimates.filter(est => {
     // Status filter
-    if (activeStatusTab === 'unsent' && est.status === 'Sent') return false;
-    if (activeStatusTab === 'sent' && (!est.status || est.status === 'Unsent')) return false;
+    if (activeStatusTab === 'Draft' && est.status !== 'Draft' && est.status) return false;
+    if (activeStatusTab === 'Pending' && est.status !== 'Pending') return false;
+    if (activeStatusTab === 'Accepted' && est.status !== 'Accepted') return false;
 
     // Search filter
     if (searchQuery) {

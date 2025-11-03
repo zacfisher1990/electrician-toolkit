@@ -1,25 +1,25 @@
 import React from 'react';
-import { FileText, Edit, ThumbsUp, XCircle } from 'lucide-react';
+import { FileText, DollarSign, CheckCircle } from 'lucide-react';
 
-const EstimateStatusTabs = ({ 
+const InvoiceStatusTabs = ({ 
   activeStatusTab, 
   setActiveStatusTab, 
   statusCounts, 
   colors 
 }) => {
-  // Status configuration matching EstimateCard
+  // Status configuration matching InvoiceCard
   const statusConfig = {
     'Draft': { 
       color: '#6b7280',
-      icon: Edit
+      icon: FileText
     },
     'Pending': { 
       color: '#f59e0b',
-      icon: FileText
+      icon: DollarSign
     },
-    'Accepted': { 
+    'Paid': { 
       color: '#10b981',
-      icon: ThumbsUp
+      icon: CheckCircle
     }
   };
 
@@ -87,7 +87,7 @@ const EstimateStatusTabs = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          <Edit size={12} />
+          <FileText size={12} />
           <span style={{
             background: activeStatusTab === 'Draft' ? statusConfig.Draft.color : colors.cardBg,
             color: activeStatusTab === 'Draft' ? 'white' : colors.subtext,
@@ -125,7 +125,7 @@ const EstimateStatusTabs = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          <FileText size={12} />
+          <DollarSign size={12} />
           <span style={{
             background: activeStatusTab === 'Pending' ? statusConfig.Pending.color : colors.cardBg,
             color: activeStatusTab === 'Pending' ? 'white' : colors.subtext,
@@ -142,16 +142,16 @@ const EstimateStatusTabs = ({
         <span style={{ fontSize: '0.65rem' }}>Pending</span>
       </button>
 
-      {/* Accepted Tab */}
+      {/* Paid Tab */}
       <button
-        onClick={() => setActiveStatusTab('Accepted')}
+        onClick={() => setActiveStatusTab('Paid')}
         style={{
           height: '46px',
           padding: '0.5rem 0.25rem',
           borderRadius: '0.5rem',
-          border: `1px solid ${activeStatusTab === 'Accepted' ? statusConfig.Accepted.color : colors.border}`,
-          background: activeStatusTab === 'Accepted' ? `${statusConfig.Accepted.color}20` : 'transparent',
-          color: activeStatusTab === 'Accepted' ? statusConfig.Accepted.color : colors.text,
+          border: `1px solid ${activeStatusTab === 'Paid' ? statusConfig.Paid.color : colors.border}`,
+          background: activeStatusTab === 'Paid' ? `${statusConfig.Paid.color}20` : 'transparent',
+          color: activeStatusTab === 'Paid' ? statusConfig.Paid.color : colors.text,
           fontSize: '0.7rem',
           fontWeight: '600',
           cursor: 'pointer',
@@ -163,10 +163,10 @@ const EstimateStatusTabs = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          <ThumbsUp size={12} />
+          <CheckCircle size={12} />
           <span style={{
-            background: activeStatusTab === 'Accepted' ? statusConfig.Accepted.color : colors.cardBg,
-            color: activeStatusTab === 'Accepted' ? 'white' : colors.subtext,
+            background: activeStatusTab === 'Paid' ? statusConfig.Paid.color : colors.cardBg,
+            color: activeStatusTab === 'Paid' ? 'white' : colors.subtext,
             padding: '0.125rem 0.3rem',
             borderRadius: '1rem',
             fontSize: '0.65rem',
@@ -174,13 +174,13 @@ const EstimateStatusTabs = ({
             minWidth: '1.25rem',
             textAlign: 'center'
           }}>
-            {statusCounts.Accepted}
+            {statusCounts.Paid}
           </span>
         </div>
-        <span style={{ fontSize: '0.65rem' }}>Accepted</span>
+        <span style={{ fontSize: '0.65rem' }}>Paid</span>
       </button>
     </div>
   );
 };
 
-export default EstimateStatusTabs;
+export default InvoiceStatusTabs;

@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Edit, Trash2, Send } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit, Trash2, Send, AlertCircle } from 'lucide-react';
 import { getColors } from '../../theme';
 
 const InvoiceCard = ({ 
@@ -7,7 +7,7 @@ const InvoiceCard = ({
   onUpdateStatus,
   onViewInvoice,
   onDeleteInvoice,
-  onSendInvoice, // Added this prop
+  onSendInvoice,
   isDarkMode,
   colors 
 }) => {
@@ -15,29 +15,39 @@ const InvoiceCard = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const statusDropdownRef = useRef(null);
 
-  // Status configuration
+  // Status configuration - Updated to new statuses
   const statusConfig = {
-    'Unsent': { 
+    'Draft': { 
       color: '#6b7280', 
-      label: 'Unsent',
+      label: 'Draft',
       bgColor: '#f3f4f6'
     },
-    'Sent': { 
-      color: '#3b82f6', 
-      label: 'Sent',
-      bgColor: '#dbeafe'
+    'Pending': { 
+      color: '#f59e0b', 
+      label: 'Pending',
+      bgColor: '#fef3c7'
     },
     'Paid': { 
       color: '#10b981', 
       label: 'Paid',
       bgColor: '#d1fae5'
-    },
-    'Overdue': { 
-      color: '#ef4444', 
-      label: 'Overdue',
-      bgColor: '#fee2e2'
     }
   };
+
+  // Check if invoice is overdue
+  const isOverdue = () => {
+    if (invoice.status === 'Paid') return false;
+    if (!invoice.dueDate) return false;
+    
+    const dueDate = new Date(invoice.dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dueDate.setHours(0, 0, 0, 0);
+    
+    return dueDate < today;
+  };
+
+  const overdueStatus = isOverdue();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -53,8 +63,8 @@ const InvoiceCard = ({
     }
   }, [statusDropdownOpen]);
 
-  const currentStatus = invoice.status || 'Unsent';
-  const statusStyle = statusConfig[currentStatus] || statusConfig['Unsent'];
+  const currentStatus = invoice.status || 'Draft';
+  const statusStyle = statusConfig[currentStatus] || statusConfig['Draft'];
 
   return (
     <div
@@ -64,7 +74,8 @@ const InvoiceCard = ({
         borderRadius: '0.75rem',
         padding: '1rem',
         marginBottom: '0.75rem',
-        transition: 'all 0.2s'
+        transition: 'all 0.2s',
+        position: 'relative'
       }}
     >
       {/* Header - Invoice Number, Client/Description, and Status Badge */}
@@ -82,7 +93,7 @@ const InvoiceCard = ({
         <div style={{ 
           flex: 1, 
           minWidth: 0,
-          maxWidth: 'calc(100% - 120px)', // Leave space for status badge
+          maxWidth: 'calc(100% - 140px)',
           paddingRight: '0.5rem'
         }}>
           <h3 style={{
@@ -113,95 +124,118 @@ const InvoiceCard = ({
           )}
         </div>
 
-        {/* Status Badge with Dropdown */}
+        {/* Status Badge with Dropdown and Overdue Indicator */}
         <div style={{ 
-          position: 'relative',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.375rem',
           flexShrink: 0,
           marginLeft: 'auto'
-        }} ref={statusDropdownRef}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setStatusDropdownOpen(!statusDropdownOpen);
-            }}
-            style={{
+        }}>
+          {/* Overdue Badge */}
+          {overdueStatus && (
+            <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.25rem',
               padding: '0.25rem 0.5rem',
               borderRadius: '0.375rem',
-              background: `${statusStyle.color}15`,
-              color: statusStyle.color,
+              background: '#fee2e2',
+              color: '#991b1b',
               fontSize: '0.75rem',
-              fontWeight: '600',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            {statusStyle.label}
-            <ChevronDown size={12} />
-          </button>
-
-          {/* Status Dropdown Menu */}
-          {statusDropdownOpen && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: '0.5rem',
-              background: colors.cardBg,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              zIndex: 100,
-              minWidth: '140px',
-              overflow: 'hidden'
+              fontWeight: '600'
             }}>
-              {Object.entries(statusConfig).map(([key, config]) => (
-                <button
-                  key={key}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onUpdateStatus(invoice.id, key);
-                    setStatusDropdownOpen(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem 0.75rem',
-                    background: currentStatus === key 
-                      ? (isDarkMode ? `${config.color}20` : config.bgColor)
-                      : 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    color: config.color,
-                    fontSize: '0.875rem',
-                    fontWeight: currentStatus === key ? '600' : '500',
-                    transition: 'background 0.2s',
-                    textAlign: 'left'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (currentStatus !== key) {
-                      e.currentTarget.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (currentStatus !== key) {
-                      e.currentTarget.style.background = 'transparent';
-                    }
-                  }}
-                >
-                  <span>{config.label}</span>
-                  {currentStatus === key && (
-                    <span style={{ fontSize: '1rem' }}>✓</span>
-                  )}
-                </button>
-              ))}
+              <AlertCircle size={12} />
+              <span>Overdue</span>
             </div>
           )}
+
+          {/* Status Dropdown */}
+          <div style={{ position: 'relative' }} ref={statusDropdownRef}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setStatusDropdownOpen(!statusDropdownOpen);
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '0.375rem',
+                background: `${statusStyle.color}15`,
+                color: statusStyle.color,
+                fontSize: '0.75rem',
+                fontWeight: '600',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              {statusStyle.label}
+              <ChevronDown size={12} />
+            </button>
+
+            {/* Status Dropdown Menu */}
+            {statusDropdownOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: '0.5rem',
+                background: colors.cardBg,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                zIndex: 100,
+                minWidth: '140px',
+                overflow: 'hidden'
+              }}>
+                {Object.entries(statusConfig).map(([key, config]) => (
+                  <button
+                    key={key}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onUpdateStatus(invoice.id, key);
+                      setStatusDropdownOpen(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '0.625rem 0.75rem',
+                      background: currentStatus === key 
+                        ? (isDarkMode ? `${config.color}20` : config.bgColor)
+                        : 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      color: config.color,
+                      fontSize: '0.875rem',
+                      fontWeight: currentStatus === key ? '600' : '500',
+                      transition: 'background 0.2s',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (currentStatus !== key) {
+                        e.currentTarget.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (currentStatus !== key) {
+                        e.currentTarget.style.background = 'transparent';
+                      }
+                    }}
+                  >
+                    <span>{config.label}</span>
+                    {currentStatus === key && (
+                      <span style={{ fontSize: '1rem' }}>✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -269,14 +303,16 @@ const InvoiceCard = ({
           {invoice.dueDate && (
             <div style={{
               fontSize: '0.875rem',
-              color: colors.subtext,
-              marginBottom: '0.5rem'
+              color: overdueStatus ? '#ef4444' : colors.subtext,
+              marginBottom: '0.5rem',
+              fontWeight: overdueStatus ? '600' : '400'
             }}>
               Due: {new Date(invoice.dueDate).toLocaleDateString('en-US', { 
                 month: 'short', 
                 day: 'numeric', 
                 year: 'numeric' 
               })}
+              {overdueStatus && ' - Payment Overdue'}
             </div>
           )}
 

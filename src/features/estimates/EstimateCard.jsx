@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trash2, Edit, Send, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trash2, Edit, Send, ChevronDown, ChevronUp, XCircle } from 'lucide-react';
 import { getColors } from '../../theme';
 import { formatDate } from '../../utils/dateUtils';
 
@@ -8,8 +8,8 @@ const EstimateCard = ({
   isDarkMode, 
   onEdit, 
   onDelete, 
-  onSendEstimate, // NEW: Add send handler prop
-  onUpdateStatus, // NEW: Add status update handler
+  onSendEstimate,
+  onUpdateStatus,
   colors 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -19,17 +19,27 @@ const EstimateCard = ({
   // Use provided colors from parent, or get from theme if not provided
   const cardColors = colors || getColors(isDarkMode);
 
-  // Status configuration
+  // Status configuration - Updated to Draft, Pending, Accepted, Rejected
   const statusConfig = {
-    'Unsent': { 
+    'Draft': { 
       color: '#6b7280', 
-      label: 'Unsent',
+      label: 'Draft',
       bgColor: '#f3f4f6'
     },
-    'Sent': { 
-      color: '#3b82f6', 
-      label: 'Sent',
-      bgColor: '#dbeafe'
+    'Pending': { 
+      color: '#f59e0b',
+      label: 'Pending',
+      bgColor: '#fef3c7'
+    },
+    'Accepted': { 
+      color: '#10b981', 
+      label: 'Accepted',
+      bgColor: '#d1fae5'
+    },
+    'Rejected': { 
+      color: '#ef4444', 
+      label: 'Rejected',
+      bgColor: '#fee2e2'
     }
   };
 
@@ -47,8 +57,9 @@ const EstimateCard = ({
     }
   }, [statusDropdownOpen]);
 
-  const currentStatus = estimate.status || 'Unsent';
-  const statusStyle = statusConfig[currentStatus] || statusConfig['Unsent'];
+  const currentStatus = estimate.status || 'Draft';
+  const statusStyle = statusConfig[currentStatus] || statusConfig['Draft'];
+  const isRejected = currentStatus === 'Rejected';
 
   return (
     <div
@@ -73,7 +84,7 @@ const EstimateCard = ({
         }}
       >
         {/* Estimate Name */}
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, maxWidth: 'calc(100% - 140px)', paddingRight: '0.5rem' }}>
           <h3 style={{
             margin: '0',
             color: cardColors.text,
@@ -88,93 +99,120 @@ const EstimateCard = ({
           </h3>
         </div>
 
-        {/* Status Badge with Dropdown */}
-        <div style={{ position: 'relative' }} ref={statusDropdownRef}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setStatusDropdownOpen(!statusDropdownOpen);
-            }}
-            style={{
+        {/* Status Badge with Dropdown and Rejected Indicator */}
+        <div style={{ 
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.375rem',
+          flexShrink: 0,
+          marginLeft: 'auto'
+        }}>
+          {/* Rejected Badge (only show when rejected) */}
+          {isRejected && (
+            <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.25rem',
               padding: '0.25rem 0.5rem',
               borderRadius: '0.375rem',
-              background: `${statusStyle.color}15`,
-              color: statusStyle.color,
+              background: '#fee2e2',
+              color: '#991b1b',
               fontSize: '0.75rem',
-              fontWeight: '600',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            {statusStyle.label}
-            <ChevronDown size={12} />
-          </button>
-
-          {/* Status Dropdown Menu */}
-          {statusDropdownOpen && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: '0.5rem',
-              background: cardColors.cardBg,
-              border: `1px solid ${cardColors.border}`,
-              borderRadius: '0.5rem',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              zIndex: 100,
-              minWidth: '140px',
-              overflow: 'hidden'
+              fontWeight: '600'
             }}>
-              {Object.entries(statusConfig).map(([key, config]) => (
-                <button
-                  key={key}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onUpdateStatus) {
-                      onUpdateStatus(estimate.id, key);
-                    }
-                    setStatusDropdownOpen(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem 0.75rem',
-                    background: currentStatus === key 
-                      ? (isDarkMode ? `${config.color}20` : config.bgColor)
-                      : 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    color: config.color,
-                    fontSize: '0.875rem',
-                    fontWeight: currentStatus === key ? '600' : '500',
-                    transition: 'background 0.2s',
-                    textAlign: 'left'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (currentStatus !== key) {
-                      e.currentTarget.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (currentStatus !== key) {
-                      e.currentTarget.style.background = 'transparent';
-                    }
-                  }}
-                >
-                  <span>{config.label}</span>
-                  {currentStatus === key && (
-                    <span style={{ fontSize: '1rem' }}>✓</span>
-                  )}
-                </button>
-              ))}
+              <XCircle size={12} />
+              <span>Rejected</span>
             </div>
           )}
+
+          {/* Status Dropdown */}
+          <div style={{ position: 'relative' }} ref={statusDropdownRef}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setStatusDropdownOpen(!statusDropdownOpen);
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '0.375rem',
+                background: `${statusStyle.color}15`,
+                color: statusStyle.color,
+                fontSize: '0.75rem',
+                fontWeight: '600',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              {!isRejected && statusStyle.label}
+              <ChevronDown size={12} />
+            </button>
+
+            {/* Status Dropdown Menu */}
+            {statusDropdownOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: '0.5rem',
+                background: cardColors.cardBg,
+                border: `1px solid ${cardColors.border}`,
+                borderRadius: '0.5rem',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                zIndex: 100,
+                minWidth: '140px',
+                overflow: 'hidden'
+              }}>
+                {Object.entries(statusConfig).map(([key, config]) => (
+                  <button
+                    key={key}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onUpdateStatus) {
+                        onUpdateStatus(estimate.id, key);
+                      }
+                      setStatusDropdownOpen(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '0.625rem 0.75rem',
+                      background: currentStatus === key 
+                        ? (isDarkMode ? `${config.color}20` : config.bgColor)
+                        : 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      color: config.color,
+                      fontSize: '0.875rem',
+                      fontWeight: currentStatus === key ? '600' : '500',
+                      transition: 'background 0.2s',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (currentStatus !== key) {
+                        e.currentTarget.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (currentStatus !== key) {
+                        e.currentTarget.style.background = 'transparent';
+                      }
+                    }}
+                  >
+                    <span>{config.label}</span>
+                    {currentStatus === key && (
+                      <span style={{ fontSize: '1rem' }}>✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -263,7 +301,7 @@ const EstimateCard = ({
             </div>
           )}
 
-          {/* Action Buttons - Matching Invoice Layout */}
+          {/* Action Buttons */}
           <div style={{
             display: 'flex',
             gap: '0.5rem',

@@ -9,6 +9,7 @@ import InvoiceModal from './InvoiceModal';
 import AddInvoiceSection from './AddInvoiceSection';
 import InvoiceCard from './InvoiceCard';
 import SendInvoiceModal from './SendInvoiceModal';
+import InvoiceStatusTabs from './InvoiceStatusTabs';
 import { sendInvoiceViaEmail, downloadInvoice, getUserBusinessInfo } from './invoiceSendService';
 
 function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
@@ -19,7 +20,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sendingInvoice, setSendingInvoice] = useState(null);
   const [userBusinessInfo, setUserBusinessInfo] = useState(null);
-  const [showAddForm, setShowAddForm] = useState(false); // For add modal
+  const [showAddForm, setShowAddForm] = useState(false);
 
   // Get colors from centralized theme
   const colors = {
@@ -29,6 +30,8 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
     paidText: isDarkMode ? '#6ee7b7' : '#065f46',
     pendingBg: isDarkMode ? '#78350f' : '#fef3c7',
     pendingText: isDarkMode ? '#fcd34d' : '#92400e',
+    unsentBg: isDarkMode ? '#374151' : '#f3f4f6',
+    unsentText: isDarkMode ? '#9ca3af' : '#6b7280',
     overdueBg: isDarkMode ? '#7f1d1d' : '#fee2e2',
     overdueText: isDarkMode ? '#fca5a5' : '#991b1b',
     buttonBg: '#3b82f6',
@@ -162,11 +165,11 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
     try {
       await sendInvoiceViaEmail(sendingInvoice, email, message, userBusinessInfo);
       
-      // Automatically update status to "Sent" after successful email send
-      if (sendingInvoice.status === 'Unsent') {
+      // Automatically update status to "Pending" after successful email send
+      if (sendingInvoice.status === 'Draft' || !sendingInvoice.status) {
         await updateInvoice(sendingInvoice.id, {
           ...sendingInvoice,
-          status: 'Sent'
+          status: 'Pending'
         });
         
         clearInvoicesCache();
@@ -202,7 +205,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
     }
   };
 
-  // NEW: Handle add invoice click
+  // Handle add invoice click
   const handleAddInvoiceClick = () => {
     setShowAddForm(true);
     setEditingInvoice(null);
@@ -211,16 +214,20 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   // Calculate status counts
   const statusCounts = {
     all: invoices.length,
-    Unsent: invoices.filter(inv => inv.status === 'Unsent' || !inv.status).length,
-    Sent: invoices.filter(inv => inv.status === 'Sent').length,
-    Paid: invoices.filter(inv => inv.status === 'Paid').length,
-    Overdue: invoices.filter(inv => inv.status === 'Overdue').length
+    Draft: invoices.filter(inv => inv.status === 'Draft' || !inv.status).length,
+    Pending: invoices.filter(inv => inv.status === 'Pending').length,
+    Paid: invoices.filter(inv => inv.status === 'Paid').length
   };
 
   // Filter invoices based on selected status
   const statusFiltered = statusFilter === 'all' 
     ? invoices 
-    : invoices.filter(inv => inv.status === statusFilter);
+    : invoices.filter(inv => {
+        if (statusFilter === 'Draft') {
+          return inv.status === 'Draft' || !inv.status;
+        }
+        return inv.status === statusFilter;
+      });
 
   // Then filter by search query
   const filteredInvoices = statusFiltered.filter(inv => {
@@ -302,48 +309,12 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
       }}>
         <div style={{ padding: '1rem 0.25rem' }}>
           {/* Status Filter Tabs */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '0.375rem',
-            marginBottom: '1rem'
-          }}>
-            {['all', 'Unsent', 'Sent', 'Paid', 'Overdue'].map(status => (
-              <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                style={{
-                  padding: '0.5rem 0.25rem',
-                  borderRadius: '0.5rem',
-                  border: `1px solid ${statusFilter === status ? colors.text : colors.border}`,
-                  background: statusFilter === status ? colors.text : 'transparent',
-                  color: statusFilter === status ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') : colors.text,
-                  fontSize: '0.7rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '0.125rem',
-                  transition: 'all 0.2s'
-                }}
-              >
-                <span>{status === 'all' ? 'All' : status}</span>
-                <span style={{
-                  background: statusFilter === status ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') : colors.cardBg,
-                  color: statusFilter === status ? colors.text : colors.subtext,
-                  padding: '0.125rem 0.3rem',
-                  borderRadius: '1rem',
-                  fontSize: '0.65rem',
-                  fontWeight: '700',
-                  minWidth: '1.25rem',
-                  textAlign: 'center'
-                }}>
-                  {statusCounts[status]}
-                </span>
-              </button>
-            ))}
-          </div>
+          <InvoiceStatusTabs
+            activeStatusTab={statusFilter}
+            setActiveStatusTab={setStatusFilter}
+            statusCounts={statusCounts}
+            colors={colors}
+          />
 
           {/* Search Bar */}
           <div style={{ marginBottom: '1rem', position: 'relative' }}>
