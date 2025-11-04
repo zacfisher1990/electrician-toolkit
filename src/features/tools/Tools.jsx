@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Search, X, Calculator, Table, FileCode, Code } from 'lucide-react';
 import { getColors } from '../../theme';
 import CalculatorMenu from './calculators/CalculatorMenu';
+import TablesContent from './tables/TablesContent';
+import SchematicsContent from './schematics/SchematicsContent';
+import CodeContent from './code/CodeContent';
 
 const Tools = ({ isDarkMode = false, onSelectCalculator }) => { 
   const [activeTab, setActiveTab] = useState('Calculators');
@@ -187,54 +190,40 @@ const Tools = ({ isDarkMode = false, onSelectCalculator }) => {
         )}
 
         {/* Tables Tab */}
-        {activeTab === 'Tables' && (
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.75rem',
-            textAlign: 'center',
-            padding: '3rem 1rem',
-            color: colors.subtext
-          }}>
-            <h3 style={{ margin: '0 0 0.5rem 0', color: colors.text }}>Coming Soon</h3>
-            <p style={{ margin: 0, fontSize: '0.9375rem' }}>
-              NEC reference tables will be available here.
-            </p>
-          </div>
-        )}
+          {activeTab === 'Tables' && (
+            <TablesContent 
+              colors={colors}
+              onSelectTable={(tableId) => {
+                // Handle table selection - you can navigate to a table viewer
+                console.log('Selected table:', tableId);
+                // For now, just log it. Later you can create table viewer components
+              }}
+            />
+          )}
 
         {/* Schematics Tab */}
+        {/* Schematics Tab */}
         {activeTab === 'Schematics' && (
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.75rem',
-            textAlign: 'center',
-            padding: '3rem 1rem',
-            color: colors.subtext
-          }}>
-            <h3 style={{ margin: '0 0 0.5rem 0', color: colors.text }}>Coming Soon</h3>
-            <p style={{ margin: 0, fontSize: '0.9375rem' }}>
-              Wiring diagrams will be available here.
-            </p>
-          </div>
+          <SchematicsContent 
+            colors={colors}
+            onSelectSchematic={(schematicId) => {
+              // Handle schematic selection
+              console.log('Selected schematic:', schematicId);
+              // Later you can create schematic viewer components
+            }}
+          />
         )}
 
         {/* Code Tab */}
         {activeTab === 'Code' && (
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '0.75rem',
-            textAlign: 'center',
-            padding: '3rem 1rem',
-            color: colors.subtext
-          }}>
-            <h3 style={{ margin: '0 0 0.5rem 0', color: colors.text }}>Coming Soon</h3>
-            <p style={{ margin: 0, fontSize: '0.9375rem' }}>
-              NEC code references will be available here.
-            </p>
-          </div>
+          <CodeContent 
+            colors={colors}
+            onSelectCode={(codeId) => {
+              // Handle code reference selection
+              console.log('Selected code reference:', codeId);
+              // Later you can create detail views for each reference
+            }}
+          />
         )}
       </div>
     </div>

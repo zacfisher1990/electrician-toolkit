@@ -5,9 +5,24 @@ const StatusTabs = ({
   activeStatusTab, 
   setActiveStatusTab, 
   statusCounts, 
-  statusConfig, 
   colors 
 }) => {
+  // Match Tools tab colors exactly
+  const statusConfig = {
+    'scheduled': { 
+      color: '#3b82f6',  // Blue like Tables
+      icon: Clock
+    },
+    'in-progress': { 
+      color: '#8b5cf6',  // Purple like... wait
+      icon: AlertCircle
+    },
+    'completed': { 
+      color: '#10b981',  // Green like Code
+      icon: CheckCircle
+    }
+  };
+
   return (
     <div style={{
       display: 'grid',
@@ -15,9 +30,11 @@ const StatusTabs = ({
       gap: '0.375rem',
       marginBottom: '1rem'
     }}>
+      {/* All Tab - Matches Estimates tab exactly */}
       <button
         onClick={() => setActiveStatusTab('all')}
         style={{
+          height: '46px',
           padding: '0.5rem 0.25rem',
           borderRadius: '0.5rem',
           border: `1px solid ${activeStatusTab === 'all' ? colors.text : colors.border}`,
@@ -49,9 +66,11 @@ const StatusTabs = ({
         </span>
       </button>
 
+      {/* Scheduled Tab - Matches Tables tab (Blue) */}
       <button
         onClick={() => setActiveStatusTab('scheduled')}
         style={{
+          height: '46px',
           padding: '0.5rem 0.25rem',
           borderRadius: '0.5rem',
           border: `1px solid ${activeStatusTab === 'scheduled' ? statusConfig.scheduled.color : colors.border}`,
@@ -63,67 +82,45 @@ const StatusTabs = ({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          justifyContent: 'center',
           gap: '0.125rem',
           transition: 'all 0.2s'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          <Clock size={12} />
-          <span style={{
-            background: activeStatusTab === 'scheduled' ? statusConfig.scheduled.color : colors.cardBg,
-            color: activeStatusTab === 'scheduled' ? 'white' : colors.subtext,
-            padding: '0.125rem 0.3rem',
-            borderRadius: '1rem',
-            fontSize: '0.65rem',
-            fontWeight: '700',
-            minWidth: '1.25rem',
-            textAlign: 'center'
-          }}>
-            {statusCounts.scheduled}
-          </span>
-        </div>
+        <Clock size={14} />
         <span style={{ fontSize: '0.65rem' }}>Scheduled</span>
       </button>
 
+      {/* In Progress Tab - Matches Schematics tab (Pink) */}
       <button
         onClick={() => setActiveStatusTab('in-progress')}
         style={{
+          height: '46px',
           padding: '0.5rem 0.25rem',
           borderRadius: '0.5rem',
-          border: `1px solid ${activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.border}`,
-          background: activeStatusTab === 'in-progress' ? `${statusConfig['in-progress'].color}20` : 'transparent',
-          color: activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.text,
+          border: `1px solid ${activeStatusTab === 'in-progress' ? '#ec4899' : colors.border}`,
+          background: activeStatusTab === 'in-progress' ? '#ec489920' : 'transparent',
+          color: activeStatusTab === 'in-progress' ? '#ec4899' : colors.text,
           fontSize: '0.7rem',
           fontWeight: '600',
           cursor: 'pointer',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          justifyContent: 'center',
           gap: '0.125rem',
           transition: 'all 0.2s'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          <AlertCircle size={12} />
-          <span style={{
-            background: activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.cardBg,
-            color: activeStatusTab === 'in-progress' ? 'white' : colors.subtext,
-            padding: '0.125rem 0.3rem',
-            borderRadius: '1rem',
-            fontSize: '0.65rem',
-            fontWeight: '700',
-            minWidth: '1.25rem',
-            textAlign: 'center'
-          }}>
-            {statusCounts['in-progress']}
-          </span>
-        </div>
+        <AlertCircle size={14} />
         <span style={{ fontSize: '0.65rem' }}>In Progress</span>
       </button>
 
+      {/* Completed Tab - Matches Code tab (Green) */}
       <button
         onClick={() => setActiveStatusTab('completed')}
         style={{
+          height: '46px',
           padding: '0.5rem 0.25rem',
           borderRadius: '0.5rem',
           border: `1px solid ${activeStatusTab === 'completed' ? statusConfig.completed.color : colors.border}`,
@@ -135,25 +132,12 @@ const StatusTabs = ({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          justifyContent: 'center',
           gap: '0.125rem',
           transition: 'all 0.2s'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          <CheckCircle size={12} />
-          <span style={{
-            background: activeStatusTab === 'completed' ? statusConfig.completed.color : colors.cardBg,
-            color: activeStatusTab === 'completed' ? 'white' : colors.subtext,
-            padding: '0.125rem 0.3rem',
-            borderRadius: '1rem',
-            fontSize: '0.65rem',
-            fontWeight: '700',
-            minWidth: '1.25rem',
-            textAlign: 'center'
-          }}>
-            {statusCounts.completed}
-          </span>
-        </div>
+        <CheckCircle size={14} />
         <span style={{ fontSize: '0.65rem' }}>Completed</span>
       </button>
     </div>

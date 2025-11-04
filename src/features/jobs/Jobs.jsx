@@ -292,7 +292,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange }) => {
             activeStatusTab={activeStatusTab}
             setActiveStatusTab={setActiveStatusTab}
             statusCounts={statusCounts}
-            statusConfig={statusConfig}
+           
             colors={colors}
           />
 

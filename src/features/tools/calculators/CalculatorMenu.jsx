@@ -115,55 +115,57 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
 
   // Calculator Card Component
   const CalculatorCard = ({ calc, categoryColor }) => {
-    const Icon = calc.icon;
-    return (
-      <button
-        onClick={() => handleCalculatorClick(calc.id)}
-        className={styles.calculatorCard}
-        style={{
-          background: colors.cardBg,
-          border: `1px solid ${colors.border}`,
-          borderRadius: '0.75rem',
-          padding: '1rem',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.5rem',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-          textAlign: 'center'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = categoryColor;
-          e.currentTarget.style.transform = 'translateY(-2px)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = colors.border;
-          e.currentTarget.style.transform = 'translateY(0)';
-        }}
-      >
-        <div style={{
-          width: '48px',
-          height: '48px',
-          borderRadius: '0.75rem',
-          background: `${categoryColor}15`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <Icon size={24} color={categoryColor} />
-        </div>
+  const Icon = calc.icon;
+  return (
+    <button
+      onClick={() => handleCalculatorClick(calc.id)}
+      className={styles.calculatorCard}
+      style={{
+        background: colors.cardBg,
+        border: `1px solid ${colors.border}`,
+        borderRadius: '0.75rem',
+        padding: '0.75rem',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '0.5rem',
+        cursor: 'pointer',
+        transition: 'all 0.2s',
+        textAlign: 'center'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = categoryColor;
+        e.currentTarget.style.transform = 'translateY(-2px)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = colors.border;
+        e.currentTarget.style.transform = 'translateY(0)';
+      }}
+    >
+      <div style={{
+        width: '40px',
+        height: '40px',
+        borderRadius: '0.75rem',
+        background: `${categoryColor}15`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <Icon size={20} color={categoryColor} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
         <span style={{
-          fontSize: '0.875rem',
-          fontWeight: '500',
+          fontSize: '0.8125rem',
+          fontWeight: '600',
           color: colors.text,
           lineHeight: '1.2'
         }}>
           {calc.name}
         </span>
-      </button>
-    );
-  };
+      </div>
+    </button>
+  );
+};
 
   return (
     <div>
@@ -186,16 +188,6 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
             }}>
               Recently Used
             </h3>
-            <span style={{
-              fontSize: '0.875rem',
-              color: colors.subtext,
-              background: colors.cardBg,
-              padding: '0.25rem 0.75rem',
-              borderRadius: '1rem',
-              border: `1px solid ${colors.border}`
-            }}>
-              {recentlyUsed.length} {recentlyUsed.length === 1 ? 'calculator' : 'calculators'}
-            </span>
           </div>
 
           {/* Recently Used Grid */}
