@@ -82,12 +82,25 @@ const StatusTabs = ({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
           gap: '0.125rem',
           transition: 'all 0.2s'
         }}
       >
-        <Clock size={14} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <Clock size={12} />
+          <span style={{
+            background: activeStatusTab === 'scheduled' ? statusConfig.scheduled.color : colors.cardBg,
+            color: activeStatusTab === 'scheduled' ? 'white' : colors.subtext,
+            padding: '0.125rem 0.3rem',
+            borderRadius: '1rem',
+            fontSize: '0.65rem',
+            fontWeight: '700',
+            minWidth: '1.25rem',
+            textAlign: 'center'
+          }}>
+            {statusCounts.scheduled || 0}
+          </span>
+        </div>
         <span style={{ fontSize: '0.65rem' }}>Scheduled</span>
       </button>
 
@@ -107,12 +120,25 @@ const StatusTabs = ({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
           gap: '0.125rem',
           transition: 'all 0.2s'
         }}
       >
-        <AlertCircle size={14} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <AlertCircle size={12} />
+          <span style={{
+            background: activeStatusTab === 'in-progress' ? '#ec4899' : colors.cardBg,
+            color: activeStatusTab === 'in-progress' ? 'white' : colors.subtext,
+            padding: '0.125rem 0.3rem',
+            borderRadius: '1rem',
+            fontSize: '0.65rem',
+            fontWeight: '700',
+            minWidth: '1.25rem',
+            textAlign: 'center'
+          }}>
+            {statusCounts['in-progress'] || 0}
+          </span>
+        </div>
         <span style={{ fontSize: '0.65rem' }}>In Progress</span>
       </button>
 
@@ -132,12 +158,25 @@ const StatusTabs = ({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
           gap: '0.125rem',
           transition: 'all 0.2s'
         }}
       >
-        <CheckCircle size={14} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <CheckCircle size={12} />
+          <span style={{
+            background: activeStatusTab === 'completed' ? statusConfig.completed.color : colors.cardBg,
+            color: activeStatusTab === 'completed' ? 'white' : colors.subtext,
+            padding: '0.125rem 0.3rem',
+            borderRadius: '1rem',
+            fontSize: '0.65rem',
+            fontWeight: '700',
+            minWidth: '1.25rem',
+            textAlign: 'center'
+          }}>
+            {statusCounts.completed || 0}
+          </span>
+        </div>
         <span style={{ fontSize: '0.65rem' }}>Completed</span>
       </button>
     </div>
