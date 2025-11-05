@@ -61,6 +61,7 @@ function App() {
   const [headerVisible, setHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [clockedInJob, setClockedInJob] = useState(null); // NEW: Track clocked-in job instantly
+  const [prefilledJobDate, setPrefilledJobDate] = useState(null); // NEW: Track date from calendar
   
   // Handle browser back/forward buttons
   useEffect(() => {
@@ -186,6 +187,20 @@ useEffect(() => {
   }
 }, [activeCalculator]);
 
+// Clear prefilled job date when leaving jobs page
+useEffect(() => {
+  if (activeCalculator !== 'jobs') {
+    setPrefilledJobDate(null);
+  }
+}, [activeCalculator]);
+
+// Handle adding a job from the Home calendar
+const handleAddJobFromCalendar = (date) => {
+  console.log('📅 Adding job for date:', date);
+  setPrefilledJobDate(date);
+  setActiveCalculator('jobs');
+};
+
   const handleNavigate = (view, data = null) => {
       if (view === 'home') {
         setActiveCalculator(null);
@@ -290,6 +305,7 @@ useEffect(() => {
           isDarkMode={isDarkMode}
           onNavigateToEstimates={(data) => handleNavigate('estimates', data)}
           onClockedInJobChange={setClockedInJob} // NEW: Instant callback
+          prefilledDate={prefilledJobDate} // NEW: Pass prefilled date from calendar
         />;
       case 'estimates':
         return <Estimates 
@@ -304,7 +320,10 @@ useEffect(() => {
       case 'verify-email':
         return <VerifyEmail isDarkMode={isDarkMode} onNavigate={handleNavigate} />;
       default:
-        return <Home isDarkMode={isDarkMode} />;
+        return <Home 
+          isDarkMode={isDarkMode}
+          onAddJobClick={handleAddJobFromCalendar}
+        />;
     }
   };
 

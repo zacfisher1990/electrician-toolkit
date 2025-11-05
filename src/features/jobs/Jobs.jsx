@@ -22,7 +22,7 @@ import { createInvoiceHandlers } from './handlers/invoiceHandlers';
 import { filterJobs, getStatusCounts } from './utils/jobsUtils';
 import { openJobView, handleViewEstimateFromCard } from './utils/jobViewHelpers';
 
-const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange }) => {
+const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefilledDate }) => {
   // State from custom hooks
   const {
     jobs,
@@ -111,6 +111,25 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange }) => {
       lastSyncedJobId.current = null;
     }
   }, [estimates, editingJob, setLinkedEstimates, lastSyncedJobId]);
+
+  // NEW: Handle prefilled date from Home calendar
+  useEffect(() => {
+    if (prefilledDate && isUserLoggedIn) {
+      setShowAddForm(true);
+      setFormData({
+        title: '',
+        client: '',
+        location: '',
+        status: 'scheduled',
+        cost: '',
+        duration: '',
+        scheduledDate: prefilledDate,
+        scheduledTime: '',
+        notes: ''
+      });
+      setLinkedEstimates([]);
+    }
+  }, [prefilledDate, isUserLoggedIn, setShowAddForm, setFormData, setLinkedEstimates]);
 
   // NEW: Notify parent of clocked-in job changes INSTANTLY
   useEffect(() => {
