@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getUserJobs } from "../jobs/jobsService";
+import { getUserEstimates } from "../estimates/estimatesService";
+import { getUserInvoices } from "../invoices/invoicesService";
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import styles from './Home.module.css';
+import { getAllAnalytics } from './analyticsService';
 
 // Components
+import AnalyticsDashboard from './components/AnalyticsDashboard';
 import UpcomingJobsList from './components/UpcomingJobsList';
 import CalendarGrid from './components/CalendarGrid';
 import JobAssignmentDropdown from './components/JobAssignmentDropdown';
@@ -16,9 +20,12 @@ const Home = ({ isDarkMode, onAddJobClick }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [jobs, setJobs] = useState([]);
+  const [estimates, setEstimates] = useState([]);
+  const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showJobDropdown, setShowJobDropdown] = useState(false);
   const [jobAssignments, setJobAssignments] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
 
   // Colors
   const colors = {
@@ -47,8 +54,20 @@ const Home = ({ isDarkMode, onAddJobClick }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          const userJobs = await getUserJobs();
+          // Load all data
+          const [userJobs, userEstimates, userInvoices] = await Promise.all([
+            getUserJobs(),
+            getUserEstimates(),
+            getUserInvoices()
+          ]);
+          
           setJobs(userJobs);
+          setEstimates(userEstimates);
+          setInvoices(userInvoices);
+          
+          // Calculate analytics
+          const analyticsData = getAllAnalytics(userJobs, userEstimates, userInvoices);
+          setAnalytics(analyticsData);
           
           const { getAllJobAssignments } = await import('./jobCalendarService');
           const assignments = await getAllJobAssignments();
@@ -77,13 +96,16 @@ const Home = ({ isDarkMode, onAddJobClick }) => {
             }
           }
         } catch (error) {
-          console.error('Error loading jobs:', error);
+          console.error('Error loading data:', error);
         } finally {
           setLoading(false);
         }
       } else {
         setJobs([]);
+        setEstimates([]);
+        setInvoices([]);
         setJobAssignments([]);
+        setAnalytics(null);
         setLoading(false);
       }
     });
@@ -376,6 +398,15 @@ const Home = ({ isDarkMode, onAddJobClick }) => {
             </div>
           )}
         </div>
+
+        {/* Analytics Dashboard - MOVED HERE */}
+        {analytics && (
+          <AnalyticsDashboard 
+            analytics={analytics}
+            colors={colors}
+            isDarkMode={isDarkMode}
+          />
+        )}
       </div>
     </div>
   );
