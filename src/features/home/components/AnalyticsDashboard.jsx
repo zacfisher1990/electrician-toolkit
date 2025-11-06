@@ -105,7 +105,7 @@ const AnalyticsDashboard = ({ analytics, colors, isDarkMode }) => {
   );
 
   return (
-    <div style={{ marginBottom: '1rem' }}>
+    <div style={{ marginBottom: '1rem', marginTop: '1.5rem' }}>
       {/* Analytics Title */}
       <h2 style={{
         margin: '0 0 1rem 0',
@@ -148,7 +148,7 @@ const AnalyticsDashboard = ({ analytics, colors, isDarkMode }) => {
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
           gap: '1rem'
         }}>
           <RevenueCard
@@ -166,6 +166,11 @@ const AnalyticsDashboard = ({ analytics, colors, isDarkMode }) => {
             title="This Month"
             amount={analytics.revenue.month}
             period={new Date().toLocaleDateString('en-US', { month: 'long' })}
+          />
+          <RevenueCard
+            title="This Week"
+            amount={analytics.revenue.week}
+            period="Sun - Today"
           />
         </div>
       </div>
@@ -207,8 +212,8 @@ const AnalyticsDashboard = ({ analytics, colors, isDarkMode }) => {
         <StatCard
           icon={Clock}
           label="Clocked Hours"
-          value={analytics.hours.formatted}
-          subValue={`${Math.round(analytics.hours.totalHours)} total hours`}
+          value={analytics.hours.allTime.formatted}
+          subValue={`${analytics.hours.week.formatted} this week`}
           color="#f59e0b"
         />
       </div>

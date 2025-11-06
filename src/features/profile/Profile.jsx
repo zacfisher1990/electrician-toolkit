@@ -12,6 +12,7 @@ import {
 import { createVerificationToken, sendVerificationEmail, isEmailVerifiedCustom } from '../../utils/emailVerification';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
+import EditProfile from './EditProfile';
 
 const Profile = ({ isDarkMode }) => {
   const [user, setUser] = useState(null);
@@ -26,6 +27,7 @@ const Profile = ({ isDarkMode }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [sendingVerification, setSendingVerification] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   // Get colors from centralized theme
   const colors = getColors(isDarkMode);
@@ -283,9 +285,22 @@ useEffect(() => {
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 1rem',
-              position: 'relative'
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-              <User size={40} color="white" />
+              {user.photoURL ? (
+                <img 
+                  src={user.photoURL} 
+                  alt="Profile" 
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                />
+              ) : (
+                <User size={40} color="white" />
+              )}
               {isEmailVerified && (
                 <div style={{
                   position: 'absolute',
@@ -310,8 +325,17 @@ useEffect(() => {
               fontSize: '1.25rem',
               fontWeight: '600'
             }}>
-              {user.email}
+              {user.displayName || user.email}
             </h2>
+            {user.displayName && (
+              <p style={{
+                margin: '0 0 0.5rem 0',
+                color: colors.subtext,
+                fontSize: '0.875rem'
+              }}>
+                {user.email}
+              </p>
+            )}
             <p style={{
               margin: 0,
               color: colors.subtext,
@@ -354,6 +378,27 @@ useEffect(() => {
             }}>
               Account Settings
             </h3>
+            
+            <button 
+              onClick={() => setShowEditProfile(true)}
+              style={{
+              width: '100%',
+              padding: '1rem',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: `1px solid ${colors.border}`,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              cursor: 'pointer',
+              color: colors.text
+            }}>
+              <Settings size={20} color={colors.subtext} />
+              <div style={{ flex: 1, textAlign: 'left' }}>
+                <div style={{ fontSize: '0.9375rem', fontWeight: '500' }}>Edit Profile</div>
+                <div style={{ fontSize: '0.8125rem', color: colors.subtext }}>Update your information</div>
+              </div>
+            </button>
             
             <button style={{
               width: '100%',
@@ -436,6 +481,13 @@ useEffect(() => {
             Log Out
           </button>
         </div>
+
+        {/* Edit Profile Modal */}
+        <EditProfile 
+          isOpen={showEditProfile}
+          onClose={() => setShowEditProfile(false)}
+          isDarkMode={isDarkMode}
+        />
       </div>
     );
   }

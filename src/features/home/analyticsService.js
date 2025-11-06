@@ -43,6 +43,11 @@ export const calculateInvoiceRevenue = (invoices, timeframe = 'all') => {
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
   
+  // Calculate start of current week (Sunday)
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+  
   return invoices
     .filter(invoice => {
       // Only count paid invoices
@@ -60,6 +65,10 @@ export const calculateInvoiceRevenue = (invoices, timeframe = 'all') => {
       if (timeframe === 'month') {
         return invoiceDate.getFullYear() === currentYear && 
                invoiceDate.getMonth() === currentMonth;
+      }
+      
+      if (timeframe === 'week') {
+        return invoiceDate >= startOfWeek;
       }
       
       return false;
@@ -109,7 +118,14 @@ export const countInvoicesByStatus = (invoices) => {
 /**
  * Calculate total clocked hours from jobs
  */
-export const calculateClockedHours = (jobs) => {
+export const calculateClockedHours = (jobs, timeframe = 'all') => {
+  const now = new Date();
+  
+  // Calculate start of current week (Sunday)
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+  
   let totalMinutes = 0;
   
   jobs.forEach(job => {
@@ -119,6 +135,12 @@ export const calculateClockedHours = (jobs) => {
         if (session.startTime && session.endTime) {
           const start = new Date(session.startTime);
           const end = new Date(session.endTime);
+          
+          // Filter by timeframe
+          if (timeframe === 'week' && start < startOfWeek) {
+            return; // Skip sessions before this week
+          }
+          
           const minutes = (end - start) / (1000 * 60);
           totalMinutes += minutes;
         }
@@ -128,9 +150,13 @@ export const calculateClockedHours = (jobs) => {
     // Add current session if clocked in
     if (job.clockedIn && job.currentSessionStart) {
       const start = new Date(job.currentSessionStart);
-      const now = new Date();
-      const minutes = (now - start) / (1000 * 60);
-      totalMinutes += minutes;
+      
+      // Check if session started this week for weekly filter
+      if (timeframe === 'all' || (timeframe === 'week' && start >= startOfWeek)) {
+        const now = new Date();
+        const minutes = (now - start) / (1000 * 60);
+        totalMinutes += minutes;
+      }
     }
   });
   
@@ -167,7 +193,13 @@ export const getAllAnalytics = (jobs, estimates, invoices) => {
   const totalRevenue = {
     allTime: calculateInvoiceRevenue(invoices, 'all'),
     year: calculateInvoiceRevenue(invoices, 'year'),
-    month: calculateInvoiceRevenue(invoices, 'month')
+    month: calculateInvoiceRevenue(invoices, 'month'),
+    week: calculateInvoiceRevenue(invoices, 'week')
+  };
+  
+  const hoursData = {
+    allTime: calculateClockedHours(jobs, 'all'),
+    week: calculateClockedHours(jobs, 'week')
   };
   
   return {
@@ -175,6 +207,6 @@ export const getAllAnalytics = (jobs, estimates, invoices) => {
     jobs: countJobsByStatus(jobs),
     estimates: countEstimatesByStatus(estimates),
     invoices: countInvoicesByStatus(invoices),
-    hours: calculateClockedHours(jobs)
+    hours: hoursData
   };
 };
