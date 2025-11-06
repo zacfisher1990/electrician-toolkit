@@ -437,7 +437,29 @@ useEffect(() => {
           background: isDarkMode ? '#1a1a1a' : '#f9fafb',
           borderRadius: '0.5rem'
         }}>
-          <Briefcase size={18} color={colors.subtext} />
+          {userData.companyLogo ? (
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '0.375rem',
+              overflow: 'hidden',
+              border: `1px solid ${colors.border}`,
+              flexShrink: 0,
+              background: 'white'
+            }}>
+              <img 
+                src={userData.companyLogo} 
+                alt="Company Logo" 
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain'
+                }}
+              />
+            </div>
+          ) : (
+            <Briefcase size={18} color={colors.subtext} />
+          )}
           <div style={{ flex: 1 }}>
             <div style={{ 
               fontSize: '0.75rem', 

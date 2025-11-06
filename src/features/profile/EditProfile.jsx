@@ -41,9 +41,12 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
   
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
   const [currentPassword, setCurrentPassword] = useState('');
   
   const fileInputRef = useRef(null);
+  const logoInputRef = useRef(null);
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -73,6 +76,7 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
             company: userData.company || '',
             licenseNumber: userData.licenseNumber || ''
           });
+          setLogoPreview(userData.companyLogo || null);
         } else {
           // Fallback to auth data
           setFormData({
@@ -130,6 +134,35 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPhotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle logo selection
+  const handleLogoSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please select an image file');
+        setTimeout(() => setError(''), 3000);
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image size must be less than 5MB');
+        setTimeout(() => setError(''), 3000);
+        return;
+      }
+
+      setLogoFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -199,6 +232,29 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
     }
   };
 
+  // Upload logo to Firebase Storage
+  const uploadLogo = async () => {
+    if (!logoFile || !user) return null;
+
+    try {
+      // Compress image
+      const compressedBlob = await compressImage(logoFile);
+      
+      // Create storage reference
+      const storageRef = ref(storage, `company-logos/${user.uid}`);
+      
+      // Upload file
+      await uploadBytes(storageRef, compressedBlob);
+      
+      // Get download URL
+      const logoURL = await getDownloadURL(storageRef);
+      return logoURL;
+    } catch (err) {
+      console.error('Error uploading logo:', err);
+      throw new Error('Failed to upload logo');
+    }
+  };
+
   // Reauthenticate user (required for email changes)
   const reauthenticate = async () => {
     if (!currentPassword) {
@@ -229,6 +285,12 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
         updates.photoURL = photoURL;
       }
 
+      // Upload logo if selected
+      let logoURL = null;
+      if (logoFile) {
+        logoURL = await uploadLogo();
+      }
+
       // Update display name
       if (formData.displayName !== user.displayName) {
         updates.displayName = formData.displayName;
@@ -249,14 +311,21 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
 
       // Update Firestore user document with additional fields
       const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, {
+      const updateData = {
         displayName: formData.displayName,
         phone: formData.phone,
         company: formData.company,
         licenseNumber: formData.licenseNumber,
         photoURL: updates.photoURL || user.photoURL || '',
         updatedAt: new Date().toISOString()
-      });
+      };
+      
+      // Only update companyLogo if a new one was uploaded
+      if (logoURL) {
+        updateData.companyLogo = logoURL;
+      }
+      
+      await updateDoc(userDocRef, updateData);
 
       setSuccess('Profile updated successfully!');
       
@@ -790,6 +859,98 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
                 }}
               />
             </div>
+          </div>
+
+          {/* Company Logo Upload Section */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '0.5rem',
+              color: colors.text,
+              fontSize: '0.875rem',
+              fontWeight: '500'
+            }}>
+              Company Logo (Optional)
+            </label>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              padding: '1rem',
+              border: `1px solid ${colors.border}`,
+              borderRadius: '0.5rem',
+              background: colors.inputBg
+            }}>
+              {logoPreview ? (
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '0.5rem',
+                  overflow: 'hidden',
+                  border: `2px solid ${colors.border}`,
+                  flexShrink: 0
+                }}>
+                  <img 
+                    src={logoPreview} 
+                    alt="Company Logo" 
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      background: 'white'
+                    }}
+                  />
+                </div>
+              ) : (
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '0.5rem',
+                  background: isDarkMode ? '#1a1a1a' : '#f3f4f6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: `2px dashed ${colors.border}`,
+                  flexShrink: 0
+                }}>
+                  <Briefcase size={32} color={colors.subtext} />
+                </div>
+              )}
+              <div style={{ flex: 1 }}>
+                <button
+                  type="button"
+                  onClick={() => logoInputRef.current?.click()}
+                  disabled={loading}
+                  style={{
+                    padding: '0.625rem 1rem',
+                    background: '#2563eb',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    width: '100%'
+                  }}
+                >
+                  {logoPreview ? 'Change Logo' : 'Upload Logo'}
+                </button>
+                <p style={{
+                  margin: '0.5rem 0 0 0',
+                  color: colors.subtext,
+                  fontSize: '0.75rem'
+                }}>
+                  PNG, JPG up to 5MB
+                </p>
+              </div>
+            </div>
+            <input
+              type="file"
+              ref={logoInputRef}
+              onChange={handleLogoSelect}
+              accept="image/*"
+              style={{ display: 'none' }}
+            />
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
