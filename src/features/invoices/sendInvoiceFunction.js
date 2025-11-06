@@ -83,19 +83,33 @@ function generateInvoicePDFBuffer(invoice, userInfo = {}) {
   const darkGray = [31, 41, 55];
   const lightGray = [107, 114, 128];
 
-  // Header - Company Info
+  // Header - Company Info WITH LOGO
   doc.setFillColor(...primaryColor);
   doc.rect(0, 0, pageWidth, 40, 'F');
+  
+  // *** FIXED: Add Company Logo (if available) ***
+  let logoX = margin;
+  if (userInfo.companyLogo) {
+    try {
+      const logoSize = 28;
+      const logoY = 6;
+      doc.addImage(userInfo.companyLogo, 'PNG', logoX, logoY, logoSize, logoSize);
+      logoX += logoSize + 10; // Shift text to the right
+    } catch (error) {
+      console.error('Error adding logo to invoice PDF:', error);
+      // Continue without logo if there's an error
+    }
+  }
   
   doc.setFontSize(20);
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.text(userInfo.businessName || 'Your Business Name', margin, 15);
+  doc.text(userInfo.businessName || 'Your Business Name', logoX, 15);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(userInfo.email || '', margin, 25);
-  doc.text(userInfo.phone || '', margin, 32);
+  doc.text(userInfo.email || '', logoX, 25);
+  doc.text(userInfo.phone || '', logoX, 32);
 
   yPosition = 55;
 
@@ -136,7 +150,7 @@ function generateInvoicePDFBuffer(invoice, userInfo = {}) {
   doc.setTextColor(...lightGray);
   doc.text('Invoice Date:', rightColX, rightYPosition);
   doc.setTextColor(...darkGray);
-  doc.text(invoice.invoiceDate || new Date().toLocaleDateString(), pageWidth - margin, rightYPosition, { align: 'right' });
+  doc.text(invoice.invoiceDate || invoice.date || new Date().toLocaleDateString(), pageWidth - margin, rightYPosition, { align: 'right' });
 
   rightYPosition += 6;
   doc.setTextColor(...lightGray);
@@ -208,7 +222,7 @@ function generateInvoicePDFBuffer(invoice, userInfo = {}) {
   doc.setTextColor(...lightGray);
   doc.text('Subtotal:', totalsX, yPosition);
   doc.setTextColor(...darkGray);
-  doc.text(`$${parseFloat(invoice.subtotal || 0).toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+  doc.text(`$${parseFloat(invoice.subtotal || invoice.amount || 0).toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
 
   yPosition += 7;
 
@@ -230,7 +244,7 @@ function generateInvoicePDFBuffer(invoice, userInfo = {}) {
   doc.text('TOTAL:', totalsX, yPosition);
   doc.setFontSize(14);
   doc.setTextColor(...primaryColor);
-  doc.text(`$${parseFloat(invoice.total || 0).toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+  doc.text(`$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
 
   // Notes
   if (invoice.notes) {
@@ -264,6 +278,11 @@ function generateInvoicePDFBuffer(invoice, userInfo = {}) {
  * Generate HTML email content
  */
 function generateEmailHTML(invoice, customMessage, userInfo) {
+  // *** FIXED: Add company logo to email HTML ***
+  const logoHTML = userInfo.companyLogo 
+    ? `<img src="${userInfo.companyLogo}" alt="${userInfo.businessName || 'Company'} Logo" style="max-width: 120px; max-height: 60px; margin-bottom: 10px;" />`
+    : '';
+
   return `
     <!DOCTYPE html>
     <html>
@@ -280,6 +299,7 @@ function generateEmailHTML(invoice, customMessage, userInfo) {
               <!-- Header -->
               <tr>
                 <td style="background-color: #3b82f6; padding: 30px; text-align: center;">
+                  ${logoHTML}
                   <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Your Business'}</h1>
                   <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px;">${userInfo.email || ''}</p>
                 </td>
@@ -297,7 +317,7 @@ function generateEmailHTML(invoice, customMessage, userInfo) {
                   <table width="100%" cellpadding="10" cellspacing="0" style="border: 1px solid #e5e7eb; border-radius: 6px; margin: 20px 0;">
                     <tr style="background-color: #f9fafb;">
                       <td style="color: #6b7280; font-size: 14px;">Invoice Date:</td>
-                      <td align="right" style="color: #111827; font-size: 14px; font-weight: 600;">${invoice.invoiceDate || new Date().toLocaleDateString()}</td>
+                      <td align="right" style="color: #111827; font-size: 14px; font-weight: 600;">${invoice.invoiceDate || invoice.date || new Date().toLocaleDateString()}</td>
                     </tr>
                     <tr>
                       <td style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb;">Due Date:</td>
@@ -305,7 +325,7 @@ function generateEmailHTML(invoice, customMessage, userInfo) {
                     </tr>
                     <tr style="background-color: #f9fafb;">
                       <td style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb;">Amount Due:</td>
-                      <td align="right" style="color: #3b82f6; font-size: 18px; font-weight: 700; border-top: 1px solid #e5e7eb;">$${parseFloat(invoice.total || 0).toFixed(2)}</td>
+                      <td align="right" style="color: #3b82f6; font-size: 18px; font-weight: 700; border-top: 1px solid #e5e7eb;">$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}</td>
                     </tr>
                   </table>
                   

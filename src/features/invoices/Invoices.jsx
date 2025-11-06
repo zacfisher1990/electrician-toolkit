@@ -60,7 +60,15 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   // Load user business info for PDF generation
   const loadUserBusinessInfo = async () => {
     try {
-      const info = await getUserBusinessInfo(auth.currentUser?.uid);
+      const user = auth.currentUser;
+      if (!user) {
+        console.log('No user logged in');
+        return;
+      }
+      
+      console.log('Loading business info for user:', user.uid);
+      const info = await getUserBusinessInfo(user.uid);
+      console.log('Loaded business info:', info);
       setUserBusinessInfo(info);
     } catch (error) {
       console.error('Error loading user business info:', error);

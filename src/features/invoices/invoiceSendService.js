@@ -63,14 +63,52 @@ export const downloadInvoice = (invoice, userInfo) => {
 
 /**
  * Get user/business info for invoice generation
- * This should fetch from your user profile or settings
+ * Fetches from user profile in Firestore
  */
 export const getUserBusinessInfo = async (userId) => {
-  // TODO: Implement fetching user business info from Firestore
-  // For now, return default values that will work
+  try {
+    if (!userId) {
+      console.warn('No userId provided, using defaults');
+      return getDefaultBusinessInfo();
+    }
+
+    // Import Firestore functions
+    const { doc, getDoc } = await import('firebase/firestore');
+    const { db } = await import('../../firebase/firebase');
+    
+    // Fetch user profile from Firestore
+    const userDocRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userDocRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      
+      return {
+        businessName: userData.company || userData.displayName || 'Electrician Toolkit',
+        companyLogo: userData.companyLogo || null, // Company logo URL from profile
+        email: userData.email || auth.currentUser?.email || 'onboarding@resend.dev',
+        phone: userData.phone || '',
+        address: userData.address || '',
+        paymentInstructions: userData.paymentInstructions || 'Payment can be made via check, cash, or bank transfer. Please include invoice number on payment.'
+      };
+    }
+    
+    // If no user document found, use defaults
+    return getDefaultBusinessInfo();
+  } catch (error) {
+    console.error('Error getting user business info:', error);
+    return getDefaultBusinessInfo();
+  }
+};
+
+/**
+ * Get default business info as fallback
+ */
+const getDefaultBusinessInfo = () => {
   return {
     businessName: 'Electrician Toolkit',
-    email: 'onboarding@resend.dev', // Using Resend's test email
+    companyLogo: null,
+    email: 'onboarding@resend.dev',
     phone: '(555) 123-4567',
     address: '123 Main St, City, State 12345',
     paymentInstructions: 'Payment can be made via check, cash, or bank transfer. Please include invoice number on payment.'
