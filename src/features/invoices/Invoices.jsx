@@ -11,6 +11,7 @@ import InvoiceCard from './InvoiceCard';
 import SendInvoiceModal from './SendInvoiceModal';
 import InvoiceStatusTabs from './InvoiceStatusTabs';
 import { sendInvoiceViaEmail, downloadInvoice, getUserBusinessInfo } from './invoiceSendService';
+import AuthModal from '../profile/AuthModal';
 
 function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [invoices, setInvoices] = useState([]);
@@ -21,6 +22,8 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [sendingInvoice, setSendingInvoice] = useState(null);
   const [userBusinessInfo, setUserBusinessInfo] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
   // Get colors from centralized theme
   const colors = {
@@ -44,9 +47,11 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
       if (user) {
         loadInvoices();
         loadUserBusinessInfo();
+        setIsUserLoggedIn(true);
       } else {
         setLoading(false);
         clearInvoicesCache();
+        setIsUserLoggedIn(false);
       }
     });
     return () => unsubscribe();
@@ -207,6 +212,11 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
 
   // Handle add invoice click
   const handleAddInvoiceClick = () => {
+    if (!isUserLoggedIn) {
+      setShowAuthModal(true);
+      return;
+    }
+    
     setShowAddForm(true);
     setEditingInvoice(null);
   };
@@ -259,6 +269,15 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
 
   return (
     <div className="invoices-container">
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          isDarkMode={isDarkMode}
+        />
+      )}
+
       {/* Add Invoice Modal */}
       {showAddForm && !editingInvoice && (
         <InvoiceModal

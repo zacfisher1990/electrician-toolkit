@@ -11,6 +11,7 @@ import AddEstimateSection from './AddEstimateSection';
 import SendEstimateModal from './SendEstimateModal';
 import EstimateStatusTabs from './EstimateStatusTabs';
 import { saveEstimates, getEstimates, clearEstimatesCache } from '../../utils/localStorageUtils';
+import AuthModal from '../profile/AuthModal';
 
 const Estimates = ({ 
   isDarkMode, 
@@ -29,6 +30,8 @@ const Estimates = ({
   const [activeStatusTab, setActiveStatusTab] = useState('all');
   const [userInfo, setUserInfo] = useState(null);
   const lastHandledEstimateId = useRef(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
   // Get colors from centralized theme
   const colors = getColors(isDarkMode);
@@ -54,9 +57,11 @@ const Estimates = ({
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         loadEstimates();
+        setIsUserLoggedIn(true);
       } else {
         setLoading(false);
         clearEstimatesCache();
+        setIsUserLoggedIn(false);
       }
     });
     return () => unsubscribe();
@@ -232,6 +237,11 @@ const Estimates = ({
 
   // Handle add estimate click
   const handleAddEstimateClick = () => {
+    if (!isUserLoggedIn) {
+      setShowAuthModal(true);
+      return;
+    }
+    
     setShowAddForm(true);
     setEditingEstimate(null);
   };
@@ -278,6 +288,15 @@ const Estimates = ({
 
   return (
     <div className="estimates-container">
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          isDarkMode={isDarkMode}
+        />
+      )}
+
       {/* Add Estimate Modal */}
       {showAddForm && !editingEstimate && (
         <EstimateModal

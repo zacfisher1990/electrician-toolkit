@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Lock, LogOut, Settings, Bell, Shield, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, LogOut, Settings, Bell, Shield, AlertCircle, CheckCircle, Eye, EyeOff, Phone, Briefcase, FileText  } from 'lucide-react';
 import { getColors } from '../../theme';
 import { auth } from "../../firebase/firebase";
 import { 
@@ -28,6 +28,8 @@ const Profile = ({ isDarkMode }) => {
   const [sendingVerification, setSendingVerification] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [loadingUserData, setLoadingUserData] = useState(true);
 
   // Get colors from centralized theme
   const colors = getColors(isDarkMode);
@@ -61,6 +63,31 @@ useEffect(() => {
 
   return () => unsubscribe();
 }, []);
+
+// Load user profile data from Firestore
+useEffect(() => {
+  const loadUserData = async () => {
+    if (!user) {
+      setLoadingUserData(false);
+      return;
+    }
+
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        setUserData(userDoc.data());
+      }
+    } catch (err) {
+      console.error('Error loading user data:', err);
+    } finally {
+      setLoadingUserData(false);
+    }
+  };
+
+  loadUserData();
+}, [user]);
 
   const handleResendVerification = async () => {
   if (!user) return;
@@ -266,98 +293,217 @@ useEffect(() => {
             </div>
           )}
 
-          {/* Profile Header */}
-          <div style={{
-            background: colors.cardBg,
-            borderRadius: '0.75rem',
-            border: `1px solid ${colors.border}`,
-            padding: '2rem 1rem',
-            marginBottom: '1rem',
-            textAlign: 'center',
-            boxShadow: 'none'
-          }}>
-            <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              background: isEmailVerified ? '#10b981' : '#3b82f6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 1rem',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              {user.photoURL ? (
-                <img 
-                  src={user.photoURL} 
-                  alt="Profile" 
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover'
-                  }}
-                />
-              ) : (
-                <User size={40} color="white" />
-              )}
-              {isEmailVerified && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  right: 0,
-                  width: '24px',
-                  height: '24px',
-                  background: '#10b981',
-                  borderRadius: '50%',
-                  border: `2px solid ${colors.cardBg}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <CheckCircle size={14} color="white" />
-                </div>
-              )}
-            </div>
-            <h2 style={{
-              margin: '0 0 0.5rem 0',
-              color: colors.text,
-              fontSize: '1.25rem',
-              fontWeight: '600'
-            }}>
-              {user.displayName || user.email}
-            </h2>
-            {user.displayName && (
-              <p style={{
-                margin: '0 0 0.5rem 0',
-                color: colors.subtext,
-                fontSize: '0.875rem'
-              }}>
-                {user.email}
-              </p>
-            )}
-            <p style={{
-              margin: 0,
+         {/* Profile Header */}
+<div style={{
+  background: colors.cardBg,
+  borderRadius: '0.75rem',
+  border: `1px solid ${colors.border}`,
+  padding: '2rem 1.5rem',
+  marginBottom: '1rem',
+  boxShadow: 'none'
+}}>
+  {/* Photo and Name */}
+  <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+    <div style={{
+      width: '100px',
+      height: '100px',
+      borderRadius: '50%',
+      background: isEmailVerified ? '#10b981' : '#3b82f6',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      margin: '0 auto 1rem',
+      position: 'relative',
+      overflow: 'hidden',
+      border: `3px solid ${colors.border}`
+    }}>
+      {user.photoURL ? (
+        <img 
+          src={user.photoURL} 
+          alt="Profile" 
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+        />
+      ) : (
+        <User size={50} color="white" />
+      )}
+      {isEmailVerified && (
+        <div style={{
+          position: 'absolute',
+          bottom: '0',
+          right: '0',
+          width: '28px',
+          height: '28px',
+          background: '#10b981',
+          borderRadius: '50%',
+          border: `3px solid ${colors.cardBg}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <CheckCircle size={16} color="white" />
+        </div>
+      )}
+    </div>
+    
+    <h2 style={{
+      margin: '0 0 0.25rem 0',
+      color: colors.text,
+      fontSize: '1.5rem',
+      fontWeight: '600'
+    }}>
+      {userData?.displayName || user.displayName || 'User'}
+    </h2>
+    
+    <p style={{
+      margin: '0 0 0.75rem 0',
+      color: colors.subtext,
+      fontSize: '0.9375rem'
+    }}>
+      {user.email}
+    </p>
+    
+    <p style={{
+      margin: 0,
+      color: colors.subtext,
+      fontSize: '0.875rem',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '0.375rem'
+    }}>
+      {isEmailVerified ? (
+        <>
+          <CheckCircle size={16} color="#10b981" />
+          <span>Verified Account</span>
+        </>
+      ) : (
+        <>
+          <AlertCircle size={16} color="#f59e0b" />
+          <span>Unverified Account</span>
+        </>
+      )}
+    </p>
+  </div>
+
+  {/* Profile Details */}
+  {!loadingUserData && userData && (
+    <div style={{
+      borderTop: `1px solid ${colors.border}`,
+      paddingTop: '1.5rem'
+    }}>
+      {/* Phone */}
+      {userData.phone && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          marginBottom: '1rem',
+          padding: '0.75rem',
+          background: isDarkMode ? '#1a1a1a' : '#f9fafb',
+          borderRadius: '0.5rem'
+        }}>
+          <Phone size={18} color={colors.subtext} />
+          <div style={{ flex: 1 }}>
+            <div style={{ 
+              fontSize: '0.75rem', 
               color: colors.subtext,
-              fontSize: '0.875rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.375rem'
+              marginBottom: '0.125rem'
             }}>
-              {isEmailVerified ? (
-                <>
-                  <CheckCircle size={16} color="#10b981" />
-                  <span>Verified Account</span>
-                </>
-              ) : (
-                <>
-                  <AlertCircle size={16} color="#f59e0b" />
-                  <span>Unverified Account</span>
-                </>
-              )}
-            </p>
+              Phone
+            </div>
+            <div style={{ 
+              fontSize: '0.9375rem', 
+              color: colors.text,
+              fontWeight: '500'
+            }}>
+              {userData.phone}
+            </div>
           </div>
+        </div>
+      )}
+
+      {/* Company */}
+      {userData.company && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          marginBottom: '1rem',
+          padding: '0.75rem',
+          background: isDarkMode ? '#1a1a1a' : '#f9fafb',
+          borderRadius: '0.5rem'
+        }}>
+          <Briefcase size={18} color={colors.subtext} />
+          <div style={{ flex: 1 }}>
+            <div style={{ 
+              fontSize: '0.75rem', 
+              color: colors.subtext,
+              marginBottom: '0.125rem'
+            }}>
+              Company
+            </div>
+            <div style={{ 
+              fontSize: '0.9375rem', 
+              color: colors.text,
+              fontWeight: '500'
+            }}>
+              {userData.company}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* License Number */}
+      {userData.licenseNumber && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          padding: '0.75rem',
+          background: isDarkMode ? '#1a1a1a' : '#f9fafb',
+          borderRadius: '0.5rem'
+        }}>
+          <FileText size={18} color={colors.subtext} />
+          <div style={{ flex: 1 }}>
+            <div style={{ 
+              fontSize: '0.75rem', 
+              color: colors.subtext,
+              marginBottom: '0.125rem'
+            }}>
+              Electrician License
+            </div>
+            <div style={{ 
+              fontSize: '0.9375rem', 
+              color: colors.text,
+              fontWeight: '500'
+            }}>
+              {userData.licenseNumber}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* No details yet message */}
+      {!userData.phone && !userData.company && !userData.licenseNumber && (
+        <div style={{
+          textAlign: 'center',
+          padding: '1rem',
+          color: colors.subtext,
+          fontSize: '0.875rem'
+        }}>
+          <Settings size={24} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
+          <p style={{ margin: 0 }}>
+            Complete your profile by clicking "Edit Profile" below
+          </p>
+        </div>
+      )}
+    </div>
+  )}
+</div>
 
           {/* Account Settings */}
           <div style={{
