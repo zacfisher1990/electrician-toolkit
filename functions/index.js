@@ -176,15 +176,28 @@ function generateInvoicePDFBuffer(invoice, userInfo = {}) {
   doc.setFillColor(...primaryColor);
   doc.rect(0, 0, pageWidth, 40, 'F');
   
+  // Company Logo (if available)
+  let logoX = margin;
+  if (userInfo.companyLogo) {
+    try {
+      const logoSize = 28;
+      const logoY = 6;
+      doc.addImage(userInfo.companyLogo, 'PNG', logoX, logoY, logoSize, logoSize);
+      logoX += logoSize + 10;
+    } catch (error) {
+      console.error('Error adding logo to invoice PDF:', error);
+    }
+  }
+  
   doc.setFontSize(20);
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.text(userInfo.businessName || 'Electrician Toolkit', margin, 15);
+  doc.text(userInfo.businessName || 'Electrician Toolkit', logoX, 15);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  if (userInfo.email) doc.text(userInfo.email, margin, 25);
-  if (userInfo.phone) doc.text(userInfo.phone, margin, 32);
+  if (userInfo.email) doc.text(userInfo.email, logoX, 25);
+  if (userInfo.phone) doc.text(userInfo.phone, logoX, 32);
 
   yPosition = 55;
 
@@ -377,15 +390,28 @@ function generateEstimatePDFBuffer(estimate, userInfo = {}) {
   doc.setFillColor(...primaryColor);
   doc.rect(0, 0, pageWidth, 40, 'F');
   
+  // Company Logo (if available)
+  let logoX = margin;
+  if (userInfo.companyLogo) {
+    try {
+      const logoSize = 28;
+      const logoY = 6;
+      doc.addImage(userInfo.companyLogo, 'PNG', logoX, logoY, logoSize, logoSize);
+      logoX += logoSize + 10;
+    } catch (error) {
+      console.error('Error adding logo to estimate PDF:', error);
+    }
+  }
+  
   doc.setFontSize(20);
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.text(userInfo.businessName || 'Electrician Toolkit', margin, 15);
+  doc.text(userInfo.businessName || 'Electrician Toolkit', logoX, 15);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  if (userInfo.email) doc.text(userInfo.email, margin, 25);
-  if (userInfo.phone) doc.text(userInfo.phone, margin, 32);
+  if (userInfo.email) doc.text(userInfo.email, logoX, 25);
+  if (userInfo.phone) doc.text(userInfo.phone, logoX, 32);
 
   yPosition = 55;
 
@@ -575,6 +601,9 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo) {
             <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
               <tr>
                 <td style="background-color: #3b82f6; padding: 30px; text-align: center;">
+                  ${userInfo.companyLogo ? `
+                    <img src="${userInfo.companyLogo}" alt="${userInfo.businessName || 'Company Logo'}" style="max-width: 120px; max-height: 120px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px;" />
+                  ` : ''}
                   <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Toolkit'}</h1>
                   <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px;">${userInfo.email || ''}</p>
                 </td>
@@ -649,6 +678,9 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
             <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
               <tr>
                 <td style="background-color: #10b981; padding: 30px; text-align: center;">
+                  ${userInfo.companyLogo ? `
+                    <img src="${userInfo.companyLogo}" alt="${userInfo.businessName || 'Company Logo'}" style="max-width: 120px; max-height: 120px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px;" />
+                  ` : ''}
                   <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Toolkit'}</h1>
                   <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px;">${userInfo.email || ''}</p>
                 </td>

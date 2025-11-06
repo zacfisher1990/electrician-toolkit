@@ -60,22 +60,39 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
       }
     };
 
-    // Header - Company Info
+    // Header - Company Info with Logo
     doc.setFillColor(...primaryColor);
     doc.rect(0, 0, pageWidth, 40, 'F');
     
-    addText(userInfo.businessName || 'Your Business Name', margin, 15, {
+    // Company Logo (if available)
+    let logoX = margin;
+    if (userInfo.companyLogo) {
+      try {
+        // Add logo on the left side
+        const logoSize = 28; // 28px height for logo
+        const logoY = 6; // Center vertically in the 40px header
+        
+        // Load and add the logo image
+        doc.addImage(userInfo.companyLogo, 'PNG', logoX, logoY, logoSize, logoSize);
+        logoX += logoSize + 10; // Move text to the right of logo
+      } catch (error) {
+        console.error('Error adding logo to PDF:', error);
+        // Continue without logo if there's an error
+      }
+    }
+    
+    addText(userInfo.businessName || 'Your Business Name', logoX, 15, {
       size: 20,
       style: 'bold',
       color: [255, 255, 255]
     });
     
-    addText(userInfo.email || '', margin, 25, {
+    addText(userInfo.email || '', logoX, 25, {
       size: 10,
       color: [255, 255, 255]
     });
     
-    addText(userInfo.phone || '', margin, 32, {
+    addText(userInfo.phone || '', logoX, 32, {
       size: 10,
       color: [255, 255, 255]
     });
