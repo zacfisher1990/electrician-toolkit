@@ -36,10 +36,11 @@ exports.sendInvoiceEmail = functions.https.onCall(async (data, context) => {
     // Convert buffer to base64 for Resend
     const pdfBase64 = pdfBuffer.toString('base64');
 
-    // Send email via Resend
+    // Send email via Resend with BCC to sender
     const emailData = await resend.emails.send({
       from: userInfo.email || 'invoices@yourdomain.com', // Use your verified domain
       to: recipientEmail,
+      bcc: userInfo.email, // BCC the sender so they get a copy
       subject: `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Your Business'}`,
       html: generateEmailHTML(invoice, message, userInfo),
       attachments: [

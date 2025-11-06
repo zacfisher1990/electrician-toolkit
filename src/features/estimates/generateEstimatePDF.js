@@ -1,9 +1,10 @@
+// src/features/estimates/generateEstimatePDF.js
 import { jsPDF } from 'jspdf';
 
 /**
  * Generates a professional PDF estimate
  * @param {Object} estimate - The estimate data
- * @param {Object} userInfo - User/business information (name, address, phone, email, etc.)
+ * @param {Object} userInfo - User/business information
  * @returns {Blob} PDF blob that can be downloaded or sent via email
  */
 export const generateEstimatePDF = (estimate, userInfo = {}) => {
@@ -19,13 +20,12 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
     let yPosition = margin;
 
     // Colors
-    const primaryColor = [16, 185, 129]; // Green (different from invoice blue)
+    const primaryColor = [59, 130, 246]; // Blue
     const darkGray = [31, 41, 55];
     const lightGray = [107, 114, 128];
 
     // Helper function to add text
     const addText = (text, x, y, options = {}) => {
-      // Handle arrays (from splitTextToSize)
       if (Array.isArray(text)) {
         text.forEach((line, index) => {
           const lineStr = line !== undefined && line !== null ? String(line) : '';
@@ -43,7 +43,6 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
         return;
       }
       
-      // Convert text to string and handle undefined/null
       const textStr = text !== undefined && text !== null ? String(text) : '';
       
       doc.setFontSize(options.size || 10);
@@ -54,7 +53,6 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
       }
       doc.setFont(options.font || 'helvetica', options.style || 'normal');
       
-      // Only render if we have text
       if (textStr || textStr === '') {
         doc.text(textStr, x, y, options.align ? { align: options.align } : undefined);
       }
@@ -68,16 +66,12 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
     let logoX = margin;
     if (userInfo.companyLogo) {
       try {
-        // Add logo on the left side
-        const logoSize = 28; // 28px height for logo
-        const logoY = 6; // Center vertically in the 40px header
-        
-        // Load and add the logo image
+        const logoSize = 28;
+        const logoY = 6;
         doc.addImage(userInfo.companyLogo, 'PNG', logoX, logoY, logoSize, logoSize);
-        logoX += logoSize + 10; // Move text to the right of logo
+        logoX += logoSize + 10;
       } catch (error) {
-        console.error('Error adding logo to PDF:', error);
-        // Continue without logo if there's an error
+        console.error('Error adding logo to estimate PDF:', error);
       }
     }
     
@@ -99,14 +93,14 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
 
     yPosition = 55;
 
-    // Estimate Title and Name
+    // Estimate Title and Number
     addText('ESTIMATE', margin, yPosition, {
       size: 24,
       style: 'bold',
       color: primaryColor
     });
 
-    addText(estimate.name || 'Untitled Estimate', pageWidth - margin, yPosition, {
+    addText(`#${estimate.estimateNumber || 'N/A'}`, pageWidth - margin, yPosition, {
       size: 12,
       style: 'bold',
       align: 'right'
@@ -115,41 +109,39 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
     yPosition += 15;
 
     // Estimate Details - Two columns
-    // Left column - Client Info (if available)
-    if (estimate.clientName) {
-      addText('FOR:', margin, yPosition, {
-        size: 10,
-        style: 'bold'
+    // Left column - Estimate For
+    addText('ESTIMATE FOR:', margin, yPosition, {
+      size: 10,
+      style: 'bold'
+    });
+    
+    yPosition += 7;
+    addText(estimate.clientName || estimate.client || 'Client Name', margin, yPosition, {
+      size: 11
+    });
+    
+    if (estimate.clientAddress) {
+      yPosition += 6;
+      addText(estimate.clientAddress, margin, yPosition, {
+        size: 9,
+        color: lightGray
       });
-      
-      yPosition += 7;
-      addText(estimate.clientName, margin, yPosition, {
-        size: 11
+    }
+    
+    if (estimate.clientEmail) {
+      yPosition += 6;
+      addText(estimate.clientEmail, margin, yPosition, {
+        size: 9,
+        color: lightGray
       });
-      
-      if (estimate.clientAddress) {
-        yPosition += 6;
-        addText(estimate.clientAddress, margin, yPosition, {
-          size: 9,
-          color: lightGray
-        });
-      }
-      
-      if (estimate.clientEmail) {
-        yPosition += 6;
-        addText(estimate.clientEmail, margin, yPosition, {
-          size: 9,
-          color: lightGray
-        });
-      }
-      
-      if (estimate.clientPhone) {
-        yPosition += 6;
-        addText(estimate.clientPhone, margin, yPosition, {
-          size: 9,
-          color: lightGray
-        });
-      }
+    }
+    
+    if (estimate.clientPhone) {
+      yPosition += 6;
+      addText(estimate.clientPhone, margin, yPosition, {
+        size: 9,
+        color: lightGray
+      });
     }
 
     // Right column - Estimate Details
@@ -161,8 +153,8 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
       color: lightGray
     });
     addText(
-      estimate.createdAt 
-        ? new Date(estimate.createdAt).toLocaleDateString() 
+      estimate.date 
+        ? new Date(estimate.date).toLocaleDateString() 
         : new Date().toLocaleDateString(), 
       pageWidth - margin, 
       rightYPosition, 
@@ -177,164 +169,159 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
       size: 9,
       color: lightGray
     });
-    
-    // Calculate valid until date (30 days from creation)
-    const validDate = estimate.validUntil || (() => {
-      const date = estimate.createdAt ? new Date(estimate.createdAt) : new Date();
-      date.setDate(date.getDate() + 30);
-      return date.toLocaleDateString();
-    })();
-    
-    addText(validDate, pageWidth - margin, rightYPosition, {
+    addText(estimate.validUntil || estimate.expiryDate || '30 Days', pageWidth - margin, rightYPosition, {
       size: 9,
+      align: 'right'
+    });
+
+    rightYPosition += 6;
+    addText('Status:', rightColX, rightYPosition, {
+      size: 9,
+      color: lightGray
+    });
+    
+    // Status badge
+    const statusColor = estimate.status === 'Accepted' ? [16, 185, 129] :
+                        estimate.status === 'Pending' ? [245, 158, 11] :
+                        estimate.status === 'Declined' ? [239, 68, 68] : lightGray;
+    
+    doc.setFillColor(...statusColor);
+    const statusText = estimate.status || 'Pending';
+    const statusWidth = doc.getTextWidth(statusText) + 8;
+    doc.roundedRect(pageWidth - margin - statusWidth, rightYPosition - 4, statusWidth, 6, 1, 1, 'F');
+    
+    addText(statusText, pageWidth - margin, rightYPosition, {
+      size: 8,
+      style: 'bold',
+      color: [255, 255, 255],
       align: 'right'
     });
 
     yPosition = Math.max(yPosition, rightYPosition) + 15;
 
-    // Labor section
-    if (estimate.laborHours && estimate.laborRate) {
-      yPosition += 5;
-      
-      addText('LABOR', margin, yPosition, {
-        size: 10,
-        style: 'bold'
-      });
-      yPosition += 7;
+    // Line items table
+    yPosition += 5;
+    
+    // Table header
+    doc.setFillColor(249, 250, 251);
+    doc.rect(margin, yPosition, pageWidth - (2 * margin), 8, 'F');
+    
+    yPosition += 6;
+    
+    addText('Description', margin + 2, yPosition, {
+      size: 9,
+      style: 'bold'
+    });
+    
+    addText('Qty', pageWidth - margin - 60, yPosition, {
+      size: 9,
+      style: 'bold'
+    });
+    
+    addText('Rate', pageWidth - margin - 40, yPosition, {
+      size: 9,
+      style: 'bold'
+    });
+    
+    addText('Amount', pageWidth - margin, yPosition, {
+      size: 9,
+      style: 'bold',
+      align: 'right'
+    });
 
-      // Labor details box
-      doc.setFillColor(249, 250, 251);
-      doc.rect(margin, yPosition - 4, pageWidth - (2 * margin), 8, 'F');
-      
-      addText(`${estimate.laborHours} hours × $${parseFloat(estimate.laborRate).toFixed(2)}/hr`, margin + 2, yPosition, {
+    yPosition += 8;
+
+    // Line items
+    const lineItems = estimate.lineItems || [];
+    lineItems.forEach((item, index) => {
+      if (yPosition > pageHeight - 60) {
+        doc.addPage();
+        yPosition = margin;
+      }
+
+      addText(item.description || '', margin + 2, yPosition, {
         size: 9
       });
       
-      const laborTotal = estimate.laborHours * estimate.laborRate;
-      addText(`$${laborTotal.toFixed(2)}`, pageWidth - margin, yPosition, {
+      addText(String(item.quantity || 1), pageWidth - margin - 60, yPosition, {
+        size: 9
+      });
+      
+      addText(`$${parseFloat(item.rate || 0).toFixed(2)}`, pageWidth - margin - 40, yPosition, {
+        size: 9
+      });
+      
+      const amount = (item.quantity || 1) * (item.rate || 0);
+      addText(`$${amount.toFixed(2)}`, pageWidth - margin, yPosition, {
         size: 9,
-        style: 'bold',
         align: 'right'
       });
 
-      yPosition += 10;
-    }
-
-    // Materials section
-    if (estimate.materials && estimate.materials.length > 0) {
-      yPosition += 5;
-      
-      addText('MATERIALS', margin, yPosition, {
-        size: 10,
-        style: 'bold'
-      });
       yPosition += 7;
-
-      // Table header
-      doc.setFillColor(249, 250, 251);
-      doc.rect(margin, yPosition, pageWidth - (2 * margin), 8, 'F');
       
-      yPosition += 6;
-      
-      addText('Description', margin + 2, yPosition, {
-        size: 9,
-        style: 'bold'
-      });
-      
-      addText('Qty', pageWidth - margin - 60, yPosition, {
-        size: 9,
-        style: 'bold'
-      });
-      
-      addText('Unit Cost', pageWidth - margin - 40, yPosition, {
-        size: 9,
-        style: 'bold'
-      });
-      
-      addText('Amount', pageWidth - margin, yPosition, {
-        size: 9,
-        style: 'bold',
-        align: 'right'
-      });
+      // Add separator line
+      if (index < lineItems.length - 1) {
+        doc.setDrawColor(229, 231, 235);
+        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 5;
+      }
+    });
 
-      yPosition += 8;
+    yPosition += 10;
 
-      // Materials list
-      estimate.materials.forEach((item, index) => {
-        if (yPosition > pageHeight - 60) {
-          doc.addPage();
-          yPosition = margin;
-        }
-
-        const quantity = parseFloat(item.quantity) || 1;
-        const unitCost = parseFloat(item.cost) || 0;
-        const amount = quantity * unitCost;
-
-        addText(item.name || '', margin + 2, yPosition, {
-          size: 9
-        });
-        
-        addText(String(quantity), pageWidth - margin - 60, yPosition, {
-          size: 9
-        });
-        
-        addText(`$${unitCost.toFixed(2)}`, pageWidth - margin - 40, yPosition, {
-          size: 9
-        });
-        
-        addText(`$${amount.toFixed(2)}`, pageWidth - margin, yPosition, {
-          size: 9,
-          align: 'right'
-        });
-
-        yPosition += 7;
-        
-        // Add separator line
-        if (index < estimate.materials.length - 1) {
-          doc.setDrawColor(229, 231, 235);
-          doc.line(margin, yPosition, pageWidth - margin, yPosition);
-          yPosition += 5;
-        }
-      });
-
-      yPosition += 10;
-    }
-
-    // Total section
+    // Totals section
     const totalsX = pageWidth - margin - 60;
     
-    // Calculate labor total
-    const laborTotal = (parseFloat(estimate.laborHours) || 0) * (parseFloat(estimate.laborRate) || 0);
+    // Calculate subtotal from line items if not provided
+    const calculateSubtotal = () => {
+      if (estimate.subtotal) return estimate.subtotal;
+      if (estimate.lineItems && estimate.lineItems.length > 0) {
+        return estimate.lineItems.reduce((sum, item) => {
+          return sum + ((item.quantity || 1) * (item.rate || 0));
+        }, 0);
+      }
+      return estimate.amount || estimate.total || 0;
+    };
     
-    // Calculate materials total
-    const materialsTotal = estimate.materials?.reduce((sum, item) => {
-      const quantity = parseFloat(item.quantity) || 1;
-      const cost = parseFloat(item.cost) || 0;
-      return sum + (quantity * cost);
-    }, 0) || 0;
+    const subtotal = calculateSubtotal();
+    const tax = parseFloat(estimate.tax || 0);
+    const discount = parseFloat(estimate.discount || 0);
+    const finalTotal = estimate.total || estimate.amount || (subtotal + tax - discount);
     
-    const finalTotal = estimate.total || (laborTotal + materialsTotal);
+    // Subtotal
+    addText('Subtotal:', totalsX, yPosition, {
+      size: 10,
+      color: lightGray
+    });
+    addText(`$${parseFloat(subtotal).toFixed(2)}`, pageWidth - margin, yPosition, {
+      size: 10,
+      align: 'right'
+    });
 
-    // Show breakdown if we have both labor and materials
-    if (estimate.laborHours && estimate.materials && estimate.materials.length > 0) {
-      // Labor subtotal
-      addText('Labor Subtotal:', totalsX, yPosition, {
+    yPosition += 7;
+
+    // Tax (if applicable)
+    if (tax > 0) {
+      addText(`Tax (${estimate.taxRate || 0}%):`, totalsX, yPosition, {
         size: 10,
         color: lightGray
       });
-      addText(`$${laborTotal.toFixed(2)}`, pageWidth - margin, yPosition, {
+      addText(`$${tax.toFixed(2)}`, pageWidth - margin, yPosition, {
         size: 10,
         align: 'right'
       });
       yPosition += 7;
+    }
 
-      // Materials subtotal
-      addText('Materials Subtotal:', totalsX, yPosition, {
+    // Discount (if applicable)
+    if (discount > 0) {
+      addText('Discount:', totalsX, yPosition, {
         size: 10,
         color: lightGray
       });
-      addText(`$${materialsTotal.toFixed(2)}`, pageWidth - margin, yPosition, {
+      addText(`-$${discount.toFixed(2)}`, pageWidth - margin, yPosition, {
         size: 10,
+        color: [239, 68, 68],
         align: 'right'
       });
       yPosition += 7;
@@ -347,7 +334,7 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
     yPosition += 7;
 
     // Total
-    addText('TOTAL ESTIMATE:', totalsX, yPosition, {
+    addText('ESTIMATED TOTAL:', totalsX, yPosition, {
       size: 12,
       style: 'bold'
     });
@@ -384,28 +371,30 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
       }
     }
 
-    // Terms & Conditions
-    yPosition += 10;
-    
-    if (yPosition > pageHeight - 40) {
-      doc.addPage();
-      yPosition = margin;
-    }
+    // Terms and conditions
+    if (estimate.terms || userInfo.estimateTerms) {
+      yPosition += 10;
+      
+      if (yPosition > pageHeight - 40) {
+        doc.addPage();
+        yPosition = margin;
+      }
 
-    addText('Terms & Conditions:', margin, yPosition, {
-      size: 10,
-      style: 'bold'
-    });
-    yPosition += 7;
-    
-    const terms = estimate.terms || userInfo.estimateTerms || 
-      'This estimate is valid for 30 days from the date above. Actual costs may vary based on site conditions and material availability. A deposit may be required to begin work.';
-    
-    const termsLines = doc.splitTextToSize(terms, pageWidth - (2 * margin));
-    addText(termsLines, margin, yPosition, {
-      size: 9,
-      color: lightGray
-    });
+      addText('Terms & Conditions:', margin, yPosition, {
+        size: 10,
+        style: 'bold'
+      });
+      yPosition += 7;
+      
+      const terms = String(estimate.terms || userInfo.estimateTerms || '');
+      if (terms) {
+        const termsLines = doc.splitTextToSize(terms, pageWidth - (2 * margin));
+        addText(termsLines, margin, yPosition, {
+          size: 9,
+          color: lightGray
+        });
+      }
+    }
 
     // Footer
     const footerY = pageHeight - 15;
@@ -452,7 +441,7 @@ export const downloadEstimatePDF = (estimate, userInfo, filename) => {
     const url = URL.createObjectURL(pdfBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = filename || `Estimate-${estimate.name || 'draft'}.pdf`;
+    link.download = filename || `Estimate-${estimate.estimateNumber || 'draft'}.pdf`;
     document.body.appendChild(link);
     link.click();
     

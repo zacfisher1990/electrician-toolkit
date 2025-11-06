@@ -56,10 +56,11 @@ exports.sendInvoiceEmail = onCall(
 
       console.log('Sending email to:', recipientEmail);
 
-      // Send email via Resend
+      // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
         from: 'Electrician Toolkit <onboarding@resend.dev>',
         to: recipientEmail,
+        bcc: userInfo.email, // BCC the sender so they get a copy
         subject: `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Electrician Toolkit'}`,
         html: generateInvoiceEmailHTML(invoice, message, userInfo),
         attachments: [
@@ -125,10 +126,11 @@ exports.sendEstimateEmail = onCall(
 
       console.log('Sending email to:', recipientEmail);
 
-      // Send email via Resend
+      // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
         from: 'Electrician Toolkit <onboarding@resend.dev>',
         to: recipientEmail,
+        bcc: userInfo.email, // BCC the sender so they get a copy
         subject: `Estimate: ${estimate.name || 'Untitled'} from ${userInfo.businessName || 'Electrician Toolkit'}`,
         html: generateEstimateEmailHTML(estimate, message, userInfo),
         attachments: [

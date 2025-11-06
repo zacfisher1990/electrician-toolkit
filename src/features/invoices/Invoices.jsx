@@ -3,7 +3,7 @@ import { FileText, Search, X } from 'lucide-react';
 import { getColors } from '../../theme';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase/firebase';
-import { getUserInvoices, createInvoice, updateInvoice, deleteInvoice } from './invoicesService';
+import { getUserInvoices, createInvoice, updateInvoice, deleteInvoice, recordInvoiceSent } from './invoicesService';
 import { saveInvoices, getInvoices, clearInvoicesCache } from '../../utils/localStorageUtils';
 import InvoiceModal from './InvoiceModal';
 import AddInvoiceSection from './AddInvoiceSection';
@@ -177,6 +177,9 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const handleSendInvoiceEmail = async (email, message) => {
     try {
       await sendInvoiceViaEmail(sendingInvoice, email, message, userBusinessInfo);
+      
+      // Record that the invoice was sent
+      await recordInvoiceSent(sendingInvoice.id, email);
       
       // Automatically update status to "Pending" after successful email send
       if (sendingInvoice.status === 'Draft' || !sendingInvoice.status) {

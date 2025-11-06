@@ -1,15 +1,10 @@
+// src/features/estimates/estimateSendService.js
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import app, { auth } from '../../firebase/firebase';
 import { downloadEstimatePDF } from './generateEstimatePDF';
 
 // Initialize Firebase Functions with explicit region
 const functions = getFunctions(app, 'us-central1');
-
-// IMPORTANT: For local development, uncomment this:
-// import { connectFunctionsEmulator } from 'firebase/functions';
-// if (window.location.hostname === 'localhost') {
-//   connectFunctionsEmulator(functions, 'localhost', 5001);
-// }
 
 /**
  * Send estimate via email using Firebase Cloud Function and Resend
@@ -23,10 +18,6 @@ export const sendEstimateViaEmail = async (estimate, recipientEmail, message, us
     }
 
     console.log('Sending estimate email...', { estimate, recipientEmail });
-
-    // Get the auth token to ensure it's fresh
-    const token = await currentUser.getIdToken(true);
-    console.log('User authenticated with token');
 
     // Call the Cloud Function
     const sendEstimateEmail = httpsCallable(functions, 'sendEstimateEmail');
@@ -43,17 +34,9 @@ export const sendEstimateViaEmail = async (estimate, recipientEmail, message, us
   } catch (error) {
     console.error('Error sending estimate:', error);
     
-    // Better error messages
+    // Provide more helpful error messages
     if (error.code === 'unauthenticated') {
       throw new Error('Authentication failed. Please log out and log back in.');
-    }
-    
-    if (error.code === 'functions/internal') {
-      throw new Error('Server error sending estimate. Please try again.');
-    }
-    
-    if (error.message?.includes('CORS')) {
-      throw new Error('Connection error. Make sure your Firebase function is deployed.');
     }
     
     throw new Error(error.message || 'Failed to send estimate');
@@ -65,7 +48,7 @@ export const sendEstimateViaEmail = async (estimate, recipientEmail, message, us
  */
 export const downloadEstimate = (estimate, userInfo) => {
   try {
-    const filename = `Estimate-${estimate.name || 'draft'}.pdf`;
+    const filename = `Estimate-${estimate.estimateNumber || 'draft'}.pdf`;
     downloadEstimatePDF(estimate, userInfo, filename);
     return { success: true };
   } catch (error) {
@@ -98,15 +81,14 @@ export const getUserBusinessInfo = async (userId) => {
       
       return {
         businessName: userData.company || userData.displayName || 'Electrician Toolkit',
-        companyLogo: userData.companyLogo || null, // Company logo URL from profile
+        companyLogo: userData.companyLogo || null,
         email: userData.email || auth.currentUser?.email || 'onboarding@resend.dev',
         phone: userData.phone || '',
         address: userData.address || '',
-        estimateTerms: userData.estimateTerms || 'This estimate is valid for 30 days from the date above. Actual costs may vary based on site conditions and material availability. A deposit may be required to begin work.'
+        estimateTerms: userData.estimateTerms || 'This estimate is valid for 30 days. Final pricing may vary based on actual work performed and materials used.'
       };
     }
     
-    // If no user document found, use defaults
     return getDefaultBusinessInfo();
   } catch (error) {
     console.error('Error getting user business info:', error);
@@ -124,6 +106,6 @@ const getDefaultBusinessInfo = () => {
     email: 'onboarding@resend.dev',
     phone: '(555) 123-4567',
     address: '123 Main St, City, State 12345',
-    estimateTerms: 'This estimate is valid for 30 days from the date above. Actual costs may vary based on site conditions and material availability. A deposit may be required to begin work.'
+    estimateTerms: 'This estimate is valid for 30 days. Final pricing may vary based on actual work performed and materials used.'
   };
 };

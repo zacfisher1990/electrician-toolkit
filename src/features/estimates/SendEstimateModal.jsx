@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, Download, Send, CheckCircle, AlertCircle } from 'lucide-react';
-import Toast from '../../components/Toast';
+import Toast from '../../components/Toast'; // Add this import
 
 const SendEstimateModal = ({ 
   estimate, 
@@ -11,14 +11,14 @@ const SendEstimateModal = ({
 }) => {
   const [email, setEmail] = useState(estimate.clientEmail || '');
   const [message, setMessage] = useState(
-    `Hi ${estimate.clientName || 'there'},\n\nPlease find attached estimate for ${estimate.name} totaling $${parseFloat(estimate.total || 0).toFixed(2)}.\n\nThis estimate is valid for 30 days. Please let me know if you have any questions.\n\nThank you for considering our services!`
+    `Hi ${estimate.clientName || estimate.client || 'there'},\n\nPlease find attached estimate #${estimate.estimateNumber || 'N/A'} for $${parseFloat(estimate.total || estimate.amount || 0).toFixed(2)}.\n\nThis estimate is valid for 30 days. Please let me know if you have any questions!\n\nThank you for considering our services!`
   );
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastType, setToastType] = useState('success');
+  const [showToast, setShowToast] = useState(false); // Add toast state
+  const [toastMessage, setToastMessage] = useState(''); // Add toast message state
+  const [toastType, setToastType] = useState('success'); // Add toast type state
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -27,7 +27,7 @@ const SendEstimateModal = ({
     text: isDarkMode ? '#ffffff' : '#111827',
     textSecondary: isDarkMode ? '#9ca3af' : '#6b7280',
     inputBg: isDarkMode ? '#1a1a1a' : '#ffffff',
-    buttonBg: '#10b981',
+    buttonBg: '#3b82f6',
     buttonText: '#ffffff',
     successBg: '#10b981',
     errorBg: '#ef4444'
@@ -49,7 +49,7 @@ const SendEstimateModal = ({
         onClose();
       }, 2000);
     } catch (err) {
-      console.error('Error sending estimate:', err);
+      console.error('Error sending invoice:', err);
       setError(err.message || 'Failed to send estimate. Please try again.');
     } finally {
       setSending(false);
@@ -159,7 +159,7 @@ const SendEstimateModal = ({
                 fontSize: '0.875rem',
                 margin: 0
               }}>
-                Estimate "{estimate.name}" has been sent to {email}
+                Estimate #{estimate.estimateNumber} has been sent to {email}
               </p>
             </div>
           ) : (
@@ -181,37 +181,35 @@ const SendEstimateModal = ({
                     color: colors.textSecondary,
                     fontSize: '0.875rem'
                   }}>
-                    Estimate
+                    Estimate #
                   </span>
                   <span style={{
                     color: colors.text,
                     fontSize: '0.875rem',
                     fontWeight: '600'
                   }}>
-                    {estimate.name || 'Untitled'}
+                    {estimate.estimateNumber || 'N/A'}
                   </span>
                 </div>
-                {estimate.clientName && (
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    marginBottom: '0.5rem'
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginBottom: '0.5rem'
+                }}>
+                  <span style={{
+                    color: colors.textSecondary,
+                    fontSize: '0.875rem'
                   }}>
-                    <span style={{
-                      color: colors.textSecondary,
-                      fontSize: '0.875rem'
-                    }}>
-                      Client
-                    </span>
-                    <span style={{
-                      color: colors.text,
-                      fontSize: '0.875rem',
-                      fontWeight: '600'
-                    }}>
-                      {estimate.clientName}
-                    </span>
-                  </div>
-                )}
+                    Client
+                  </span>
+                  <span style={{
+                    color: colors.text,
+                    fontSize: '0.875rem',
+                    fontWeight: '600'
+                  }}>
+                    {estimate.clientName || estimate.client || 'N/A'}
+                  </span>
+                </div>
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -222,14 +220,14 @@ const SendEstimateModal = ({
                     color: colors.textSecondary,
                     fontSize: '0.875rem'
                   }}>
-                    Total
+                    Estimated Total
                   </span>
                   <span style={{
-                    color: colors.buttonBg,
+                    color: colors.text,
                     fontSize: '1.125rem',
                     fontWeight: '700'
                   }}>
-                    ${parseFloat(estimate.total || 0).toFixed(2)}
+                    ${parseFloat(estimate.total || estimate.amount || 0).toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -279,7 +277,7 @@ const SendEstimateModal = ({
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Add a personal message..."
-                  rows={6}
+                  rows={5}
                   style={{
                     width: '100%',
                     padding: '0.75rem',

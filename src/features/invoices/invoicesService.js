@@ -6,7 +6,8 @@ import {
   updateDoc, 
   deleteDoc, 
   doc, 
-  getDocs, 
+  getDocs,
+  getDoc,
   query, 
   where,
   orderBy,
@@ -164,6 +165,32 @@ export const updateInvoiceStatus = async (invoiceId, status) => {
     });
   } catch (error) {
     console.error('Error updating invoice status:', error);
+    throw error;
+  }
+};
+
+/**
+ * Record that an invoice was sent via email
+ */
+export const recordInvoiceSent = async (invoiceId, recipientEmail) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const invoiceRef = doc(db, INVOICES_COLLECTION, invoiceId);
+    const invoiceDoc = await getDoc(invoiceRef);
+    const currentSentCount = invoiceDoc.data()?.sentCount || 0;
+
+    await updateDoc(invoiceRef, {
+      lastSentAt: serverTimestamp(),
+      lastSentTo: recipientEmail,
+      sentCount: currentSentCount + 1,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error recording invoice sent:', error);
     throw error;
   }
 };

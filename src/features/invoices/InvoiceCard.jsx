@@ -278,6 +278,37 @@ const InvoiceCard = ({
           paddingTop: '0.75rem',
           borderTop: `1px solid ${colors.border}`
         }}>
+          {/* Send History */}
+          {invoice.lastSentAt && (
+            <div style={{
+              marginBottom: '0.75rem',
+              padding: '0.5rem 0.75rem',
+              background: isDarkMode ? '#1a3a1a' : '#f0fdf4',
+              borderRadius: '0.5rem',
+              fontSize: '0.75rem',
+              color: isDarkMode ? '#86efac' : '#166534',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <span style={{ fontSize: '1rem' }}>✓</span>
+              <div>
+                <div style={{ fontWeight: '600' }}>
+                  Sent {invoice.sentCount > 1 ? `${invoice.sentCount} times` : 'once'}
+                </div>
+                <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>
+                  Last sent to {invoice.lastSentTo} on {new Date(invoice.lastSentAt.seconds * 1000).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Line Items */}
           {invoice.lineItems && invoice.lineItems.length > 0 && (
             <div style={{ marginBottom: '0.75rem' }}>
