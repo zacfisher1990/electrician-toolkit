@@ -11,7 +11,7 @@ const SendEstimateModal = ({
 }) => {
   const [email, setEmail] = useState(estimate.clientEmail || '');
   const [message, setMessage] = useState(
-    `Hi ${estimate.clientName || estimate.client || 'there'},\n\nPlease find attached estimate #${estimate.estimateNumber || 'N/A'} for $${parseFloat(estimate.total || estimate.amount || 0).toFixed(2)}.\n\nThis estimate is valid for 30 days. Please let me know if you have any questions!\n\nThank you for considering our services!`
+    `Please find attached your estimate for ${estimate.name || 'your project'}.\n\nThis estimate is valid for 30 days. If you have any questions, please don't hesitate to reach out.\n\nThank you for considering our services!`
   );
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);

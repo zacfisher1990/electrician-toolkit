@@ -73,7 +73,7 @@ exports.sendInvoiceEmail = onCall(
 
       // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
-        from: 'ProXTrades <invoices@proxtrades.com>',
+        from: `${userInfo.businessName || 'ProXTrades'} <invoices@proxtrades.com>`,
         replyTo: userInfo.email, // Client replies go to the user!
         to: recipientEmail,
         bcc: userInfo.email, // BCC the sender so they get a copy
@@ -156,7 +156,7 @@ exports.sendEstimateEmail = onCall(
 
       // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
-        from: 'ProxTrades <estimates@proxtrades.com>',
+        from: `${userInfo.businessName || 'ProXTrades'} <estimates@proxtrades.com>`,
         replyTo: userInfo.email, // Client replies go to the user!
         to: recipientEmail,
         bcc: userInfo.email, // BCC the sender so they get a copy
@@ -767,7 +767,7 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
               
               <tr>
                 <td style="padding: 40px 30px;">
-                  <h2 style="color: #111827; margin: 0 0 20px; font-size: 20px;">Estimate: ${estimate.name || 'Untitled'}</h2>
+                  <h2 style="color: #111827; margin: 0 0 20px; font-size: 20px;">Estimate: ${estimate.name || 'Your Project'}</h2>
                   
                   ${customMessage ? `
                     <p style="color: #6b7280; margin: 0 0 20px; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${customMessage}</p>
@@ -776,12 +776,12 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
                   <table width="100%" cellpadding="10" cellspacing="0" style="border: 1px solid #e5e7eb; border-radius: 6px; margin: 20px 0;">
                     <tr style="background-color: #f9fafb;">
                       <td style="color: #6b7280; font-size: 14px;">Estimate Date:</td>
-                      <td align="right" style="color: #111827; font-size: 14px; font-weight: 600;">${estimate.createdAt ? new Date(estimate.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</td>
+                      <td align="right" style="color: #111827; font-size: 14px; font-weight: 600;">${estimate.createdAt?.seconds ? new Date(estimate.createdAt.seconds * 1000).toLocaleDateString() : new Date().toLocaleDateString()}</td>
                     </tr>
                     <tr>
                       <td style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb;">Valid Until:</td>
                       <td align="right" style="color: #111827; font-size: 14px; font-weight: 600; border-top: 1px solid #e5e7eb;">${(() => {
-                        const date = estimate.createdAt ? new Date(estimate.createdAt) : new Date();
+                        const date = estimate.createdAt?.seconds ? new Date(estimate.createdAt.seconds * 1000) : new Date();
                         date.setDate(date.getDate() + 30);
                         return date.toLocaleDateString();
                       })()}</td>

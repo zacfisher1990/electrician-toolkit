@@ -100,49 +100,26 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
       color: primaryColor
     });
 
-    addText(`#${estimate.estimateNumber || 'N/A'}`, pageWidth - margin, yPosition, {
-      size: 12,
-      style: 'bold',
-      align: 'right'
-    });
+    if (estimate.estimateNumber) {
+      addText(`#${estimate.estimateNumber}`, pageWidth - margin, yPosition, {
+        size: 12,
+        style: 'bold',
+        align: 'right'
+      });
+    }
 
     yPosition += 15;
 
-    // Estimate Details - Two columns
-    // Left column - Estimate For
-    addText('ESTIMATE FOR:', margin, yPosition, {
+    // Estimate Name
+    addText('Estimate Name:', margin, yPosition, {
       size: 10,
       style: 'bold'
     });
     
     yPosition += 7;
-    addText(estimate.clientName || estimate.client || 'Client Name', margin, yPosition, {
+    addText(estimate.name || 'Untitled Estimate', margin, yPosition, {
       size: 11
     });
-    
-    if (estimate.clientAddress) {
-      yPosition += 6;
-      addText(estimate.clientAddress, margin, yPosition, {
-        size: 9,
-        color: lightGray
-      });
-    }
-    
-    if (estimate.clientEmail) {
-      yPosition += 6;
-      addText(estimate.clientEmail, margin, yPosition, {
-        size: 9,
-        color: lightGray
-      });
-    }
-    
-    if (estimate.clientPhone) {
-      yPosition += 6;
-      addText(estimate.clientPhone, margin, yPosition, {
-        size: 9,
-        color: lightGray
-      });
-    }
 
     // Right column - Estimate Details
     const rightColX = pageWidth - margin - 60;
@@ -152,10 +129,16 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
       size: 9,
       color: lightGray
     });
+    
+    // Handle Firestore timestamp
+    const estimateDate = estimate.createdAt?.seconds 
+      ? new Date(estimate.createdAt.seconds * 1000)
+      : estimate.createdAt 
+        ? new Date(estimate.createdAt)
+        : new Date();
+    
     addText(
-      estimate.date 
-        ? new Date(estimate.date).toLocaleDateString() 
-        : new Date().toLocaleDateString(), 
+      estimateDate.toLocaleDateString(), 
       pageWidth - margin, 
       rightYPosition, 
       {
@@ -169,164 +152,118 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
       size: 9,
       color: lightGray
     });
-    addText(estimate.validUntil || estimate.expiryDate || '30 Days', pageWidth - margin, rightYPosition, {
+    
+    // Calculate valid until date (30 days from creation)
+    const validUntilDate = new Date(estimateDate);
+    validUntilDate.setDate(validUntilDate.getDate() + 30);
+    
+    addText(validUntilDate.toLocaleDateString(), pageWidth - margin, rightYPosition, {
       size: 9,
-      align: 'right'
-    });
-
-    rightYPosition += 6;
-    addText('Status:', rightColX, rightYPosition, {
-      size: 9,
-      color: lightGray
-    });
-    
-    // Status badge
-    const statusColor = estimate.status === 'Accepted' ? [16, 185, 129] :
-                        estimate.status === 'Pending' ? [245, 158, 11] :
-                        estimate.status === 'Declined' ? [239, 68, 68] : lightGray;
-    
-    doc.setFillColor(...statusColor);
-    const statusText = estimate.status || 'Pending';
-    const statusWidth = doc.getTextWidth(statusText) + 8;
-    doc.roundedRect(pageWidth - margin - statusWidth, rightYPosition - 4, statusWidth, 6, 1, 1, 'F');
-    
-    addText(statusText, pageWidth - margin, rightYPosition, {
-      size: 8,
-      style: 'bold',
-      color: [255, 255, 255],
       align: 'right'
     });
 
     yPosition = Math.max(yPosition, rightYPosition) + 15;
 
-    // Line items table
-    yPosition += 5;
-    
-    // Table header
-    doc.setFillColor(249, 250, 251);
-    doc.rect(margin, yPosition, pageWidth - (2 * margin), 8, 'F');
-    
-    yPosition += 6;
-    
-    addText('Description', margin + 2, yPosition, {
-      size: 9,
-      style: 'bold'
-    });
-    
-    addText('Qty', pageWidth - margin - 60, yPosition, {
-      size: 9,
-      style: 'bold'
-    });
-    
-    addText('Rate', pageWidth - margin - 40, yPosition, {
-      size: 9,
-      style: 'bold'
-    });
-    
-    addText('Amount', pageWidth - margin, yPosition, {
-      size: 9,
-      style: 'bold',
-      align: 'right'
-    });
-
-    yPosition += 8;
-
-    // Line items
-    const lineItems = estimate.lineItems || [];
-    lineItems.forEach((item, index) => {
-      if (yPosition > pageHeight - 60) {
-        doc.addPage();
-        yPosition = margin;
-      }
-
-      addText(item.description || '', margin + 2, yPosition, {
-        size: 9
+    // Labor section (if applicable)
+    if (estimate.laborHours && estimate.laborRate) {
+      addText('Labor:', margin, yPosition, {
+        size: 10,
+        style: 'bold'
+      });
+      yPosition += 7;
+      
+      addText(`${estimate.laborHours} hours × $${parseFloat(estimate.laborRate).toFixed(2)}/hr`, margin + 2, yPosition, {
+        size: 9,
+        color: lightGray
       });
       
-      addText(String(item.quantity || 1), pageWidth - margin - 60, yPosition, {
-        size: 9
-      });
-      
-      addText(`$${parseFloat(item.rate || 0).toFixed(2)}`, pageWidth - margin - 40, yPosition, {
-        size: 9
-      });
-      
-      const amount = (item.quantity || 1) * (item.rate || 0);
-      addText(`$${amount.toFixed(2)}`, pageWidth - margin, yPosition, {
+      const laborTotal = estimate.laborHours * estimate.laborRate;
+      addText(`$${laborTotal.toFixed(2)}`, pageWidth - margin, yPosition, {
         size: 9,
         align: 'right'
       });
+      
+      yPosition += 10;
+    }
 
+    // Materials section
+    if (estimate.materials && estimate.materials.length > 0) {
+      addText('Materials:', margin, yPosition, {
+        size: 10,
+        style: 'bold'
+      });
       yPosition += 7;
       
-      // Add separator line
-      if (index < lineItems.length - 1) {
-        doc.setDrawColor(229, 231, 235);
-        doc.line(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 5;
-      }
-    });
+      // Materials table header
+      doc.setFillColor(249, 250, 251);
+      doc.rect(margin, yPosition, pageWidth - (2 * margin), 8, 'F');
+      
+      yPosition += 6;
+      
+      addText('Material', margin + 2, yPosition, {
+        size: 9,
+        style: 'bold'
+      });
+      
+      addText('Qty', pageWidth - margin - 60, yPosition, {
+        size: 9,
+        style: 'bold'
+      });
+      
+      addText('Cost', pageWidth - margin - 40, yPosition, {
+        size: 9,
+        style: 'bold'
+      });
+      
+      addText('Total', pageWidth - margin, yPosition, {
+        size: 9,
+        style: 'bold',
+        align: 'right'
+      });
 
-    yPosition += 10;
+      yPosition += 8;
 
-    // Totals section
+      // Materials list
+      estimate.materials.forEach((material, index) => {
+        if (yPosition > pageHeight - 60) {
+          doc.addPage();
+          yPosition = margin;
+        }
+
+        addText(material.name || '', margin + 2, yPosition, {
+          size: 9
+        });
+        
+        addText(String(material.quantity || 1), pageWidth - margin - 60, yPosition, {
+          size: 9
+        });
+        
+        addText(`$${parseFloat(material.cost || 0).toFixed(2)}`, pageWidth - margin - 40, yPosition, {
+          size: 9
+        });
+        
+        const materialTotal = (material.quantity || 1) * (material.cost || 0);
+        addText(`$${materialTotal.toFixed(2)}`, pageWidth - margin, yPosition, {
+          size: 9,
+          align: 'right'
+        });
+
+        yPosition += 7;
+        
+        // Add separator line
+        if (index < estimate.materials.length - 1) {
+          doc.setDrawColor(229, 231, 235);
+          doc.line(margin, yPosition, pageWidth - margin, yPosition);
+          yPosition += 5;
+        }
+      });
+
+      yPosition += 10;
+    }
+
+    // Total section
     const totalsX = pageWidth - margin - 60;
     
-    // Calculate subtotal from line items if not provided
-    const calculateSubtotal = () => {
-      if (estimate.subtotal) return estimate.subtotal;
-      if (estimate.lineItems && estimate.lineItems.length > 0) {
-        return estimate.lineItems.reduce((sum, item) => {
-          return sum + ((item.quantity || 1) * (item.rate || 0));
-        }, 0);
-      }
-      return estimate.amount || estimate.total || 0;
-    };
-    
-    const subtotal = calculateSubtotal();
-    const tax = parseFloat(estimate.tax || 0);
-    const discount = parseFloat(estimate.discount || 0);
-    const finalTotal = estimate.total || estimate.amount || (subtotal + tax - discount);
-    
-    // Subtotal
-    addText('Subtotal:', totalsX, yPosition, {
-      size: 10,
-      color: lightGray
-    });
-    addText(`$${parseFloat(subtotal).toFixed(2)}`, pageWidth - margin, yPosition, {
-      size: 10,
-      align: 'right'
-    });
-
-    yPosition += 7;
-
-    // Tax (if applicable)
-    if (tax > 0) {
-      addText(`Tax (${estimate.taxRate || 0}%):`, totalsX, yPosition, {
-        size: 10,
-        color: lightGray
-      });
-      addText(`$${tax.toFixed(2)}`, pageWidth - margin, yPosition, {
-        size: 10,
-        align: 'right'
-      });
-      yPosition += 7;
-    }
-
-    // Discount (if applicable)
-    if (discount > 0) {
-      addText('Discount:', totalsX, yPosition, {
-        size: 10,
-        color: lightGray
-      });
-      addText(`-$${discount.toFixed(2)}`, pageWidth - margin, yPosition, {
-        size: 10,
-        color: [239, 68, 68],
-        align: 'right'
-      });
-      yPosition += 7;
-    }
-
     // Line before total
     doc.setDrawColor(...darkGray);
     doc.setLineWidth(0.5);
@@ -334,11 +271,11 @@ export const generateEstimatePDF = (estimate, userInfo = {}) => {
     yPosition += 7;
 
     // Total
-    addText('ESTIMATED TOTAL:', totalsX, yPosition, {
+    addText('TOTAL ESTIMATE:', totalsX, yPosition, {
       size: 12,
       style: 'bold'
     });
-    addText(`$${parseFloat(finalTotal).toFixed(2)}`, pageWidth - margin, yPosition, {
+    addText(`$${parseFloat(estimate.total || 0).toFixed(2)}`, pageWidth - margin, yPosition, {
       size: 14,
       style: 'bold',
       color: primaryColor,
