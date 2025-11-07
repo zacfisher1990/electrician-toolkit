@@ -372,10 +372,11 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       doc.fontSize(14)
          .font('Helvetica-Bold')
          .fillColor(darkGray)
-         .text('TOTAL:', totalLabelX, yPos)
-         .fontSize(16)
+         .text('TOTAL:', totalLabelX, yPos, { width: 150, align: 'left' });
+      
+      doc.fontSize(16)
          .fillColor(primaryColor)
-         .text(`$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`, totalValueX, yPos, { align: 'right' });
+         .text(`$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`, doc.page.width - 120, yPos, { width: 70, align: 'right' });
 
       // Notes
       if (invoice.notes) {
@@ -482,69 +483,77 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
          .fillColor(lightGray)
          .text('Date:', rightColumn, 165);
       
+      // Handle Firestore timestamp properly
+      const estimateDate = estimate.createdAt?.seconds 
+        ? new Date(estimate.createdAt.seconds * 1000)
+        : estimate.createdAt 
+          ? new Date(estimate.createdAt)
+          : new Date();
+      
       doc.font('Helvetica-Bold')
          .fillColor(darkGray)
-         .text(estimate.createdAt ? new Date(estimate.createdAt).toLocaleDateString() : new Date().toLocaleDateString(), rightColumn, 180);
+         .text(estimateDate.toLocaleDateString(), rightColumn, 180);
 
       doc.font('Helvetica')
          .fillColor(lightGray)
          .text('Valid Until:', rightColumn, 200);
       
-      const validDate = estimate.createdAt ? new Date(estimate.createdAt) : new Date();
+      const validDate = new Date(estimateDate);
       validDate.setDate(validDate.getDate() + 30);
       
       doc.font('Helvetica-Bold')
          .fillColor(darkGray)
          .text(validDate.toLocaleDateString(), rightColumn, 215);
 
-      // Prepared For section
+      // Labor section (if applicable)
       let yPos = 250;
-      doc.fontSize(12)
-         .font('Helvetica-Bold')
-         .fillColor(darkGray)
-         .text('Prepared For:', 50, yPos);
-
-      yPos += 20;
-      doc.fontSize(10)
-         .font('Helvetica')
-         .text(estimate.clientName || 'Client Name', 50, yPos);
-
-      if (estimate.clientEmail) {
-        yPos += 15;
-        doc.text(estimate.clientEmail, 50, yPos);
-      }
-
-      if (estimate.clientPhone) {
-        yPos += 15;
-        doc.text(estimate.clientPhone, 50, yPos);
-      }
-
-      if (estimate.clientAddress) {
-        yPos += 15;
-        doc.text(estimate.clientAddress, 50, yPos);
-      }
-
-      // Line Items Table
-      yPos = 350;
       
-      // Table Header
-      doc.rect(50, yPos, doc.page.width - 100, 30).fill('#f9fafb');
+      if (estimate.laborHours && estimate.laborRate) {
+        doc.fontSize(12)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('Labor:', 50, yPos);
+
+        yPos += 20;
+        doc.fontSize(10)
+           .font('Helvetica')
+           .fillColor(lightGray)
+           .text(`${estimate.laborHours} hours × $${parseFloat(estimate.laborRate).toFixed(2)}/hr`, 60, yPos);
+        
+        const laborTotal = estimate.laborHours * estimate.laborRate;
+        doc.fillColor(darkGray)
+           .text(`$${laborTotal.toFixed(2)}`, 480, yPos);
+
+        yPos += 30;
+      }
+
+      // Materials Table
       
-      doc.fontSize(10)
-         .font('Helvetica-Bold')
-         .fillColor(darkGray)
-         .text('Description', 60, yPos + 10)
-         .text('Qty', 320, yPos + 10)
-         .text('Rate', 380, yPos + 10)
-         .text('Amount', 480, yPos + 10);
+      if (estimate.materials && estimate.materials.length > 0) {
+        doc.fontSize(12)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('Materials:', 50, yPos);
+        
+        yPos += 20;
+      
+        // Table Header
+        doc.rect(50, yPos, doc.page.width - 100, 30).fill('#f9fafb');
+        
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('Material', 60, yPos + 10)
+           .text('Qty', 320, yPos + 10)
+           .text('Cost', 380, yPos + 10)
+           .text('Total', 480, yPos + 10);
 
-      yPos += 30;
+        yPos += 30;
 
-      // Table Rows
-      if (estimate.items && estimate.items.length > 0) {
+        // Materials Rows
         doc.font('Helvetica').fontSize(9);
         
-        estimate.items.forEach((item, index) => {
+        estimate.materials.forEach((material, index) => {
           if (yPos > 700) {
             doc.addPage();
             yPos = 50;
@@ -553,58 +562,18 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
           const rowColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
           doc.rect(50, yPos, doc.page.width - 100, 25).fill(rowColor);
 
+          const materialTotal = (material.quantity || 1) * (material.cost || 0);
+
           doc.fillColor(darkGray)
-             .text(item.description || item.name || 'Item', 60, yPos + 8, { width: 240 })
-             .text(item.quantity || 1, 320, yPos + 8)
-             .text(`$${parseFloat(item.rate || item.price || 0).toFixed(2)}`, 380, yPos + 8)
-             .text(`$${parseFloat(item.amount || (item.quantity * item.rate) || 0).toFixed(2)}`, 480, yPos + 8);
+             .text(material.name || 'Material', 60, yPos + 8, { width: 240 })
+             .text(material.quantity || 1, 320, yPos + 8)
+             .text(`$${parseFloat(material.cost || 0).toFixed(2)}`, 380, yPos + 8)
+             .text(`$${materialTotal.toFixed(2)}`, 480, yPos + 8);
 
           yPos += 25;
         });
-      }
 
-      // Groups (if any)
-      if (estimate.groups && estimate.groups.length > 0) {
         yPos += 10;
-        
-        estimate.groups.forEach(group => {
-          if (yPos > 700) {
-            doc.addPage();
-            yPos = 50;
-          }
-
-          // Group Header
-          doc.fontSize(11)
-             .font('Helvetica-Bold')
-             .fillColor(darkGray)
-             .text(group.name || 'Group', 60, yPos);
-          
-          yPos += 20;
-
-          if (group.items && group.items.length > 0) {
-            doc.font('Helvetica').fontSize(9);
-            
-            group.items.forEach((item, index) => {
-              if (yPos > 700) {
-                doc.addPage();
-                yPos = 50;
-              }
-
-              const rowColor = index % 2 === 0 ? '#f3f4f6' : '#e5e7eb';
-              doc.rect(50, yPos, doc.page.width - 100, 25).fill(rowColor);
-
-              doc.fillColor(darkGray)
-                 .text(item.description || item.name || 'Item', 60, yPos + 8, { width: 240 })
-                 .text(item.quantity || 1, 320, yPos + 8)
-                 .text(`$${parseFloat(item.rate || item.price || 0).toFixed(2)}`, 380, yPos + 8)
-                 .text(`$${parseFloat(item.amount || (item.quantity * item.rate) || 0).toFixed(2)}`, 480, yPos + 8);
-
-              yPos += 25;
-            });
-          }
-
-          yPos += 10;
-        });
       }
 
       yPos += 10;
@@ -621,10 +590,11 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
       doc.fontSize(14)
          .font('Helvetica-Bold')
          .fillColor(darkGray)
-         .text('TOTAL ESTIMATE:', totalLabelX, yPos)
-         .fontSize(16)
+         .text('TOTAL ESTIMATE:', totalLabelX, yPos, { width: 150, align: 'left' });
+      
+      doc.fontSize(16)
          .fillColor(primaryColor)
-         .text(`$${parseFloat(estimate.total || 0).toFixed(2)}`, totalValueX, yPos, { align: 'right' });
+         .text(`$${parseFloat(estimate.total || 0).toFixed(2)}`, doc.page.width - 120, yPos, { width: 70, align: 'right' });
 
       // Notes
       if (estimate.notes) {
