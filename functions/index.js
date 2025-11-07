@@ -73,10 +73,10 @@ exports.sendInvoiceEmail = onCall(
 
       // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
-        from: 'Electrician Toolkit <onboarding@resend.dev>',
+        from: 'ProxTrades <invoices@proxtrades.com>',
         to: recipientEmail,
         bcc: userInfo.email, // BCC the sender so they get a copy
-        subject: `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Electrician Toolkit'}`,
+        subject: `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'ProxTrades'}`,
         html: generateInvoiceEmailHTML(invoice, message, userInfo),
         attachments: [
           {
@@ -155,10 +155,10 @@ exports.sendEstimateEmail = onCall(
 
       // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
-        from: 'Electrician Toolkit <onboarding@resend.dev>',
+        from: 'ProxTrades <invoices@proxtrades.com>',
         to: recipientEmail,
         bcc: userInfo.email, // BCC the sender so they get a copy
-        subject: `Estimate: ${estimate.name || 'Untitled'} from ${userInfo.businessName || 'Electrician Toolkit'}`,
+        subject: `Estimate: ${estimate.name || 'Untitled'} from ${userInfo.businessName || 'ProxTrades'}`,
         html: generateEstimateEmailHTML(estimate, message, userInfo),
         attachments: [
           {
