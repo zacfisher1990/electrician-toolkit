@@ -73,10 +73,11 @@ exports.sendInvoiceEmail = onCall(
 
       // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
-        from: 'ProxTrades <invoices@proxtrades.com>',
+        from: 'ProXTrades <invoices@proxtrades.com>',
+        replyTo: userInfo.email, // Client replies go to the user!
         to: recipientEmail,
         bcc: userInfo.email, // BCC the sender so they get a copy
-        subject: `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'ProxTrades'}`,
+        subject: `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'ProXTrades'}`,
         html: generateInvoiceEmailHTML(invoice, message, userInfo),
         attachments: [
           {
@@ -155,7 +156,8 @@ exports.sendEstimateEmail = onCall(
 
       // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
-        from: 'ProxTrades <invoices@proxtrades.com>',
+        from: 'ProxTrades <estimates@proxtrades.com>',
+        replyTo: userInfo.email, // Client replies go to the user!
         to: recipientEmail,
         bcc: userInfo.email, // BCC the sender so they get a copy
         subject: `Estimate: ${estimate.name || 'Untitled'} from ${userInfo.businessName || 'ProxTrades'}`,

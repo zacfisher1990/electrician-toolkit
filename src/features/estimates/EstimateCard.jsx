@@ -252,6 +252,37 @@ const EstimateCard = ({
           paddingTop: '0.75rem',
           borderTop: `1px solid ${cardColors.border}`
         }}>
+          {/* Send History */}
+          {estimate.lastSentAt && (
+            <div style={{
+              marginBottom: '0.75rem',
+              padding: '0.5rem 0.75rem',
+              background: isDarkMode ? '#1a3a1a' : '#f0fdf4',
+              borderRadius: '0.5rem',
+              fontSize: '0.75rem',
+              color: isDarkMode ? '#86efac' : '#166534',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <span style={{ fontSize: '1rem' }}>✓</span>
+              <div>
+                <div style={{ fontWeight: '600' }}>
+                  Sent {estimate.sentCount > 1 ? `${estimate.sentCount} times` : 'once'}
+                </div>
+                <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>
+                  Last sent to {estimate.lastSentTo} on {new Date(estimate.lastSentAt.seconds * 1000).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Labor Details */}
           {estimate.laborHours && estimate.laborRate && (
             <div style={{

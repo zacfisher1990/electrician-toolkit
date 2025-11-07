@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FileText, Search, X } from 'lucide-react';
 import { getColors } from '../../theme';
-import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as deleteEstimateFromFirebase } from './estimatesService';
+import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as deleteEstimateFromFirebase, recordEstimateSent } from './estimatesService';
 import { sendEstimateViaEmail, downloadEstimate, getUserBusinessInfo } from './estimateSendService';
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -217,13 +217,11 @@ const Estimates = ({
       
       await sendEstimateViaEmail(sendingEstimate, email, message, businessInfo);
       
-      // Update estimate status to "Pending" when sent
-      await updateEstimate(sendingEstimate.id, {
-        ...sendingEstimate,
-        status: 'Pending',
-        sentDate: new Date().toISOString(),
-        sentTo: email
-      });
+      // Record that the estimate was sent
+      await recordEstimateSent(sendingEstimate.id, email);
+
+      clearEstimatesCache();
+      await loadEstimates();
       
       clearEstimatesCache();
       await loadEstimates();
