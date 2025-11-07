@@ -3,16 +3,20 @@
  * 
  * Installation:
  * 1. cd functions
- * 2. npm install resend jspdf
- * 3. Create functions/.env with: RESEND_API_KEY=your_key_here
- * 4. Deploy: firebase deploy --only functions:sendInvoiceEmail,sendEstimateEmail
+ * 2. npm install resend pdfkit
+ * 3. Set config: firebase functions:config:set resend.api_key="your_key_here"
+ * 4. For local: Add RESEND_API_KEY to functions/.env
+ * 5. Deploy: firebase deploy --only functions:sendInvoiceEmail,sendEstimateEmail
  */
 
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { setGlobalOptions } = require('firebase-functions/v2');
+const { defineString } = require('firebase-functions/params');
 const { Resend } = require('resend');
-const { jsPDF } = require('jspdf');
-const functions = require('firebase-functions');
+const PDFDocument = require('pdfkit');
+
+// Define the Resend API key parameter (will use RESEND_API_KEY env var)
+const resendApiKey = defineString('RESEND_API_KEY');
 
 // Set global options
 setGlobalOptions({
@@ -26,8 +30,18 @@ setGlobalOptions({
 exports.sendInvoiceEmail = onCall(
   { cors: true },
   async (request) => {
-    // Initialize Resend with environment variable
-    const resend = new Resend(functions.config().resend.api_key);
+    // Get API key
+    const apiKey = resendApiKey.value();
+    
+    if (!apiKey) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Resend API key is not configured. Please set RESEND_API_KEY environment variable.'
+      );
+    }
+
+    // Initialize Resend
+    const resend = new Resend(apiKey);
     
     // Verify user is authenticated
     if (!request.auth) {
@@ -50,7 +64,7 @@ exports.sendInvoiceEmail = onCall(
       console.log('Generating PDF for invoice:', invoice.invoiceNumber);
       
       // Generate PDF
-      const pdfBuffer = generateInvoicePDFBuffer(invoice, userInfo);
+      const pdfBuffer = await generateInvoicePDFBuffer(invoice, userInfo);
 
       // Convert buffer to base64
       const pdfBase64 = pdfBuffer.toString('base64');
@@ -73,6 +87,7 @@ exports.sendInvoiceEmail = onCall(
       });
 
       console.log('Email sent successfully:', emailData.id);
+      console.log('Full response:', JSON.stringify(emailData));
 
       return {
         success: true,
@@ -82,6 +97,7 @@ exports.sendInvoiceEmail = onCall(
 
     } catch (error) {
       console.error('Error sending invoice:', error);
+      console.error('Error details:', JSON.stringify(error));
       throw new HttpsError(
         'internal',
         `Failed to send invoice: ${error.message}`
@@ -96,8 +112,18 @@ exports.sendInvoiceEmail = onCall(
 exports.sendEstimateEmail = onCall(
   { cors: true },
   async (request) => {
-    // Initialize Resend with environment variable
-    const resend = new Resend(functions.config().resend.api_key);
+    // Get API key
+    const apiKey = resendApiKey.value();
+    
+    if (!apiKey) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Resend API key is not configured. Please set RESEND_API_KEY environment variable.'
+      );
+    }
+
+    // Initialize Resend
+    const resend = new Resend(apiKey);
     
     // Verify user is authenticated
     if (!request.auth) {
@@ -120,7 +146,7 @@ exports.sendEstimateEmail = onCall(
       console.log('Generating PDF for estimate:', estimate.name);
       
       // Generate PDF
-      const pdfBuffer = generateEstimatePDFBuffer(estimate, userInfo);
+      const pdfBuffer = await generateEstimatePDFBuffer(estimate, userInfo);
 
       // Convert buffer to base64
       const pdfBase64 = pdfBuffer.toString('base64');
@@ -143,6 +169,7 @@ exports.sendEstimateEmail = onCall(
       });
 
       console.log('Email sent successfully:', emailData.id);
+      console.log('Full response:', JSON.stringify(emailData));
 
       return {
         success: true,
@@ -152,6 +179,7 @@ exports.sendEstimateEmail = onCall(
 
     } catch (error) {
       console.error('Error sending estimate:', error);
+      console.error('Error details:', JSON.stringify(error));
       throw new HttpsError(
         'internal',
         `Failed to send estimate: ${error.message}`
@@ -161,428 +189,474 @@ exports.sendEstimateEmail = onCall(
 );
 
 /**
- * Generate PDF buffer for the invoice
+ * Generate PDF buffer for the invoice using PDFKit
  */
-function generateInvoicePDFBuffer(invoice, userInfo = {}) {
-  const doc = new jsPDF();
-  
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 20;
-  let yPosition = margin;
-
-  const primaryColor = [59, 130, 246];
-  const darkGray = [31, 41, 55];
-  const lightGray = [107, 114, 128];
-
-  // Header
-  doc.setFillColor(...primaryColor);
-  doc.rect(0, 0, pageWidth, 40, 'F');
-  
-  // Company Logo (if available)
-  let logoX = margin;
-  if (userInfo.companyLogo) {
+async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
+  return new Promise((resolve, reject) => {
     try {
-      const logoSize = 28;
-      const logoY = 6;
-      doc.addImage(userInfo.companyLogo, 'PNG', logoX, logoY, logoSize, logoSize);
-      logoX += logoSize + 10;
+      const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
+      const chunks = [];
+
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      const primaryColor = '#3b82f6';
+      const darkGray = '#1f2937';
+      const lightGray = '#6b7280';
+      const borderGray = '#e5e7eb';
+
+      // Header - Blue background
+      doc.rect(0, 0, doc.page.width, 100).fill(primaryColor);
+
+      // Company Logo (if available)
+      let logoX = 50;
+      if (userInfo.companyLogo) {
+        try {
+          // Note: If logo is a URL, you'll need to fetch it first
+          // For now, we'll skip the logo or you can implement fetching
+          logoX = 90; // Adjust for logo space
+        } catch (error) {
+          console.error('Error adding logo to invoice PDF:', error);
+        }
+      }
+
+      // Company Name
+      doc.fillColor('#ffffff')
+         .fontSize(24)
+         .font('Helvetica-Bold')
+         .text(userInfo.businessName || 'Electrician Toolkit', logoX, 30);
+
+      // Company Contact Info
+      doc.fontSize(10)
+         .font('Helvetica')
+         .text(userInfo.email || '', logoX, 60);
+
+      if (userInfo.phone) {
+        doc.text(userInfo.phone, logoX, 75);
+      }
+
+      // Reset to black for body
+      doc.fillColor(darkGray);
+
+      // Invoice Title
+      doc.fontSize(28)
+         .font('Helvetica-Bold')
+         .text('INVOICE', 50, 130);
+
+      // Invoice details (right side)
+      const rightColumn = 400;
+      doc.fontSize(10)
+         .font('Helvetica')
+         .fillColor(lightGray)
+         .text('Invoice Number:', rightColumn, 130);
+      
+      doc.font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text(invoice.invoiceNumber || 'N/A', rightColumn, 145);
+
+      doc.font('Helvetica')
+         .fillColor(lightGray)
+         .text('Invoice Date:', rightColumn, 165);
+      
+      doc.font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text(invoice.date || new Date().toLocaleDateString(), rightColumn, 180);
+
+      doc.font('Helvetica')
+         .fillColor(lightGray)
+         .text('Due Date:', rightColumn, 200);
+      
+      doc.font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text(invoice.dueDate || 'Upon Receipt', rightColumn, 215);
+
+      // Bill To section
+      let yPos = 250;
+      doc.fontSize(12)
+         .font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text('Bill To:', 50, yPos);
+
+      yPos += 20;
+      doc.fontSize(10)
+         .font('Helvetica')
+         .text(invoice.clientName || 'Client Name', 50, yPos);
+
+      if (invoice.clientEmail) {
+        yPos += 15;
+        doc.text(invoice.clientEmail, 50, yPos);
+      }
+
+      if (invoice.clientPhone) {
+        yPos += 15;
+        doc.text(invoice.clientPhone, 50, yPos);
+      }
+
+      if (invoice.clientAddress) {
+        yPos += 15;
+        doc.text(invoice.clientAddress, 50, yPos);
+      }
+
+      // Line Items Table
+      yPos = 350;
+      
+      // Table Header
+      doc.rect(50, yPos, doc.page.width - 100, 30).fill('#f9fafb');
+      
+      doc.fontSize(10)
+         .font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text('Description', 60, yPos + 10)
+         .text('Qty', 320, yPos + 10)
+         .text('Rate', 380, yPos + 10)
+         .text('Amount', 480, yPos + 10);
+
+      yPos += 30;
+
+      // Table Rows
+      if (invoice.items && invoice.items.length > 0) {
+        doc.font('Helvetica').fontSize(9);
+        
+        invoice.items.forEach((item, index) => {
+          if (yPos > 700) {
+            doc.addPage();
+            yPos = 50;
+          }
+
+          const rowColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+          doc.rect(50, yPos, doc.page.width - 100, 25).fill(rowColor);
+
+          doc.fillColor(darkGray)
+             .text(item.description || item.name || 'Item', 60, yPos + 8, { width: 240 })
+             .text(item.quantity || 1, 320, yPos + 8)
+             .text(`$${parseFloat(item.rate || item.price || 0).toFixed(2)}`, 380, yPos + 8)
+             .text(`$${parseFloat(item.amount || (item.quantity * item.rate) || 0).toFixed(2)}`, 480, yPos + 8);
+
+          yPos += 25;
+        });
+      }
+
+      yPos += 10;
+      doc.moveTo(50, yPos).lineTo(doc.page.width - 50, yPos).stroke(borderGray);
+
+      // Totals
+      yPos += 20;
+      const totalLabelX = doc.page.width - 200;
+      const totalValueX = doc.page.width - 80;
+
+      if (invoice.subtotal) {
+        doc.fontSize(10)
+           .font('Helvetica')
+           .fillColor(lightGray)
+           .text('Subtotal:', totalLabelX, yPos)
+           .fillColor(darkGray)
+           .text(`$${parseFloat(invoice.subtotal).toFixed(2)}`, totalValueX, yPos, { align: 'right' });
+        yPos += 20;
+      }
+
+      if (invoice.tax) {
+        doc.fillColor(lightGray)
+           .text('Tax:', totalLabelX, yPos)
+           .fillColor(darkGray)
+           .text(`$${parseFloat(invoice.tax).toFixed(2)}`, totalValueX, yPos, { align: 'right' });
+        yPos += 20;
+      }
+
+      // Total line
+      doc.moveTo(totalLabelX - 10, yPos).lineTo(doc.page.width - 50, yPos).lineWidth(2).stroke(darkGray);
+      yPos += 10;
+
+      doc.fontSize(14)
+         .font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text('TOTAL:', totalLabelX, yPos)
+         .fontSize(16)
+         .fillColor(primaryColor)
+         .text(`$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`, totalValueX, yPos, { align: 'right' });
+
+      // Notes
+      if (invoice.notes) {
+        yPos += 40;
+        if (yPos > 650) {
+          doc.addPage();
+          yPos = 50;
+        }
+
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('Notes:', 50, yPos);
+
+        yPos += 15;
+        doc.fontSize(9)
+           .font('Helvetica')
+           .fillColor(lightGray)
+           .text(invoice.notes, 50, yPos, { width: doc.page.width - 100 });
+      }
+
+      // Footer
+      const footerY = doc.page.height - 50;
+      doc.moveTo(50, footerY - 10).lineTo(doc.page.width - 50, footerY - 10).stroke(borderGray);
+      
+      doc.fontSize(9)
+         .fillColor(lightGray)
+         .text('Thank you for your business!', 50, footerY, { align: 'center', width: doc.page.width - 100 });
+
+      doc.end();
     } catch (error) {
-      console.error('Error adding logo to invoice PDF:', error);
-    }
-  }
-  
-  doc.setFontSize(20);
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.text(userInfo.businessName || 'Electrician Toolkit', logoX, 15);
-  
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  if (userInfo.email) doc.text(userInfo.email, logoX, 25);
-  if (userInfo.phone) doc.text(userInfo.phone, logoX, 32);
-
-  yPosition = 55;
-
-  // Invoice Title and Number
-  doc.setFontSize(24);
-  doc.setTextColor(...primaryColor);
-  doc.setFont('helvetica', 'bold');
-  doc.text('INVOICE', margin, yPosition);
-
-  doc.setFontSize(12);
-  doc.setTextColor(...darkGray);
-  doc.text(`#${invoice.invoiceNumber || 'N/A'}`, pageWidth - margin, yPosition, { align: 'right' });
-
-  yPosition += 15;
-
-  // Bill To
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('BILL TO:', margin, yPosition);
-  
-  yPosition += 7;
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.text(invoice.client || invoice.clientName || 'Client Name', margin, yPosition);
-  
-  if (invoice.clientEmail) {
-    yPosition += 6;
-    doc.setFontSize(9);
-    doc.setTextColor(...lightGray);
-    doc.text(invoice.clientEmail, margin, yPosition);
-  }
-
-  // Right column - Invoice Details
-  const rightColX = pageWidth - margin - 60;
-  let rightYPosition = 70;
-
-  doc.setFontSize(9);
-  doc.setTextColor(...lightGray);
-  doc.text('Invoice Date:', rightColX, rightYPosition);
-  doc.setTextColor(...darkGray);
-  doc.text(invoice.date || new Date().toLocaleDateString(), pageWidth - margin, rightYPosition, { align: 'right' });
-
-  rightYPosition += 6;
-  doc.setTextColor(...lightGray);
-  doc.text('Due Date:', rightColX, rightYPosition);
-  doc.setTextColor(...darkGray);
-  doc.text(invoice.dueDate || 'Upon Receipt', pageWidth - margin, rightYPosition, { align: 'right' });
-
-  rightYPosition += 6;
-  doc.setTextColor(...lightGray);
-  doc.text('Status:', rightColX, rightYPosition);
-  
-  const statusColor = invoice.status === 'Paid' ? [16, 185, 129] :
-                      invoice.status === 'Pending' ? [245, 158, 11] :
-                      invoice.status === 'Overdue' ? [239, 68, 68] : lightGray;
-  
-  doc.setFillColor(...statusColor);
-  const statusText = invoice.status || 'Pending';
-  const statusWidth = doc.getTextWidth(statusText) + 8;
-  doc.roundedRect(pageWidth - margin - statusWidth, rightYPosition - 4, statusWidth, 6, 1, 1, 'F');
-  
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(255, 255, 255);
-  doc.text(statusText, pageWidth - margin, rightYPosition, { align: 'right' });
-
-  yPosition = Math.max(yPosition, rightYPosition) + 15;
-
-  // Table header
-  doc.setFillColor(249, 250, 251);
-  doc.rect(margin, yPosition, pageWidth - (2 * margin), 8, 'F');
-  
-  yPosition += 6;
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...darkGray);
-  doc.text('Description', margin + 2, yPosition);
-  doc.text('Qty', pageWidth - margin - 60, yPosition);
-  doc.text('Rate', pageWidth - margin - 40, yPosition);
-  doc.text('Amount', pageWidth - margin, yPosition, { align: 'right' });
-
-  yPosition += 8;
-
-  // Line items
-  doc.setFont('helvetica', 'normal');
-  const lineItems = invoice.lineItems || [];
-  lineItems.forEach((item, index) => {
-    if (yPosition > pageHeight - 60) {
-      doc.addPage();
-      yPosition = margin;
-    }
-
-    doc.text(item.description || '', margin + 2, yPosition);
-    doc.text(String(item.quantity || 1), pageWidth - margin - 60, yPosition);
-    doc.text(`$${parseFloat(item.rate || 0).toFixed(2)}`, pageWidth - margin - 40, yPosition);
-    
-    const amount = (item.quantity || 1) * (item.rate || 0);
-    doc.text(`$${amount.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
-
-    yPosition += 7;
-    
-    if (index < lineItems.length - 1) {
-      doc.setDrawColor(229, 231, 235);
-      doc.line(margin, yPosition, pageWidth - margin, yPosition);
-      yPosition += 5;
+      reject(error);
     }
   });
-
-  yPosition += 10;
-
-  // Totals
-  const totalsX = pageWidth - margin - 60;
-  
-  doc.setFontSize(10);
-  doc.setTextColor(...lightGray);
-  doc.text('Subtotal:', totalsX, yPosition);
-  doc.setTextColor(...darkGray);
-  doc.text(`$${parseFloat(invoice.subtotal || invoice.amount || 0).toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
-
-  yPosition += 7;
-
-  if (invoice.tax && invoice.tax > 0) {
-    doc.setTextColor(...lightGray);
-    doc.text(`Tax:`, totalsX, yPosition);
-    doc.setTextColor(...darkGray);
-    doc.text(`$${parseFloat(invoice.tax || 0).toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
-    yPosition += 7;
-  }
-
-  doc.setDrawColor(...darkGray);
-  doc.setLineWidth(0.5);
-  doc.line(totalsX, yPosition, pageWidth - margin, yPosition);
-  yPosition += 7;
-
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('TOTAL:', totalsX, yPosition);
-  doc.setFontSize(14);
-  doc.setTextColor(...primaryColor);
-  doc.text(`$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
-
-  // Notes
-  if (invoice.notes) {
-    yPosition += 15;
-    if (yPosition > pageHeight - 40) {
-      doc.addPage();
-      yPosition = margin;
-    }
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...darkGray);
-    doc.text('Notes:', margin, yPosition);
-    yPosition += 7;
-    
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...lightGray);
-    const notesLines = doc.splitTextToSize(invoice.notes, pageWidth - (2 * margin));
-    doc.text(notesLines, margin, yPosition);
-  }
-
-  // Footer
-  const footerY = pageHeight - 15;
-  doc.setDrawColor(229, 231, 235);
-  doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
-  
-  doc.setFontSize(9);
-  doc.setTextColor(...lightGray);
-  doc.text('Thank you for your business!', pageWidth / 2, footerY, { align: 'center' });
-
-  return Buffer.from(doc.output('arraybuffer'));
 }
 
 /**
- * Generate PDF buffer for the estimate
+ * Generate PDF buffer for the estimate using PDFKit
  */
-function generateEstimatePDFBuffer(estimate, userInfo = {}) {
-  const doc = new jsPDF();
-  
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 20;
-  let yPosition = margin;
-
-  const primaryColor = [16, 185, 129]; // Green for estimates
-  const darkGray = [31, 41, 55];
-  const lightGray = [107, 114, 128];
-
-  // Header
-  doc.setFillColor(...primaryColor);
-  doc.rect(0, 0, pageWidth, 40, 'F');
-  
-  // Company Logo (if available)
-  let logoX = margin;
-  if (userInfo.companyLogo) {
+async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
+  return new Promise((resolve, reject) => {
     try {
-      const logoSize = 28;
-      const logoY = 6;
-      doc.addImage(userInfo.companyLogo, 'PNG', logoX, logoY, logoSize, logoSize);
-      logoX += logoSize + 10;
-    } catch (error) {
-      console.error('Error adding logo to estimate PDF:', error);
-    }
-  }
-  
-  doc.setFontSize(20);
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.text(userInfo.businessName || 'Electrician Toolkit', logoX, 15);
-  
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  if (userInfo.email) doc.text(userInfo.email, logoX, 25);
-  if (userInfo.phone) doc.text(userInfo.phone, logoX, 32);
+      const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
+      const chunks = [];
 
-  yPosition = 55;
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
 
-  // Estimate Title
-  doc.setFontSize(24);
-  doc.setTextColor(...primaryColor);
-  doc.setFont('helvetica', 'bold');
-  doc.text('ESTIMATE', margin, yPosition);
+      const primaryColor = '#10b981'; // Green for estimates
+      const darkGray = '#1f2937';
+      const lightGray = '#6b7280';
+      const borderGray = '#e5e7eb';
 
-  doc.setFontSize(12);
-  doc.setTextColor(...darkGray);
-  doc.text(estimate.name || 'Untitled', pageWidth - margin, yPosition, { align: 'right' });
+      // Header - Green background
+      doc.rect(0, 0, doc.page.width, 100).fill(primaryColor);
 
-  yPosition += 15;
-
-  // Client info (if available)
-  if (estimate.clientName) {
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('FOR:', margin, yPosition);
-    
-    yPosition += 7;
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text(estimate.clientName, margin, yPosition);
-    
-    if (estimate.clientEmail) {
-      yPosition += 6;
-      doc.setFontSize(9);
-      doc.setTextColor(...lightGray);
-      doc.text(estimate.clientEmail, margin, yPosition);
-    }
-  }
-
-  // Right column - Estimate Details
-  const rightColX = pageWidth - margin - 60;
-  let rightYPosition = 70;
-
-  doc.setFontSize(9);
-  doc.setTextColor(...lightGray);
-  doc.text('Estimate Date:', rightColX, rightYPosition);
-  doc.setTextColor(...darkGray);
-  const estimateDate = estimate.createdAt ? new Date(estimate.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
-  doc.text(estimateDate, pageWidth - margin, rightYPosition, { align: 'right' });
-
-  rightYPosition += 6;
-  doc.setTextColor(...lightGray);
-  doc.text('Valid Until:', rightColX, rightYPosition);
-  const validDate = (() => {
-    const date = estimate.createdAt ? new Date(estimate.createdAt) : new Date();
-    date.setDate(date.getDate() + 30);
-    return date.toLocaleDateString();
-  })();
-  doc.setTextColor(...darkGray);
-  doc.text(validDate, pageWidth - margin, rightYPosition, { align: 'right' });
-
-  yPosition = Math.max(yPosition, rightYPosition) + 15;
-
-  // Labor section
-  if (estimate.laborHours && estimate.laborRate) {
-    yPosition += 5;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...darkGray);
-    doc.text('LABOR', margin, yPosition);
-    yPosition += 7;
-
-    doc.setFillColor(249, 250, 251);
-    doc.rect(margin, yPosition - 4, pageWidth - (2 * margin), 8, 'F');
-    
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${estimate.laborHours} hours × $${parseFloat(estimate.laborRate).toFixed(2)}/hr`, margin + 2, yPosition);
-    
-    const laborTotal = estimate.laborHours * estimate.laborRate;
-    doc.setFont('helvetica', 'bold');
-    doc.text(`$${laborTotal.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
-
-    yPosition += 10;
-  }
-
-  // Materials section
-  if (estimate.materials && estimate.materials.length > 0) {
-    yPosition += 5;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('MATERIALS', margin, yPosition);
-    yPosition += 7;
-
-    // Table header
-    doc.setFillColor(249, 250, 251);
-    doc.rect(margin, yPosition, pageWidth - (2 * margin), 8, 'F');
-    
-    yPosition += 6;
-    doc.setFontSize(9);
-    doc.text('Description', margin + 2, yPosition);
-    doc.text('Qty', pageWidth - margin - 60, yPosition);
-    doc.text('Unit Cost', pageWidth - margin - 40, yPosition);
-    doc.text('Amount', pageWidth - margin, yPosition, { align: 'right' });
-
-    yPosition += 8;
-
-    // Materials list
-    doc.setFont('helvetica', 'normal');
-    estimate.materials.forEach((item, index) => {
-      const quantity = parseFloat(item.quantity) || 1;
-      const unitCost = parseFloat(item.cost) || 0;
-      const amount = quantity * unitCost;
-
-      doc.text(item.name || '', margin + 2, yPosition);
-      doc.text(String(quantity), pageWidth - margin - 60, yPosition);
-      doc.text(`$${unitCost.toFixed(2)}`, pageWidth - margin - 40, yPosition);
-      doc.text(`$${amount.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
-
-      yPosition += 7;
-      
-      if (index < estimate.materials.length - 1) {
-        doc.setDrawColor(229, 231, 235);
-        doc.line(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 5;
+      // Company Logo (if available)
+      let logoX = 50;
+      if (userInfo.companyLogo) {
+        try {
+          // Note: If logo is a URL, you'll need to fetch it first
+          logoX = 90; // Adjust for logo space
+        } catch (error) {
+          console.error('Error adding logo to estimate PDF:', error);
+        }
       }
-    });
 
-    yPosition += 10;
-  }
+      // Company Name
+      doc.fillColor('#ffffff')
+         .fontSize(24)
+         .font('Helvetica-Bold')
+         .text(userInfo.businessName || 'Electrician Toolkit', logoX, 30);
 
-  // Total section
-  const totalsX = pageWidth - margin - 60;
-  
-  doc.setDrawColor(...darkGray);
-  doc.setLineWidth(0.5);
-  doc.line(totalsX, yPosition, pageWidth - margin, yPosition);
-  yPosition += 7;
+      // Company Contact Info
+      doc.fontSize(10)
+         .font('Helvetica')
+         .text(userInfo.email || '', logoX, 60);
 
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...darkGray);
-  doc.text('TOTAL ESTIMATE:', totalsX, yPosition);
-  doc.setFontSize(14);
-  doc.setTextColor(...primaryColor);
-  doc.text(`$${parseFloat(estimate.total || 0).toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+      if (userInfo.phone) {
+        doc.text(userInfo.phone, logoX, 75);
+      }
 
-  // Notes
-  if (estimate.notes) {
-    yPosition += 15;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...darkGray);
-    doc.text('Notes:', margin, yPosition);
-    yPosition += 7;
-    
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...lightGray);
-    const notesLines = doc.splitTextToSize(estimate.notes, pageWidth - (2 * margin));
-    doc.text(notesLines, margin, yPosition);
-  }
+      // Reset to black for body
+      doc.fillColor(darkGray);
 
-  // Footer
-  const footerY = pageHeight - 15;
-  doc.setDrawColor(229, 231, 235);
-  doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
-  
-  doc.setFontSize(9);
-  doc.setTextColor(...lightGray);
-  doc.text('Thank you for considering our services!', pageWidth / 2, footerY, { align: 'center' });
+      // Estimate Title
+      doc.fontSize(28)
+         .font('Helvetica-Bold')
+         .text('ESTIMATE', 50, 130);
 
-  return Buffer.from(doc.output('arraybuffer'));
+      // Estimate details (right side)
+      const rightColumn = 400;
+      doc.fontSize(10)
+         .font('Helvetica')
+         .fillColor(lightGray)
+         .text('Estimate Name:', rightColumn, 130);
+      
+      doc.font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text(estimate.name || 'Untitled', rightColumn, 145, { width: 150 });
+
+      doc.font('Helvetica')
+         .fillColor(lightGray)
+         .text('Date:', rightColumn, 165);
+      
+      doc.font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text(estimate.createdAt ? new Date(estimate.createdAt).toLocaleDateString() : new Date().toLocaleDateString(), rightColumn, 180);
+
+      doc.font('Helvetica')
+         .fillColor(lightGray)
+         .text('Valid Until:', rightColumn, 200);
+      
+      const validDate = estimate.createdAt ? new Date(estimate.createdAt) : new Date();
+      validDate.setDate(validDate.getDate() + 30);
+      
+      doc.font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text(validDate.toLocaleDateString(), rightColumn, 215);
+
+      // Prepared For section
+      let yPos = 250;
+      doc.fontSize(12)
+         .font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text('Prepared For:', 50, yPos);
+
+      yPos += 20;
+      doc.fontSize(10)
+         .font('Helvetica')
+         .text(estimate.clientName || 'Client Name', 50, yPos);
+
+      if (estimate.clientEmail) {
+        yPos += 15;
+        doc.text(estimate.clientEmail, 50, yPos);
+      }
+
+      if (estimate.clientPhone) {
+        yPos += 15;
+        doc.text(estimate.clientPhone, 50, yPos);
+      }
+
+      if (estimate.clientAddress) {
+        yPos += 15;
+        doc.text(estimate.clientAddress, 50, yPos);
+      }
+
+      // Line Items Table
+      yPos = 350;
+      
+      // Table Header
+      doc.rect(50, yPos, doc.page.width - 100, 30).fill('#f9fafb');
+      
+      doc.fontSize(10)
+         .font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text('Description', 60, yPos + 10)
+         .text('Qty', 320, yPos + 10)
+         .text('Rate', 380, yPos + 10)
+         .text('Amount', 480, yPos + 10);
+
+      yPos += 30;
+
+      // Table Rows
+      if (estimate.items && estimate.items.length > 0) {
+        doc.font('Helvetica').fontSize(9);
+        
+        estimate.items.forEach((item, index) => {
+          if (yPos > 700) {
+            doc.addPage();
+            yPos = 50;
+          }
+
+          const rowColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+          doc.rect(50, yPos, doc.page.width - 100, 25).fill(rowColor);
+
+          doc.fillColor(darkGray)
+             .text(item.description || item.name || 'Item', 60, yPos + 8, { width: 240 })
+             .text(item.quantity || 1, 320, yPos + 8)
+             .text(`$${parseFloat(item.rate || item.price || 0).toFixed(2)}`, 380, yPos + 8)
+             .text(`$${parseFloat(item.amount || (item.quantity * item.rate) || 0).toFixed(2)}`, 480, yPos + 8);
+
+          yPos += 25;
+        });
+      }
+
+      // Groups (if any)
+      if (estimate.groups && estimate.groups.length > 0) {
+        yPos += 10;
+        
+        estimate.groups.forEach(group => {
+          if (yPos > 700) {
+            doc.addPage();
+            yPos = 50;
+          }
+
+          // Group Header
+          doc.fontSize(11)
+             .font('Helvetica-Bold')
+             .fillColor(darkGray)
+             .text(group.name || 'Group', 60, yPos);
+          
+          yPos += 20;
+
+          if (group.items && group.items.length > 0) {
+            doc.font('Helvetica').fontSize(9);
+            
+            group.items.forEach((item, index) => {
+              if (yPos > 700) {
+                doc.addPage();
+                yPos = 50;
+              }
+
+              const rowColor = index % 2 === 0 ? '#f3f4f6' : '#e5e7eb';
+              doc.rect(50, yPos, doc.page.width - 100, 25).fill(rowColor);
+
+              doc.fillColor(darkGray)
+                 .text(item.description || item.name || 'Item', 60, yPos + 8, { width: 240 })
+                 .text(item.quantity || 1, 320, yPos + 8)
+                 .text(`$${parseFloat(item.rate || item.price || 0).toFixed(2)}`, 380, yPos + 8)
+                 .text(`$${parseFloat(item.amount || (item.quantity * item.rate) || 0).toFixed(2)}`, 480, yPos + 8);
+
+              yPos += 25;
+            });
+          }
+
+          yPos += 10;
+        });
+      }
+
+      yPos += 10;
+      doc.moveTo(50, yPos).lineTo(doc.page.width - 50, yPos).stroke(borderGray);
+
+      // Total
+      yPos += 20;
+      const totalLabelX = doc.page.width - 200;
+      const totalValueX = doc.page.width - 80;
+
+      doc.moveTo(totalLabelX - 10, yPos).lineTo(doc.page.width - 50, yPos).lineWidth(2).stroke(darkGray);
+      yPos += 10;
+
+      doc.fontSize(14)
+         .font('Helvetica-Bold')
+         .fillColor(darkGray)
+         .text('TOTAL ESTIMATE:', totalLabelX, yPos)
+         .fontSize(16)
+         .fillColor(primaryColor)
+         .text(`$${parseFloat(estimate.total || 0).toFixed(2)}`, totalValueX, yPos, { align: 'right' });
+
+      // Notes
+      if (estimate.notes) {
+        yPos += 40;
+        if (yPos > 650) {
+          doc.addPage();
+          yPos = 50;
+        }
+
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('Notes:', 50, yPos);
+
+        yPos += 15;
+        doc.fontSize(9)
+           .font('Helvetica')
+           .fillColor(lightGray)
+           .text(estimate.notes, 50, yPos, { width: doc.page.width - 100 });
+      }
+
+      // Footer
+      const footerY = doc.page.height - 50;
+      doc.moveTo(50, footerY - 10).lineTo(doc.page.width - 50, footerY - 10).stroke(borderGray);
+      
+      doc.fontSize(9)
+         .fillColor(lightGray)
+         .text('Thank you for considering our services!', 50, footerY, { align: 'center', width: doc.page.width - 100 });
+
+      doc.end();
+    } catch (error) {
+      reject(error);
+    }
+  });
 }
 
 /**
