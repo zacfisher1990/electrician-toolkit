@@ -12,6 +12,7 @@ const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { Resend } = require('resend');
 const { jsPDF } = require('jspdf');
+const functions = require('firebase-functions');
 
 // Set global options
 setGlobalOptions({
@@ -26,7 +27,7 @@ exports.sendInvoiceEmail = onCall(
   { cors: true },
   async (request) => {
     // Initialize Resend with environment variable
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const resend = new Resend(functions.config().resend.api_key);
     
     // Verify user is authenticated
     if (!request.auth) {
@@ -96,7 +97,7 @@ exports.sendEstimateEmail = onCall(
   { cors: true },
   async (request) => {
     // Initialize Resend with environment variable
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const resend = new Resend(functions.config().resend.api_key);
     
     // Verify user is authenticated
     if (!request.auth) {
