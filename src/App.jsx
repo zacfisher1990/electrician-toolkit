@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, FileDown, Omega, Wrench, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap, TriangleRight } from 'lucide-react';
-import { PiInvoice, PiComputerTower, PiShovel, PiNumberCircleThree, PiLineSegments } from 'react-icons/pi';
+import { PiInvoice, PiComputerTower, PiShovel, PiNumberCircleThree, PiLineSegments, PiPipe } from 'react-icons/pi';
 import { TbCircuitGround, TbCircuitMotor, TbCircuitInductor } from 'react-icons/tb';
 import { FaCircleHalfStroke } from 'react-icons/fa6';
 import { FiDivideCircle } from 'react-icons/fi';
+import { GiClamp } from 'react-icons/gi';
 import CalculatorMenu from './features/tools/calculators/CalculatorMenu.jsx';
 import VoltageDropCalculator from './features/tools/calculators/VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './features/tools/calculators/OhmsLawCalculator.jsx';
@@ -31,6 +32,7 @@ import WorkingSpaceCalculator from './features/tools/calculators/WorkingSpaceCal
 import NeutralSizingCalculator from './features/tools/calculators/NeutralSizingCalculator.jsx';
 import SolarPVCalculator from './features/tools/calculators/SolarPVCalculator.jsx';
 import EVChargingCalculator from './features/tools/calculators/EVChargingCalculator.jsx';
+import SupportSpacingCalculator from './features/tools/calculators/SupportSpacingCalculator.jsx';
 import Home from './features/home/Home.jsx';
 import Tools from './features/tools/Tools';
 import Profile from './features/profile/Profile.jsx';
@@ -252,7 +254,7 @@ const handleAddJobFromCalendar = (date) => {
       case 'ohms-law':
         return <OhmsLawCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'box-fill':
-        return <BoxFillCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <BoxFillCalculator isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
       case 'conduit-fill':
         return <ConduitFillCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'ampacity':
@@ -297,6 +299,8 @@ const handleAddJobFromCalendar = (date) => {
         return <SolarPVCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
       case 'ev-charging':
         return <EVChargingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+      case 'support-spacing':
+        return <SupportSpacingCalculator isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
       case 'calculators':
   return <Tools 
     isDarkMode={isDarkMode} 
@@ -367,9 +371,9 @@ const handleAddJobFromCalendar = (date) => {
       'transformer-sizing': { title: 'Transformers', icon: TbCircuitInductor },
       'service-entrance': { title: 'Service Entrance Sizing', icon: Building },
       'grounding-bonding': { title: 'Grounding & Bonding', icon: TbCircuitGround },
-      'conduit-bending': { title: 'Conduit Bending', icon: CornerDownRight },
+      'conduit-bending': { title: 'Conduit Bending', icon: PiPipe },
       'lighting': { title: 'Lighting', icon: Lightbulb },
-      'receptacles': { title: 'Receptacles', icon: Plug },
+      'receptacles': { title: 'Receptacle Spacing', icon: Plug },
       'vfd-sizing': { title: 'VFD Sizing', icon: PiComputerTower },
       'power-triangle': { title: 'Power Triangle', icon: TriangleRight },
       'three-phase-power': { title: 'Three-Phase Power', icon: PiNumberCircleThree },
@@ -379,7 +383,8 @@ const handleAddJobFromCalendar = (date) => {
       'working-space': { title: 'Working Space', icon: Ruler },
       'neutral-sizing': { title: 'Neutral Sizing', icon: PiLineSegments },
       'solar-pv': { title: 'Solar PV', icon: Sun },
-      'ev-charging': { title: 'EV Charging', icon: Zap }
+      'ev-charging': { title: 'EV Charging', icon: Zap },
+      'support-spacing': { title: 'Support Spacing', icon: GiClamp }
     };
     
     return headerMap[activeCalculator] || { title: 'Electrician\'s Toolkit', icon: Calculator };

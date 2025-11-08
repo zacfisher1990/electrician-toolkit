@@ -4,6 +4,7 @@ import { PiSolarPanel, PiChargingStation, PiPipe, PiComputerTower, PiShovel, PiN
 import { TbCircuitGround, TbCircuitMotor, TbCircuitInductor } from 'react-icons/tb';
 import { FaCircleHalfStroke } from 'react-icons/fa6';
 import { FiDivideCircle } from 'react-icons/fi';
+import { GiClamp } from 'react-icons/gi';
 import { getColors } from '../../../theme';
 import styles from './Calculator.module.css';
 
@@ -19,13 +20,14 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
       name: 'Installation',
       calculators: [
         { id: 'box-fill', name: 'Box Fill', icon: Package, keywords: 'box fill junction cubic inch volume 314' },
-        { id: 'pull-box', name: 'Pull Box', icon: Box, keywords: 'pull box junction sizing straight angle u-pull 314.28 raceway conduit' },
+        { id: 'pull-box', name: 'Pull Box Sizing', icon: Box, keywords: 'pull box junction sizing straight angle u-pull 314.28 raceway conduit' },
         { id: 'conduit-fill', name: 'Conduit Fill', icon: FaCircleHalfStroke, keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
         { id: 'conduit-bending', name: 'Conduit Bending', icon: PiPipe, keywords: 'conduit bending offset saddle stub bend emt' },
         { id: 'underground-depth', name: 'Underground Depth', icon: PiShovel, keywords: 'underground depth burial trench cable direct bury 300.5 nec pvc rmc duct install' },
         { id: 'overhead-clearance', name: 'Overhead Clearance', icon: ArrowUp, keywords: 'overhead clearance aerial height span service drop mast 225 attachment point roof' },
         { id: 'working-space', name: 'Working Space', icon: Ruler, keywords: 'working space clearance 110.26 condition panel switchboard equipment depth width height electrical room' },
-        { id: 'receptacles', name: 'Receptacles', icon: Plug, keywords: 'receptacle outlet gfci plug socket 210.52 counter kitchen bathroom wall spacing' },
+        { id: 'support-spacing', name: 'Support Spacing', icon: GiClamp, keywords: 'support spacing straps clamps cable conduit hangers nm romex emt pvc mounting vertical horizontal 300.11 334.30' },
+        { id: 'receptacles', name: 'Receptacle Spacing', icon: Plug, keywords: 'receptacle outlet gfci plug socket 210.52 counter kitchen bathroom wall spacing' },
         { id: 'lighting', name: 'Lighting', icon: Lightbulb, keywords: 'lighting lumens foot candles fixtures spacing watts illumination' }
       ]
     },
@@ -67,7 +69,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
     'Power Calculations': '#3b82f6',
     'Sizing & Rating': '#10b981',
     'Equipment': '#f59e0b',
-    'Installation': '#8b5cf6'
+    'Installation': '#dc2626'
   };
 
   // Get colors from centralized theme
