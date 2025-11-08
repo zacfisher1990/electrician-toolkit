@@ -50,8 +50,9 @@ export const calculateInvoiceRevenue = (invoices, timeframe = 'all') => {
   
   return invoices
     .filter(invoice => {
-      // Only count paid invoices
-      if (invoice.status !== 'paid') return false;
+      // Only count paid invoices - case insensitive check
+      const status = (invoice.status || '').toLowerCase();
+      if (status !== 'paid') return false;
       
       if (timeframe === 'all') return true;
       
@@ -109,9 +110,9 @@ export const countEstimatesByStatus = (estimates) => {
 export const countInvoicesByStatus = (invoices) => {
   return {
     total: invoices.length,
-    draft: invoices.filter(i => i.status === 'draft').length,
-    sent: invoices.filter(i => i.status === 'sent').length,
-    paid: invoices.filter(i => i.status === 'paid').length
+    draft: invoices.filter(i => (i.status || '').toLowerCase() === 'draft').length,
+    sent: invoices.filter(i => (i.status || '').toLowerCase() === 'sent' || (i.status || '').toLowerCase() === 'pending').length,
+    paid: invoices.filter(i => (i.status || '').toLowerCase() === 'paid').length
   };
 };
 

@@ -283,7 +283,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       yPos += 20;
       doc.fontSize(10)
          .font('Helvetica')
-         .text(invoice.clientName || 'Client Name', 50, yPos);
+         .text(invoice.clientName || invoice.client || invoice.customerName || 'Client Name', 50, yPos);
 
       if (invoice.clientEmail) {
         yPos += 15;
@@ -317,10 +317,11 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       yPos += 30;
 
       // Table Rows
-      if (invoice.items && invoice.items.length > 0) {
+      const items = invoice.lineItems || invoice.items || [];
+      if (items.length > 0) {
         doc.font('Helvetica').fontSize(9);
         
-        invoice.items.forEach((item, index) => {
+        items.forEach((item, index) => {
           if (yPos > 700) {
             doc.addPage();
             yPos = 50;
@@ -333,7 +334,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
              .text(item.description || item.name || 'Item', 60, yPos + 8, { width: 240 })
              .text(item.quantity || 1, 320, yPos + 8)
              .text(`$${parseFloat(item.rate || item.price || 0).toFixed(2)}`, 380, yPos + 8)
-             .text(`$${parseFloat(item.amount || (item.quantity * item.rate) || 0).toFixed(2)}`, 480, yPos + 8);
+             .text(`$${parseFloat(item.amount || ((item.quantity || 1) * (item.rate || item.price || 0))).toFixed(2)}`, 480, yPos + 8);
 
           yPos += 25;
         });
@@ -369,14 +370,18 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       doc.moveTo(totalLabelX - 10, yPos).lineTo(doc.page.width - 50, yPos).lineWidth(2).stroke(darkGray);
       yPos += 10;
 
+      // Left-aligned label
       doc.fontSize(14)
          .font('Helvetica-Bold')
          .fillColor(darkGray)
-         .text('TOTAL:', totalLabelX, yPos, { width: 150, align: 'left' });
+         .text('TOTAL:', 50, yPos);
+      
+      // Right-aligned amount
+      const totalAmount = `$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`;
       
       doc.fontSize(16)
          .fillColor(primaryColor)
-         .text(`$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`, doc.page.width - 120, yPos, { width: 70, align: 'right' });
+         .text(totalAmount, 50, yPos, { width: doc.page.width - 100, align: 'right' });
 
       // Notes
       if (invoice.notes) {
@@ -587,14 +592,18 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
       doc.moveTo(totalLabelX - 10, yPos).lineTo(doc.page.width - 50, yPos).lineWidth(2).stroke(darkGray);
       yPos += 10;
 
+      // Left-aligned label
       doc.fontSize(14)
          .font('Helvetica-Bold')
          .fillColor(darkGray)
-         .text('TOTAL ESTIMATE:', totalLabelX, yPos, { width: 150, align: 'left' });
+         .text('TOTAL ESTIMATE:', 50, yPos);
+      
+      // Right-aligned amount
+      const totalAmount = `$${parseFloat(estimate.total || 0).toFixed(2)}`;
       
       doc.fontSize(16)
          .fillColor(primaryColor)
-         .text(`$${parseFloat(estimate.total || 0).toFixed(2)}`, doc.page.width - 120, yPos, { width: 70, align: 'right' });
+         .text(totalAmount, 50, yPos, { width: doc.page.width - 100, align: 'right' });
 
       // Notes
       if (estimate.notes) {
