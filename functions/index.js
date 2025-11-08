@@ -376,12 +376,13 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
          .fillColor(darkGray)
          .text('TOTAL:', 50, yPos);
       
-      // Right-aligned amount
+      // Right-aligned amount - calculate position
       const totalAmount = `$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`;
+      doc.fontSize(16);
+      const amountWidth = doc.widthOfString(totalAmount);
       
-      doc.fontSize(16)
-         .fillColor(primaryColor)
-         .text(totalAmount, 50, yPos, { width: doc.page.width - 100, align: 'right' });
+      doc.fillColor(primaryColor)
+         .text(totalAmount, doc.page.width - 50 - amountWidth, yPos);
 
       // Notes
       if (invoice.notes) {
@@ -581,6 +582,36 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
         yPos += 10;
       }
 
+      // Additional Items section (if applicable)
+      if (estimate.additionalItems && estimate.additionalItems.length > 0) {
+        doc.fontSize(12)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('Additional Items:', 50, yPos);
+        
+        yPos += 20;
+
+        estimate.additionalItems.forEach((item, index) => {
+          if (yPos > 700) {
+            doc.addPage();
+            yPos = 50;
+          }
+
+          const rowColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+          doc.rect(50, yPos, doc.page.width - 100, 25).fill(rowColor);
+
+          doc.fontSize(10)
+             .font('Helvetica')
+             .fillColor(darkGray)
+             .text(item.description || 'Item', 60, yPos + 8, { width: 340 })
+             .text(`$${parseFloat(item.amount || 0).toFixed(2)}`, 480, yPos + 8);
+
+          yPos += 25;
+        });
+
+        yPos += 10;
+      }
+
       yPos += 10;
       doc.moveTo(50, yPos).lineTo(doc.page.width - 50, yPos).stroke(borderGray);
 
@@ -598,12 +629,13 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
          .fillColor(darkGray)
          .text('TOTAL ESTIMATE:', 50, yPos);
       
-      // Right-aligned amount
+      // Right-aligned amount - calculate position
       const totalAmount = `$${parseFloat(estimate.total || 0).toFixed(2)}`;
+      doc.fontSize(16);
+      const amountWidth = doc.widthOfString(totalAmount);
       
-      doc.fontSize(16)
-         .fillColor(primaryColor)
-         .text(totalAmount, 50, yPos, { width: doc.page.width - 100, align: 'right' });
+      doc.fillColor(primaryColor)
+         .text(totalAmount, doc.page.width - 50 - amountWidth, yPos);
 
       // Notes
       if (estimate.notes) {
