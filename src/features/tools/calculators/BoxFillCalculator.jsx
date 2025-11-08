@@ -219,16 +219,16 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
               boxSizing: 'border-box'
             }}
           >
-            <optgroup label="Device Boxes (Single Gang)">
+            <optgroup label="Device Boxes (3&quot; x 2&quot;)">
               {Object.entries(boxCapacities)
-                .filter(([key, box]) => box.type === 'device-single')
+                .filter(([key, box]) => box.type === 'device' && key.startsWith('3x2'))
                 .map(([key, box]) => (
                   <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
                 ))}
             </optgroup>
-            <optgroup label="Device Boxes (Multi-Gang)">
+            <optgroup label="Device Boxes (4&quot; x 2-1/8&quot;)">
               {Object.entries(boxCapacities)
-                .filter(([key, box]) => box.type === 'device-multi')
+                .filter(([key, box]) => box.type === 'device' && key.startsWith('4x2'))
                 .map(([key, box]) => (
                   <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
                 ))}
@@ -250,6 +250,13 @@ const BoxFillCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
             <optgroup label="Masonry Boxes">
               {Object.entries(boxCapacities)
                 .filter(([key, box]) => box.type === 'masonry')
+                .map(([key, box]) => (
+                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
+                ))}
+            </optgroup>
+            <optgroup label="FS/FD Boxes">
+              {Object.entries(boxCapacities)
+                .filter(([key, box]) => box.type === 'fs-fd')
                 .map(([key, box]) => (
                   <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
                 ))}

@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, TrendingDown, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, Settings, BarChart3, Radio, Building, Globe, CornerDownRight, Lightbulb, Gauge, Triangle, Box, ArrowDown, ArrowUp, Ruler, Minus, Sun, Zap } from 'lucide-react';
+import { Search, X, TrendingDown, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, Settings, BarChart3, Radio, Building, Lightbulb, Gauge, Triangle, Box, ArrowDown, ArrowUp, Ruler, Minus, TriangleRight } from 'lucide-react';
+import { PiSolarPanel, PiChargingStation, PiPipe, PiComputerTower, PiShovel, PiNumberCircleThree, PiLineSegments } from 'react-icons/pi';
+import { TbCircuitGround, TbCircuitMotor, TbCircuitInductor } from 'react-icons/tb';
+import { FaCircleHalfStroke } from 'react-icons/fa6';
+import { FiDivideCircle } from 'react-icons/fi';
 import { getColors } from '../../../theme';
 import styles from './Calculator.module.css';
 
@@ -16,9 +20,9 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
       calculators: [
         { id: 'box-fill', name: 'Box Fill', icon: Package, keywords: 'box fill junction cubic inch volume 314' },
         { id: 'pull-box', name: 'Pull Box', icon: Box, keywords: 'pull box junction sizing straight angle u-pull 314.28 raceway conduit' },
-        { id: 'conduit-fill', name: 'Conduit Fill', icon: Circle, keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
-        { id: 'conduit-bending', name: 'Conduit Bending', icon: CornerDownRight, keywords: 'conduit bending offset saddle stub bend emt' },
-        { id: 'underground-depth', name: 'Underground Depth', icon: ArrowDown, keywords: 'underground depth burial trench cable direct bury 300.5 nec pvc rmc duct install' },
+        { id: 'conduit-fill', name: 'Conduit Fill', icon: FaCircleHalfStroke, keywords: 'conduit fill emt pvc rigid raceway chapter 9' },
+        { id: 'conduit-bending', name: 'Conduit Bending', icon: PiPipe, keywords: 'conduit bending offset saddle stub bend emt' },
+        { id: 'underground-depth', name: 'Underground Depth', icon: PiShovel, keywords: 'underground depth burial trench cable direct bury 300.5 nec pvc rmc duct install' },
         { id: 'overhead-clearance', name: 'Overhead Clearance', icon: ArrowUp, keywords: 'overhead clearance aerial height span service drop mast 225 attachment point roof' },
         { id: 'working-space', name: 'Working Space', icon: Ruler, keywords: 'working space clearance 110.26 condition panel switchboard equipment depth width height electrical room' },
         { id: 'receptacles', name: 'Receptacles', icon: Plug, keywords: 'receptacle outlet gfci plug socket 210.52 counter kitchen bathroom wall spacing' },
@@ -29,11 +33,11 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
       name: 'Power Calculations',
       calculators: [
         { id: 'voltage-drop', name: 'Voltage Drop', icon: TrendingDown, keywords: 'voltage drop vd wire circuit' },
-        { id: 'ohms-law', name: "Ohm's Law", icon: SquareDivide, keywords: 'ohms law voltage current resistance power series parallel circuit' },
+        { id: 'ohms-law', name: "Ohm's Law", icon: FiDivideCircle, keywords: 'ohms law voltage current resistance power series parallel circuit' },
         { id: 'reactance-impedance', name: 'Reactance', icon: Omega, keywords: 'reactance impedance xl xc capacitive inductive resonance frequency ac circuit' },
         { id: 'power-factor', name: 'Power Factor', icon: Target, keywords: 'power factor correction pf capacitor kvar cos phi efficiency demand charge penalty savings' },
-        { id: 'power-triangle', name: 'Power Triangle', icon: Triangle, keywords: 'power triangle kva kw kvar apparent real reactive power factor angle phase' },
-        { id: 'three-phase-power', name: 'Three-Phase', icon: Tally3, keywords: 'three phase power 3 phase current voltage kw kva motor industrial commercial wye delta line' }
+        { id: 'power-triangle', name: 'Power Triangle', icon: TriangleRight, keywords: 'power triangle kva kw kvar apparent real reactive power factor angle phase' },
+        { id: 'three-phase-power', name: 'Three-Phase', icon: PiNumberCircleThree, keywords: 'three phase power 3 phase current voltage kw kva motor industrial commercial wye delta line' }
       ]
     },
     {
@@ -42,18 +46,18 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
         { id: 'ampacity', name: 'Ampacity', icon: Cable, keywords: 'ampacity current rating 310 temperature' },
         { id: 'load-calculations', name: 'Load Calculations', icon: BarChart3, keywords: 'load calculation service size residential commercial demand' },
         { id: 'service-entrance', name: 'Service Entrance', icon: Building, keywords: 'service entrance sizing panel main 230' },
-        { id: 'grounding-bonding', name: 'Grounding & Bonding', icon: Globe, keywords: 'grounding bonding ground electrode equipment gec egc jumper 250' },
-        { id: 'neutral-sizing', name: 'Neutral Sizing', icon: Minus, keywords: 'neutral sizing conductor 220.61 feeder service range dryer balanced load line to neutral' }
+        { id: 'grounding-bonding', name: 'Grounding & Bonding', icon: TbCircuitGround, keywords: 'grounding bonding ground electrode equipment gec egc jumper 250' },
+        { id: 'neutral-sizing', name: 'Neutral Sizing', icon: PiLineSegments, keywords: 'neutral sizing conductor 220.61 feeder service range dryer balanced load line to neutral' }
       ]
     },
     {
       name: 'Equipment',
       calculators: [
-        { id: 'motor-calculations', name: 'Motors', icon: Settings, keywords: 'motor flc protection starter 430' },
-        { id: 'transformer-sizing', name: 'Transformers', icon: Radio, keywords: 'transformer kva sizing current primary secondary 450' },
-        { id: 'vfd-sizing', name: 'VFD Sizing', icon: Gauge, keywords: 'vfd variable frequency drive motor speed control inverter ac drive' },
-        { id: 'solar-pv', name: 'Solar PV', icon: Sun, keywords: 'solar pv photovoltaic 690 panel array inverter string conductor ocpd renewable' },
-        { id: 'ev-charging', name: 'EV Charging', icon: Zap, keywords: 'ev charging electric vehicle evse 625 charger station load continuous diversity feeder branch circuit nec' }
+        { id: 'motor-calculations', name: 'Motors', icon: TbCircuitMotor, keywords: 'motor flc protection starter 430' },
+        { id: 'transformer-sizing', name: 'Transformers', icon: TbCircuitInductor, keywords: 'transformer kva sizing current primary secondary 450' },
+        { id: 'vfd-sizing', name: 'VFD Sizing', icon: PiComputerTower, keywords: 'vfd variable frequency drive motor speed control inverter ac drive' },
+        { id: 'solar-pv', name: 'Solar PV', icon: PiSolarPanel, keywords: 'solar pv photovoltaic 690 panel array inverter string conductor ocpd renewable' },
+        { id: 'ev-charging', name: 'EV Charging', icon: PiChargingStation, keywords: 'ev charging electric vehicle evse 625 charger station load continuous diversity feeder branch circuit nec' }
       ]
     }
   ];
@@ -116,6 +120,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
   // Calculator Card Component
   const CalculatorCard = ({ calc, categoryColor }) => {
   const Icon = calc.icon;
+  
   return (
     <button
       onClick={() => handleCalculatorClick(calc.id)}

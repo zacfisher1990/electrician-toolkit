@@ -1,5 +1,6 @@
 import React from 'react';
 import { Home, Calculator, Briefcase, FileText, Receipt, Wrench } from 'lucide-react';
+import { PiInvoice } from 'react-icons/pi';
 import { getColors } from '../theme';
 
 function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
@@ -98,7 +99,7 @@ function BottomNavigation({ onNavigate, currentView, isDarkMode = false }) {
         onClick={() => onNavigate('invoices')}
         style={buttonStyle(currentView === 'invoices')}
       >
-        <Receipt size={22} strokeWidth={currentView === 'invoices' ? 2.5 : 2} />
+        <PiInvoice size={22} strokeWidth={currentView === 'invoices' ? 2.5 : 2} />
         <span style={labelStyle}>Invoices</span>
       </button>
     </div>

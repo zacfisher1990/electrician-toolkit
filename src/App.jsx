@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, FileDown, Omega, Wrench, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap } from 'lucide-react';
+import { Menu, FileDown, Omega, Wrench, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap, TriangleRight } from 'lucide-react';
+import { PiInvoice, PiComputerTower, PiShovel, PiNumberCircleThree, PiLineSegments } from 'react-icons/pi';
+import { TbCircuitGround, TbCircuitMotor, TbCircuitInductor } from 'react-icons/tb';
+import { FaCircleHalfStroke } from 'react-icons/fa6';
+import { FiDivideCircle } from 'react-icons/fi';
 import CalculatorMenu from './features/tools/calculators/CalculatorMenu.jsx';
 import VoltageDropCalculator from './features/tools/calculators/VoltageDropCalculator.jsx';
 import OhmsLawCalculator from './features/tools/calculators/OhmsLawCalculator.jsx';
@@ -344,7 +348,7 @@ const handleAddJobFromCalendar = (date) => {
       return { title: 'Estimates', icon: FileText };
     }
     if (activeCalculator === 'invoices') {
-      return { title: 'Invoices', icon: Receipt };
+      return { title: 'Invoices', icon: PiInvoice };
     }
     if (activeCalculator === 'verify-email') {
       return { title: 'Verify Email', icon: User };
@@ -352,28 +356,28 @@ const handleAddJobFromCalendar = (date) => {
     
     const headerMap = {
       'voltage-drop': { title: 'Voltage Drop', icon: TrendingDown },
-      'ohms-law': { title: "Ohm's Law", icon: SquareDivide },
+      'ohms-law': { title: "Ohm's Law", icon: FiDivideCircle },
       'reactance-impedance': { title: 'Reactance & Impedance', icon: Omega },
       'power-factor': { title: 'Power Factor Correction', icon: Target },
       'box-fill': { title: 'Box Fill', icon: Package },
-      'conduit-fill': { title: 'Conduit Fill', icon: Circle },
+      'conduit-fill': { title: 'Conduit Fill', icon: FaCircleHalfStroke },
       'ampacity': { title: 'Ampacity', icon: Cable },
-      'motor-calculations': { title: 'Motors', icon: Settings },
+      'motor-calculations': { title: 'Motors', icon: TbCircuitMotor },
       'load-calculations': { title: 'Load Calculations', icon: BarChart3 },
-      'transformer-sizing': { title: 'Transformers', icon: Radio },
+      'transformer-sizing': { title: 'Transformers', icon: TbCircuitInductor },
       'service-entrance': { title: 'Service Entrance Sizing', icon: Building },
-      'grounding-bonding': { title: 'Grounding & Bonding', icon: Globe },
+      'grounding-bonding': { title: 'Grounding & Bonding', icon: TbCircuitGround },
       'conduit-bending': { title: 'Conduit Bending', icon: CornerDownRight },
       'lighting': { title: 'Lighting', icon: Lightbulb },
       'receptacles': { title: 'Receptacles', icon: Plug },
-      'vfd-sizing': { title: 'VFD Sizing', icon: Gauge },
-      'power-triangle': { title: 'Power Triangle', icon: Triangle },
-      'three-phase-power': { title: 'Three-Phase Power', icon: Tally3 },
+      'vfd-sizing': { title: 'VFD Sizing', icon: PiComputerTower },
+      'power-triangle': { title: 'Power Triangle', icon: TriangleRight },
+      'three-phase-power': { title: 'Three-Phase Power', icon: PiNumberCircleThree },
       'pull-box': { title: 'Pull Box Sizing', icon: Box },
-      'underground-depth': { title: 'Underground Depth', icon: ArrowDown },
+      'underground-depth': { title: 'Underground Depth', icon: PiShovel },
       'overhead-clearance': { title: 'Overhead Clearance', icon: ArrowUp },
       'working-space': { title: 'Working Space', icon: Ruler },
-      'neutral-sizing': { title: 'Neutral Sizing', icon: Minus },
+      'neutral-sizing': { title: 'Neutral Sizing', icon: PiLineSegments },
       'solar-pv': { title: 'Solar PV', icon: Sun },
       'ev-charging': { title: 'EV Charging', icon: Zap }
     };
