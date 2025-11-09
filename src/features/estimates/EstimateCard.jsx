@@ -83,8 +83,20 @@ const EstimateCard = ({
           marginBottom: isExpanded ? '0.75rem' : 0
         }}
       >
-        {/* Estimate Name */}
-        <div style={{ flex: 1, maxWidth: 'calc(100% - 140px)', paddingRight: '0.5rem' }}>
+        {/* Left side - Estimate Number and Name */}
+        <div style={{ flex: 1, paddingRight: '0.5rem' }}>
+          {/* Estimate Number - Left aligned */}
+          <div style={{
+            fontSize: '0.75rem',
+            color: cardColors.subtext,
+            marginBottom: '0.25rem',
+            fontWeight: '500',
+            textAlign: 'left'
+          }}>
+            {estimate.estimateNumber || 'EST-000'}
+          </div>
+          
+          {/* Estimate Name */}
           <h3 style={{
             margin: '0',
             color: cardColors.text,

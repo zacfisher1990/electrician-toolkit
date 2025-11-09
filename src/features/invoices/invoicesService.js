@@ -50,6 +50,43 @@ export const getUserInvoices = async () => {
 };
 
 /**
+ * Get the next invoice number
+ */
+export const getNextInvoiceNumber = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const invoices = await getUserInvoices();
+    
+    if (invoices.length === 0) {
+      return 'INV-001';
+    }
+
+    // Extract numbers from existing invoice numbers
+    const numbers = invoices
+      .map(inv => {
+        const match = inv.invoiceNumber?.match(/INV-(\d+)/);
+        return match ? parseInt(match[1]) : 0;
+      })
+      .filter(num => num > 0);
+
+    if (numbers.length === 0) {
+      return 'INV-001';
+    }
+
+    const maxNumber = Math.max(...numbers);
+    const nextNumber = maxNumber + 1;
+    return `INV-${String(nextNumber).padStart(3, '0')}`;
+  } catch (error) {
+    console.error('Error getting next invoice number:', error);
+    return 'INV-001';
+  }
+};
+
+/**
  * Create a new invoice
  */
 export const createInvoice = async (invoiceData) => {
@@ -59,13 +96,19 @@ export const createInvoice = async (invoiceData) => {
       throw new Error('User not authenticated');
     }
 
+    // Generate invoice number automatically
+    const invoiceNumber = await getNextInvoiceNumber();
+
     const docRef = await addDoc(collection(db, INVOICES_COLLECTION), {
       userId: user.uid,
       ...invoiceData,
+      invoiceNumber,
+      status: invoiceData.status || 'Draft',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });
 
+    console.log('Invoice created with number:', invoiceNumber);
     return docRef.id;
   } catch (error) {
     console.error('Error creating invoice:', error);
@@ -112,43 +155,6 @@ export const deleteInvoice = async (invoiceId) => {
 };
 
 /**
- * Get the next invoice number
- */
-export const getNextInvoiceNumber = async () => {
-  try {
-    const user = auth.currentUser;
-    if (!user) {
-      throw new Error('User not authenticated');
-    }
-
-    const invoices = await getUserInvoices();
-    
-    if (invoices.length === 0) {
-      return 'INV-001';
-    }
-
-    // Extract numbers from existing invoice numbers
-    const numbers = invoices
-      .map(inv => {
-        const match = inv.invoiceNumber.match(/INV-(\d+)/);
-        return match ? parseInt(match[1]) : 0;
-      })
-      .filter(num => num > 0);
-
-    if (numbers.length === 0) {
-      return 'INV-001';
-    }
-
-    const maxNumber = Math.max(...numbers);
-    const nextNumber = maxNumber + 1;
-    return `INV-${String(nextNumber).padStart(3, '0')}`;
-  } catch (error) {
-    console.error('Error getting next invoice number:', error);
-    return 'INV-001';
-  }
-};
-
-/**
  * Update invoice status
  */
 export const updateInvoiceStatus = async (invoiceId, status) => {
@@ -181,12 +187,20 @@ export const recordInvoiceSent = async (invoiceId, recipientEmail) => {
 
     const invoiceRef = doc(db, INVOICES_COLLECTION, invoiceId);
     const invoiceDoc = await getDoc(invoiceRef);
-    const currentSentCount = invoiceDoc.data()?.sentCount || 0;
+    
+    if (!invoiceDoc.exists()) {
+      throw new Error('Invoice not found');
+    }
+    
+    const currentData = invoiceDoc.data();
+    const currentSentCount = currentData.sentCount || 0;
 
     await updateDoc(invoiceRef, {
       lastSentAt: serverTimestamp(),
       lastSentTo: recipientEmail,
       sentCount: currentSentCount + 1,
+      // Auto-update status from Draft to Pending when sent for the first time
+      status: currentData.status === 'Draft' ? 'Pending' : currentData.status,
       updatedAt: serverTimestamp()
     });
   } catch (error) {

@@ -469,7 +469,7 @@ const Estimates = ({
               padding: '3rem 1rem',
               color: colors.subtext
             }}>
-              <FileText size={48} color={colors.subtext} style={{ margin: '0 auto 1rem' }} />
+              <FileText size={48} color={colors.subtext} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
               <p style={{ margin: 0, fontSize: '0.9375rem' }}>No estimates yet. Create your first estimate above!</p>
             </div>
           )}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, Download, Send, CheckCircle, AlertCircle } from 'lucide-react';
-import Toast from '../../components/Toast'; // Add this import
+import Toast from '../../components/Toast';
 
 const SendEstimateModal = ({ 
   estimate, 
@@ -16,9 +16,9 @@ const SendEstimateModal = ({
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
-  const [showToast, setShowToast] = useState(false); // Add toast state
-  const [toastMessage, setToastMessage] = useState(''); // Add toast message state
-  const [toastType, setToastType] = useState('success'); // Add toast type state
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -49,7 +49,7 @@ const SendEstimateModal = ({
         onClose();
       }, 2000);
     } catch (err) {
-      console.error('Error sending invoice:', err);
+      console.error('Error sending estimate:', err);
       setError(err.message || 'Failed to send estimate. Please try again.');
     } finally {
       setSending(false);
@@ -60,14 +60,12 @@ const SendEstimateModal = ({
     try {
       if (onDownload) {
         await onDownload();
-        // Show success toast
         setToastMessage('Estimate downloaded successfully!');
         setToastType('success');
         setShowToast(true);
       }
     } catch (error) {
       console.error('Download error:', error);
-      // Show error toast
       setToastMessage(error.message || 'Failed to download estimate');
       setToastType('error');
       setShowToast(true);
@@ -159,7 +157,7 @@ const SendEstimateModal = ({
                 fontSize: '0.875rem',
                 margin: 0
               }}>
-                Estimate #{estimate.estimateNumber} has been sent to {email}
+                {estimate.estimateNumber || 'Your estimate'} has been sent to {email}
               </p>
             </div>
           ) : (
@@ -172,6 +170,53 @@ const SendEstimateModal = ({
                 padding: '1rem',
                 marginBottom: '1.5rem'
               }}>
+                {/* Estimate Number Row */}
+                {estimate.estimateNumber && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <span style={{
+                      color: colors.textSecondary,
+                      fontSize: '0.875rem'
+                    }}>
+                      Estimate #
+                    </span>
+                    <span style={{
+                      color: colors.text,
+                      fontSize: '0.875rem',
+                      fontWeight: '600'
+                    }}>
+                      {estimate.estimateNumber}
+                    </span>
+                  </div>
+                )}
+
+                {/* Client Name Row - Only show if clientName exists */}
+                {estimate.clientName && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <span style={{
+                      color: colors.textSecondary,
+                      fontSize: '0.875rem'
+                    }}>
+                      Client
+                    </span>
+                    <span style={{
+                      color: colors.text,
+                      fontSize: '0.875rem',
+                      fontWeight: '600'
+                    }}>
+                      {estimate.clientName}
+                    </span>
+                  </div>
+                )}
+
+                {/* Project Name Row */}
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -181,35 +226,18 @@ const SendEstimateModal = ({
                     color: colors.textSecondary,
                     fontSize: '0.875rem'
                   }}>
-                    Estimate #
+                    Project
                   </span>
                   <span style={{
                     color: colors.text,
                     fontSize: '0.875rem',
                     fontWeight: '600'
                   }}>
-                    {estimate.estimateNumber || 'N/A'}
+                    {estimate.name}
                   </span>
                 </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: '0.5rem'
-                }}>
-                  <span style={{
-                    color: colors.textSecondary,
-                    fontSize: '0.875rem'
-                  }}>
-                    Client
-                  </span>
-                  <span style={{
-                    color: colors.text,
-                    fontSize: '0.875rem',
-                    fontWeight: '600'
-                  }}>
-                    {estimate.clientName || estimate.client || 'N/A'}
-                  </span>
-                </div>
+
+                {/* Total Row */}
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',

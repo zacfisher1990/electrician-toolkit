@@ -89,15 +89,25 @@ const InvoiceCard = ({
         }}
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        {/* Invoice Number and Client/Description */}
+        {/* Left side - Invoice Number and Client/Description */}
         <div style={{ 
-          flex: 1, 
-          minWidth: 0,
-          maxWidth: 'calc(100% - 140px)',
+          flex: 1,
           paddingRight: '0.5rem'
         }}>
+          {/* Invoice Number - Small label above (matching estimate style) */}
+          <div style={{
+            fontSize: '0.75rem',
+            color: colors.subtext,
+            marginBottom: '0.25rem',
+            fontWeight: '500',
+            textAlign: 'left'
+          }}>
+            {invoice.invoiceNumber}
+          </div>
+          
+          {/* Client/Description - Main text */}
           <h3 style={{
-            margin: '0 0 0.25rem 0',
+            margin: '0',
             color: colors.text,
             fontSize: '1rem',
             fontWeight: '600',
@@ -105,23 +115,9 @@ const InvoiceCard = ({
             alignItems: 'center',
             gap: '0.5rem'
           }}>
-            {invoice.invoiceNumber}
+            {invoice.description || invoice.client || invoice.clientName || 'Invoice'}
             {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </h3>
-          {(invoice.description || invoice.client) && (
-            <p style={{
-              margin: 0,
-              color: colors.subtext,
-              fontSize: '0.875rem',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              width: '100%',
-              textAlign: 'left'
-            }}>
-              {invoice.description || invoice.client}
-            </p>
-          )}
         </div>
 
         {/* Status Badge with Dropdown and Overdue Indicator */}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Search, X } from 'lucide-react';
+import { PiInvoice } from 'react-icons/pi';
 import { getColors } from '../../theme';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase/firebase';
@@ -460,18 +461,18 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
                 </>
               ) : (
                 <>
-                  <FileText 
+                  <PiInvoice 
                     size={48} 
                     color={colors.subtext} 
-                    style={{ margin: '0 auto 1rem' }}
+                    style={{ margin: '0 auto 1rem', opacity: 0.5 }}
                   />
                   <p style={{
                     color: colors.subtext,
-                    fontSize: '0.875rem',
+                    fontSize: '0.9375rem',
                     margin: 0
                   }}>
                     {statusFilter === 'all' 
-                      ? 'No invoices yet. Create your first invoice!' 
+                      ? 'No invoices yet. Create your first invoice above!' 
                       : `No ${statusFilter.toLowerCase()} invoices.`
                     }
                   </p>

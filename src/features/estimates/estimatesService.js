@@ -50,6 +50,43 @@ export const getUserEstimates = async () => {
 };
 
 /**
+ * Get the next estimate number
+ */
+export const getNextEstimateNumber = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const estimates = await getUserEstimates();
+    
+    if (estimates.length === 0) {
+      return 'EST-001';
+    }
+
+    // Extract numbers from existing estimate numbers
+    const numbers = estimates
+      .map(est => {
+        const match = est.estimateNumber?.match(/EST-(\d+)/);
+        return match ? parseInt(match[1]) : 0;
+      })
+      .filter(num => num > 0);
+
+    if (numbers.length === 0) {
+      return 'EST-001';
+    }
+
+    const maxNumber = Math.max(...numbers);
+    const nextNumber = maxNumber + 1;
+    return `EST-${String(nextNumber).padStart(3, '0')}`;
+  } catch (error) {
+    console.error('Error getting next estimate number:', error);
+    return 'EST-001';
+  }
+};
+
+/**
  * Create a new estimate
  */
 export const createEstimate = async (estimateData) => {
@@ -59,13 +96,19 @@ export const createEstimate = async (estimateData) => {
       throw new Error('User not authenticated');
     }
 
+    // Generate estimate number automatically
+    const estimateNumber = await getNextEstimateNumber();
+
     const docRef = await addDoc(collection(db, ESTIMATES_COLLECTION), {
       userId: user.uid,
       ...estimateData,
+      estimateNumber,
+      status: estimateData.status || 'Draft',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });
 
+    console.log('Estimate created with number:', estimateNumber);
     return docRef.id;
   } catch (error) {
     console.error('Error creating estimate:', error);
@@ -112,43 +155,6 @@ export const deleteEstimate = async (estimateId) => {
 };
 
 /**
- * Get the next estimate number
- */
-export const getNextEstimateNumber = async () => {
-  try {
-    const user = auth.currentUser;
-    if (!user) {
-      throw new Error('User not authenticated');
-    }
-
-    const estimates = await getUserEstimates();
-    
-    if (estimates.length === 0) {
-      return 'EST-001';
-    }
-
-    // Extract numbers from existing estimate numbers
-    const numbers = estimates
-      .map(est => {
-        const match = est.estimateNumber?.match(/EST-(\d+)/);
-        return match ? parseInt(match[1]) : 0;
-      })
-      .filter(num => num > 0);
-
-    if (numbers.length === 0) {
-      return 'EST-001';
-    }
-
-    const maxNumber = Math.max(...numbers);
-    const nextNumber = maxNumber + 1;
-    return `EST-${String(nextNumber).padStart(3, '0')}`;
-  } catch (error) {
-    console.error('Error getting next estimate number:', error);
-    return 'EST-001';
-  }
-};
-
-/**
  * Update estimate status
  */
 export const updateEstimateStatus = async (estimateId, status) => {
@@ -181,12 +187,20 @@ export const recordEstimateSent = async (estimateId, recipientEmail) => {
 
     const estimateRef = doc(db, ESTIMATES_COLLECTION, estimateId);
     const estimateDoc = await getDoc(estimateRef);
-    const currentSentCount = estimateDoc.data()?.sentCount || 0;
+    
+    if (!estimateDoc.exists()) {
+      throw new Error('Estimate not found');
+    }
+    
+    const currentData = estimateDoc.data();
+    const currentSentCount = currentData.sentCount || 0;
 
     await updateDoc(estimateRef, {
       lastSentAt: serverTimestamp(),
       lastSentTo: recipientEmail,
       sentCount: currentSentCount + 1,
+      // Auto-update status from Draft to Pending when sent for the first time
+      status: currentData.status === 'Draft' ? 'Pending' : currentData.status,
       updatedAt: serverTimestamp()
     });
   } catch (error) {
