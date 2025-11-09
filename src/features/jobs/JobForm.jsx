@@ -94,15 +94,18 @@ const JobForm = ({
         />
       </div>
 
-      {/* Date and Time */}
+      {/* Start Date and Time */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
         <div>
-          <label style={labelStyle}>Date</label>
+          <label style={labelStyle}>Start Date</label>
           <input
             type="date"
             value={formData.date}
             onChange={(e) => setFormData(prev => ({...prev, date: e.target.value}))}
-            style={inputStyle}
+            style={{
+              ...inputStyle,
+              colorScheme: isDarkMode ? 'dark' : 'light'
+            }}
           />
         </div>
 
@@ -112,7 +115,10 @@ const JobForm = ({
             type="time"
             value={formData.time}
             onChange={(e) => setFormData(prev => ({...prev, time: e.target.value}))}
-            style={inputStyle}
+            style={{
+              ...inputStyle,
+              colorScheme: isDarkMode ? 'dark' : 'light'
+            }}
           />
         </div>
       </div>
@@ -305,30 +311,17 @@ const JobForm = ({
         )}
       </div>
 
-      {/* Cost and Duration */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-        <div>
-          <label style={labelStyle}>Cost ($)</label>
-          <input
-            type="number"
-            placeholder="0.00"
-            value={formData.estimatedCost}
-            onChange={(e) => setFormData(prev => ({...prev, estimatedCost: e.target.value}))}
-            style={inputStyle}
-            disabled={linkedEstimates && linkedEstimates.length > 0}
-          />
-        </div>
-
-        <div>
-          <label style={labelStyle}>Duration</label>
-          <input
-            type="text"
-            placeholder="e.g., 4 hours"
-            value={formData.duration}
-            onChange={(e) => setFormData(prev => ({...prev, duration: e.target.value}))}
-            style={inputStyle}
-          />
-        </div>
+      {/* Cost */}
+      <div style={{ marginBottom: '0.75rem' }}>
+        <label style={labelStyle}>Cost ($)</label>
+        <input
+          type="number"
+          placeholder="0.00"
+          value={formData.estimatedCost}
+          onChange={(e) => setFormData(prev => ({...prev, estimatedCost: e.target.value}))}
+          style={inputStyle}
+          disabled={linkedEstimates && linkedEstimates.length > 0}
+        />
       </div>
 
       {linkedEstimates && linkedEstimates.length > 0 && (

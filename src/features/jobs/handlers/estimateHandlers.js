@@ -105,7 +105,8 @@ export const createEstimateHandlers = ({
     
     if (showAddForm && formData.title && formData.client) {
       try {
-        const jobData = {
+        // Build job data and filter out undefined/empty values
+        const rawJobData = {
           name: formData.title,
           title: formData.title,
           client: formData.client,
@@ -114,17 +115,28 @@ export const createEstimateHandlers = ({
           date: formData.date,
           time: formData.time,
           estimatedCost: formData.estimatedCost,
-          duration: formData.duration,
           notes: formData.notes,
           estimateIds: formData.estimateIds || []
         };
+        
+        // Filter out undefined, null, and empty string values
+        const jobData = Object.fromEntries(
+          Object.entries(rawJobData).filter(([key, value]) => {
+            // Keep arrays even if empty
+            if (Array.isArray(value)) return true;
+            // Filter out undefined, null, and empty strings
+            return value !== undefined && value !== null && value !== '';
+          })
+        );
 
         const jobId = await createJob(jobData);
         
         const estimateData = {
+          createNew: true, // Flag to open the estimate form
           jobId: jobId,
           jobName: formData.title,
-          jobClient: formData.client
+          jobClient: formData.client,
+          jobLocation: formData.location
         };
         
         if (onNavigateToEstimates) {
@@ -139,16 +151,27 @@ export const createEstimateHandlers = ({
       }
     } else if (viewingJob) {
       const estimateData = {
+        createNew: true, // Flag to open the estimate form
         jobId: viewingJob.id,
         jobName: viewingJob.title || viewingJob.name,
-        jobClient: viewingJob.client
+        jobClient: viewingJob.client,
+        jobLocation: viewingJob.location
       };
       
       if (onNavigateToEstimates) {
         onNavigateToEstimates(estimateData);
       }
     } else {
-      alert('Please fill in the job title and client name first.');
+      // User is creating a new job but hasn't filled in required fields yet
+      // Navigate to estimates with just the createNew flag and any partial data
+      if (onNavigateToEstimates) {
+        onNavigateToEstimates({ 
+          createNew: true,
+          jobName: formData.title || '',
+          jobClient: formData.client || '',
+          jobLocation: formData.location || ''
+        });
+      }
     }
   };
 

@@ -12,7 +12,6 @@ export const useJobForm = () => {
     date: '',
     time: '',
     estimatedCost: '',
-    duration: '',
     notes: '',
     estimateIds: []
   });
@@ -34,7 +33,6 @@ export const useJobForm = () => {
       date: '',
       time: '',
       estimatedCost: '',
-      duration: '',
       notes: '',
       estimateIds: []
     });

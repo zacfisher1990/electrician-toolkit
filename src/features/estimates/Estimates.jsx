@@ -99,6 +99,15 @@ const Estimates = ({
     }
   }, [navigationData, estimates]);
 
+  // Handle creating a new estimate from navigation (from Jobs page)
+  useEffect(() => {
+    if (navigationData?.createNew) {
+      console.log('📝 Opening estimate form from navigation with data:', navigationData);
+      setShowAddForm(true);
+      setEditingEstimate(null);
+    }
+  }, [navigationData]);
+
   const loadEstimates = async () => {
     try {
       const cachedEstimates = getEstimates();
@@ -313,6 +322,7 @@ const Estimates = ({
           isDarkMode={isDarkMode}
           colors={colors}
           isNewEstimate={true}
+          prefilledData={navigationData} 
         />
       )}
 

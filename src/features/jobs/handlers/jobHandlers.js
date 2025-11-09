@@ -27,19 +27,29 @@ export const createJobHandlers = ({
       // Ensure estimateIds is an array
       const estimateIds = Array.isArray(formData.estimateIds) ? formData.estimateIds : [];
       
-      const jobData = {
+      // Build job data and filter out undefined/empty values
+      const rawJobData = {
         name: formData.title,
         title: formData.title,
         client: formData.client,
-        location: formData.location || '',
-        status: formData.status || 'scheduled',
-        date: formData.date || '',
-        time: formData.time || '',
-        estimatedCost: formData.estimatedCost || '',
-        duration: formData.duration || '',
-        notes: formData.notes || '',
+        location: formData.location,
+        status: formData.status,
+        date: formData.date,
+        time: formData.time,
+        estimatedCost: formData.estimatedCost,
+        notes: formData.notes,
         estimateIds: estimateIds
       };
+      
+      // Filter out undefined, null, and empty string values
+      const jobData = Object.fromEntries(
+        Object.entries(rawJobData).filter(([key, value]) => {
+          // Keep arrays even if empty
+          if (Array.isArray(value)) return true;
+          // Filter out undefined, null, and empty strings
+          return value !== undefined && value !== null && value !== '';
+        })
+      );
 
       console.log('✅ Creating job with data:', jobData);
       const jobId = await createJob(jobData);
@@ -79,19 +89,29 @@ export const createJobHandlers = ({
       // Ensure estimateIds is an array
       const estimateIds = Array.isArray(formData.estimateIds) ? formData.estimateIds : [];
       
-      const jobData = {
+      // Build job data and filter out undefined/empty values
+      const rawJobData = {
         name: formData.title,
         title: formData.title,
         client: formData.client,
-        location: formData.location || '',
-        status: formData.status || 'scheduled',
-        date: formData.date || '',
-        time: formData.time || '',
-        estimatedCost: formData.estimatedCost || '',
-        duration: formData.duration || '',
-        notes: formData.notes || '',
+        location: formData.location,
+        status: formData.status,
+        date: formData.date,
+        time: formData.time,
+        estimatedCost: formData.estimatedCost,
+        notes: formData.notes,
         estimateIds: estimateIds
       };
+      
+      // Filter out undefined, null, and empty string values
+      const jobData = Object.fromEntries(
+        Object.entries(rawJobData).filter(([key, value]) => {
+          // Keep arrays even if empty
+          if (Array.isArray(value)) return true;
+          // Filter out undefined, null, and empty strings
+          return value !== undefined && value !== null && value !== '';
+        })
+      );
 
       console.log('✅ Updating job with data:', jobData);
       await updateJob(editingJob.id, jobData);
