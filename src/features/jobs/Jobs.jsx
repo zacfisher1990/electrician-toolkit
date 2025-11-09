@@ -22,7 +22,7 @@ import { createInvoiceHandlers } from './handlers/invoiceHandlers';
 import { filterJobs, getStatusCounts } from './utils/jobsUtils';
 import { openJobView, handleViewEstimateFromCard } from './utils/jobViewHelpers';
 
-const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefilledDate }) => {
+const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefilledDate, navigationData }) => {
   // State from custom hooks
   const {
     jobs,
@@ -139,6 +139,30 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
     }
   }, [jobs, onClockedInJobChange]);
 
+  // NEW: Handle navigation back from Estimates - reload fresh data (cache already cleared in App.jsx)
+  useEffect(() => {
+    if (navigationData?.openJobId) {
+      console.log('📍 Reloading data after cache clear');
+      
+      // Cache was already cleared in App.jsx, so loadJobs will fetch fresh
+      loadJobs();
+      loadEstimatesWithCache();
+    }
+  }, [navigationData?.openJobId, loadJobs, loadEstimatesWithCache]);
+
+  // Separate effect to open the job after data is reloaded
+  useEffect(() => {
+    if (navigationData?.openJobId && jobs.length > 0 && estimates.length > 0) {
+      const jobToOpen = jobs.find(j => j.id === navigationData.openJobId);
+      
+      // Check if this job actually has the new estimate ID
+      if (jobToOpen && jobToOpen.estimateIds?.includes(navigationData.newEstimateId)) {
+        console.log('✅ Job data refreshed with new estimate, opening job');
+        handleOpenJobView(jobToOpen);
+      }
+    }
+  }, [jobs, estimates, navigationData?.openJobId, navigationData?.newEstimateId]);
+
   // Create handlers
   const jobHandlers = createJobHandlers({
     formData,
@@ -209,8 +233,27 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
     setViewingSingleEstimate(null);
     setShowCombinedEstimatesModal(false);
     
+    // Get linked estimates for this job
+    const jobLinkedEstimates = job.estimateIds?.length > 0 
+      ? estimates.filter(est => job.estimateIds.includes(est.id))
+      : [];
+    
+    // Calculate total cost from linked estimates
+    const totalFromEstimates = jobLinkedEstimates.reduce((total, estimate) => {
+      const estimateTotal = estimate.total || estimate.estimatedCost || 0;
+      return total + Number(estimateTotal);
+    }, 0);
+    
+    // Use calculated total if estimates exist, otherwise use job's stored cost
+    const costToUse = jobLinkedEstimates.length > 0 
+      ? totalFromEstimates.toString() 
+      : (job.estimatedCost || job.cost || '');
+    
     openJobView({
-      job,
+      job: {
+        ...job,
+        estimatedCost: costToUse // Override with calculated cost
+      },
       estimates,
       setViewingJob,
       setEditingJob,

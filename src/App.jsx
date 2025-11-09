@@ -207,6 +207,11 @@ const handleAddJobFromCalendar = (date) => {
   setActiveCalculator('jobs');
 };
 
+const handleNavigateToJobs = (data) => {
+  setJobsNavigationData(data);
+  setCurrentView('jobs'); // or use your router
+};
+
   const handleNavigate = (view, data = null) => {
       if (view === 'home') {
         setActiveCalculator(null);
@@ -215,6 +220,13 @@ const handleAddJobFromCalendar = (date) => {
       } else if (view === 'profile') {
         setActiveCalculator('profile');
       } else if (view === 'jobs') {
+        // CRITICAL: If coming from Estimates with data, clear cache BEFORE rendering
+        if (data?.openJobId) {
+          console.log('🧹 Clearing jobs cache before navigation');
+          localStorage.removeItem('jobs_cache_v1');
+          localStorage.removeItem('jobs_cache_timestamp_v1');
+          setNavigationData(data);
+        }
         setActiveCalculator('jobs');
       } else if (view === 'estimates') {
         setActiveCalculator('estimates');
@@ -314,6 +326,7 @@ const handleAddJobFromCalendar = (date) => {
           onNavigateToEstimates={(data) => handleNavigate('estimates', data)}
           onClockedInJobChange={setClockedInJob} // NEW: Instant callback
           prefilledDate={prefilledJobDate} // NEW: Pass prefilled date from calendar
+          navigationData={navigationData} // NEW: Pass navigation data from Estimates
         />;
       case 'estimates':
         return <Estimates 
@@ -322,6 +335,7 @@ const handleAddJobFromCalendar = (date) => {
           pendingEstimateData={pendingEstimate}
           onClearPendingData={() => setPendingEstimate(null)}
           navigationData={navigationData}
+          onNavigateToJobs={(data) => handleNavigate('jobs', data)} // NEW: Navigate back to Jobs
         />;
       case 'invoices':
         return <Invoices isDarkMode={isDarkMode} />;

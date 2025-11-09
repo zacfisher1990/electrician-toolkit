@@ -19,7 +19,8 @@ const Estimates = ({
   onApplyToJob, 
   pendingEstimateData, 
   onClearPendingData, 
-  navigationData 
+  navigationData,
+  onNavigateToJobs  // NEW: Callback to navigate back to Jobs
 }) => {
   const [estimates, setEstimates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -135,10 +136,26 @@ const Estimates = ({
 
   const saveEstimate = async (estimateData) => {
     try {
+      // If navigationData has a jobId, include it in the estimate
+      const dataToSave = {
+        ...estimateData,
+        jobId: navigationData?.jobId || estimateData.jobId || null
+      };
+      
       if (editingEstimate) {
-        await updateEstimate(editingEstimate.id, estimateData);
+        await updateEstimate(editingEstimate.id, dataToSave);
       } else {
-        await createEstimate(estimateData);
+        const newEstimateId = await createEstimate(dataToSave);
+        console.log('✅ New estimate created:', newEstimateId);
+        
+        // If this estimate was created from a job, navigate back to Jobs
+        if (navigationData?.jobId && onNavigateToJobs) {
+          console.log('🔙 Navigating back to Jobs with jobId:', navigationData.jobId);
+          onNavigateToJobs({ 
+            openJobId: navigationData.jobId,
+            newEstimateId: newEstimateId 
+          });
+        }
       }
       
       setEditingEstimate(null);
