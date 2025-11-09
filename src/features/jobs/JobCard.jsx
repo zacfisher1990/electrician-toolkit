@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { MapPin, Calendar, Edit, FileText, Receipt, DollarSign, ChevronDown, ChevronUp, Play, Square, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Edit, FileText, Receipt, DollarSign, ChevronDown, ChevronUp, Play, Square, Trash2, Camera } from 'lucide-react';
+import PhotoGallery from './PhotoGallery';
 import styles from './JobCard.module.css';
 
 
@@ -30,6 +31,9 @@ const JobCard = ({
     job.estimateIds && job.estimateIds.includes(est.id)
   );
   const linkedEstimate = linkedEstimates.length > 0 ? linkedEstimates[0] : null;
+
+  // Check if job has photos
+  const hasPhotos = job.photos && job.photos.length > 0;
 
   // Update timer every second when clocked in
   useEffect(() => {
@@ -118,6 +122,15 @@ const JobCard = ({
             gap: '0.5rem'
           }}>
             {jobTitle}
+            {hasPhotos && (
+              <Camera 
+                size={14} 
+                style={{ 
+                  color: colors.subtext,
+                  opacity: 0.7
+                }} 
+              />
+            )}
             {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </h3>
           <p style={{
@@ -319,6 +332,19 @@ const JobCard = ({
             }}>
               <DollarSign size={16} />
               <span>${Number(job.estimatedCost).toLocaleString()}</span>
+            </div>
+          )}
+
+          {/* Photo Gallery - Compact view in card */}
+          {hasPhotos && (
+            <div style={{ marginBottom: '0.75rem' }}>
+              <PhotoGallery
+                photos={job.photos}
+                compact={true}
+                maxVisible={4}
+                isDarkMode={isDarkMode}
+                colors={colors}
+              />
             </div>
           )}
 

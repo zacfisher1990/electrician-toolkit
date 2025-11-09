@@ -1,5 +1,6 @@
 import React from 'react';
 import EstimateSelector from './EstimateSelector';
+import PhotoUploader from './PhotoUploader';
 import { X } from 'lucide-react';
 
 const JobForm = ({
@@ -348,6 +349,19 @@ const JobForm = ({
           <option value="in-progress">In Progress</option>
           <option value="completed">Completed</option>
         </select>
+      </div>
+
+      {/* Photo Upload Section - NEW! */}
+      <div style={{ marginBottom: '0.75rem' }}>
+        <PhotoUploader
+          photos={formData.photos || []}
+          onPhotosChange={(newPhotos) => {
+            setFormData(prev => ({...prev, photos: newPhotos}))
+          }}
+          maxPhotos={10}
+          isDarkMode={isDarkMode}
+          colors={colors}
+        />
       </div>
 
       {/* Notes */}

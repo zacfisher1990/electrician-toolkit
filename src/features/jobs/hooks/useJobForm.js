@@ -13,7 +13,8 @@ export const useJobForm = () => {
     time: '',
     estimatedCost: '',
     notes: '',
-    estimateIds: []
+    estimateIds: [],
+    photos: [] // ADD THIS LINE
   });
   
   const [showAddForm, setShowAddForm] = useState(false);
@@ -25,27 +26,28 @@ export const useJobForm = () => {
   const lastSyncedJobId = useRef(null);
 
   const resetForm = (clearModals) => {
-    setFormData({
-      title: '',
-      client: '',
-      location: '',
-      status: 'scheduled',
-      date: '',
-      time: '',
-      estimatedCost: '',
-      notes: '',
-      estimateIds: []
-    });
-    setShowAddForm(false);
-    setEditingJob(null);
-    setViewingJob(null);
-    setLinkedEstimates([]);
-    
-    // Clear estimate-related modals if callback provided
-    if (clearModals) {
-      clearModals();
-    }
-  };
+  setFormData({
+    title: '',
+    client: '',
+    location: '',
+    status: 'scheduled',
+    date: '',
+    time: '',
+    estimatedCost: '',
+    notes: '',
+    estimateIds: [],
+    photos: []
+  });
+  setShowAddForm(false);
+  setEditingJob(null);
+  setViewingJob(null);
+  setLinkedEstimates([]);
+  
+  // Clear estimate-related modals if callback provided
+  if (clearModals && typeof clearModals === 'function') {
+    clearModals();
+  }
+};
 
   // Handle click outside estimate menu
   useEffect(() => {

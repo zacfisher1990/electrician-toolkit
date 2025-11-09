@@ -22,7 +22,8 @@ export const openJobView = ({
     estimatedCost: job.estimatedCost || '',
     duration: job.duration || '',
     notes: job.notes || '',
-    estimateIds: job.estimateIds || []
+    estimateIds: job.estimateIds || [],
+    photos: job.photos || [] // ADD THIS LINE
   });
   
   // Load linked estimates based on estimateIds array
