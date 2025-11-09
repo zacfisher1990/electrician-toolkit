@@ -74,12 +74,27 @@ const TransformerSizingCalculator = forwardRef(({ isDarkMode = false }, ref) => 
       secondaryCurrent = (kva * 1000) / (1.732 * vSecondary);
     }
 
+    // Calculate breaker sizes based on NEC 450.3
+    // Primary: 125% of rated primary current (most common for transformers with 2-6% impedance)
+    // Secondary: 125% of rated secondary current
+    const primaryBreakerSize = primaryCurrent * 1.25;
+    const secondaryBreakerSize = secondaryCurrent * 1.25;
+
+    // Standard breaker sizes
+    const standardBreakers = [15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 110, 125, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500, 600, 700, 800, 1000, 1200, 1600, 2000, 2500, 3000, 4000, 5000, 6000];
+    
+    // Find next standard breaker size
+    const primaryBreaker = standardBreakers.find(size => size >= primaryBreakerSize) || Math.ceil(primaryBreakerSize);
+    const secondaryBreaker = standardBreakers.find(size => size >= secondaryBreakerSize) || Math.ceil(secondaryBreakerSize);
+
     return {
       kva,
       primaryCurrent: primaryCurrent.toFixed(1),
       secondaryCurrent: secondaryCurrent.toFixed(1),
       primaryVoltage: vPrimary,
-      secondaryVoltage: vSecondary
+      secondaryVoltage: vSecondary,
+      primaryBreaker,
+      secondaryBreaker
     };
   };
 
@@ -157,20 +172,25 @@ const TransformerSizingCalculator = forwardRef(({ isDarkMode = false }, ref) => 
             'Configuration': `${currentResults.kva} kVA, ${currentPhase === 'single' ? 'Single' : 'Three'} Phase`,
             'Voltage Ratio': `${currentResults.primaryVoltage}V / ${currentResults.secondaryVoltage}V`,
             'Primary Current': `${currentResults.primaryCurrent} A`,
-            'Secondary Current': `${currentResults.secondaryCurrent} A`
+            'Secondary Current': `${currentResults.secondaryCurrent} A`,
+            'Primary Breaker Size': `${currentResults.primaryBreaker} A`,
+            'Secondary Breaker Size': `${currentResults.secondaryBreaker} A`
           },
           additionalInfo: {
             'Formula Used': formula,
-            'Primary Side': `${currentResults.primaryCurrent}A at ${currentResults.primaryVoltage}V`,
-            'Secondary Side': `${currentResults.secondaryCurrent}A at ${currentResults.secondaryVoltage}V`,
-            'Application': 'Use these currents for selecting primary and secondary protection devices per NEC Article 450'
+            'Primary Side': `${currentResults.primaryCurrent}A at ${currentResults.primaryVoltage}V → ${currentResults.primaryBreaker}A breaker`,
+            'Secondary Side': `${currentResults.secondaryCurrent}A at ${currentResults.secondaryVoltage}V → ${currentResults.secondaryBreaker}A breaker`,
+            'Breaker Sizing': 'Breakers sized at 125% of rated current per NEC 450.3 (for transformers with 2-6% impedance)',
+            'Application': 'Use these currents and breaker sizes for selecting primary and secondary protection devices per NEC Article 450'
           },
           necReferences: [
             'NEC Article 450 - Transformers and Transformer Vaults',
             'NEC 450.3 - Overcurrent Protection',
             'Single Phase Formula: I = (kVA × 1000) ÷ V',
             'Three Phase Formula: I = (kVA × 1000) ÷ (1.732 × V)',
-            'Primary and secondary protection must be sized per calculated currents',
+            'Primary overcurrent protection: 125% of rated primary current (most common)',
+            'Secondary overcurrent protection: 125% of rated secondary current',
+            'Breaker sizes rounded up to next standard rating',
             'Consider temperature correction and adjustment factors for conductors',
             'Account for voltage drop in feeder calculations'
           ]
@@ -828,7 +848,8 @@ const TransformerSizingCalculator = forwardRef(({ isDarkMode = false }, ref) => 
                   background: '#dbeafe',
                   padding: '1rem',
                   borderRadius: '8px',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  marginBottom: '1rem'
                 }}>
                   <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
                     Primary Current
@@ -838,6 +859,23 @@ const TransformerSizingCalculator = forwardRef(({ isDarkMode = false }, ref) => 
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
                     Amperes
+                  </div>
+                </div>
+
+                <div style={{
+                  background: '#1e3a8a',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '0.75rem', color: '#93c5fd', marginBottom: '0.25rem' }}>
+                    Primary Breaker Size
+                  </div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#ffffff' }}>
+                    {currentResults.primaryBreaker}A
+                  </div>
+                  <div style={{ fontSize: '0.625rem', color: '#93c5fd', marginTop: '0.25rem' }}>
+                    125% of Primary Current (NEC 450.3)
                   </div>
                 </div>
               </div>
@@ -877,7 +915,8 @@ const TransformerSizingCalculator = forwardRef(({ isDarkMode = false }, ref) => 
                   background: '#d1fae5',
                   padding: '1rem',
                   borderRadius: '8px',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  marginBottom: '1rem'
                 }}>
                   <div style={{ fontSize: '0.75rem', color: '#059669', marginBottom: '0.25rem' }}>
                     Secondary Current
@@ -887,6 +926,23 @@ const TransformerSizingCalculator = forwardRef(({ isDarkMode = false }, ref) => 
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#059669', marginTop: '0.25rem' }}>
                     Amperes
+                  </div>
+                </div>
+
+                <div style={{
+                  background: '#047857',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '0.75rem', color: '#a7f3d0', marginBottom: '0.25rem' }}>
+                    Secondary Breaker Size
+                  </div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#ffffff' }}>
+                    {currentResults.secondaryBreaker}A
+                  </div>
+                  <div style={{ fontSize: '0.625rem', color: '#a7f3d0', marginTop: '0.25rem' }}>
+                    125% of Secondary Current (NEC 450.3)
                   </div>
                 </div>
               </div>
