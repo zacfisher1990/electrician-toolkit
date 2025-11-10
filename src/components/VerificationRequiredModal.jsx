@@ -1,17 +1,19 @@
 import React from 'react';
-import { AlertCircle, Mail } from 'lucide-react';
+import { X, AlertCircle, Mail } from 'lucide-react';
 
 /**
- * Wrapper component that blocks content if email is not verified
- * Shows a verification prompt instead of the actual content
+ * Modal component that shows when unverified users try to create content
+ * Unlike VerificationRequired.jsx which blocks entire pages, this is a popup modal
  */
-const VerificationRequired = ({ 
-  isVerified, 
-  children, 
+const VerificationRequiredModal = ({ 
+  isOpen,
+  onClose,
   isDarkMode,
   featureName = 'this feature',
   onResendVerification 
 }) => {
+  if (!isOpen) return null;
+
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
     cardBg: isDarkMode ? '#0a0a0a' : '#ffffff',
@@ -20,31 +22,55 @@ const VerificationRequired = ({
     border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
   };
 
-  // If verified, show the actual content
-  if (isVerified) {
-    return <>{children}</>;
-  }
-
-  // If not verified, show verification prompt
   return (
     <div style={{
-      background: colors.bg,
-      minHeight: '100vh',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.5)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '1rem',
-      paddingBottom: '5rem' // Space for bottom nav
+      zIndex: 1000,
+      padding: '1rem'
     }}>
       <div style={{
         background: colors.cardBg,
         borderRadius: '1rem',
         border: `1px solid ${colors.border}`,
-        padding: '2.5rem 2rem',
+        padding: '2rem',
         maxWidth: '500px',
         width: '100%',
-        textAlign: 'center'
+        position: 'relative',
+        maxHeight: '90vh',
+        overflowY: 'auto'
       }}>
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '1rem',
+            right: '1rem',
+            background: 'none',
+            border: 'none',
+            color: colors.subtext,
+            cursor: 'pointer',
+            padding: '0.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '0.375rem',
+            transition: 'background 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = colors.border}
+          onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+        >
+          <X size={24} />
+        </button>
+
         {/* Icon */}
         <div style={{
           width: '80px',
@@ -64,7 +90,8 @@ const VerificationRequired = ({
           margin: '0 0 1rem 0',
           color: colors.text,
           fontSize: '1.5rem',
-          fontWeight: '700'
+          fontWeight: '700',
+          textAlign: 'center'
         }}>
           Email Verification Required
         </h2>
@@ -74,9 +101,10 @@ const VerificationRequired = ({
           margin: '0 0 1.5rem 0',
           color: colors.subtext,
           fontSize: '0.9375rem',
-          lineHeight: '1.6'
+          lineHeight: '1.6',
+          textAlign: 'center'
         }}>
-          You need to verify your email address to use {featureName}.
+          You need to verify your email address to {featureName}.
         </p>
 
         {/* Info Box */}
@@ -159,8 +187,11 @@ const VerificationRequired = ({
               fontSize: '1rem',
               fontWeight: '600',
               cursor: 'pointer',
-              marginBottom: '0.75rem'
+              marginBottom: '0.75rem',
+              transition: 'background 0.2s'
             }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#1d4ed8'}
+            onMouseLeave={(e) => e.currentTarget.style.background = '#2563eb'}
           >
             Resend Verification Email
           </button>
@@ -170,7 +201,8 @@ const VerificationRequired = ({
         <p style={{
           margin: 0,
           color: colors.subtext,
-          fontSize: '0.8125rem'
+          fontSize: '0.8125rem',
+          textAlign: 'center'
         }}>
           Already verified?{' '}
           <button
@@ -194,4 +226,4 @@ const VerificationRequired = ({
   );
 };
 
-export default VerificationRequired;
+export default VerificationRequiredModal;

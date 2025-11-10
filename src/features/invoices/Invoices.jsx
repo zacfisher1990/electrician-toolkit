@@ -13,8 +13,9 @@ import SendInvoiceModal from './SendInvoiceModal';
 import InvoiceStatusTabs from './InvoiceStatusTabs';
 import { sendInvoiceViaEmail, downloadInvoice, getUserBusinessInfo } from './invoiceSendService';
 import AuthModal from '../profile/AuthModal';
+import VerificationRequiredModal from '../../components/VerificationRequiredModal';
 
-function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
+function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerified, onResendVerification }) {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingInvoice, setEditingInvoice] = useState(null);
@@ -25,6 +26,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   // Get colors from centralized theme
   const colors = {
@@ -229,6 +231,11 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
       return;
     }
     
+    if (!isEmailVerified) {
+      setShowVerificationModal(true);
+      return;
+    }
+    
     setShowAddForm(true);
     setEditingInvoice(null);
   };
@@ -281,6 +288,15 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
 
   return (
     <div className="invoices-container">
+      {/* Verification Modal */}
+      <VerificationRequiredModal
+        isOpen={showVerificationModal}
+        onClose={() => setShowVerificationModal(false)}
+        isDarkMode={isDarkMode}
+        featureName="create new invoices"
+        onResendVerification={onResendVerification}
+      />
+
       {/* Auth Modal */}
       {showAuthModal && (
         <AuthModal
@@ -299,10 +315,9 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
           onDelete={null}
           isDarkMode={isDarkMode}
           colors={colors}
+          isNewInvoice={true}
           estimates={estimates}
           jobs={jobs}
-          invoices={invoices}
-          isNewInvoice={true}
         />
       )}
 
@@ -315,10 +330,9 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
           onDelete={handleDeleteInvoice}
           isDarkMode={isDarkMode}
           colors={colors}
+          isNewInvoice={false}
           estimates={estimates}
           jobs={jobs}
-          invoices={invoices}
-          isNewInvoice={false}
         />
       )}
 
@@ -326,10 +340,10 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
       {sendingInvoice && (
         <SendInvoiceModal
           invoice={sendingInvoice}
+          isDarkMode={isDarkMode}
           onClose={() => setSendingInvoice(null)}
           onSend={handleSendInvoiceEmail}
           onDownload={handleDownloadInvoice}
-          isDarkMode={isDarkMode}
         />
       )}
 
@@ -339,10 +353,10 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
         paddingBottom: '5rem'
       }}>
         <div style={{ padding: '1rem 0.25rem' }}>
-          {/* Status Filter Tabs */}
+          {/* Status Tabs */}
           <InvoiceStatusTabs
-            activeStatusTab={statusFilter}
-            setActiveStatusTab={setStatusFilter}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
             statusCounts={statusCounts}
             colors={colors}
           />
@@ -435,63 +449,49 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [] }) {
             colors={colors}
           />
 
-          {/* No Results / Empty State */}
-          {filteredInvoices.length === 0 && (
+          {/* No Results Message */}
+          {searchQuery && filteredInvoices.length === 0 && (
             <div style={{
               background: colors.cardBg,
               border: `1px solid ${colors.border}`,
               borderRadius: '0.75rem',
+              textAlign: 'center',
               padding: '3rem 1rem',
-              textAlign: 'center'
+              color: colors.subtext
             }}>
-              {searchQuery ? (
-                <>
-                  <Search 
-                    size={48} 
-                    color={colors.subtext} 
-                    style={{ margin: '0 auto 1rem' }}
-                  />
-                  <p style={{
-                    color: colors.subtext,
-                    fontSize: '0.875rem',
-                    margin: 0
-                  }}>
-                    No invoices found matching "{searchQuery}"
-                  </p>
-                </>
-              ) : (
-                <>
-                  <PiInvoice 
-                    size={48} 
-                    color={colors.subtext} 
-                    style={{ margin: '0 auto 1rem', opacity: 0.5 }}
-                  />
-                  <p style={{
-                    color: colors.subtext,
-                    fontSize: '0.9375rem',
-                    margin: 0
-                  }}>
-                    {statusFilter === 'all' 
-                      ? 'No invoices yet. Create your first invoice above!' 
-                      : `No ${statusFilter.toLowerCase()} invoices.`
-                    }
-                  </p>
-                </>
-              )}
+              <Search size={48} color={colors.subtext} style={{ margin: '0 auto 1rem' }} />
+              <p style={{ margin: 0, fontSize: '0.9375rem' }}>
+                No invoices match your search.
+              </p>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!searchQuery && invoices.length === 0 && (
+            <div style={{
+              background: colors.cardBg,
+              border: `1px solid ${colors.border}`,
+              borderRadius: '0.75rem',
+              textAlign: 'center',
+              padding: '3rem 1rem',
+              color: colors.subtext
+            }}>
+              <PiInvoice size={48} color={colors.subtext} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+              <p style={{ margin: 0, fontSize: '0.9375rem' }}>No invoices yet. Create your first invoice above!</p>
             </div>
           )}
 
           {/* Invoices List */}
-          {filteredInvoices.length > 0 && filteredInvoices.map(invoice => (
+          {filteredInvoices.length > 0 && filteredInvoices.map((invoice) => (
             <InvoiceCard
               key={invoice.id}
               invoice={invoice}
-              onUpdateStatus={handleUpdateInvoiceStatus}
-              onViewInvoice={handleViewInvoice}
-              onDeleteInvoice={handleDeleteInvoice}
-              onSendInvoice={handleSendInvoice}
               isDarkMode={isDarkMode}
               colors={colors}
+              onEdit={handleViewInvoice}
+              onDelete={handleDeleteInvoice}
+              onSend={handleSendInvoice}
+              onUpdateStatus={handleUpdateInvoiceStatus}
             />
           ))}
         </div>

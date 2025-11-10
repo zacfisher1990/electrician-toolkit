@@ -9,7 +9,7 @@ const AddEstimateSection = ({
 }) => {
   return (
     <div className={styles.addEstimateContainer} style={{
-      background: isDarkMode ? '#1a1a1a' : '#3b82f6', // Changed from #10b981 (green) to #3b82f6 (blue)
+      background: isDarkMode ? '#1a1a1a' : '#3b82f6',
       border: `1px solid ${colors.border}`,
       marginBottom: '0.75rem',
       borderRadius: '0.75rem',

@@ -12,6 +12,7 @@ import SendEstimateModal from './SendEstimateModal';
 import EstimateStatusTabs from './EstimateStatusTabs';
 import { saveEstimates, getEstimates, clearEstimatesCache } from '../../utils/localStorageUtils';
 import AuthModal from '../profile/AuthModal';
+import VerificationRequiredModal from '../../components/VerificationRequiredModal';
 
 const Estimates = ({ 
   isDarkMode, 
@@ -20,7 +21,9 @@ const Estimates = ({
   pendingEstimateData, 
   onClearPendingData, 
   navigationData,
-  onNavigateToJobs  // NEW: Callback to navigate back to Jobs
+  onNavigateToJobs,
+  isEmailVerified,
+  onResendVerification
 }) => {
   const [estimates, setEstimates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +36,7 @@ const Estimates = ({
   const lastHandledEstimateId = useRef(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   // Get colors from centralized theme
   const colors = getColors(isDarkMode);
@@ -104,10 +108,17 @@ const Estimates = ({
   useEffect(() => {
     if (navigationData?.createNew) {
       console.log('📝 Opening estimate form from navigation with data:', navigationData);
+      
+      // Check if user is verified before allowing creation
+      if (!isEmailVerified) {
+        setShowVerificationModal(true);
+        return;
+      }
+      
       setShowAddForm(true);
       setEditingEstimate(null);
     }
-  }, [navigationData]);
+  }, [navigationData, isEmailVerified]);
 
   const loadEstimates = async () => {
     try {
@@ -253,7 +264,9 @@ const Estimates = ({
       await loadEstimates();
     } catch (error) {
       console.error('Error sending estimate:', error);
-      throw error;
+      alert('Failed to send estimate. Please try again.');
+    } finally {
+      setSendingEstimate(null);
     }
   };
 
@@ -261,9 +274,10 @@ const Estimates = ({
   const handleDownloadFromModal = async () => {
     try {
       await downloadEstimate(sendingEstimate, userInfo);
+      setSendingEstimate(null);
     } catch (error) {
       console.error('Error downloading estimate:', error);
-      throw error;
+      alert('Failed to download estimate. Please try again.');
     }
   };
 
@@ -271,6 +285,11 @@ const Estimates = ({
   const handleAddEstimateClick = () => {
     if (!isUserLoggedIn) {
       setShowAuthModal(true);
+      return;
+    }
+    
+    if (!isEmailVerified) {
+      setShowVerificationModal(true);
       return;
     }
     
@@ -320,6 +339,15 @@ const Estimates = ({
 
   return (
     <div className="estimates-container">
+      {/* Verification Modal */}
+      <VerificationRequiredModal
+        isOpen={showVerificationModal}
+        onClose={() => setShowVerificationModal(false)}
+        isDarkMode={isDarkMode}
+        featureName="create new estimates"
+        onResendVerification={onResendVerification}
+      />
+
       {/* Auth Modal */}
       {showAuthModal && (
         <AuthModal

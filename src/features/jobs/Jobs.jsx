@@ -7,6 +7,7 @@ import JobsHeader from './JobsHeader';
 import AddJobSection from './AddJobSection';
 import JobsList from './JobsList';
 import ModalsContainer from './ModalsContainer';
+import VerificationRequiredModal from '../../components/VerificationRequiredModal';
 
 // Custom Hooks
 import { useJobsState } from './hooks/useJobsState';
@@ -22,7 +23,7 @@ import { createInvoiceHandlers } from './handlers/invoiceHandlers';
 import { filterJobs, getStatusCounts } from './utils/jobsUtils';
 import { openJobView, handleViewEstimateFromCard } from './utils/jobViewHelpers';
 
-const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefilledDate, navigationData }) => {
+const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefilledDate, navigationData, isEmailVerified, onResendVerification }) => {
   // State from custom hooks
   const {
     jobs,
@@ -69,6 +70,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
   // Local state
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStatusTab, setActiveStatusTab] = useState('all');
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   // Create a function to clear estimate modals
   const clearEstimateModals = () => {
@@ -112,9 +114,9 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
     }
   }, [estimates, editingJob, setLinkedEstimates, lastSyncedJobId]);
 
-  // NEW: Handle prefilled date from Home calendar
+  // Handle prefilled date from Home calendar
   useEffect(() => {
-    if (prefilledDate && isUserLoggedIn) {
+    if (prefilledDate && isUserLoggedIn && isEmailVerified) {
       setShowAddForm(true);
       setFormData({
         title: '',
@@ -128,10 +130,13 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
         notes: ''
       });
       setLinkedEstimates([]);
+    } else if (prefilledDate && isUserLoggedIn && !isEmailVerified) {
+      // Show verification modal if user is logged in but not verified
+      setShowVerificationModal(true);
     }
-  }, [prefilledDate, isUserLoggedIn, setShowAddForm, setFormData, setLinkedEstimates]);
+  }, [prefilledDate, isUserLoggedIn, isEmailVerified, setShowAddForm, setFormData, setLinkedEstimates]);
 
-  // NEW: Notify parent of clocked-in job changes INSTANTLY
+  // Notify parent of clocked-in job changes INSTANTLY
   useEffect(() => {
     const clockedJob = jobs.find(job => job.clockedIn === true) || null;
     if (onClockedInJobChange) {
@@ -139,10 +144,10 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
     }
   }, [jobs, onClockedInJobChange]);
 
-  // NEW: Handle navigation back from Estimates - reload fresh data (cache already cleared in App.jsx)
+  // Handle navigation back from Estimates - reload fresh data (cache already cleared in App.jsx)
   useEffect(() => {
     if (navigationData?.openJobId) {
-      console.log('📍 Reloading data after cache clear');
+      console.log('📂 Reloading data after cache clear');
       
       // Cache was already cleared in App.jsx, so loadJobs will fetch fresh
       loadJobs();
@@ -198,9 +203,13 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
   // Specific handlers
   const handleAddJobClick = () => {
     if (!isUserLoggedIn) {
+      // User not logged in - show auth modal
       setShowAuthModal(true);
+    } else if (!isEmailVerified) {
+      // User logged in but not verified - show verification modal
+      setShowVerificationModal(true);
     } else {
-      // Set showAddForm to true to trigger the add job modal
+      // User logged in and verified - proceed with job creation
       setShowAddForm(true);
       // Reset form data for new job
       setFormData({
@@ -309,6 +318,15 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
 
   return (
     <div className="jobs-container">
+      {/* Verification Modal */}
+      <VerificationRequiredModal
+        isOpen={showVerificationModal}
+        onClose={() => setShowVerificationModal(false)}
+        isDarkMode={isDarkMode}
+        featureName="create new jobs"
+        onResendVerification={onResendVerification}
+      />
+
       <ModalsContainer
         showAuthModal={showAuthModal}
         setShowAuthModal={setShowAuthModal}
@@ -354,7 +372,6 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
             activeStatusTab={activeStatusTab}
             setActiveStatusTab={setActiveStatusTab}
             statusCounts={statusCounts}
-           
             colors={colors}
           />
 
