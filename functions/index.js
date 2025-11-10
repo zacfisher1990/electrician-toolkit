@@ -14,6 +14,12 @@ const { setGlobalOptions } = require('firebase-functions/v2');
 const { defineString } = require('firebase-functions/params');
 const { Resend } = require('resend');
 const PDFDocument = require('pdfkit');
+const admin = require('firebase-admin');
+
+// Initialize Firebase Admin (only if not already initialized)
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
 // Define the Resend API key parameter (will use RESEND_API_KEY env var)
 const resendApiKey = defineString('RESEND_API_KEY');
@@ -829,3 +835,457 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
     </html>
   `;
 }
+/**
+ * Cloud Function to delete user account and all associated data
+ */
+exports.deleteUserAccount = onCall(async (request) => {
+  const userId = request.auth?.uid;
+
+  // Check authentication
+  if (!userId) {
+    throw new HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  try {
+    console.log(`Starting account deletion for user: ${userId}`);
+
+    const db = admin.firestore();
+    const storage = admin.storage();
+    const bucket = storage.bucket();
+
+    // Step 1: Delete all jobs and their subcollections
+    console.log('Deleting jobs...');
+    const jobsRef = db.collection('users').doc(userId).collection('jobs');
+    const jobsSnapshot = await jobsRef.get();
+    
+    const jobDeletionPromises = [];
+    for (const jobDoc of jobsSnapshot.docs) {
+      // Delete estimates subcollection
+      const estimatesRef = jobDoc.ref.collection('estimates');
+      const estimatesSnapshot = await estimatesRef.get();
+      estimatesSnapshot.docs.forEach(doc => {
+        jobDeletionPromises.push(doc.ref.delete());
+      });
+
+      // Delete invoices subcollection
+      const invoicesRef = jobDoc.ref.collection('invoices');
+      const invoicesSnapshot = await invoicesRef.get();
+      invoicesSnapshot.docs.forEach(doc => {
+        jobDeletionPromises.push(doc.ref.delete());
+      });
+
+      // Delete the job document
+      jobDeletionPromises.push(jobDoc.ref.delete());
+    }
+    await Promise.all(jobDeletionPromises);
+    console.log(`Deleted ${jobsSnapshot.size} jobs`);
+
+    // Step 2: Delete all estimates (top-level)
+    console.log('Deleting top-level estimates...');
+    const estimatesRef = db.collection('users').doc(userId).collection('estimates');
+    const estimatesSnapshot = await estimatesRef.get();
+    const estimateDeletionPromises = estimatesSnapshot.docs.map(doc => doc.ref.delete());
+    await Promise.all(estimateDeletionPromises);
+    console.log(`Deleted ${estimatesSnapshot.size} estimates`);
+
+    // Step 3: Delete all invoices (top-level)
+    console.log('Deleting top-level invoices...');
+    const invoicesRef = db.collection('users').doc(userId).collection('invoices');
+    const invoicesSnapshot = await invoicesRef.get();
+    const invoiceDeletionPromises = invoicesSnapshot.docs.map(doc => doc.ref.delete());
+    await Promise.all(invoiceDeletionPromises);
+    console.log(`Deleted ${invoicesSnapshot.size} invoices`);
+
+    // Step 4: Delete email verification tokens
+    console.log('Deleting email verification tokens...');
+    const tokensRef = db.collection('emailVerificationTokens');
+    const tokensSnapshot = await tokensRef.where('userId', '==', userId).get();
+    const tokenDeletionPromises = tokensSnapshot.docs.map(doc => doc.ref.delete());
+    await Promise.all(tokenDeletionPromises);
+    console.log(`Deleted ${tokensSnapshot.size} verification tokens`);
+
+    // Step 5: Delete user document
+    console.log('Deleting user document...');
+    await db.collection('users').doc(userId).delete();
+
+    // Step 6: Delete all Storage files
+    console.log('Deleting Storage files...');
+    const deleteStorageFolder = async (prefix) => {
+      try {
+        const [files] = await bucket.getFiles({ prefix });
+        const deletionPromises = files.map(file => file.delete().catch(err => {
+          console.warn(`Failed to delete file ${file.name}:`, err.message);
+        }));
+        await Promise.all(deletionPromises);
+        return files.length;
+      } catch (error) {
+        console.warn(`Error accessing folder ${prefix}:`, error.message);
+        return 0;
+      }
+    };
+
+    const profilePhotoCount = await deleteStorageFolder(`profile-photos/${userId}`);
+    const companyLogoCount = await deleteStorageFolder(`company-logos/${userId}`);
+    const jobPhotosCount = await deleteStorageFolder(`job-photos/${userId}`);
+    
+    console.log(`Deleted ${profilePhotoCount} profile photos`);
+    console.log(`Deleted ${companyLogoCount} company logos`);
+    console.log(`Deleted ${jobPhotosCount} job photos`);
+
+    console.log(`✅ Successfully deleted all data for user: ${userId}`);
+
+    return {
+      success: true,
+      message: 'Account and all associated data deleted successfully'
+    };
+
+  } catch (error) {
+    console.error('Error deleting user account:', error);
+    throw new HttpsError('internal', `Failed to delete account: ${error.message}`);
+  }
+});
+
+/**
+ * Cloud Function to send verification email
+ */
+exports.sendVerificationEmail = onCall(
+  { cors: true },
+  async (request) => {
+    // Get API key
+    const apiKey = resendApiKey.value();
+    
+    if (!apiKey) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Resend API key is not configured.'
+      );
+    }
+
+    // Initialize Resend
+    const resend = new Resend(apiKey);
+
+    const { email, verificationLink } = request.data;
+
+    if (!email || !verificationLink) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Email and verification link are required.'
+      );
+    }
+
+    try {
+      console.log('Sending verification email to:', email);
+
+      const emailData = await resend.emails.send({
+        from: 'ProXTrades <verify@proxtrades.com>',
+        to: email,
+        subject: '⚡ Verify Your Email - ProXTrades',
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Verify Your Email</title>
+            </head>
+            <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f9fafb;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; padding: 40px 20px;">
+                <tr>
+                  <td align="center">
+                    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                      
+                      <!-- Header -->
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 30px; text-align: center;">
+                          <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700;">⚡</h1>
+                          <h2 style="margin: 10px 0 0 0; color: #ffffff; font-size: 24px; font-weight: 600;">Verify Your Email</h2>
+                        </td>
+                      </tr>
+                      
+                      <!-- Content -->
+                      <tr>
+                        <td style="padding: 40px 30px;">
+                          <h3 style="margin: 0 0 20px 0; color: #111827; font-size: 20px; font-weight: 600;">
+                            Welcome to ProXTrades! 🚀
+                          </h3>
+                          
+                          <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 16px; line-height: 1.6;">
+                            Thanks for signing up! Please verify your email address to activate your account and start managing your electrical business.
+                          </p>
+                          
+                          <!-- CTA Button -->
+                          <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                            <tr>
+                              <td align="center">
+                                <a href="${verificationLink}" 
+                                   style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">
+                                  Verify Email Address
+                                </a>
+                              </td>
+                            </tr>
+                          </table>
+                          
+                          <p style="margin: 30px 0 0 0; color: #9ca3af; font-size: 14px; line-height: 1.6;">
+                            Or copy and paste this link into your browser:<br>
+                            <a href="${verificationLink}" style="color: #3b82f6; word-break: break-all;">
+                              ${verificationLink}
+                            </a>
+                          </p>
+
+                          <div style="margin-top: 30px; padding: 16px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px;">
+                            <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
+                              <strong>⏰ This link expires in 24 hours</strong><br>
+                              Please verify your email soon to ensure uninterrupted access.
+                            </p>
+                          </div>
+                          
+                          <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e5e7eb;">
+                            <p style="margin: 0; color: #9ca3af; font-size: 14px; line-height: 1.6;">
+                              If you didn't create an account with ProXTrades, you can safely ignore this email.
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                      
+                      <!-- Footer -->
+                      <tr>
+                        <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                          <p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 14px;">
+                            © ${new Date().getFullYear()} ProXTrades. All rights reserved.
+                          </p>
+                          <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                            This is an automated email, please do not reply.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </body>
+          </html>
+        `
+      });
+
+      console.log('Verification email sent successfully:', emailData.id);
+
+      return {
+        success: true,
+        messageId: emailData.id
+      };
+
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      throw new HttpsError(
+        'internal',
+        `Failed to send verification email: ${error.message}`
+      );
+    }
+  }
+);
+
+/**
+ * Cloud Function to send welcome email
+ */
+exports.sendWelcomeEmail = onCall(
+  { cors: true },
+  async (request) => {
+    // Get API key
+    const apiKey = resendApiKey.value();
+    
+    if (!apiKey) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Resend API key is not configured.'
+      );
+    }
+
+    // Initialize Resend
+    const resend = new Resend(apiKey);
+
+    const { email, type = 'welcome' } = request.data;
+
+    if (!email) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Email is required.'
+      );
+    }
+
+    let subject, html;
+
+    if (type === 'verification-reminder') {
+      // Reminder email when user requests resend
+      subject = '⚡ Verify Your Email - ProXTrades';
+      html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    
+                    <tr>
+                      <td style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 30px; text-align: center;">
+                        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">⚡ ProXTrades</h1>
+                      </td>
+                    </tr>
+                    
+                    <tr>
+                      <td style="padding: 40px 30px;">
+                        <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 24px; font-weight: 600;">
+                          📧 Check Your Email
+                        </h2>
+                        
+                        <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 16px; line-height: 1.6;">
+                          We've sent a verification email to <strong>${email}</strong>
+                        </p>
+
+                        <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 8px; margin: 20px 0;">
+                          <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
+                            <strong>📥 Check your spam/junk folder</strong><br>
+                            Verification emails sometimes end up there. If you find it, mark it as "Not Spam" to ensure future emails arrive in your inbox.
+                          </p>
+                        </div>
+                        
+                        <p style="margin: 20px 0 0 0; color: #6b7280; font-size: 16px; line-height: 1.6;">
+                          Click the verification link in that email to activate your account and start using ProXTrades!
+                        </p>
+
+                        <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e5e7eb;">
+                          <p style="margin: 0; color: #9ca3af; font-size: 14px; line-height: 1.6;">
+                            <strong>Didn't receive the email?</strong><br>
+                            • Wait a few minutes and check again<br>
+                            • Check your spam/junk folder<br>
+                            • Make sure ${email} is correct
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    <tr>
+                      <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                        <p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 14px;">
+                          © ${new Date().getFullYear()} ProXTrades. All rights reserved.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+        </html>
+      `;
+    } else {
+      // Welcome email
+      subject = '🎉 Welcome to ProXTrades!';
+      html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0;">
+          </head>
+          <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    
+                    <tr>
+                      <td style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 30px; text-align: center;">
+                        <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700;">⚡</h1>
+                        <h2 style="margin: 10px 0 0 0; color: #ffffff; font-size: 24px; font-weight: 600;">Welcome to ProXTrades!</h2>
+                      </td>
+                    </tr>
+                    
+                    <tr>
+                      <td style="padding: 40px 30px;">
+                        <h3 style="margin: 0 0 20px 0; color: #111827; font-size: 20px; font-weight: 600;">
+                          You're almost ready to go! 🚀
+                        </h3>
+                        
+                        <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 16px; line-height: 1.6;">
+                          Thanks for signing up! To get started, please verify your email address.
+                        </p>
+
+                        <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
+                          <p style="margin: 0; color: #1e40af; font-size: 14px; line-height: 1.6;">
+                            <strong>📧 Check your inbox</strong><br>
+                            We've sent a verification email to <strong>${email}</strong>. Click the link in that email to verify your account.
+                          </p>
+                        </div>
+
+                        <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 8px; margin: 20px 0;">
+                          <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
+                            <strong>⚠️ Check your spam folder</strong><br>
+                            The verification email might be in your spam/junk folder. If you find it there, mark it as "Not Spam".
+                          </p>
+                        </div>
+                        
+                        <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e5e7eb;">
+                          <h4 style="margin: 0 0 15px 0; color: #111827; font-size: 16px; font-weight: 600;">
+                            What's Next?
+                          </h4>
+                          <ul style="margin: 0; padding-left: 20px; color: #6b7280; font-size: 14px; line-height: 1.8;">
+                            <li>Verify your email address</li>
+                            <li>Log in to your account</li>
+                            <li>Start managing your electrical jobs</li>
+                            <li>Create professional estimates and invoices</li>
+                            <li>Track your business all in one place</li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    <tr>
+                      <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                        <p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 14px;">
+                          © ${new Date().getFullYear()} ProXTrades. All rights reserved.
+                        </p>
+                        <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                          If you didn't create an account, you can safely ignore this email.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+        </html>
+      `;
+    }
+
+    try {
+      console.log('Sending welcome/reminder email to:', email);
+
+      const emailData = await resend.emails.send({
+        from: 'ProXTrades <welcome@proxtrades.com>',
+        to: email,
+        subject: subject,
+        html: html
+      });
+
+      console.log('Email sent successfully:', emailData.id);
+
+      return {
+        success: true,
+        messageId: emailData.id
+      };
+
+    } catch (error) {
+      console.error('Error sending welcome email:', error);
+      throw new HttpsError(
+        'internal',
+        `Failed to send email: ${error.message}`
+      );
+    }
+  }
+);

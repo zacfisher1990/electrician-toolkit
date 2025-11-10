@@ -1,5 +1,7 @@
 import { db } from '../firebase/firebase';
 import { doc, setDoc, getDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { auth } from '../firebase/firebase';
 
 /**
  * Generate a secure random token
@@ -99,28 +101,56 @@ export const isEmailVerifiedCustom = async (userId) => {
 };
 
 /**
- * Send verification email via Resend (Vercel API Route)
+ * Send verification email via Firebase Cloud Function
  */
 export const sendVerificationEmail = async (email, token) => {
   try {
+    console.log('🔵 Sending verification email to:', email);
+    
+    // Get Firebase Functions instance
+    const functions = getFunctions(auth.app);
+    
+    // Create verification link
     const verificationLink = `${window.location.origin}?token=${token}`;
-
-    const response = await fetch('/api/send-verification-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        verificationLink
-      })
+    
+    // Call the Firebase Cloud Function
+    const sendEmail = httpsCallable(functions, 'sendVerificationEmail');
+    const result = await sendEmail({
+      email: email,
+      verificationLink: verificationLink
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to send verification email');
-    }
-
-    return { success: true };
+    console.log('✅ Verification email sent successfully:', result.data);
+    return { success: true, data: result.data };
+    
   } catch (error) {
-    console.error('Error sending verification email:', error);
+    console.error('❌ Error sending verification email:', error);
+    throw error;
+  }
+};
+
+/**
+ * Send welcome email via Firebase Cloud Function
+ */
+export const sendWelcomeEmail = async (email, type = 'welcome') => {
+  try {
+    console.log('🔵 Sending welcome email to:', email);
+    
+    // Get Firebase Functions instance
+    const functions = getFunctions(auth.app);
+    
+    // Call the Firebase Cloud Function
+    const sendEmail = httpsCallable(functions, 'sendWelcomeEmail');
+    const result = await sendEmail({
+      email: email,
+      type: type // 'welcome' or 'verification-reminder'
+    });
+
+    console.log('✅ Welcome email sent successfully:', result.data);
+    return { success: true, data: result.data };
+    
+  } catch (error) {
+    console.error('❌ Error sending welcome email:', error);
     throw error;
   }
 };

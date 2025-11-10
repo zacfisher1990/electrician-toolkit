@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Lock, LogOut, Settings, Bell, Shield, AlertCircle, CheckCircle, Eye, EyeOff, Phone, Briefcase, FileText  } from 'lucide-react';
+import { User, Mail, Lock, LogOut, Settings, Bell, Shield, AlertCircle, CheckCircle, Eye, EyeOff, Phone, Briefcase, FileText, Trash2  } from 'lucide-react';
 import { getColors } from '../../theme';
+import DeleteAccountModal from './DeleteAccountModal';
 import { auth } from "../../firebase/firebase";
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
   signOut,
   onAuthStateChanged,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  updateProfile
 } from 'firebase/auth';
 import { createVerificationToken, sendVerificationEmail, isEmailVerifiedCustom } from '../../utils/emailVerification';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
 import EditProfile from './EditProfile';
 
@@ -18,6 +20,7 @@ const Profile = ({ isDarkMode }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState(''); // NEW: Name field for signup
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -30,6 +33,7 @@ const Profile = ({ isDarkMode }) => {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [userData, setUserData] = useState(null);
   const [loadingUserData, setLoadingUserData] = useState(true);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
   // Get colors from centralized theme
   const colors = getColors(isDarkMode);
@@ -123,6 +127,11 @@ useEffect(() => {
   setSuccess('');
   
   // Validation
+  if (!name.trim()) {
+    setError('Please enter your name');
+    return;
+  }
+  
   if (!isPasswordValid) {
     setError('Please meet all password requirements');
     return;
@@ -136,12 +145,26 @@ useEffect(() => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     
+    // Update user profile with name
+    await updateProfile(userCredential.user, {
+      displayName: name
+    });
+    
+    // Save additional user data to Firestore
+    await setDoc(doc(db, 'users', userCredential.user.uid), {
+      displayName: name,
+      email: email,
+      createdAt: serverTimestamp(),
+      emailVerified: false
+    });
+    
     // Create verification token
     const token = await createVerificationToken(userCredential.user.uid, email);
     
     // Send verification email via Resend
     await sendVerificationEmail(email, token);
     
+    setName('');
     setEmail('');
     setPassword('');
     setConfirmPassword('');
@@ -625,6 +648,61 @@ useEffect(() => {
             </button>
           </div>
 
+          {/* Delete Account Button - Place this after Privacy & Security */}
+<button
+  onClick={() => setShowDeleteAccount(true)}
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    width: '100%',
+    padding: '1rem',
+    background: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'background 0.2s',
+    borderTop: `1px solid ${colors.border}`
+  }}
+  onMouseEnter={(e) => e.currentTarget.style.background = isDarkMode ? '#0f0f0f' : '#f3f4f6'}
+  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+>
+  <div style={{
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    background: isDarkMode ? '#1a1a1a' : '#fee2e2',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0
+  }}>
+    <Trash2 size={18} color="#dc2626" />
+  </div>
+  <div style={{ flex: 1, textAlign: 'left' }}>
+    <div style={{
+      fontSize: '0.9375rem',
+      fontWeight: '600',
+      color: '#dc2626',
+      marginBottom: '0.125rem'
+    }}>
+      Delete Account
+    </div>
+    <div style={{
+      fontSize: '0.8125rem',
+      color: colors.subtext
+    }}>
+      Permanently delete your account
+    </div>
+  </div>
+</button>
+
+{/* Delete Account Modal */}
+<DeleteAccountModal
+  isOpen={showDeleteAccount}
+  onClose={() => setShowDeleteAccount(false)}
+  isDarkMode={isDarkMode}
+/>
+
           {/* Logout Button */}
           <button
             onClick={handleLogout}
@@ -742,6 +820,50 @@ useEffect(() => {
 
           {/* Form */}
           <form onSubmit={isLogin ? handleLogin : handleSignup}>
+            {/* Name Field (Signup Only) */}
+            {!isLogin && (
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  color: colors.text,
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}>
+                  Full Name
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <User 
+                    size={18} 
+                    style={{
+                      position: 'absolute',
+                      left: '0.75rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: colors.subtext
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="John Doe"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 0.75rem 0.75rem 2.5rem',
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '0.5rem',
+                      fontSize: '0.9375rem',
+                      background: colors.inputBg,
+                      color: colors.text,
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             <div style={{ marginBottom: '1rem' }}>
               <label style={{
                 display: 'block',
@@ -999,6 +1121,7 @@ useEffect(() => {
                   setIsLogin(!isLogin);
                   setError('');
                   setSuccess('');
+                  setName('');
                   setPassword('');
                   setConfirmPassword('');
                 }}

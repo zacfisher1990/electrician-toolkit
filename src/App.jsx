@@ -40,8 +40,12 @@ import Jobs from './features/jobs/Jobs.jsx';
 import Estimates from './features/estimates/Estimates.jsx';
 import Invoices from './features/invoices/Invoices.jsx';
 import VerifyEmail from './pages/VerifyEmail.jsx';
+import VerificationRequired from './components/VerificationRequired.jsx';
 import Header from './components/Header.jsx';
 import { getColors } from './theme';
+import { auth } from './firebase/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { isEmailVerifiedCustom, createVerificationToken, sendVerificationEmail } from './utils/emailVerification';
 import './App.css';
 
 function App() {
@@ -68,6 +72,8 @@ function App() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [clockedInJob, setClockedInJob] = useState(null); // NEW: Track clocked-in job instantly
   const [prefilledJobDate, setPrefilledJobDate] = useState(null); // NEW: Track date from calendar
+  const [user, setUser] = useState(null); // NEW: Track authenticated user
+  const [isEmailVerified, setIsEmailVerified] = useState(false); // NEW: Track email verification status
   
   // Handle browser back/forward buttons
   useEffect(() => {
@@ -87,6 +93,23 @@ function App() {
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
+  }, []);
+
+  // NEW: Listen for auth state and verification status changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      
+      if (currentUser) {
+        // Check custom verification status from Firestore
+        const verified = await isEmailVerifiedCustom(currentUser.uid);
+        setIsEmailVerified(verified);
+      } else {
+        setIsEmailVerified(false);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Update browser history when view changes
@@ -259,6 +282,27 @@ const handleNavigateToJobs = (data) => {
     setActiveCalculator('jobs');
   };
 
+  // NEW: Handle resending verification email
+  const handleResendVerification = async () => {
+    try {
+      if (!user) {
+        alert('Please log in first');
+        return;
+      }
+      
+      // Create new verification token
+      const token = await createVerificationToken(user.uid, user.email);
+      
+      // Send verification email
+      await sendVerificationEmail(user.email, token);
+      
+      alert('Verification email sent! Please check your inbox.');
+    } catch (error) {
+      console.error('Error resending verification:', error);
+      alert('Failed to send verification email. Please try again.');
+    }
+  };
+
   const renderCalculator = () => {
     switch (activeCalculator) {
       case 'voltage-drop':
@@ -321,24 +365,51 @@ const handleNavigateToJobs = (data) => {
       case 'profile':
         return <Profile isDarkMode={isDarkMode} />;
       case 'jobs':
-        return <Jobs 
-          isDarkMode={isDarkMode}
-          onNavigateToEstimates={(data) => handleNavigate('estimates', data)}
-          onClockedInJobChange={setClockedInJob} // NEW: Instant callback
-          prefilledDate={prefilledJobDate} // NEW: Pass prefilled date from calendar
-          navigationData={navigationData} // NEW: Pass navigation data from Estimates
-        />;
+        return (
+          <VerificationRequired
+            isVerified={isEmailVerified}
+            isDarkMode={isDarkMode}
+            featureName="Jobs"
+            onResendVerification={handleResendVerification}
+          >
+            <Jobs 
+              isDarkMode={isDarkMode}
+              onNavigateToEstimates={(data) => handleNavigate('estimates', data)}
+              onClockedInJobChange={setClockedInJob} // NEW: Instant callback
+              prefilledDate={prefilledJobDate} // NEW: Pass prefilled date from calendar
+              navigationData={navigationData} // NEW: Pass navigation data from Estimates
+            />
+          </VerificationRequired>
+        );
       case 'estimates':
-        return <Estimates 
-          isDarkMode={isDarkMode}
-          onApplyToJob={handleApplyEstimate}
-          pendingEstimateData={pendingEstimate}
-          onClearPendingData={() => setPendingEstimate(null)}
-          navigationData={navigationData}
-          onNavigateToJobs={(data) => handleNavigate('jobs', data)} // NEW: Navigate back to Jobs
-        />;
+        return (
+          <VerificationRequired
+            isVerified={isEmailVerified}
+            isDarkMode={isDarkMode}
+            featureName="Estimates"
+            onResendVerification={handleResendVerification}
+          >
+            <Estimates 
+              isDarkMode={isDarkMode}
+              onApplyToJob={handleApplyEstimate}
+              pendingEstimateData={pendingEstimate}
+              onClearPendingData={() => setPendingEstimate(null)}
+              navigationData={navigationData}
+              onNavigateToJobs={(data) => handleNavigate('jobs', data)} // NEW: Navigate back to Jobs
+            />
+          </VerificationRequired>
+        );
       case 'invoices':
-        return <Invoices isDarkMode={isDarkMode} />;
+        return (
+          <VerificationRequired
+            isVerified={isEmailVerified}
+            isDarkMode={isDarkMode}
+            featureName="Invoices"
+            onResendVerification={handleResendVerification}
+          >
+            <Invoices isDarkMode={isDarkMode} />
+          </VerificationRequired>
+        );
       case 'verify-email':
         return <VerifyEmail isDarkMode={isDarkMode} onNavigate={handleNavigate} />;
       default:
