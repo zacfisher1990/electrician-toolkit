@@ -6,7 +6,7 @@ import TablesContent from './tables/TablesContent';
 import SchematicsContent from './schematics/SchematicsContent';
 import CodeContent from './code/CodeContent';
 
-const Tools = ({ isDarkMode = false, onSelectCalculator }) => { 
+const Tools = ({ isDarkMode = false, onNavigate }) => {  // ✅ Changed from onSelectCalculator to onNavigate
   const [activeTab, setActiveTab] = useState('Calculators');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -185,7 +185,7 @@ const Tools = ({ isDarkMode = false, onSelectCalculator }) => {
           <CalculatorMenu 
             isDarkMode={isDarkMode}
             searchQuery={searchQuery}
-            onSelectCalculator={onSelectCalculator}
+            onSelectCalculator={onNavigate}  // ✅ Pass onNavigate as onSelectCalculator
           />
         )}
 
