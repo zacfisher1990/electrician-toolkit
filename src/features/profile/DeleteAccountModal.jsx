@@ -12,9 +12,8 @@ import { auth } from '../../firebase/firebase';
 const DeleteAccountModal = ({ isOpen, onClose, isDarkMode }) => {
   const user = auth.currentUser;
 
-  const [step, setStep] = useState(1); // 1: Warning, 2: Password Confirmation, 3: Final Confirmation
+  const [step, setStep] = useState(1); // 1: Warning, 2: Password Confirmation
   const [password, setPassword] = useState('');
-  const [confirmText, setConfirmText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -33,13 +32,12 @@ const DeleteAccountModal = ({ isOpen, onClose, isDarkMode }) => {
     if (!loading) {
       setStep(1);
       setPassword('');
-      setConfirmText('');
       setError('');
       onClose();
     }
   };
 
-  const handlePasswordVerification = async () => {
+  const handlePasswordVerificationAndDelete = async () => {
     if (!password) {
       setError('Please enter your password');
       return;
@@ -53,31 +51,6 @@ const DeleteAccountModal = ({ isOpen, onClose, isDarkMode }) => {
       const credential = EmailAuthProvider.credential(user.email, password);
       await reauthenticateWithCredential(user, credential);
       
-      // Move to final confirmation step
-      setStep(3);
-      setPassword(''); // Clear password for security
-    } catch (err) {
-      console.error('Reauthentication error:', err);
-      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        setError('Incorrect password. Please try again.');
-      } else {
-        setError('Authentication failed. Please try again.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    if (confirmText !== 'DELETE') {
-      setError('Please type DELETE to confirm');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
       // Get functions instance from auth.app
       const functions = getFunctions(auth.app);
       
@@ -91,9 +64,11 @@ const DeleteAccountModal = ({ isOpen, onClose, isDarkMode }) => {
       // Success - user will be logged out automatically
       onClose();
     } catch (err) {
-      console.error('Error deleting account:', err);
+      console.error('Error during account deletion:', err);
       
-      if (err.code === 'auth/requires-recent-login') {
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        setError('Incorrect password. Please try again.');
+      } else if (err.code === 'auth/requires-recent-login') {
         setError('Session expired. Please close this dialog and try again.');
       } else {
         setError('Failed to delete account. Please try again or contact support.');
@@ -242,23 +217,6 @@ const DeleteAccountModal = ({ isOpen, onClose, isDarkMode }) => {
                 ))}
               </div>
 
-              <div style={{
-                padding: '1rem',
-                background: '#dbeafe',
-                border: '1px solid #3b82f6',
-                borderRadius: '0.75rem',
-                marginBottom: '1.5rem'
-              }}>
-                <p style={{
-                  margin: 0,
-                  color: '#1e40af',
-                  fontSize: '0.875rem',
-                  lineHeight: '1.5'
-                }}>
-                  <strong>Note:</strong> If you're having issues with the app, please consider contacting support before deleting your account. We're here to help!
-                </p>
-              </div>
-
               <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <button
                   onClick={handleClose}
@@ -298,7 +256,7 @@ const DeleteAccountModal = ({ isOpen, onClose, isDarkMode }) => {
             </>
           )}
 
-          {/* Step 2: Password Verification */}
+          {/* Step 2: Password Confirmation */}
           {step === 2 && (
             <>
               <p style={{
@@ -307,7 +265,7 @@ const DeleteAccountModal = ({ isOpen, onClose, isDarkMode }) => {
                 fontSize: '0.9375rem',
                 lineHeight: '1.6'
               }}>
-                To confirm this is you, please enter your password:
+                To confirm account deletion, please enter your password:
               </p>
 
               <div style={{ marginBottom: '1.5rem' }}>
@@ -340,7 +298,7 @@ const DeleteAccountModal = ({ isOpen, onClose, isDarkMode }) => {
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        handlePasswordVerification();
+                        handlePasswordVerificationAndDelete();
                       }
                     }}
                     disabled={loading}
@@ -401,7 +359,7 @@ const DeleteAccountModal = ({ isOpen, onClose, isDarkMode }) => {
                   Back
                 </button>
                 <button
-                  onClick={handlePasswordVerification}
+                  onClick={handlePasswordVerificationAndDelete}
                   disabled={loading || !password}
                   style={{
                     flex: 1,
@@ -414,112 +372,6 @@ const DeleteAccountModal = ({ isOpen, onClose, isDarkMode }) => {
                     fontWeight: '600',
                     cursor: (loading || !password) ? 'not-allowed' : 'pointer',
                     opacity: (loading || !password) ? 0.5 : 1
-                  }}
-                >
-                  {loading ? 'Verifying...' : 'Verify'}
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* Step 3: Final Confirmation */}
-          {step === 3 && (
-            <>
-              <p style={{
-                margin: '0 0 1.5rem 0',
-                color: colors.text,
-                fontSize: '0.9375rem',
-                lineHeight: '1.6'
-              }}>
-                This is your last chance to cancel. To permanently delete your account and all associated data, type <strong style={{ color: '#dc2626' }}>DELETE</strong> below:
-              </p>
-
-              <div style={{ marginBottom: '1.5rem' }}>
-                <input
-                  type="text"
-                  value={confirmText}
-                  onChange={(e) => {
-                    setConfirmText(e.target.value);
-                    setError('');
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleDeleteAccount();
-                    }
-                  }}
-                  disabled={loading}
-                  placeholder="Type DELETE to confirm"
-                  autoFocus
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: `2px solid ${confirmText === 'DELETE' ? '#dc2626' : colors.border}`,
-                    borderRadius: '0.5rem',
-                    fontSize: '1rem',
-                    background: colors.inputBg,
-                    color: colors.text,
-                    boxSizing: 'border-box',
-                    fontWeight: '600',
-                    textAlign: 'center',
-                    letterSpacing: '0.05em'
-                  }}
-                />
-              </div>
-
-              {error && (
-                <div style={{
-                  padding: '0.75rem',
-                  background: '#fee2e2',
-                  border: '1px solid #fca5a5',
-                  borderRadius: '0.5rem',
-                  color: '#dc2626',
-                  fontSize: '0.875rem',
-                  marginBottom: '1.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <AlertTriangle size={16} />
-                  {error}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button
-                  onClick={() => {
-                    setStep(1);
-                    setConfirmText('');
-                    setError('');
-                  }}
-                  disabled={loading}
-                  style={{
-                    flex: 1,
-                    padding: '0.875rem',
-                    background: colors.border,
-                    color: colors.text,
-                    border: 'none',
-                    borderRadius: '0.5rem',
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    cursor: loading ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteAccount}
-                  disabled={loading || confirmText !== 'DELETE'}
-                  style={{
-                    flex: 1,
-                    padding: '0.875rem',
-                    background: (loading || confirmText !== 'DELETE') ? colors.border : '#dc2626',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '0.5rem',
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    cursor: (loading || confirmText !== 'DELETE') ? 'not-allowed' : 'pointer',
-                    opacity: (loading || confirmText !== 'DELETE') ? 0.5 : 1
                   }}
                 >
                   {loading ? 'Deleting Account...' : 'Delete My Account'}

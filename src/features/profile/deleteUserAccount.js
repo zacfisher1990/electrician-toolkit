@@ -1,8 +1,13 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { defineString } = require('firebase-functions/params');
 const admin = require('firebase-admin');
+const { Resend } = require('resend');
+
+// Define the Resend API key parameter
+const resendApiKey = defineString('RESEND_API_KEY');
 
 // Delete User Account Cloud Function
-// This function deletes all user data from Firestore and Storage
+// This function deletes all user data from Firestore and Storage, and sends a confirmation email
 exports.deleteUserAccount = onCall(async (request) => {
   const userId = request.auth?.uid;
 
@@ -17,6 +22,12 @@ exports.deleteUserAccount = onCall(async (request) => {
     const db = admin.firestore();
     const storage = admin.storage();
     const bucket = storage.bucket();
+
+    // Get user data before deletion (for the email)
+    const userDoc = await db.collection('users').doc(userId).get();
+    const userData = userDoc.data();
+    const userEmail = userData?.email || request.auth.token.email;
+    const userName = userData?.fullName || userData?.businessName || 'User';
 
     // Step 1: Delete all jobs and their subcollections
     console.log('Deleting jobs...');
@@ -90,6 +101,30 @@ exports.deleteUserAccount = onCall(async (request) => {
     console.log(`Deleted ${companyLogoCount} company logos`);
     console.log(`Deleted ${jobPhotosCount} job photos`);
 
+    // Step 7: Send deletion confirmation email
+    console.log('Sending account deletion confirmation email...');
+    try {
+      const apiKey = resendApiKey.value();
+      
+      if (apiKey && userEmail) {
+        const resend = new Resend(apiKey);
+        
+        await resend.emails.send({
+          from: 'ProXTrades <support@proxtrades.com>',
+          to: userEmail,
+          subject: 'Account Deletion Confirmation - ProXTrades',
+          html: generateDeletionEmailHTML(userName, userEmail)
+        });
+        
+        console.log('Deletion confirmation email sent successfully');
+      } else {
+        console.log('Skipping email - API key or user email not available');
+      }
+    } catch (emailError) {
+      // Don't fail the entire operation if email fails
+      console.error('Failed to send deletion email:', emailError);
+    }
+
     console.log(`✅ Successfully deleted all data for user: ${userId}`);
 
     return {
@@ -102,3 +137,100 @@ exports.deleteUserAccount = onCall(async (request) => {
     throw new HttpsError('internal', `Failed to delete account: ${error.message}`);
   }
 });
+
+/**
+ * Generate the HTML for the account deletion confirmation email
+ */
+function generateDeletionEmailHTML(userName, userEmail) {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                
+                <!-- Header -->
+                <tr>
+                  <td style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">⚡ ProXTrades</h1>
+                  </td>
+                </tr>
+                
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 40px 30px;">
+                    <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 24px; font-weight: 600;">
+                      Account Deletion Confirmed
+                    </h2>
+                    
+                    <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 16px; line-height: 1.6;">
+                      Hi ${userName},
+                    </p>
+                    
+                    <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 16px; line-height: 1.6;">
+                      This email confirms that your ProXTrades account (<strong>${userEmail}</strong>) has been permanently deleted.
+                    </p>
+
+                    <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 8px; margin: 20px 0;">
+                      <p style="margin: 0 0 12px 0; color: #92400e; font-size: 14px; line-height: 1.6; font-weight: 600;">
+                        ⚠️ The following data has been permanently removed:
+                      </p>
+                      <ul style="margin: 0; padding-left: 20px; color: #92400e; font-size: 14px; line-height: 1.8;">
+                        <li>All jobs and job history</li>
+                        <li>All estimates and invoices</li>
+                        <li>All client information</li>
+                        <li>All uploaded photos and documents</li>
+                        <li>Your profile and company information</li>
+                        <li>All app data and settings</li>
+                      </ul>
+                    </div>
+                    
+                    <p style="margin: 20px 0 0 0; color: #6b7280; font-size: 16px; line-height: 1.6;">
+                      This action cannot be undone. All your data has been permanently removed from our systems.
+                    </p>
+
+                    <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e5e7eb;">
+                      <p style="margin: 0 0 15px 0; color: #111827; font-size: 16px; font-weight: 600;">
+                        Changed your mind?
+                      </p>
+                      <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
+                        You can always create a new account at <a href="https://electricianprox.com" style="color: #3b82f6; text-decoration: none;">electricianprox.com</a>, but you'll need to start fresh as all your previous data has been deleted.
+                      </p>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background-color: #f9fafb; border-radius: 8px;">
+                      <p style="margin: 0 0 10px 0; color: #111827; font-size: 14px; font-weight: 600;">
+                        Have questions?
+                      </p>
+                      <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
+                        If you didn't request this deletion or have any questions, please contact us immediately at <a href="mailto:support@proxtrades.com" style="color: #3b82f6; text-decoration: none;">support@proxtrades.com</a>
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+                
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 14px;">
+                      © ${new Date().getFullYear()} ProXTrades. All rights reserved.
+                    </p>
+                    <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                      This is an automated confirmation email for account deletion.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `;
+}
