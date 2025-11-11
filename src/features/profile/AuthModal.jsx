@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, X, Eye, EyeOff, Check, AlertCircle } from 'lucide-react';
-import { auth } from "../../firebase/firebase";
+import { auth, db } from "../../firebase/firebase";
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
-  sendEmailVerification  // ✅ Added for Firebase native verification
+  sendEmailVerification
 } from 'firebase/auth';
-// ❌ Removed: import { createVerificationToken, sendVerificationEmail, isEmailVerifiedCustom } from '../../utils/emailVerification';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -63,7 +63,6 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
     }
   };
 
-  // ✅ UPDATED: Now uses Firebase's native sendEmailVerification
   const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
@@ -83,28 +82,66 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
     setLoading(true);
     
     try {
+      // Create user account
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // ✅ Use Firebase's built-in email verification (works on iOS!)
-      const actionCodeSettings = {
-        url: window.location.origin, // Redirect back to your app after verification
-        handleCodeInApp: false,
-      };
+      // Save user data to Firestore
+      try {
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          email: email,
+          createdAt: serverTimestamp(),
+        });
+      } catch (firestoreError) {
+        console.error('Firestore error (non-critical):', firestoreError);
+        // Don't fail signup if Firestore fails
+      }
       
-      await sendEmailVerification(userCredential.user, actionCodeSettings);
+      // Send verification email
+      try {
+        const actionCodeSettings = {
+          url: window.location.origin,
+          handleCodeInApp: false,
+        };
+        
+        await sendEmailVerification(userCredential.user, actionCodeSettings);
+        console.log('✅ Verification email sent via Firebase');
+      } catch (verificationError) {
+        console.error('Verification email error:', verificationError);
+        
+        // Handle rate limiting specifically
+        if (verificationError.code === 'auth/too-many-requests') {
+          setError('Too many verification emails sent. Please wait a few minutes and try the "Resend" button from your profile.');
+        } else {
+          setError('Account created but verification email failed to send. You can resend it from your profile.');
+        }
+        
+        // Still clear form and close modal - account was created
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setLoading(false);
+        
+        // Show error for a moment then close
+        setTimeout(() => {
+          onClose();
+        }, 3000);
+        return;
+      }
       
-      console.log('✅ Verification email sent via Firebase');
-      
+      // Success - clear form and close
       setEmail('');
       setPassword('');
       setConfirmPassword('');
       onClose();
       alert('Account created! Please check your email inbox to verify your account.');
+      
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
         setError('This email is already registered. Try logging in instead.');
       } else if (err.code === 'auth/weak-password') {
         setError('Password is too weak. Please use a stronger password.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Invalid email address.');
       } else {
         setError(err.message);
       }
@@ -113,7 +150,6 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
     }
   };
 
-  // ✅ UPDATED: Now checks Firebase's native emailVerified property
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -122,7 +158,7 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // ✅ Check Firebase's native emailVerified status (works on iOS!)
+      // Check if email is verified
       if (!userCredential.user.emailVerified) {
         setError('Please verify your email before logging in. Check your inbox for the verification link.');
         await auth.signOut();
@@ -219,34 +255,37 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
             background: '#fef2f2',
             border: '1px solid #fecaca',
             borderRadius: '0.5rem',
-            padding: '0.875rem',
+            padding: '0.75rem',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'flex-start',
-            gap: '0.75rem',
+            gap: '0.5rem',
           }}>
-            <AlertCircle size={20} color="#dc2626" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-            <p style={{ margin: 0, color: '#dc2626', fontSize: '0.875rem', lineHeight: '1.5' }}>{error}</p>
+            <AlertCircle size={18} style={{ color: '#dc2626', flexShrink: 0, marginTop: '0.125rem' }} />
+            <p style={{ margin: 0, color: '#991b1b', fontSize: '0.875rem', lineHeight: '1.4' }}>
+              {error}
+            </p>
           </div>
         )}
 
         {success && (
           <div style={{
-            background: '#dcfce7',
-            border: '1px solid #86efac',
+            background: '#f0fdf4',
+            border: '1px solid #bbf7d0',
             borderRadius: '0.5rem',
-            padding: '0.875rem',
+            padding: '0.75rem',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'flex-start',
-            gap: '0.75rem',
+            gap: '0.5rem',
           }}>
-            <Check size={20} color="#16a34a" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-            <p style={{ margin: 0, color: '#16a34a', fontSize: '0.875rem', lineHeight: '1.5' }}>{success}</p>
+            <Check size={18} style={{ color: '#16a34a', flexShrink: 0, marginTop: '0.125rem' }} />
+            <p style={{ margin: 0, color: '#166534', fontSize: '0.875rem', lineHeight: '1.4' }}>
+              {success}
+            </p>
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={isForgotPassword ? handleForgotPassword : isLogin ? handleLogin : handleSignup}>
           {/* Email field */}
           <div style={{ marginBottom: '1.25rem' }}>
@@ -275,7 +314,7 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
             </div>
           </div>
 
-          {/* Password field (not shown in forgot password) */}
+          {/* Password field (hidden in forgot password mode) */}
           {!isForgotPassword && (
             <div style={{ marginBottom: '1.25rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: colors.text, fontSize: '0.875rem', fontWeight: '500' }}>

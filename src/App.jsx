@@ -39,21 +39,14 @@ import Profile from './features/profile/Profile.jsx';
 import Jobs from './features/jobs/Jobs.jsx';
 import Estimates from './features/estimates/Estimates.jsx';
 import Invoices from './features/invoices/Invoices.jsx';
-import VerifyEmail from './pages/VerifyEmail.jsx';
 import Header from './components/Header.jsx';
 import { getColors } from './theme';
 import { auth } from './firebase/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { isEmailVerifiedCustom, createVerificationToken, sendVerificationEmail } from './utils/emailVerification';
+import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import './App.css';
 
 function App() {
   const [activeCalculator, setActiveCalculator] = useState(() => {
-    // Check if we're on verify-email page from URL
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('token')) {
-      return 'verify-email';
-    }
     // Initialize from localStorage or default to null (home)
     const saved = localStorage.getItem('activeView');
     return saved || null;
@@ -69,10 +62,10 @@ function App() {
   const [navigationData, setNavigationData] = useState(null);
   const [headerVisible, setHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [clockedInJob, setClockedInJob] = useState(null); // NEW: Track clocked-in job instantly
-  const [prefilledJobDate, setPrefilledJobDate] = useState(null); // NEW: Track date from calendar
-  const [user, setUser] = useState(null); // NEW: Track authenticated user
-  const [isEmailVerified, setIsEmailVerified] = useState(false); // NEW: Track email verification status
+  const [clockedInJob, setClockedInJob] = useState(null);
+  const [prefilledJobDate, setPrefilledJobDate] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
   
   // Handle browser back/forward buttons
   useEffect(() => {
@@ -94,15 +87,15 @@ function App() {
     };
   }, []);
 
-  // NEW: Listen for auth state and verification status changes
+  // ✅ UPDATED: Now uses Firebase's native emailVerified property
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       
       if (currentUser) {
-        // Check custom verification status from Firestore
-        const verified = await isEmailVerifiedCustom(currentUser.uid);
-        setIsEmailVerified(verified);
+        // Reload user to get fresh emailVerified status
+        await currentUser.reload();
+        setIsEmailVerified(currentUser.emailVerified);
       } else {
         setIsEmailVerified(false);
       }
@@ -123,8 +116,7 @@ function App() {
   useEffect(() => {
     if (activeCalculator === null) {
       localStorage.setItem('activeView', '');
-    } else if (activeCalculator !== 'verify-email') {
-      // Don't save verify-email to localStorage
+    } else {
       localStorage.setItem('activeView', activeCalculator);
     }
   }, [activeCalculator]);
@@ -177,227 +169,153 @@ function App() {
     };
   }, [isDarkMode]);
 
-  useEffect(() => {
-    // Scroll to top whenever the view changes
-    window.scrollTo(0, 0);
-  }, [activeCalculator]);
-  
-  // Ref to access calculator's export function
-  const calculatorRef = useRef(null);
-
-  // Handle scroll to show/hide header
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (currentScrollY < 10) {
-        // Always show header at top
-        setHeaderVisible(true);
-      } else if (currentScrollY > lastScrollY && currentScrollY > 80) {
-        // Scrolling down & past threshold - hide header
-        setHeaderVisible(false);
-      } else if (currentScrollY < lastScrollY) {
-        // Scrolling up - show header
-        setHeaderVisible(true);
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
-
-  // Clear navigation data when leaving estimates page
-useEffect(() => {
-  if (activeCalculator !== 'estimates') {
-    setNavigationData(null);
-  }
-}, [activeCalculator]);
-
-// Clear prefilled job date when leaving jobs page
-useEffect(() => {
-  if (activeCalculator !== 'jobs') {
-    setPrefilledJobDate(null);
-  }
-}, [activeCalculator]);
-
-// Handle adding a job from the Home calendar
-const handleAddJobFromCalendar = (date) => {
-  console.log('📅 Adding job for date:', date);
-  setPrefilledJobDate(date);
-  setActiveCalculator('jobs');
-};
-
-const handleNavigateToJobs = (data) => {
-  setJobsNavigationData(data);
-  setCurrentView('jobs'); // or use your router
-};
-
-  const handleNavigate = (view, data = null) => {
-      if (view === 'home') {
-        setActiveCalculator(null);
-      } else if (view === 'calculators') {
-        setActiveCalculator('calculators');
-      } else if (view === 'profile') {
-        setActiveCalculator('profile');
-      } else if (view === 'jobs') {
-        // CRITICAL: If coming from Estimates with data, clear cache BEFORE rendering
-        if (data?.openJobId) {
-          console.log('🧹 Clearing jobs cache before navigation');
-          localStorage.removeItem('jobs_cache_v1');
-          localStorage.removeItem('jobs_cache_timestamp_v1');
-          setNavigationData(data);
-        }
-        setActiveCalculator('jobs');
-      } else if (view === 'estimates') {
-        setActiveCalculator('estimates');
-        if (data) {
-          setNavigationData(data);
-        }
-      } else if (view === 'invoices') {
-        setActiveCalculator('invoices');
-      }
-    };
-
-  const handleBackToMenu = () => {
-    setActiveCalculator('calculators');
+  const handleNavigate = (view, data) => {
+    if (data) {
+      setNavigationData(data);
+    }
+    setActiveCalculator(view);
   };
 
-  const exportSuccessHandler = () => {
+  const handleExportSuccess = () => {
     setShowExportToast(true);
     setTimeout(() => setShowExportToast(false), 3000);
   };
 
-  const handleExportPDF = () => {
-    if (calculatorRef.current && calculatorRef.current.exportPDF) {
-      calculatorRef.current.exportPDF();
-      exportSuccessHandler();
-    }
-  };
-
-  const handleApplyEstimate = (estimateData) => {
-    setPendingEstimate(estimateData);
+  const handleJobCreatedFromEstimate = (estimate) => {
+    setPendingEstimate(estimate);
     setActiveCalculator('jobs');
   };
 
-  // NEW: Handle resending verification email
+  const handleApplyEstimate = (estimate) => {
+    setPendingEstimate(estimate);
+  };
+
+  const handleClockIn = (job) => {
+    setClockedInJob(job);
+  };
+
+  const handleClockOut = () => {
+    setClockedInJob(null);
+  };
+
+  const handleAddJobFromCalendar = (date) => {
+    setPrefilledJobDate(date);
+    setActiveCalculator('jobs');
+  };
+
+  // ✅ UPDATED: Now uses Firebase's native sendEmailVerification
   const handleResendVerification = async () => {
+    if (!user) return;
+
     try {
-      if (!user) {
-        alert('Please log in first');
-        return;
-      }
+      const actionCodeSettings = {
+        url: window.location.origin,
+        handleCodeInApp: false,
+      };
       
-      // Create new verification token
-      const token = await createVerificationToken(user.uid, user.email);
-      
-      // Send verification email
-      await sendVerificationEmail(user.email, token);
-      
+      await sendEmailVerification(user, actionCodeSettings);
       alert('Verification email sent! Please check your inbox.');
     } catch (error) {
-      console.error('Error resending verification:', error);
-      alert('Failed to send verification email. Please try again.');
+      console.error('Error sending verification email:', error);
+      alert('Failed to send verification email. Please try again later.');
     }
   };
 
   const renderCalculator = () => {
     switch (activeCalculator) {
       case 'voltage-drop':
-        return <VoltageDropCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <VoltageDropCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'ohms-law':
-        return <OhmsLawCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'box-fill':
-        return <BoxFillCalculator isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
-      case 'conduit-fill':
-        return <ConduitFillCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'ampacity':
-        return <AmpacityLookupCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'motor-calculations':
-        return <MotorCalculations ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'load-calculations':
-        return <LoadCalculations ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'transformer-sizing':
-        return <TransformerSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'service-entrance':
-        return <ServiceEntranceSizing ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'grounding-bonding':
-        return <GroundingBondingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'conduit-bending':
-        return <ConduitBendingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'lighting':
-        return <LightingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'receptacles':
-        return <ReceptacleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'vfd-sizing':
-        return <VFDSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <OhmsLawCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'reactance-impedance':
-        return <ReactanceImpedanceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <ReactanceImpedanceCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'power-factor':
-        return <PowerFactorCorrection ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'power-triangle':
-        return <PowerTriangleCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
-      case 'three-phase-power':
-        return <ThreePhasePowerCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <PowerFactorCorrection isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'box-fill':
+        return <BoxFillCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'pull-box':
-        return <PullBoxCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <PullBoxCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'conduit-fill':
+        return <ConduitFillCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'ampacity':
+        return <AmpacityLookupCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'motor-calculations':
+        return <MotorCalculations isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'load-calculations':
+        return <LoadCalculations isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'transformer-sizing':
+        return <TransformerSizingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'service-entrance':
+        return <ServiceEntranceSizing isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'grounding-bonding':
+        return <GroundingBondingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'conduit-bending':
+        return <ConduitBendingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'lighting':
+        return <LightingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'receptacles':
+        return <ReceptacleCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'vfd-sizing':
+        return <VFDSizingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'power-triangle':
+        return <PowerTriangleCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'three-phase-power':
+        return <ThreePhasePowerCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'underground-depth':
-        return <UndergroundDepthCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <UndergroundDepthCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'overhead-clearance':
-        return <OverheadClearanceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <OverheadClearanceCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'working-space':
-        return <WorkingSpaceCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <WorkingSpaceCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'neutral-sizing':
-        return <NeutralSizingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <NeutralSizingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'solar-pv':
-        return <SolarPVCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <SolarPVCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'ev-charging':
-        return <EVChargingCalculator ref={calculatorRef} isDarkMode={isDarkMode} onBack={handleBackToMenu} onExportSuccess={exportSuccessHandler} />;
+        return <EVChargingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'support-spacing':
-        return <SupportSpacingCalculator isDarkMode={isDarkMode} onBack={handleBackToMenu} />;
+        return <SupportSpacingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'calculators':
-  return <Tools 
-    isDarkMode={isDarkMode} 
-    onSelectCalculator={setActiveCalculator}
-  />;
+        return <Tools isDarkMode={isDarkMode} onNavigate={handleNavigate} />;
       case 'profile':
         return <Profile isDarkMode={isDarkMode} />;
       case 'jobs':
         return (
             <Jobs 
               isDarkMode={isDarkMode}
-              onNavigateToEstimates={(data) => handleNavigate('estimates', data)}
-              onClockedInJobChange={setClockedInJob} // NEW: Instant callback
-              prefilledDate={prefilledJobDate} // NEW: Pass prefilled date from calendar
-              navigationData={navigationData} // NEW: Pass navigation data from Estimates
-              isEmailVerified={isEmailVerified} // NEW: Pass verification status
-              onResendVerification={handleResendVerification} // NEW: Pass resend function
+              pendingEstimateData={pendingEstimate}
+              onClearPendingData={() => setPendingEstimate(null)}
+              onNavigateToEstimates={handleNavigate}
+              onClockIn={handleClockIn}
+              onClockOut={handleClockOut}
+              prefilledDate={prefilledJobDate}
+              onClearPrefilledDate={() => setPrefilledJobDate(null)}
+              isEmailVerified={isEmailVerified}
+              onResendVerification={handleResendVerification}
             />
         );
       case 'estimates':
         return (
             <Estimates 
               isDarkMode={isDarkMode}
+              onJobCreated={handleJobCreatedFromEstimate}
               onApplyToJob={handleApplyEstimate}
               pendingEstimateData={pendingEstimate}
               onClearPendingData={() => setPendingEstimate(null)}
               navigationData={navigationData}
-              onNavigateToJobs={(data) => handleNavigate('jobs', data)} // NEW: Navigate back to Jobs
-              isEmailVerified={isEmailVerified} // NEW: Pass verification status
-              onResendVerification={handleResendVerification} // NEW: Pass resend function
+              onNavigateToJobs={(data) => handleNavigate('jobs', data)}
+              isEmailVerified={isEmailVerified}
+              onResendVerification={handleResendVerification}
             />
         );
       case 'invoices':
         return (
             <Invoices 
               isDarkMode={isDarkMode}
-              isEmailVerified={isEmailVerified} // NEW: Pass verification status
-              onResendVerification={handleResendVerification} // NEW: Pass resend function
+              isEmailVerified={isEmailVerified}
+              onResendVerification={handleResendVerification}
             />
         );
-      case 'verify-email':
-        return <VerifyEmail isDarkMode={isDarkMode} onNavigate={handleNavigate} />;
       default:
         return <Home 
           isDarkMode={isDarkMode}
@@ -424,9 +342,6 @@ const handleNavigateToJobs = (data) => {
     }
     if (activeCalculator === 'invoices') {
       return { title: 'Invoices', icon: PiInvoice };
-    }
-    if (activeCalculator === 'verify-email') {
-      return { title: 'Verify Email', icon: User };
     }
     
     const headerMap = {
@@ -463,9 +378,6 @@ const handleNavigateToJobs = (data) => {
 
   const headerInfo = getHeaderInfo();
 
-  // Hide bottom nav on verify-email page
-  const showBottomNav = activeCalculator !== 'verify-email';
-
   return (
     <div className="App" style={{ background: isDarkMode ? '#121212' : '#f9fafb', overscrollBehavior: 'none' }}>
       <Header 
@@ -476,12 +388,12 @@ const handleNavigateToJobs = (data) => {
         setShowMenu={setShowMenu}
         onNavigate={handleNavigate}
         setIsDarkMode={setIsDarkMode}
-        clockedInJob={clockedInJob} // NEW: Just pass the job
+        clockedInJob={clockedInJob}
       />
 
       {/* Content Area */}
       <div style={{ 
-        paddingBottom: showBottomNav ? 'calc(65px + env(safe-area-inset-bottom))' : '0',
+        paddingBottom: 'calc(65px + env(safe-area-inset-bottom))',
         paddingTop: 'calc(48px + env(safe-area-inset-top)',
         paddingLeft: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-left)',
         paddingRight: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-right)',
@@ -494,9 +406,9 @@ const handleNavigateToJobs = (data) => {
                 ) : (
                   <div style={{ 
                     minHeight: 'calc(100vh - 3.5rem)', 
-                    paddingTop: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'verify-email' ? '0' : '1rem',
-                    paddingRight: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'verify-email' ? '0' : '1rem',
-                    paddingLeft: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'verify-email' ? '0' : '1rem',
+                    paddingTop: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' ? '0' : '1rem',
+                    paddingRight: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' ? '0' : '1rem',
+                    paddingLeft: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' ? '0' : '1rem',
                     paddingBottom: '0'
                   }}>
                     {renderCalculator()}
@@ -531,27 +443,25 @@ const handleNavigateToJobs = (data) => {
         </div>
       )}
       
-      {showBottomNav && (
-        <BottomNavigation 
-          onNavigate={handleNavigate}
-          currentView={
-            activeCalculator === 'jobs'
-              ? 'jobs'
-              : activeCalculator === 'estimates'
-              ? 'estimates'
-              : activeCalculator === 'invoices'
-              ? 'invoices'
-              : activeCalculator === 'profile' 
-              ? 'profile'
-              : activeCalculator === 'calculators'
-              ? 'calculators'
-              : activeCalculator 
-              ? 'calculators' 
-              : 'home'
-          }
-          isDarkMode={isDarkMode}
-        />
-      )}
+      <BottomNavigation 
+        onNavigate={handleNavigate}
+        currentView={
+          activeCalculator === 'jobs'
+            ? 'jobs'
+            : activeCalculator === 'estimates'
+            ? 'estimates'
+            : activeCalculator === 'invoices'
+            ? 'invoices'
+            : activeCalculator === 'profile' 
+            ? 'profile'
+            : activeCalculator === 'calculators'
+            ? 'calculators'
+            : activeCalculator 
+            ? 'calculators' 
+            : 'home'
+        }
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 }

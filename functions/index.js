@@ -4,6 +4,9 @@
  * This file exports all cloud functions by importing them from their modular files.
  * Each function is organized in its own file for better maintainability.
  * 
+ * UPDATED: Removed custom email verification functions as we now use
+ * Firebase's built-in email verification system.
+ * 
  * Installation:
  * 1. cd functions
  * 2. npm install resend pdfkit
@@ -15,13 +18,15 @@
 // Import all cloud functions
 const { sendInvoiceEmail } = require('./src/functions/sendInvoiceEmail');
 const { sendEstimateEmail } = require('./src/functions/sendEstimateEmail');
-const { sendVerificationEmail } = require('./src/functions/sendVerificationEmail');
-const { sendWelcomeEmail } = require('./src/functions/sendWelcomeEmail');
 const { deleteUserAccount } = require('./src/functions/deleteUserAccount');
+
+// Optional: Keep welcome email if you still want to send custom welcome emails
+// const { sendWelcomeEmail } = require('./src/functions/sendWelcomeEmail');
 
 // Export all functions
 exports.sendInvoiceEmail = sendInvoiceEmail;
 exports.sendEstimateEmail = sendEstimateEmail;
-exports.sendVerificationEmail = sendVerificationEmail;
-exports.sendWelcomeEmail = sendWelcomeEmail;
 exports.deleteUserAccount = deleteUserAccount;
+
+// Optional: Export welcome email if you kept it above
+// exports.sendWelcomeEmail = sendWelcomeEmail;
