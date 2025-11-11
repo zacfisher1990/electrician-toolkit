@@ -4,9 +4,10 @@ import { auth } from "../../firebase/firebase";
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  sendEmailVerification  // ✅ Added for Firebase native verification
 } from 'firebase/auth';
-import { createVerificationToken, sendVerificationEmail, isEmailVerifiedCustom } from '../../utils/emailVerification';
+// ❌ Removed: import { createVerificationToken, sendVerificationEmail, isEmailVerifiedCustom } from '../../utils/emailVerification';
 
 const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -62,6 +63,7 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
     }
   };
 
+  // ✅ UPDATED: Now uses Firebase's native sendEmailVerification
   const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
@@ -83,13 +85,15 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Create verification token (custom system)
-      const token = await createVerificationToken(userCredential.user.uid, email);
+      // ✅ Use Firebase's built-in email verification (works on iOS!)
+      const actionCodeSettings = {
+        url: window.location.origin, // Redirect back to your app after verification
+        handleCodeInApp: false,
+      };
       
-      // Send ONLY our custom verification email via Resend (goes to inbox!)
-      await sendVerificationEmail(email, token);
+      await sendEmailVerification(userCredential.user, actionCodeSettings);
       
-      console.log('✅ Custom verification email sent via Resend');
+      console.log('✅ Verification email sent via Firebase');
       
       setEmail('');
       setPassword('');
@@ -109,6 +113,7 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
     }
   };
 
+  // ✅ UPDATED: Now checks Firebase's native emailVerified property
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -117,10 +122,8 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // Check if email is verified using custom system
-      const isVerified = await isEmailVerifiedCustom(userCredential.user.uid);
-      
-      if (!isVerified) {
+      // ✅ Check Firebase's native emailVerified status (works on iOS!)
+      if (!userCredential.user.emailVerified) {
         setError('Please verify your email before logging in. Check your inbox for the verification link.');
         await auth.signOut();
         setLoading(false);
@@ -151,239 +154,32 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
     }
   };
 
-  const resetForm = () => {
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setError('');
-    setSuccess('');
-    setIsForgotPassword(false);
-  };
-
-  // Forgot Password View
-  if (isForgotPassword) {
-    return (
-      <div
-        onClick={handleBackdropClick}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '1rem'
-        }}
-      >
-        <div style={{
-          background: colors.cardBg,
-          borderRadius: '0.75rem',
-          border: `1px solid ${colors.border}`,
-          padding: '2rem 1.5rem',
-          maxWidth: '400px',
-          width: '100%',
-          position: 'relative'
-        }}>
-          <button
-            onClick={onClose}
-            style={{
-              position: 'absolute',
-              top: '1rem',
-              right: '1rem',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              color: colors.subtext,
-              padding: '0.25rem',
-              display: 'flex',
-              alignItems: 'center'
-            }}
-          >
-            <X size={24} />
-          </button>
-
-          <div style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            background: '#3b82f6',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 1.5rem'
-          }}>
-            <Lock size={40} color="white" />
-          </div>
-
-          <h2 style={{
-            margin: '0 0 0.5rem 0',
-            color: colors.text,
-            fontSize: '1.5rem',
-            fontWeight: '700',
-            textAlign: 'center'
-          }}>
-            Reset Password
-          </h2>
-          <p style={{
-            margin: '0 0 2rem 0',
-            color: colors.subtext,
-            fontSize: '0.875rem',
-            textAlign: 'center'
-          }}>
-            Enter your email and we'll send you a reset link
-          </p>
-
-          {error && (
-            <div style={{
-              padding: '0.75rem',
-              background: '#fee2e2',
-              border: '1px solid #fca5a5',
-              borderRadius: '0.5rem',
-              color: '#dc2626',
-              fontSize: '0.875rem',
-              marginBottom: '1rem'
-            }}>
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div style={{
-              padding: '0.75rem',
-              background: '#dcfce7',
-              border: '1px solid #86efac',
-              borderRadius: '0.5rem',
-              color: '#16a34a',
-              fontSize: '0.875rem',
-              marginBottom: '1rem'
-            }}>
-              {success}
-            </div>
-          )}
-
-          <form onSubmit={handleForgotPassword}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: '0.5rem',
-                color: colors.text,
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}>
-                Email
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Mail 
-                  size={18} 
-                  style={{
-                    position: 'absolute',
-                    left: '0.75rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: colors.subtext
-                  }}
-                />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  disabled={loading}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem 0.75rem 0.75rem 2.5rem',
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '0.5rem',
-                    fontSize: '0.9375rem',
-                    background: colors.inputBg,
-                    color: colors.text,
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '0.875rem',
-                background: loading ? colors.border : '#2563eb',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.5rem',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                marginBottom: '1rem'
-              }}
-            >
-              {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsForgotPassword(false);
-                resetForm();
-              }}
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '0.875rem',
-                background: 'transparent',
-                color: colors.text,
-                border: `1px solid ${colors.border}`,
-                borderRadius: '0.5rem',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
-            >
-              Back to Login
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
-  // Login/Signup View
   return (
     <div
       onClick={handleBackdropClick}
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0, 0, 0, 0.5)',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.75)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
-        padding: '1rem'
+        padding: '1rem',
       }}
     >
-      <div style={{
-        background: colors.cardBg,
-        borderRadius: '0.75rem',
-        border: `1px solid ${colors.border}`,
-        padding: '2rem 1.5rem',
-        maxWidth: '400px',
-        width: '100%',
-        position: 'relative',
-        maxHeight: '90vh',
-        overflowY: 'auto'
-      }}>
-        {/* Close Button */}
+      <div
+        style={{
+          background: colors.cardBg,
+          borderRadius: '1rem',
+          padding: '2rem',
+          width: '100%',
+          maxWidth: '450px',
+          border: `1px solid ${colors.border}`,
+          position: 'relative',
+        }}
+      >
+        {/* Close button */}
         <button
           onClick={onClose}
           style={{
@@ -394,233 +190,189 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
             border: 'none',
             cursor: 'pointer',
             color: colors.subtext,
-            padding: '0.25rem',
+            padding: '0.5rem',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           <X size={24} />
         </button>
 
-        {/* Icon */}
-        <div style={{
-          width: '80px',
-          height: '80px',
-          borderRadius: '50%',
-          background: '#3b82f6',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 1.5rem'
-        }}>
-          <User size={40} color="white" />
+        {/* Title */}
+        <div style={{ marginBottom: '2rem' }}>
+          <h2 style={{ margin: '0 0 0.5rem 0', color: colors.text, fontSize: '1.875rem', fontWeight: '700' }}>
+            {isForgotPassword ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Create Account'}
+          </h2>
+          <p style={{ margin: 0, color: colors.subtext, fontSize: '0.875rem' }}>
+            {isForgotPassword 
+              ? 'Enter your email to receive a password reset link'
+              : isLogin 
+                ? 'Log in to your account to continue'
+                : 'Sign up to start managing your electrical jobs'
+            }
+          </p>
         </div>
 
-        {/* Title */}
-        <h2 style={{
-          margin: '0 0 0.5rem 0',
-          color: colors.text,
-          fontSize: '1.5rem',
-          fontWeight: '700',
-          textAlign: 'center'
-        }}>
-          {isLogin ? 'Welcome Back' : 'Create Account'}
-        </h2>
-        <p style={{
-          margin: '0 0 2rem 0',
-          color: colors.subtext,
-          fontSize: '0.875rem',
-          textAlign: 'center'
-        }}>
-          {isLogin ? 'Sign in to manage your jobs' : 'Sign up to get started'}
-        </p>
-
-        {/* Error Message */}
         {error && (
           <div style={{
-            padding: '0.75rem',
-            background: '#fee2e2',
-            border: '1px solid #fca5a5',
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
             borderRadius: '0.5rem',
-            color: '#dc2626',
-            fontSize: '0.875rem',
-            marginBottom: '1rem',
+            padding: '0.875rem',
+            marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'flex-start',
-            gap: '0.5rem'
+            gap: '0.75rem',
           }}>
-            <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-            <span>{error}</span>
+            <AlertCircle size={20} color="#dc2626" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+            <p style={{ margin: 0, color: '#dc2626', fontSize: '0.875rem', lineHeight: '1.5' }}>{error}</p>
+          </div>
+        )}
+
+        {success && (
+          <div style={{
+            background: '#dcfce7',
+            border: '1px solid #86efac',
+            borderRadius: '0.5rem',
+            padding: '0.875rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '0.75rem',
+          }}>
+            <Check size={20} color="#16a34a" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
+            <p style={{ margin: 0, color: '#16a34a', fontSize: '0.875rem', lineHeight: '1.5' }}>{success}</p>
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={isLogin ? handleLogin : handleSignup}>
-          {/* Email Field */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              color: colors.text,
-              fontSize: '0.875rem',
-              fontWeight: '500'
-            }}>
+        <form onSubmit={isForgotPassword ? handleForgotPassword : isLogin ? handleLogin : handleSignup}>
+          {/* Email field */}
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', color: colors.text, fontSize: '0.875rem', fontWeight: '500' }}>
               Email
             </label>
             <div style={{ position: 'relative' }}>
-              <Mail 
-                size={18} 
-                style={{
-                  position: 'absolute',
-                  left: '0.75rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: colors.subtext
-                }}
-              />
+              <Mail size={20} color={colors.subtext} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
                 required
-                disabled={loading}
                 style={{
                   width: '100%',
-                  padding: '0.75rem 0.75rem 0.75rem 2.5rem',
+                  padding: '0.875rem 1rem 0.875rem 3rem',
                   border: `1px solid ${colors.border}`,
                   borderRadius: '0.5rem',
-                  fontSize: '0.9375rem',
                   background: colors.inputBg,
                   color: colors.text,
-                  boxSizing: 'border-box'
+                  fontSize: '1rem',
+                  outline: 'none',
+                  boxSizing: 'border-box',
                 }}
               />
             </div>
           </div>
 
-          {/* Password Field */}
-          <div style={{ marginBottom: isLogin ? '0.5rem' : '1rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              color: colors.text,
-              fontSize: '0.875rem',
-              fontWeight: '500'
-            }}>
-              Password
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Lock 
-                size={18} 
-                style={{
-                  position: 'absolute',
-                  left: '0.75rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: colors.subtext
-                }}
-              />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 2.5rem 0.75rem 2.5rem',
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '0.5rem',
-                  fontSize: '0.9375rem',
-                  background: colors.inputBg,
-                  color: colors.text,
-                  boxSizing: 'border-box'
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '0.75rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: colors.subtext,
-                  padding: '0.25rem',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Forgot Password Link (Login Only) */}
-          {isLogin && (
-            <div style={{ marginBottom: '1.5rem', textAlign: 'right' }}>
-              <button
-                type="button"
-                onClick={() => setIsForgotPassword(true)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#2563eb',
-                  cursor: 'pointer',
-                  fontSize: '0.8125rem',
-                  fontWeight: '500',
-                  textDecoration: 'underline'
-                }}
-              >
-                Forgot Password?
-              </button>
+          {/* Password field (not shown in forgot password) */}
+          {!isForgotPassword && (
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: colors.text, fontSize: '0.875rem', fontWeight: '500' }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={20} color={colors.subtext} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.875rem 3rem 0.875rem 3rem',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.5rem',
+                    background: colors.inputBg,
+                    color: colors.text,
+                    fontSize: '1rem',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  {showPassword ? <EyeOff size={20} color={colors.subtext} /> : <Eye size={20} color={colors.subtext} />}
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Confirm Password Field (Signup Only) */}
-          {!isLogin && (
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: '0.5rem',
-                color: colors.text,
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}>
+          {/* Password requirements (shown only during signup) */}
+          {!isLogin && !isForgotPassword && password && (
+            <div style={{ marginBottom: '1.25rem', padding: '1rem', background: colors.bg, borderRadius: '0.5rem', border: `1px solid ${colors.border}` }}>
+              <p style={{ margin: '0 0 0.75rem 0', color: colors.text, fontSize: '0.875rem', fontWeight: '500' }}>Password requirements:</p>
+              {Object.entries({
+                'At least 8 characters': passwordRequirements.minLength,
+                'One uppercase letter': passwordRequirements.hasUpperCase,
+                'One lowercase letter': passwordRequirements.hasLowerCase,
+                'One number': passwordRequirements.hasNumber,
+              }).map(([label, met]) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem' }}>
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    background: met ? '#10b981' : colors.border,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    {met && <Check size={12} color="white" />}
+                  </div>
+                  <span style={{ color: met ? '#10b981' : colors.subtext, fontSize: '0.875rem' }}>{label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Confirm password field (shown only during signup) */}
+          {!isLogin && !isForgotPassword && (
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: colors.text, fontSize: '0.875rem', fontWeight: '500' }}>
                 Confirm Password
               </label>
               <div style={{ position: 'relative' }}>
-                <Lock 
-                  size={18} 
-                  style={{
-                    position: 'absolute',
-                    left: '0.75rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: colors.subtext
-                  }}
-                />
+                <Lock size={20} color={colors.subtext} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
                   required
-                  disabled={loading}
                   style={{
                     width: '100%',
-                    padding: '0.75rem 2.5rem 0.75rem 2.5rem',
+                    padding: '0.875rem 3rem 0.875rem 3rem',
                     border: `1px solid ${confirmPassword && !passwordsMatch ? '#ef4444' : colors.border}`,
                     borderRadius: '0.5rem',
-                    fontSize: '0.9375rem',
                     background: colors.inputBg,
                     color: colors.text,
-                    boxSizing: 'border-box'
+                    fontSize: '1rem',
+                    outline: 'none',
+                    boxSizing: 'border-box',
                   }}
                 />
                 <button
@@ -628,131 +380,123 @@ const AuthModal = ({ isOpen, onClose, isDarkMode }) => {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   style={{
                     position: 'absolute',
-                    right: '0.75rem',
+                    right: '1rem',
                     top: '50%',
                     transform: 'translateY(-50%)',
                     background: 'transparent',
                     border: 'none',
                     cursor: 'pointer',
-                    color: colors.subtext,
-                    padding: '0.25rem',
+                    padding: 0,
                     display: 'flex',
-                    alignItems: 'center'
+                    alignItems: 'center',
                   }}
                 >
-                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showConfirmPassword ? <EyeOff size={20} color={colors.subtext} /> : <Eye size={20} color={colors.subtext} />}
                 </button>
               </div>
               {confirmPassword && !passwordsMatch && (
-                <p style={{
-                  margin: '0.5rem 0 0 0',
-                  color: '#ef4444',
-                  fontSize: '0.8125rem'
-                }}>
-                  Passwords do not match
-                </p>
+                <p style={{ margin: '0.5rem 0 0 0', color: '#ef4444', fontSize: '0.875rem' }}>Passwords do not match</p>
+              )}
+              {confirmPassword && passwordsMatch && (
+                <p style={{ margin: '0.5rem 0 0 0', color: '#10b981', fontSize: '0.875rem' }}>Passwords match</p>
               )}
             </div>
           )}
 
-          {/* Password Requirements (Signup Only) */}
-          {!isLogin && (
-            <div style={{
-              marginBottom: '1.5rem',
-              padding: '0.75rem',
-              background: isDarkMode ? '#1a1a1a' : '#f9fafb',
-              borderRadius: '0.5rem',
-              border: `1px solid ${colors.border}`
-            }}>
-              <p style={{
-                margin: '0 0 0.5rem 0',
-                fontSize: '0.75rem',
-                fontWeight: '600',
-                color: colors.text
-              }}>
-                Password Requirements:
-              </p>
-              {[
-                { key: 'minLength', label: 'At least 8 characters' },
-                { key: 'hasUpperCase', label: 'One uppercase letter' },
-                { key: 'hasLowerCase', label: 'One lowercase letter' },
-                { key: 'hasNumber', label: 'One number' }
-              ].map(({ key, label }) => (
-                <div
-                  key={key}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    marginBottom: '0.25rem'
-                  }}
-                >
-                  <Check
-                    size={14}
-                    style={{
-                      color: passwordRequirements[key] ? '#10b981' : colors.subtext,
-                      flexShrink: 0
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: '0.8125rem',
-                      color: passwordRequirements[key] ? colors.text : colors.subtext
-                    }}
-                  >
-                    {label}
-                  </span>
-                </div>
-              ))}
+          {/* Forgot password link */}
+          {isLogin && !isForgotPassword && (
+            <div style={{ marginBottom: '1.5rem', textAlign: 'right' }}>
+              <button
+                type="button"
+                onClick={() => setIsForgotPassword(true)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#3b82f6',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+              >
+                Forgot password?
+              </button>
             </div>
           )}
 
+          {/* Submit button */}
           <button
             type="submit"
-            disabled={loading || (!isLogin && (!isPasswordValid || !passwordsMatch))}
+            disabled={loading || (!isLogin && !isForgotPassword && (!isPasswordValid || !passwordsMatch))}
             style={{
               width: '100%',
               padding: '0.875rem',
-              background: (loading || (!isLogin && (!isPasswordValid || !passwordsMatch))) ? colors.border : '#2563eb',
-              color: 'white',
+              background: loading || (!isLogin && !isForgotPassword && (!isPasswordValid || !passwordsMatch)) ? colors.border : '#3b82f6',
+              color: loading || (!isLogin && !isForgotPassword && (!isPasswordValid || !passwordsMatch)) ? colors.subtext : 'white',
               border: 'none',
               borderRadius: '0.5rem',
               fontSize: '1rem',
               fontWeight: '600',
-              cursor: (loading || (!isLogin && (!isPasswordValid || !passwordsMatch))) ? 'not-allowed' : 'pointer',
+              cursor: loading || (!isLogin && !isForgotPassword && (!isPasswordValid || !passwordsMatch)) ? 'not-allowed' : 'pointer',
               marginBottom: '1rem',
-              opacity: (loading || (!isLogin && (!isPasswordValid || !passwordsMatch))) ? 0.5 : 1
             }}
           >
-            {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
+            {loading ? 'Please wait...' : isForgotPassword ? 'Send Reset Link' : isLogin ? 'Log In' : 'Sign Up'}
           </button>
 
-          <div style={{
-            textAlign: 'center',
-            color: colors.subtext,
-            fontSize: '0.875rem'
-          }}>
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                resetForm();
-              }}
-              disabled={loading}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#2563eb',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                textDecoration: 'underline'
-              }}
-            >
-              {isLogin ? 'Sign Up' : 'Sign In'}
-            </button>
-          </div>
+          {/* Back to login (from forgot password) */}
+          {isForgotPassword && (
+            <div style={{ textAlign: 'center' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setError('');
+                  setSuccess('');
+                }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#3b82f6',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+              >
+                ← Back to login
+              </button>
+            </div>
+          )}
+
+          {/* Toggle between login and signup */}
+          {!isForgotPassword && (
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ margin: 0, color: colors.subtext, fontSize: '0.875rem' }}>
+                {isLogin ? "Don't have an account? " : "Already have an account? "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setError('');
+                    setSuccess('');
+                    setEmail('');
+                    setPassword('');
+                    setConfirmPassword('');
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#3b82f6',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    padding: 0,
+                    fontWeight: '600',
+                  }}
+                >
+                  {isLogin ? 'Sign up' : 'Log in'}
+                </button>
+              </p>
+            </div>
+          )}
         </form>
       </div>
     </div>

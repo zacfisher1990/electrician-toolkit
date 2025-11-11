@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
-import { verifyEmailToken } from '../utils/emailVerification';
+import { applyActionCode } from 'firebase/auth';
+import { auth } from '../firebase/firebase';
 
 const VerifyEmail = ({ isDarkMode, onNavigate }) => {
-  const [status, setStatus] = useState('verifying'); // verifying, success, error
+  const [status, setStatus] = useState('verifying');
   const [message, setMessage] = useState('');
 
   const colors = {
@@ -16,43 +17,59 @@ const VerifyEmail = ({ isDarkMode, onNavigate }) => {
 
   useEffect(() => {
     const verify = async () => {
-      // Get token from URL
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('token');
-
-      if (!token) {
-        setStatus('error');
-        setMessage('Invalid verification link. No token provided.');
-        return;
-      }
-
       try {
-        const result = await verifyEmailToken(token);
+        // Get the action code from URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const oobCode = params.get('oobCode'); // Firebase uses 'oobCode' not 'token'
+        const mode = params.get('mode');
 
-        if (result.success) {
-          setStatus('success');
-          setMessage('Your email has been verified successfully!');
-          
-          // Force reload the user's verification status
-          if (window.auth && window.auth.currentUser) {
-            await window.auth.currentUser.reload();
-          }
-          
-          // Redirect to profile after 3 seconds
-          setTimeout(() => {
-            onNavigate('profile');
-            // Clear the token from URL
-            window.history.replaceState({}, '', window.location.pathname);
-            // Reload to refresh verification status
-            window.location.reload();
-          }, 3000);
-        } else {
+        console.log('URL params:', { oobCode, mode, fullURL: window.location.href }); // Debug log
+
+        if (!oobCode) {
           setStatus('error');
-          setMessage(result.error || 'Verification failed');
+          setMessage('Invalid verification link. Please request a new verification email.');
+          return;
         }
+
+        if (mode !== 'verifyEmail') {
+          setStatus('error');
+          setMessage('Invalid verification link type.');
+          return;
+        }
+
+        // Apply the action code using Firebase's built-in function
+        await applyActionCode(auth, oobCode);
+
+        // Success!
+        setStatus('success');
+        setMessage('Your email has been verified successfully!');
+
+        // Reload the current user to update emailVerified status
+        if (auth.currentUser) {
+          await auth.currentUser.reload();
+          console.log('Email verified:', auth.currentUser.emailVerified);
+        }
+
+        // Redirect after 3 seconds
+        setTimeout(() => {
+          onNavigate('profile');
+          window.history.replaceState({}, '', window.location.pathname);
+          window.location.reload();
+        }, 3000);
+
       } catch (error) {
+        console.error('Verification error:', error);
+        
         setStatus('error');
-        setMessage('An error occurred during verification. Please try again.');
+        
+        // Provide specific error messages
+        if (error.code === 'auth/invalid-action-code') {
+          setMessage('This verification link is invalid or has already been used.');
+        } else if (error.code === 'auth/expired-action-code') {
+          setMessage('This verification link has expired. Please request a new one.');
+        } else {
+          setMessage('Verification failed. Please try again or request a new verification email.');
+        }
       }
     };
 
@@ -77,7 +94,6 @@ const VerifyEmail = ({ isDarkMode, onNavigate }) => {
         width: '100%',
         textAlign: 'center'
       }}>
-        {/* Icon */}
         <div style={{
           width: '80px',
           height: '80px',
@@ -96,7 +112,6 @@ const VerifyEmail = ({ isDarkMode, onNavigate }) => {
           {status === 'error' && <XCircle size={40} color="white" />}
         </div>
 
-        {/* Title */}
         <h2 style={{
           margin: '0 0 1rem 0',
           color: colors.text,
@@ -108,7 +123,6 @@ const VerifyEmail = ({ isDarkMode, onNavigate }) => {
           {status === 'error' && 'Verification Failed'}
         </h2>
 
-        {/* Message */}
         <p style={{
           margin: '0 0 2rem 0',
           color: colors.subtext,
@@ -116,11 +130,9 @@ const VerifyEmail = ({ isDarkMode, onNavigate }) => {
           lineHeight: '1.6'
         }}>
           {status === 'verifying' && 'Please wait while we verify your email address.'}
-          {status === 'success' && message}
-          {status === 'error' && message}
+          {message}
         </p>
 
-        {/* Actions */}
         {status === 'success' && (
           <div style={{
             padding: '1rem',
@@ -139,46 +151,29 @@ const VerifyEmail = ({ isDarkMode, onNavigate }) => {
           </div>
         )}
 
-        {status === 'success' && (
-          <button
-            onClick={() => onNavigate('profile')}
-            style={{
-              width: '100%',
-              padding: '0.875rem',
-              background: '#10b981',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-          >
-            Go to Profile
-          </button>
-        )}
-
-        {status === 'error' && (
-          <button
-            onClick={() => onNavigate('profile')}
-            style={{
-              width: '100%',
-              padding: '0.875rem',
-              background: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-          >
-            Go to Profile
-          </button>
-        )}
+        <button
+          onClick={() => {
+            onNavigate('profile');
+            if (status === 'success') {
+              window.location.reload();
+            }
+          }}
+          style={{
+            width: '100%',
+            padding: '0.875rem',
+            background: status === 'success' ? '#10b981' : '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.5rem',
+            fontSize: '1rem',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          Go to Profile
+        </button>
       </div>
 
-      {/* Add spinner animation */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
