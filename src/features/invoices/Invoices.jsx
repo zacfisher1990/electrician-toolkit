@@ -15,7 +15,7 @@ import { sendInvoiceViaEmail, downloadInvoice, getUserBusinessInfo } from './inv
 import AuthModal from '../profile/AuthModal';
 import VerificationRequiredModal from '../../components/VerificationRequiredModal';
 
-function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerified, onResendVerification }) {
+function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerified, onResendVerification, navigationData }) {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingInvoice, setEditingInvoice] = useState(null);
@@ -59,6 +59,17 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerifi
     });
     return () => unsubscribe();
   }, []);
+
+  // Handle navigation from Jobs component - auto-open invoice editor
+  useEffect(() => {
+    if (navigationData?.viewInvoiceId && invoices.length > 0) {
+      const invoiceToEdit = invoices.find(inv => inv.id === navigationData.viewInvoiceId);
+      if (invoiceToEdit) {
+        console.log('📂 Auto-opening invoice editor for:', invoiceToEdit.invoiceNumber);
+        setEditingInvoice(invoiceToEdit);
+      }
+    }
+  }, [navigationData, invoices]);
 
   // Load user business info for PDF generation
   const loadUserBusinessInfo = async () => {

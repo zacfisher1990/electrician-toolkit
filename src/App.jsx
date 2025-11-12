@@ -190,6 +190,15 @@ function App() {
     setPendingEstimate(estimate);
   };
 
+  const handleNavigateToInvoices = (invoiceId) => {
+  // Set navigation data with the invoice ID to auto-open the editor
+  setNavigationData({ viewInvoiceId: invoiceId });
+  // Navigate to invoices view
+  setActiveCalculator('invoices');
+};
+
+
+
   const handleClockIn = (job) => {
     setClockedInJob(job);
   };
@@ -291,6 +300,7 @@ function App() {
               navigationData={navigationData}
               isEmailVerified={isEmailVerified}
               onResendVerification={handleResendVerification}
+              onNavigateToInvoices={handleNavigateToInvoices}  
             />
         );
       case 'estimates':
@@ -313,6 +323,7 @@ function App() {
               isDarkMode={isDarkMode}
               isEmailVerified={isEmailVerified}
               onResendVerification={handleResendVerification}
+              navigationData={navigationData}
             />
         );
       default:

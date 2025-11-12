@@ -42,11 +42,13 @@ const ModalsContainer = ({
   // Single Estimate Modal
   viewingSingleEstimate,
   handleCloseSingleEstimate,
+  onNavigateToEstimatesFromModal,
   
   // Invoice Modal
   viewingInvoice,
   setViewingInvoice,
   handleSaveInvoice,
+  onNavigateToInvoices,
   
   isDarkMode,
   colors
@@ -133,6 +135,7 @@ const ModalsContainer = ({
           estimate={viewingSingleEstimate}
           isDarkMode={isDarkMode}
           onClose={handleCloseSingleEstimate}
+          onNavigateToEstimates={onNavigateToEstimatesFromModal}
         />
       )}
 
@@ -142,6 +145,7 @@ const ModalsContainer = ({
           invoice={viewingInvoice}
           onClose={() => setViewingInvoice(null)}
           onSave={handleSaveInvoice}
+          onNavigateToInvoices={onNavigateToInvoices}
           isDarkMode={isDarkMode}
         />
       )}

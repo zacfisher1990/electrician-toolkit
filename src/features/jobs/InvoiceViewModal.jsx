@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { X, Edit2, Check, FileText } from 'lucide-react';
+import { X, Edit2, FileText } from 'lucide-react';
 
-const InvoiceViewModal = ({ invoice, onClose, onSave, isDarkMode }) => {
-  const [isEditing, setIsEditing] = useState(invoice?.isNew || false);
+const InvoiceViewModal = ({ invoice, onClose, onSave, onNavigateToInvoices, isDarkMode }) => {
+  const [isEditing, setIsEditing] = useState(false);
   const [editedInvoice, setEditedInvoice] = useState(invoice);
 
   const colors = {
@@ -11,10 +11,6 @@ const InvoiceViewModal = ({ invoice, onClose, onSave, isDarkMode }) => {
     text: isDarkMode ? '#ffffff' : '#111827',
     textSecondary: isDarkMode ? '#9ca3af' : '#6b7280',
     border: isDarkMode ? '#1a1a1a' : '#e5e7eb',
-  };
-
-  const handleSave = () => {
-    onSave(editedInvoice);
   };
 
   const total = editedInvoice.lineItems.reduce(
@@ -77,23 +73,30 @@ const InvoiceViewModal = ({ invoice, onClose, onSave, isDarkMode }) => {
             </h2>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {!invoice.isNew && (
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                style={{
-                  padding: '0.5rem',
-                  background: 'transparent',
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '0.5rem',
-                  color: colors.text,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                <Edit2 size={18} />
-              </button>
-            )}
+            <button
+              onClick={() => {
+                console.log('Edit button clicked, onNavigateToInvoices:', onNavigateToInvoices);
+                onClose();
+                if (onNavigateToInvoices) {
+                  onNavigateToInvoices(invoice);
+                } else {
+                  console.warn('onNavigateToInvoices is not defined');
+                }
+              }}
+              style={{
+                padding: '0.5rem',
+                background: 'transparent',
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                color: colors.text,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              title="Edit in Invoices"
+            >
+              <Edit2 size={18} />
+            </button>
             <button
               onClick={onClose}
               style={{
@@ -255,7 +258,6 @@ const InvoiceViewModal = ({ invoice, onClose, onSave, isDarkMode }) => {
                 padding: '1rem',
                 background: colors.bg,
                 borderRadius: '0.5rem',
-                marginBottom: '1rem',
               }}
             >
               <div
@@ -278,31 +280,6 @@ const InvoiceViewModal = ({ invoice, onClose, onSave, isDarkMode }) => {
                 {editedInvoice.notes}
               </div>
             </div>
-          )}
-
-          {/* Save Button for New Invoice */}
-          {invoice.isNew && (
-            <button
-              onClick={handleSave}
-              style={{
-                width: '100%',
-                padding: '0.875rem',
-                background: '#10b981',
-                border: 'none',
-                borderRadius: '0.5rem',
-                color: 'white',
-                fontSize: '0.9375rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-              }}
-            >
-              <Check size={18} />
-              Save Invoice
-            </button>
           )}
         </div>
       </div>

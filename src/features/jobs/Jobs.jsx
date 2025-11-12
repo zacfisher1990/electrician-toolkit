@@ -23,7 +23,7 @@ import { createInvoiceHandlers } from './handlers/invoiceHandlers';
 import { filterJobs, getStatusCounts } from './utils/jobsUtils';
 import { openJobView, handleViewEstimateFromCard } from './utils/jobViewHelpers';
 
-const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefilledDate, navigationData, isEmailVerified, onResendVerification }) => {
+const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefilledDate, navigationData, isEmailVerified, onResendVerification, onNavigateToInvoices }) => {
   // State from custom hooks
   const {
     jobs,
@@ -301,6 +301,20 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
     }
   };
 
+  const handleNavigateToInvoices = (invoice) => {
+    if (onNavigateToInvoices) {
+      // Pass invoice data with viewInvoiceId to open the editor
+      onNavigateToInvoices(invoice.id);
+    }
+  };
+
+  const handleNavigateToEstimatesFromModal = (estimate) => {
+    if (onNavigateToEstimates) {
+      // Navigate with the estimate ID to view/edit
+      onNavigateToEstimates('estimates', { viewEstimateId: estimate.id });
+    }
+  };
+
   // Filter and count - use useMemo to ensure these recompute when jobs changes
   const filteredJobs = useMemo(() => {
     console.log('🔄 Recomputing filteredJobs, jobs.length:', jobs.length);
@@ -364,9 +378,11 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
         handleViewSingleEstimateFromCombined={handleViewSingleEstimateFromCombined}
         viewingSingleEstimate={viewingSingleEstimate}
         handleCloseSingleEstimate={handleCloseSingleEstimate}
+        onNavigateToEstimatesFromModal={handleNavigateToEstimatesFromModal}
         viewingInvoice={viewingInvoice}
         setViewingInvoice={setViewingInvoice}
         handleSaveInvoice={invoiceHandlers.handleSaveInvoice}
+        onNavigateToInvoices={handleNavigateToInvoices}
         isDarkMode={isDarkMode}
         colors={colors}
       />

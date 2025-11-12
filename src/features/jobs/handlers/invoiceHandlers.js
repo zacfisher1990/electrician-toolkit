@@ -72,8 +72,7 @@ export const createInvoiceHandlers = ({
       notes: `Invoice for job: ${job.title || job.name}`,
       status: 'Pending',
       amount: total,
-      jobId: job.id,
-      isNew: true
+      jobId: job.id
     };
   };
 
@@ -81,11 +80,8 @@ export const createInvoiceHandlers = ({
     try {
       const { createInvoice } = await import('../../invoices/invoicesService');
       
-      // Remove the isNew flag
-      const { isNew, ...dataToSave } = invoiceData;
-      
       // Save invoice
-      const invoiceId = await createInvoice(dataToSave);
+      const invoiceId = await createInvoice(invoiceData);
       
       // Update job with invoice ID
       const { updateJob } = await import('../jobsService');
@@ -102,10 +98,10 @@ export const createInvoiceHandlers = ({
       clearJobsCache();
       loadJobs();
       
-      alert('Invoice saved successfully!');
+      return invoiceId;
     } catch (error) {
       console.error('Error saving invoice:', error);
-      alert('Failed to save invoice. Please try again.');
+      throw error;
     }
   };
 
@@ -129,8 +125,24 @@ export const createInvoiceHandlers = ({
         return;
       }
       
-      const generatedInvoice = await generateInvoiceFromJob(job);
-      setViewingInvoice(generatedInvoice);
+      try {
+        // Generate the invoice
+        const generatedInvoice = await generateInvoiceFromJob(job);
+        
+        // Automatically save it
+        const invoiceId = await handleSaveInvoice(generatedInvoice);
+        
+        // Load and display the saved invoice
+        const { getUserInvoices } = await import('../../invoices/invoicesService');
+        const invoices = await getUserInvoices();
+        const savedInvoice = invoices.find(inv => inv.id === invoiceId);
+        if (savedInvoice) {
+          setViewingInvoice(savedInvoice);
+        }
+      } catch (error) {
+        console.error('Error creating invoice:', error);
+        alert('Failed to create invoice. Please try again.');
+      }
     }
   };
 

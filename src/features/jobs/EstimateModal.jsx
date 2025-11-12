@@ -1,8 +1,8 @@
 import React from 'react';
-import { X, FileText } from 'lucide-react';
+import { X, FileText, Edit2 } from 'lucide-react';
 import { formatDate } from '../../utils/dateUtils';
 
-const EstimateModal = ({ estimate, isDarkMode, onClose }) => {
+const EstimateModal = ({ estimate, isDarkMode, onClose, onNavigateToEstimates }) => {
   if (!estimate) return null;
 
   const colors = {
@@ -87,22 +87,49 @@ const EstimateModal = ({ estimate, isDarkMode, onClose }) => {
               )}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: colors.textSecondary,
-              cursor: 'pointer',
-              padding: '0.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              borderRadius: '0.5rem',
-            }}
-            aria-label="Close modal"
-          >
-            <X size={24} />
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => {
+                console.log('Edit button clicked, onNavigateToEstimates:', onNavigateToEstimates);
+                onClose();
+                if (onNavigateToEstimates) {
+                  onNavigateToEstimates(estimate);
+                } else {
+                  console.warn('onNavigateToEstimates is not defined');
+                }
+              }}
+              style={{
+                padding: '0.5rem',
+                background: 'transparent',
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                color: colors.text,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              title="Edit in Estimates"
+              aria-label="Edit estimate"
+            >
+              <Edit2 size={18} />
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: colors.textSecondary,
+                cursor: 'pointer',
+                padding: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                borderRadius: '0.5rem',
+              }}
+              aria-label="Close modal"
+            >
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -228,7 +255,6 @@ const EstimateModal = ({ estimate, isDarkMode, onClose }) => {
               padding: '1.25rem',
               background: colors.bg,
               borderRadius: '0.75rem',
-              marginBottom: '1rem',
             }}
           >
             <span
@@ -250,24 +276,6 @@ const EstimateModal = ({ estimate, isDarkMode, onClose }) => {
               ${estimate.total.toFixed(2)}
             </span>
           </div>
-
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            style={{
-              width: '100%',
-              padding: '0.875rem',
-              background: '#3b82f6',
-              border: 'none',
-              borderRadius: '0.5rem',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '0.9375rem',
-              fontWeight: '600',
-            }}
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>
