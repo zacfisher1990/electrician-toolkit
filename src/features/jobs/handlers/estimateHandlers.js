@@ -140,7 +140,7 @@ export const createEstimateHandlers = ({
         };
         
         if (onNavigateToEstimates) {
-          onNavigateToEstimates(estimateData);
+          onNavigateToEstimates('estimates', estimateData);
         }
         
         resetForm();
@@ -159,13 +159,13 @@ export const createEstimateHandlers = ({
       };
       
       if (onNavigateToEstimates) {
-        onNavigateToEstimates(estimateData);
+        onNavigateToEstimates('estimates', estimateData);
       }
     } else {
       // User is creating a new job but hasn't filled in required fields yet
       // Navigate to estimates with just the createNew flag and any partial data
       if (onNavigateToEstimates) {
-        onNavigateToEstimates({ 
+        onNavigateToEstimates('estimates', { 
           createNew: true,
           jobName: formData.title || '',
           jobClient: formData.client || '',
@@ -198,7 +198,7 @@ export const createEstimateHandlers = ({
   const handleViewEstimate = (estimate) => {
     console.log('👁️ handleViewEstimate called with:', estimate);
     if (onNavigateToEstimates) {
-      onNavigateToEstimates({ viewEstimateId: estimate.id });
+      onNavigateToEstimates('estimates', { viewEstimateId: estimate.id });
     }
   };
 

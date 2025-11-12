@@ -256,8 +256,11 @@ export const createJobHandlers = ({
       // Delete job document - FIXED PATH
       await deleteDoc(doc(db, 'users', userId, 'jobs', jobId));
 
-      // Reload jobs
-      await loadJobs();
+      // Close the modal immediately
+      resetForm();
+
+      // Reload jobs to update the list
+      await loadJobs(true);
 
       console.log('✅ Job deleted successfully');
     } catch (error) {
@@ -283,7 +286,8 @@ export const createJobHandlers = ({
         updatedAt: serverTimestamp()
       });
 
-      await loadJobs();
+      // Force fresh reload from Firebase (skip cache)
+      await loadJobs(true);
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status. Please try again.');
@@ -339,7 +343,8 @@ export const createJobHandlers = ({
         });
       }
 
-      await loadJobs();
+      // Force fresh reload from Firebase (skip cache)
+      await loadJobs(true);
     } catch (error) {
       console.error('Error toggling clock:', error);
       alert('Failed to update clock status. Please try again.');

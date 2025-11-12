@@ -46,7 +46,7 @@ import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import './App.css';
 
 function App() {
-  const [activeCalculator, setActiveCalculator] = useState(() => {
+  const [activeView, setActiveView] = useState(() => {
     // Initialize from localStorage or default to null (home)
     const saved = localStorage.getItem('activeView');
     return (saved && saved !== '') ? saved : null;
@@ -71,7 +71,7 @@ function App() {
   useEffect(() => {
     const handlePopState = (event) => {
       if (event.state && event.state.view !== undefined) {
-        setActiveCalculator(event.state.view);
+        setActiveView(event.state.view);
       }
     };
 
@@ -79,7 +79,7 @@ function App() {
     
     // Set initial state
     if (!window.history.state) {
-      window.history.replaceState({ view: activeCalculator }, '');
+      window.history.replaceState({ view: activeView }, '');
     }
 
     return () => {
@@ -107,24 +107,79 @@ function App() {
   // Update browser history when view changes
   useEffect(() => {
     // Don't push state on initial load
-    if (window.history.state && window.history.state.view !== activeCalculator) {
-      window.history.pushState({ view: activeCalculator }, '');
+    if (window.history.state && window.history.state.view !== activeView) {
+      window.history.pushState({ view: activeView }, '');
     }
-  }, [activeCalculator]);
+  }, [activeView]);
 
   // Save active view to localStorage whenever it changes
   useEffect(() => {
-    if (activeCalculator === null) {
+    if (activeView === null) {
       localStorage.setItem('activeView', '');
     } else {
-      localStorage.setItem('activeView', activeCalculator);
+      localStorage.setItem('activeView', activeView);
     }
-  }, [activeCalculator]);
+  }, [activeView]);
 
   // Save dark mode preference to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('isDarkMode', isDarkMode);
   }, [isDarkMode]);
+
+  // Scroll to top whenever the view changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeView]);
+
+  // Hybrid scroll-aware header: hide on scroll down, show on scroll up, always show when clocked in
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // ALWAYS show header if clocked in (safety feature)
+      if (clockedInJob) {
+        setHeaderVisible(true);
+        setLastScrollY(currentScrollY);
+        return;
+      }
+      
+      // If at top of page, always show header
+      if (currentScrollY < 10) {
+        setHeaderVisible(true);
+        setLastScrollY(currentScrollY);
+        return;
+      }
+      
+      // Scrolling down - hide header
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setHeaderVisible(false);
+      } 
+      // Scrolling up - show header
+      else if (currentScrollY < lastScrollY) {
+        setHeaderVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    // Throttle scroll events for better performance
+    let ticking = false;
+    const scrollListener = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', scrollListener, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', scrollListener);
+    };
+  }, [lastScrollY, clockedInJob]);
 
  useEffect(() => {
   const newColor = isDarkMode ? '#121212' : '#f9fafb';
@@ -170,10 +225,9 @@ function App() {
   }, [isDarkMode]);
 
   const handleNavigate = (view, data) => {
-    if (data) {
-      setNavigationData(data);
-    }
-    setActiveCalculator(view);
+    // Always set navigationData - this clears it when data is null/undefined
+    setNavigationData(data || null);
+    setActiveView(view);
   };
 
   const handleExportSuccess = () => {
@@ -183,7 +237,7 @@ function App() {
 
   const handleJobCreatedFromEstimate = (estimate) => {
     setPendingEstimate(estimate);
-    setActiveCalculator('jobs');
+    setActiveView('jobs');
   };
 
   const handleApplyEstimate = (estimate) => {
@@ -194,7 +248,7 @@ function App() {
   // Set navigation data with the invoice ID to auto-open the editor
   setNavigationData({ viewInvoiceId: invoiceId });
   // Navigate to invoices view
-  setActiveCalculator('invoices');
+  setActiveView('invoices');
 };
 
 
@@ -209,7 +263,7 @@ function App() {
 
   const handleAddJobFromCalendar = (date) => {
     setPrefilledJobDate(date);
-    setActiveCalculator('jobs');
+    setActiveView('jobs');
   };
 
   // ✅ UPDATED: Now uses Firebase's native sendEmailVerification
@@ -230,8 +284,8 @@ function App() {
     }
   };
 
-  const renderCalculator = () => {
-    switch (activeCalculator) {
+  const renderView = () => {
+    switch (activeView) {
       case 'voltage-drop':
         return <VoltageDropCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'ohms-law':
@@ -340,22 +394,22 @@ function App() {
   };
 
   const getHeaderInfo = () => {
-    if (!activeCalculator || activeCalculator === 'home') {
+    if (!activeView || activeView === 'home') {
       return { title: 'Home', icon: HomeIcon };
     }
-    if (activeCalculator === 'calculators') {
+    if (activeView === 'calculators') {
   return { title: 'Tools', icon: Wrench };
 }
-    if (activeCalculator === 'profile') {
+    if (activeView === 'profile') {
       return { title: 'Profile', icon: User };
     }
-    if (activeCalculator === 'jobs') {
+    if (activeView === 'jobs') {
       return { title: 'Job Log', icon: Briefcase };
     }
-    if (activeCalculator === 'estimates') {
+    if (activeView === 'estimates') {
       return { title: 'Estimates', icon: FileText };
     }
-    if (activeCalculator === 'invoices') {
+    if (activeView === 'invoices') {
       return { title: 'Invoices', icon: PiInvoice };
     }
     
@@ -388,7 +442,7 @@ function App() {
       'support-spacing': { title: 'Support Spacing', icon: GiClamp }
     };
     
-    return headerMap[activeCalculator] || { title: 'Electrician\'s Toolkit', icon: Calculator };
+    return headerMap[activeView] || { title: 'Electrician\'s Toolkit', icon: Calculator };
   };
 
   const headerInfo = getHeaderInfo();
@@ -410,23 +464,23 @@ function App() {
       <div style={{ 
         paddingBottom: 'calc(65px + env(safe-area-inset-bottom))',
         paddingTop: 'calc(48px + env(safe-area-inset-top)',
-        paddingLeft: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-left)',
-        paddingRight: activeCalculator === 'calculators' ? '0' : 'env(safe-area-inset-right)',
+        paddingLeft: activeView === 'calculators' ? '0' : 'env(safe-area-inset-left)',
+        paddingRight: activeView === 'calculators' ? '0' : 'env(safe-area-inset-right)',
         position: 'relative',
         minHeight: '100vh',
         boxSizing: 'border-box'
       }}>
-        {!activeCalculator ? (
-                  renderCalculator()
+        {!activeView ? (
+                  renderView()
                 ) : (
                   <div style={{ 
                     minHeight: 'calc(100vh - 3.5rem)', 
-                    paddingTop: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'home' || !activeCalculator ? '0' : '1rem',
-                    paddingRight: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'home' || !activeCalculator ? '0' : '1rem',
-                    paddingLeft: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'home' || !activeCalculator ? '0' : '1rem',
+                    paddingTop: activeView === 'calculators' || activeView === 'jobs' || activeView === 'profile' || activeView === 'estimates' || activeView === 'invoices' || activeView === 'home' || !activeView ? '0' : '1rem',
+                    paddingRight: activeView === 'calculators' || activeView === 'jobs' || activeView === 'profile' || activeView === 'estimates' || activeView === 'invoices' || activeView === 'home' || !activeView ? '0' : '1rem',
+                    paddingLeft: activeView === 'calculators' || activeView === 'jobs' || activeView === 'profile' || activeView === 'estimates' || activeView === 'invoices' || activeView === 'home' || !activeView ? '0' : '1rem',
                     paddingBottom: '0'
                   }}>
-                    {renderCalculator()}
+                    {renderView()}
                 </div>
         )}
       </div>
@@ -462,20 +516,19 @@ function App() {
         onNavigate={handleNavigate}
         currentView={
           (() => {
-            const view = !activeCalculator || activeCalculator === null || activeCalculator === '' || activeCalculator === 'home'
+            const view = !activeView || activeView === null || activeView === '' || activeView === 'home'
               ? 'home'
-              : activeCalculator === 'jobs'
+              : activeView === 'jobs'
               ? 'jobs'
-              : activeCalculator === 'estimates'
+              : activeView === 'estimates'
               ? 'estimates'
-              : activeCalculator === 'invoices'
+              : activeView === 'invoices'
               ? 'invoices'
-              : activeCalculator === 'profile' 
+              : activeView === 'profile' 
               ? 'profile'
-              : activeCalculator === 'calculators'
+              : activeView === 'calculators'
               ? 'calculators'
               : 'calculators';
-            console.log('🏠 activeCalculator:', activeCalculator, '| currentView:', view);
             return view;
           })()
         }

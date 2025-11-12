@@ -52,13 +52,17 @@ export const useJobsState = () => {
     }
   };
 
-  const loadEstimatesWithCache = async () => {
+  const loadEstimatesWithCache = async (skipCache = false) => {
     try {
-      const cachedEstimates = getEstimates();
-      if (cachedEstimates) {
-        setEstimates(cachedEstimates);
+      // Load from cache for instant display (unless skipCache is true)
+      if (!skipCache) {
+        const cachedEstimates = getEstimates();
+        if (cachedEstimates) {
+          setEstimates(cachedEstimates);
+        }
       }
 
+      // Fetch fresh data from Firebase
       const userEstimates = await getUserEstimates();
       setEstimates(userEstimates);
       saveEstimates(userEstimates);

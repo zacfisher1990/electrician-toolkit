@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { getColors } from '../../theme'; // Import theme
 import styles from './Jobs.module.css';
@@ -71,6 +71,9 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStatusTab, setActiveStatusTab] = useState('all');
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  
+  // Ref to track if we've already handled this navigation to prevent infinite loop
+  const handledNavigationRef = useRef(null);
 
   // Create a function to clear estimate modals
   const clearEstimateModals = () => {
@@ -148,24 +151,33 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
   // Handle navigation back from Estimates - reload fresh data (cache already cleared in App.jsx)
   useEffect(() => {
     if (navigationData?.openJobId) {
-      console.log('📂 Reloading data after cache clear');
-      
-      // Cache was already cleared in App.jsx, so loadJobs will fetch fresh
-      loadJobs();
-      loadEstimatesWithCache();
+      // Force fresh reload from Firebase (skip cache) for both jobs and estimates
+      loadJobs(true);
+      loadEstimatesWithCache(true);
     }
-  }, [navigationData?.openJobId, loadJobs, loadEstimatesWithCache]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigationData?.openJobId]);
 
   // Separate effect to open the job after data is reloaded
   useEffect(() => {
     if (navigationData?.openJobId && jobs.length > 0 && estimates.length > 0) {
+      const navigationKey = `${navigationData.openJobId}-${navigationData.newEstimateId}`;
+      
+      // Check if we've already handled this navigation
+      if (handledNavigationRef.current === navigationKey) {
+        return;
+      }
+      
       const jobToOpen = jobs.find(j => j.id === navigationData.openJobId);
       
       // Check if this job actually has the new estimate ID
       if (jobToOpen && jobToOpen.estimateIds?.includes(navigationData.newEstimateId)) {
-        console.log('✅ Job data refreshed with new estimate, opening job');
+        handledNavigationRef.current = navigationKey; // Mark as handled
         handleOpenJobView(jobToOpen);
       }
+    } else if (!navigationData?.openJobId) {
+      // Reset the ref when navigation data is cleared
+      handledNavigationRef.current = null;
     }
   }, [jobs, estimates, navigationData?.openJobId, navigationData?.newEstimateId]);
 
@@ -240,7 +252,6 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
   };
 
   const handleOpenJobView = (job) => {
-    console.log('📂 Opening job, clearing estimate modals');
     // FORCE CLEAR everything before opening
     setViewingSingleEstimate(null);
     setShowCombinedEstimatesModal(false);
@@ -317,7 +328,6 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
 
   // Filter and count - use useMemo to ensure these recompute when jobs changes
   const filteredJobs = useMemo(() => {
-    console.log('🔄 Recomputing filteredJobs, jobs.length:', jobs.length);
     return filterJobs(jobs, searchQuery, activeStatusTab);
   }, [jobs, searchQuery, activeStatusTab]);
   
@@ -370,8 +380,8 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
         handleViewCombinedEstimates={handleViewCombinedEstimates}
         estimateMenuRef={estimateMenuRef}
         resetForm={() => resetForm(clearEstimateModals)}
-        handleAddJob={jobHandlers.handleAddJob}
-        handleEditJob={jobHandlers.handleEditJob}
+        handleAddJob={() => jobHandlers.handleAddJob(clearEstimateModals)}
+        handleEditJob={() => jobHandlers.handleEditJob(clearEstimateModals)}
         handleDeleteJob={jobHandlers.handleDeleteJob}
         showCombinedEstimatesModal={showCombinedEstimatesModal}
         setShowCombinedEstimatesModal={setShowCombinedEstimatesModal}
