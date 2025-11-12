@@ -49,7 +49,7 @@ function App() {
   const [activeCalculator, setActiveCalculator] = useState(() => {
     // Initialize from localStorage or default to null (home)
     const saved = localStorage.getItem('activeView');
-    return saved || null;
+    return (saved && saved !== '') ? saved : null;
   });
   const [isDarkMode, setIsDarkMode] = useState(() => {
     // Initialize from localStorage or default to false
@@ -326,6 +326,11 @@ function App() {
               navigationData={navigationData}
             />
         );
+      case 'home':
+        return <Home 
+          isDarkMode={isDarkMode}
+          onAddJobClick={handleAddJobFromCalendar}
+        />;
       default:
         return <Home 
           isDarkMode={isDarkMode}
@@ -335,7 +340,7 @@ function App() {
   };
 
   const getHeaderInfo = () => {
-    if (!activeCalculator) {
+    if (!activeCalculator || activeCalculator === 'home') {
       return { title: 'Home', icon: HomeIcon };
     }
     if (activeCalculator === 'calculators') {
@@ -416,9 +421,9 @@ function App() {
                 ) : (
                   <div style={{ 
                     minHeight: 'calc(100vh - 3.5rem)', 
-                    paddingTop: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' ? '0' : '1rem',
-                    paddingRight: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' ? '0' : '1rem',
-                    paddingLeft: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' ? '0' : '1rem',
+                    paddingTop: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'home' || !activeCalculator ? '0' : '1rem',
+                    paddingRight: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'home' || !activeCalculator ? '0' : '1rem',
+                    paddingLeft: activeCalculator === 'calculators' || activeCalculator === 'jobs' || activeCalculator === 'profile' || activeCalculator === 'estimates' || activeCalculator === 'invoices' || activeCalculator === 'home' || !activeCalculator ? '0' : '1rem',
                     paddingBottom: '0'
                   }}>
                     {renderCalculator()}
@@ -456,19 +461,23 @@ function App() {
       <BottomNavigation 
         onNavigate={handleNavigate}
         currentView={
-          activeCalculator === 'jobs'
-            ? 'jobs'
-            : activeCalculator === 'estimates'
-            ? 'estimates'
-            : activeCalculator === 'invoices'
-            ? 'invoices'
-            : activeCalculator === 'profile' 
-            ? 'profile'
-            : activeCalculator === 'calculators'
-            ? 'calculators'
-            : activeCalculator 
-            ? 'calculators' 
-            : 'home'
+          (() => {
+            const view = !activeCalculator || activeCalculator === null || activeCalculator === '' || activeCalculator === 'home'
+              ? 'home'
+              : activeCalculator === 'jobs'
+              ? 'jobs'
+              : activeCalculator === 'estimates'
+              ? 'estimates'
+              : activeCalculator === 'invoices'
+              ? 'invoices'
+              : activeCalculator === 'profile' 
+              ? 'profile'
+              : activeCalculator === 'calculators'
+              ? 'calculators'
+              : 'calculators';
+            console.log('🏠 activeCalculator:', activeCalculator, '| currentView:', view);
+            return view;
+          })()
         }
         isDarkMode={isDarkMode}
       />
