@@ -2,8 +2,8 @@ import React from 'react';
 import { FileText, DollarSign, CheckCircle } from 'lucide-react';
 
 const InvoiceStatusTabs = ({ 
-  activeStatusTab, 
-  setActiveStatusTab, 
+  statusFilter,  // Fixed: was activeStatusTab
+  setStatusFilter,  // Fixed: was setActiveStatusTab
   statusCounts, 
   colors 
 }) => {
@@ -32,14 +32,14 @@ const InvoiceStatusTabs = ({
     }}>
       {/* All Tab */}
       <button
-        onClick={() => setActiveStatusTab('all')}
+        onClick={() => setStatusFilter('all')}
         style={{
           height: '46px',
           padding: '0.5rem 0.25rem',
           borderRadius: '0.5rem',
-          border: `1px solid ${activeStatusTab === 'all' ? colors.text : colors.border}`,
-          background: activeStatusTab === 'all' ? colors.text : 'transparent',
-          color: activeStatusTab === 'all' ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') : colors.text,
+          border: `1px solid ${statusFilter === 'all' ? colors.text : colors.border}`,
+          background: statusFilter === 'all' ? colors.text : 'transparent',
+          color: statusFilter === 'all' ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') : colors.text,
           fontSize: '0.75rem',
           fontWeight: '600',
           cursor: 'pointer',
@@ -53,8 +53,8 @@ const InvoiceStatusTabs = ({
       >
         <span>All</span>
         <span style={{
-          background: activeStatusTab === 'all' ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') : colors.cardBg,
-          color: activeStatusTab === 'all' ? colors.text : colors.subtext,
+          background: statusFilter === 'all' ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') : colors.cardBg,
+          color: statusFilter === 'all' ? colors.text : colors.subtext,
           padding: '0.125rem 0.375rem',
           borderRadius: '1rem',
           fontSize: '0.7rem',
@@ -68,14 +68,14 @@ const InvoiceStatusTabs = ({
 
       {/* Draft Tab */}
       <button
-        onClick={() => setActiveStatusTab('Draft')}
+        onClick={() => setStatusFilter('Draft')}
         style={{
           height: '46px',
           padding: '0.5rem 0.25rem',
           borderRadius: '0.5rem',
-          border: `1px solid ${activeStatusTab === 'Draft' ? statusConfig.Draft.color : colors.border}`,
-          background: activeStatusTab === 'Draft' ? `${statusConfig.Draft.color}20` : 'transparent',
-          color: activeStatusTab === 'Draft' ? statusConfig.Draft.color : colors.text,
+          border: `1px solid ${statusFilter === 'Draft' ? statusConfig.Draft.color : colors.border}`,
+          background: statusFilter === 'Draft' ? `${statusConfig.Draft.color}20` : 'transparent',
+          color: statusFilter === 'Draft' ? statusConfig.Draft.color : colors.text,
           fontSize: '0.7rem',
           fontWeight: '600',
           cursor: 'pointer',
@@ -89,8 +89,8 @@ const InvoiceStatusTabs = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           <FileText size={12} />
           <span style={{
-            background: activeStatusTab === 'Draft' ? statusConfig.Draft.color : colors.cardBg,
-            color: activeStatusTab === 'Draft' ? 'white' : colors.subtext,
+            background: statusFilter === 'Draft' ? statusConfig.Draft.color : colors.cardBg,
+            color: statusFilter === 'Draft' ? 'white' : colors.subtext,
             padding: '0.125rem 0.3rem',
             borderRadius: '1rem',
             fontSize: '0.65rem',
@@ -106,14 +106,14 @@ const InvoiceStatusTabs = ({
 
       {/* Pending Tab */}
       <button
-        onClick={() => setActiveStatusTab('Pending')}
+        onClick={() => setStatusFilter('Pending')}
         style={{
           height: '46px',
           padding: '0.5rem 0.25rem',
           borderRadius: '0.5rem',
-          border: `1px solid ${activeStatusTab === 'Pending' ? statusConfig.Pending.color : colors.border}`,
-          background: activeStatusTab === 'Pending' ? `${statusConfig.Pending.color}20` : 'transparent',
-          color: activeStatusTab === 'Pending' ? statusConfig.Pending.color : colors.text,
+          border: `1px solid ${statusFilter === 'Pending' ? statusConfig.Pending.color : colors.border}`,
+          background: statusFilter === 'Pending' ? `${statusConfig.Pending.color}20` : 'transparent',
+          color: statusFilter === 'Pending' ? statusConfig.Pending.color : colors.text,
           fontSize: '0.7rem',
           fontWeight: '600',
           cursor: 'pointer',
@@ -127,8 +127,8 @@ const InvoiceStatusTabs = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           <DollarSign size={12} />
           <span style={{
-            background: activeStatusTab === 'Pending' ? statusConfig.Pending.color : colors.cardBg,
-            color: activeStatusTab === 'Pending' ? 'white' : colors.subtext,
+            background: statusFilter === 'Pending' ? statusConfig.Pending.color : colors.cardBg,
+            color: statusFilter === 'Pending' ? 'white' : colors.subtext,
             padding: '0.125rem 0.3rem',
             borderRadius: '1rem',
             fontSize: '0.65rem',
@@ -144,14 +144,14 @@ const InvoiceStatusTabs = ({
 
       {/* Paid Tab */}
       <button
-        onClick={() => setActiveStatusTab('Paid')}
+        onClick={() => setStatusFilter('Paid')}
         style={{
           height: '46px',
           padding: '0.5rem 0.25rem',
           borderRadius: '0.5rem',
-          border: `1px solid ${activeStatusTab === 'Paid' ? statusConfig.Paid.color : colors.border}`,
-          background: activeStatusTab === 'Paid' ? `${statusConfig.Paid.color}20` : 'transparent',
-          color: activeStatusTab === 'Paid' ? statusConfig.Paid.color : colors.text,
+          border: `1px solid ${statusFilter === 'Paid' ? statusConfig.Paid.color : colors.border}`,
+          background: statusFilter === 'Paid' ? `${statusConfig.Paid.color}20` : 'transparent',
+          color: statusFilter === 'Paid' ? statusConfig.Paid.color : colors.text,
           fontSize: '0.7rem',
           fontWeight: '600',
           cursor: 'pointer',
@@ -165,8 +165,8 @@ const InvoiceStatusTabs = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           <CheckCircle size={12} />
           <span style={{
-            background: activeStatusTab === 'Paid' ? statusConfig.Paid.color : colors.cardBg,
-            color: activeStatusTab === 'Paid' ? 'white' : colors.subtext,
+            background: statusFilter === 'Paid' ? statusConfig.Paid.color : colors.cardBg,
+            color: statusFilter === 'Paid' ? 'white' : colors.subtext,
             padding: '0.125rem 0.3rem',
             borderRadius: '1rem',
             fontSize: '0.65rem',
