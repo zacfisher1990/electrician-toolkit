@@ -8,7 +8,6 @@ const PhotoUploader = ({
   isDarkMode,
   colors 
 }) => {
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleFileSelect = async (e) => {
@@ -45,27 +44,23 @@ const PhotoUploader = ({
 
     if (validFiles.length === 0) return;
 
-    setUploading(true);
     setError(null);
 
     try {
-      // Create preview URLs for immediate display
+      // Create preview URLs for immediate display (this is instant!)
       const newPhotos = validFiles.map(file => ({
         file,
         preview: URL.createObjectURL(file),
         name: file.name,
-        size: file.size,
-        uploading: true
+        size: file.size
       }));
 
-      // Add to photos array
+      // Add to photos array immediately - instant feedback!
       onPhotosChange([...photos, ...newPhotos]);
     } catch (err) {
       console.error('Error handling photos:', err);
       setError('Failed to add photos');
       setTimeout(() => setError(null), 3000);
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -121,16 +116,13 @@ const PhotoUploader = ({
             borderRadius: '0.5rem',
             background: colors.bg,
             color: colors.text,
-            cursor: uploading ? 'not-allowed' : 'pointer',
+            cursor: 'pointer',
             transition: 'all 0.2s',
-            marginBottom: '0.75rem',
-            opacity: uploading ? 0.6 : 1
+            marginBottom: '0.75rem'
           }}
           onMouseEnter={(e) => {
-            if (!uploading) {
-              e.currentTarget.style.borderColor = '#3b82f6';
-              e.currentTarget.style.background = isDarkMode ? '#1e293b' : '#f1f5f9';
-            }
+            e.currentTarget.style.borderColor = '#3b82f6';
+            e.currentTarget.style.background = isDarkMode ? '#1e293b' : '#f1f5f9';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = colors.border;
@@ -142,12 +134,11 @@ const PhotoUploader = ({
             accept="image/*"
             multiple
             onChange={handleFileSelect}
-            disabled={uploading}
             style={{ display: 'none' }}
           />
           <Camera size={20} />
           <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>
-            {uploading ? 'Processing...' : 'Add Photos'}
+            Add Photos
           </span>
         </label>
       )}
@@ -205,36 +196,9 @@ const PhotoUploader = ({
                 loading="lazy"
               />
 
-              {/* Uploading overlay */}
-              {photo.uploading && (
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: 'rgba(0, 0, 0, 0.6)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '0.75rem'
-                }}>
-                  <div style={{
-                    width: '20px',
-                    height: '20px',
-                    border: '2px solid white',
-                    borderTopColor: 'transparent',
-                    borderRadius: '50%',
-                    animation: 'spin 0.8s linear infinite'
-                  }} />
-                </div>
-              )}
-
               {/* Remove button */}
               <button
                 onClick={() => handleRemovePhoto(index)}
-                disabled={photo.uploading}
                 style={{
                   position: 'absolute',
                   top: '0.25rem',
@@ -247,15 +211,12 @@ const PhotoUploader = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: photo.uploading ? 'not-allowed' : 'pointer',
+                  cursor: 'pointer',
                   color: 'white',
-                  opacity: photo.uploading ? 0.5 : 1,
                   transition: 'all 0.2s'
                 }}
                 onMouseEnter={(e) => {
-                  if (!photo.uploading) {
-                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.9)';
-                  }
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.9)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'rgba(0, 0, 0, 0.7)';
@@ -276,18 +237,9 @@ const PhotoUploader = ({
           margin: '0.5rem 0 0 0',
           fontStyle: 'italic'
         }}>
-          Add photos of the job site, work in progress, or completed work
+          Photos will be uploaded when you save the job
         </p>
       )}
-
-      {/* Add spinner animation CSS */}
-      <style>
-        {`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}
-      </style>
     </div>
   );
 };

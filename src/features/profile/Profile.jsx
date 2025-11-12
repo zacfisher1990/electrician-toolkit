@@ -338,76 +338,296 @@ const Profile = ({ isDarkMode }) => {
             border: `1px solid ${colors.border}`,
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '1.5rem',
-                fontWeight: '700'
-              }}>
-                {user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
-              </div>
-              <div style={{ flex: 1 }}>
+            {/* Profile Photo and Name */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              {/* Profile Photo */}
+              {user.photoURL ? (
+                <img 
+                  src={user.photoURL} 
+                  alt="Profile"
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    flexShrink: 0,
+                    border: `2px solid ${colors.border}`
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '2rem',
+                  fontWeight: '700',
+                  flexShrink: 0
+                }}>
+                  {user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                </div>
+              )}
+              
+              {/* Name and Email */}
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <h2 style={{
                   margin: '0 0 0.25rem 0',
                   color: colors.text,
                   fontSize: '1.25rem',
-                  fontWeight: '700'
+                  fontWeight: '700',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
                 }}>
-                  {user.displayName || 'User'}
+                  {userData?.displayName || user.displayName || 'User'}
                 </h2>
                 <p style={{
                   margin: 0,
                   color: colors.subtext,
-                  fontSize: '0.875rem'
+                  fontSize: '0.875rem',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
                 }}>
                   {user.email}
                 </p>
+                {isEmailVerified && (
+                  <div style={{
+                    background: '#d1fae5',
+                    color: '#059669',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    marginTop: '0.5rem'
+                  }}>
+                    <CheckCircle size={12} />
+                    Verified
+                  </div>
+                )}
               </div>
-              {isEmailVerified && (
-                <div style={{
-                  background: '#d1fae5',
-                  color: '#059669',
-                  padding: '0.375rem 0.75rem',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.75rem',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem'
-                }}>
-                  <CheckCircle size={14} />
-                  Verified
-                </div>
-              )}
             </div>
+
+            {/* Additional Profile Details */}
+            {!loadingUserData && userData && (
+              <div style={{ 
+                marginBottom: '1.5rem',
+                paddingTop: '1rem',
+                borderTop: `1px solid ${colors.border}`
+              }}>
+                {/* Phone Number */}
+                {userData.phone && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    marginBottom: '0.75rem'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '0.5rem',
+                      background: isDarkMode ? '#1a1a1a' : '#f3f4f6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <Phone size={16} style={{ color: colors.subtext }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{
+                        margin: 0,
+                        color: colors.subtext,
+                        fontSize: '0.75rem',
+                        fontWeight: '500'
+                      }}>
+                        Phone Number
+                      </p>
+                      <p style={{
+                        margin: 0,
+                        color: colors.text,
+                        fontSize: '0.9375rem',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {userData.phone}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Company Name */}
+                {userData.company && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    marginBottom: '0.75rem'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '0.5rem',
+                      background: isDarkMode ? '#1a1a1a' : '#f3f4f6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <Briefcase size={16} style={{ color: colors.subtext }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{
+                        margin: 0,
+                        color: colors.subtext,
+                        fontSize: '0.75rem',
+                        fontWeight: '500'
+                      }}>
+                        Company Name
+                      </p>
+                      <p style={{
+                        margin: 0,
+                        color: colors.text,
+                        fontSize: '0.9375rem',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {userData.company}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Company Logo */}
+                {userData.companyLogo && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    marginBottom: '0.75rem'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '0.5rem',
+                      background: isDarkMode ? '#1a1a1a' : '#f3f4f6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <FileText size={16} style={{ color: colors.subtext }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{
+                        margin: 0,
+                        color: colors.subtext,
+                        fontSize: '0.75rem',
+                        fontWeight: '500',
+                        marginBottom: '0.25rem'
+                      }}>
+                        Company Logo
+                      </p>
+                      <img 
+                        src={userData.companyLogo} 
+                        alt="Company Logo"
+                        style={{
+                          maxWidth: '120px',
+                          maxHeight: '60px',
+                          objectFit: 'contain',
+                          borderRadius: '0.375rem',
+                          border: `1px solid ${colors.border}`,
+                          background: 'white'
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* License Number */}
+                {userData.licenseNumber && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '0.5rem',
+                      background: isDarkMode ? '#1a1a1a' : '#f3f4f6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <Shield size={16} style={{ color: colors.subtext }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{
+                        margin: 0,
+                        color: colors.subtext,
+                        fontSize: '0.75rem',
+                        fontWeight: '500'
+                      }}>
+                        Electrician License #
+                      </p>
+                      <p style={{
+                        margin: 0,
+                        color: colors.text,
+                        fontSize: '0.9375rem',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {userData.licenseNumber}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             
             <button
-              onClick={() => setShowEditProfile(true)}
+              onClick={() => {
+                if (!isEmailVerified) {
+                  setError('Please verify your email address before editing your profile');
+                  setTimeout(() => setError(''), 5000);
+                  return;
+                }
+                setShowEditProfile(true);
+              }}
+              disabled={!isEmailVerified}
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                background: '#2563eb',
-                color: 'white',
+                background: !isEmailVerified ? colors.border : '#2563eb',
+                color: !isEmailVerified ? colors.subtext : 'white',
                 border: 'none',
                 borderRadius: '0.5rem',
                 fontSize: '0.875rem',
                 fontWeight: '600',
-                cursor: 'pointer',
+                cursor: !isEmailVerified ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.5rem'
+                gap: '0.5rem',
+                opacity: !isEmailVerified ? 0.5 : 1
               }}
             >
               <Settings size={16} />
               Edit Profile
+              {!isEmailVerified && ' (Verify Email First)'}
             </button>
           </div>
 

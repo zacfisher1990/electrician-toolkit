@@ -2,10 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Camera, User, Mail, Phone, Briefcase, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 import { 
   getAuth, 
-  updateProfile, 
-  updateEmail, 
-  EmailAuthProvider, 
-  reauthenticateWithCredential 
+  updateProfile
 } from 'firebase/auth';
 import { 
   getStorage, 
@@ -28,8 +25,6 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [pendingEmailChange, setPendingEmailChange] = useState('');
   
   const [formData, setFormData] = useState({
     displayName: '',
@@ -43,7 +38,6 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
-  const [currentPassword, setCurrentPassword] = useState('');
   
   const fileInputRef = useRef(null);
   const logoInputRef = useRef(null);
@@ -255,20 +249,6 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
     }
   };
 
-  // Reauthenticate user (required for email changes)
-  const reauthenticate = async () => {
-    if (!currentPassword) {
-      throw new Error('Password required for email change');
-    }
-
-    const credential = EmailAuthProvider.credential(
-      user.email,
-      currentPassword
-    );
-
-    await reauthenticateWithCredential(user, credential);
-  };
-
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -299,14 +279,6 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
       // Update Firebase Auth profile
       if (updates.displayName || updates.photoURL) {
         await updateProfile(user, updates);
-      }
-
-      // Handle email change (requires reauthentication)
-      if (formData.email !== user.email) {
-        setPendingEmailChange(formData.email);
-        setShowPasswordModal(true);
-        setLoading(false);
-        return;
       }
 
       // Update Firestore user document with additional fields
@@ -344,209 +316,11 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
     }
   };
 
-  // Handle email change with reauthentication
-  const handleEmailChange = async () => {
-    setLoading(true);
-    setError('');
-
-    try {
-      // Reauthenticate
-      await reauthenticate();
-
-      // Update email
-      await updateEmail(user, pendingEmailChange);
-
-      // Update Firestore
-      const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, {
-        email: pendingEmailChange,
-        updatedAt: new Date().toISOString()
-      });
-
-      setSuccess('Email updated successfully!');
-      setShowPasswordModal(false);
-      setCurrentPassword('');
-      setPendingEmailChange('');
-
-      setTimeout(() => {
-        onClose();
-        window.location.reload();
-      }, 1500);
-
-    } catch (err) {
-      console.error('Error updating email:', err);
-      if (err.code === 'auth/wrong-password') {
-        setError('Incorrect password. Please try again.');
-      } else if (err.code === 'auth/requires-recent-login') {
-        setError('Please log out and log back in before changing your email.');
-      } else {
-        setError('Failed to update email. Please check your password.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget && !loading) {
       onClose();
     }
   };
-
-  // Password confirmation modal
-  if (showPasswordModal) {
-    return (
-      <div
-        onClick={handleBackdropClick}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1001,
-          padding: '1rem'
-        }}
-      >
-        <div style={{
-          background: colors.cardBg,
-          borderRadius: '0.75rem',
-          border: `1px solid ${colors.border}`,
-          padding: '2rem 1.5rem',
-          maxWidth: '400px',
-          width: '100%',
-          position: 'relative'
-        }}>
-          <button
-            onClick={() => {
-              setShowPasswordModal(false);
-              setCurrentPassword('');
-              setLoading(false);
-            }}
-            disabled={loading}
-            style={{
-              position: 'absolute',
-              top: '1rem',
-              right: '1rem',
-              background: 'transparent',
-              border: 'none',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              color: colors.subtext,
-              padding: '0.25rem',
-              display: 'flex',
-              alignItems: 'center'
-            }}
-          >
-            <X size={24} />
-          </button>
-
-          <h3 style={{
-            margin: '0 0 0.5rem 0',
-            color: colors.text,
-            fontSize: '1.25rem',
-            fontWeight: '600'
-          }}>
-            Confirm Password
-          </h3>
-          <p style={{
-            margin: '0 0 1.5rem 0',
-            color: colors.subtext,
-            fontSize: '0.875rem'
-          }}>
-            Please enter your current password to update your email address.
-          </p>
-
-          {error && (
-            <div style={{
-              padding: '0.75rem',
-              background: '#fee2e2',
-              border: '1px solid #fca5a5',
-              borderRadius: '0.5rem',
-              color: '#dc2626',
-              fontSize: '0.875rem',
-              marginBottom: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              <AlertCircle size={16} />
-              {error}
-            </div>
-          )}
-
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            placeholder="Enter your password"
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '0.5rem',
-              fontSize: '0.9375rem',
-              background: colors.inputBg,
-              color: colors.text,
-              marginBottom: '1rem',
-              boxSizing: 'border-box'
-            }}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && currentPassword) {
-                handleEmailChange();
-              }
-            }}
-          />
-
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button
-              onClick={() => {
-                setShowPasswordModal(false);
-                setCurrentPassword('');
-                setLoading(false);
-              }}
-              disabled={loading}
-              style={{
-                flex: 1,
-                padding: '0.75rem',
-                background: colors.border,
-                color: colors.text,
-                border: 'none',
-                borderRadius: '0.5rem',
-                fontSize: '0.9375rem',
-                fontWeight: '600',
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleEmailChange}
-              disabled={loading || !currentPassword}
-              style={{
-                flex: 1,
-                padding: '0.75rem',
-                background: (!currentPassword || loading) ? colors.border : '#2563eb',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.5rem',
-                fontSize: '0.9375rem',
-                fontWeight: '600',
-                cursor: (!currentPassword || loading) ? 'not-allowed' : 'pointer',
-                opacity: (!currentPassword || loading) ? 0.5 : 1
-              }}
-            >
-              {loading ? 'Confirming...' : 'Confirm'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Main edit profile modal
   return (
@@ -750,9 +524,7 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
                 type="email"
                 name="email"
                 value={formData.email}
-                onChange={handleChange}
-                required
-                disabled={loading}
+                disabled={true}
                 placeholder="john@example.com"
                 style={{
                   width: '100%',
@@ -760,21 +532,20 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
                   border: `1px solid ${colors.border}`,
                   borderRadius: '0.5rem',
                   fontSize: '0.9375rem',
-                  background: colors.inputBg,
-                  color: colors.text,
-                  boxSizing: 'border-box'
+                  background: isDarkMode ? '#0f0f0f' : '#f3f4f6',
+                  color: colors.subtext,
+                  boxSizing: 'border-box',
+                  cursor: 'not-allowed'
                 }}
               />
             </div>
-            {formData.email !== user?.email && (
-              <p style={{
-                margin: '0.5rem 0 0 0',
-                color: '#f59e0b',
-                fontSize: '0.75rem'
-              }}>
-                ⚠️ Changing email requires password verification
-              </p>
-            )}
+            <p style={{
+              margin: '0.5rem 0 0 0',
+              color: colors.subtext,
+              fontSize: '0.75rem'
+            }}>
+              Email address cannot be changed
+            </p>
           </div>
 
           <div style={{ marginBottom: '1rem' }}>

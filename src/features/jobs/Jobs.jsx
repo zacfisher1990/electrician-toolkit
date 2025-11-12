@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { getColors } from '../../theme'; // Import theme
 import styles from './Jobs.module.css';
@@ -123,11 +123,12 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
         client: '',
         location: '',
         status: 'scheduled',
-        cost: '',
-        duration: '',
-        scheduledDate: prefilledDate,
-        scheduledTime: '',
-        notes: ''
+        date: prefilledDate,
+        time: '',
+        estimatedCost: '',
+        notes: '',
+        estimateIds: [],
+        photos: []
       });
       setLinkedEstimates([]);
     } else if (prefilledDate && isUserLoggedIn && !isEmailVerified) {
@@ -175,7 +176,8 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
     viewingJob,
     estimates,
     resetForm,
-    loadJobs
+    loadJobs,
+    setJobs
   });
 
   const estimateHandlers = createEstimateHandlers({
@@ -217,11 +219,12 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
         client: '',
         location: '',
         status: 'scheduled',
-        cost: '',
-        duration: '',
-        scheduledDate: '',
-        scheduledTime: '',
-        notes: ''
+        date: '',
+        time: '',
+        estimatedCost: '',
+        notes: '',
+        estimateIds: [],
+        photos: []
       });
       setLinkedEstimates([]);
     }
@@ -298,9 +301,15 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
     }
   };
 
-  // Filter and count
-  const filteredJobs = filterJobs(jobs, searchQuery, activeStatusTab);
-  const statusCounts = getStatusCounts(jobs);
+  // Filter and count - use useMemo to ensure these recompute when jobs changes
+  const filteredJobs = useMemo(() => {
+    console.log('🔄 Recomputing filteredJobs, jobs.length:', jobs.length);
+    return filterJobs(jobs, searchQuery, activeStatusTab);
+  }, [jobs, searchQuery, activeStatusTab]);
+  
+  const statusCounts = useMemo(() => {
+    return getStatusCounts(jobs);
+  }, [jobs]);
 
   if (loading) {
     return (
@@ -391,6 +400,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
           />
 
           <JobsList
+            key={`jobs-list-${jobs.length}-${jobs[0]?.id || 'empty'}`}
             filteredJobs={filteredJobs}
             searchQuery={searchQuery}
             activeStatusTab={activeStatusTab}

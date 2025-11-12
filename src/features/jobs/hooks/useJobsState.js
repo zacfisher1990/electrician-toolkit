@@ -15,21 +15,27 @@ export const useJobsState = () => {
   const [estimates, setEstimates] = useState([]);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   
-  const loadJobs = async () => {
+  const loadJobs = async (skipCache = false) => {
     try {
-      // First, load from cache for instant display
-      const cachedJobs = getJobs();
-      if (cachedJobs) {
-        setJobs(cachedJobs);
-        setLoading(false);
+      // First, load from cache for instant display (unless skipCache is true)
+      if (!skipCache) {
+        const cachedJobs = getJobs();
+        if (cachedJobs) {
+          setJobs(cachedJobs);
+          setLoading(false);
+        }
       }
 
-      // Then fetch fresh data from Firebase
-      const userJobs = await getUserJobs();
-      setJobs(userJobs);
+      // Then fetch fresh data from Firebase - pass skipCache parameter
+      const userJobs = await getUserJobs(skipCache);
+      
+      // Force a new array reference to ensure React detects the change
+      setJobs([...userJobs]);
       
       // Save fresh data to cache
       saveJobs(userJobs);
+      
+      return userJobs; // Return the jobs so caller knows when loading is complete
     } catch (error) {
       console.error('Error loading jobs:', error);
       
@@ -40,6 +46,7 @@ export const useJobsState = () => {
       } else {
         alert('Failed to load jobs. Please try again.');
       }
+      return null;
     } finally {
       setLoading(false);
     }

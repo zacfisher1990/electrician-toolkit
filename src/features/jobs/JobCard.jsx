@@ -16,12 +16,15 @@ const JobCard = ({
   onClockInOut,
   isDarkMode,
   colors,
-  estimates = [] // FIXED: Added this prop with default empty array
+  estimates = []
 }) => {
   const statusDropdownRef = useRef(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
   
+  // Check if this is an optimistic (loading) job
+  const isOptimistic = job._isOptimistic === true;
+  const photosUploading = job._photosUploading || 0;
   
   const StatusIcon = statusConfig[job.status].icon;
   const jobTitle = job.title || job.name;
@@ -103,9 +106,51 @@ const JobCard = ({
         marginBottom: '0.75rem',
         transition: 'all 0.2s',
         WebkitTapHighlightColor: 'transparent',
-        userSelect: 'none'
+        userSelect: 'none',
+        position: 'relative',
+        opacity: isOptimistic ? 0.7 : 1
       }}
     >
+      {/* Loading overlay for optimistic jobs */}
+      {isOptimistic && (
+        <div style={{
+          position: 'absolute',
+          top: '1rem',
+          right: '1rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          background: colors.cardBg,
+          padding: '0.5rem 0.75rem',
+          borderRadius: '0.5rem',
+          border: `1px solid ${colors.border}`,
+          fontSize: '0.75rem',
+          color: colors.subtext,
+          zIndex: 10
+        }}>
+          <div style={{
+            width: '14px',
+            height: '14px',
+            border: '2px solid',
+            borderColor: `${colors.text} transparent ${colors.text} transparent`,
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite'
+          }} />
+          {photosUploading > 0 && (
+            <span>Uploading {photosUploading} photo{photosUploading > 1 ? 's' : ''}...</span>
+          )}
+          {photosUploading === 0 && <span>Saving...</span>}
+        </div>
+      )}
+
+      <style>
+        {`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}
+      </style>
+
       <div className={styles.cardHeader}>
         <div 
           className={styles.cardTitle}

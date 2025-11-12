@@ -286,10 +286,9 @@ function App() {
               pendingEstimateData={pendingEstimate}
               onClearPendingData={() => setPendingEstimate(null)}
               onNavigateToEstimates={handleNavigate}
-              onClockIn={handleClockIn}
-              onClockOut={handleClockOut}
+              onClockedInJobChange={(job) => setClockedInJob(job)}
               prefilledDate={prefilledJobDate}
-              onClearPrefilledDate={() => setPrefilledJobDate(null)}
+              navigationData={navigationData}
               isEmailVerified={isEmailVerified}
               onResendVerification={handleResendVerification}
             />

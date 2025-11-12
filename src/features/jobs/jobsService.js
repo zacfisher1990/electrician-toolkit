@@ -93,26 +93,30 @@ const clearJobsCache = () => {
  * TIER 1: Instant load from localStorage cache
  * TIER 2: Load from Firebase's IndexedDB cache (offline support)
  * TIER 3: Fetch from Firebase servers (real-time updates)
+ * 
+ * @param {boolean} skipCache - If true, bypass localStorage cache and fetch fresh from Firebase
  */
-export const getUserJobs = async () => {
+export const getUserJobs = async (skipCache = false) => {
   try {
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error('User not authenticated');
 
-    // TIER 1: Try loading from localStorage first (instant!)
-    const cachedJobs = loadCachedJobs(userId);
-    if (cachedJobs) {
-      console.log('⚡ Loaded jobs from localStorage cache (instant)');
-      
-      // Fetch fresh data in background and update cache
-      fetchAndCacheJobs(userId);
-      
-      return cachedJobs;
+    // TIER 1: Try loading from localStorage first (instant!) - unless skipCache is true
+    if (!skipCache) {
+      const cachedJobs = loadCachedJobs(userId);
+      if (cachedJobs) {
+        console.log('⚡ Loaded jobs from localStorage cache (instant)');
+        
+        // Fetch fresh data in background and update cache
+        fetchAndCacheJobs(userId);
+        
+        return cachedJobs;
+      }
     }
 
-    // TIER 2 & 3: No localStorage cache - fetch from Firebase
+    // TIER 2 & 3: No localStorage cache or skipCache=true - fetch from Firebase
     // (Firebase will use its IndexedDB cache if available, or fetch from server)
-    console.log('🔄 Fetching jobs from Firebase...');
+    console.log(skipCache ? '🔄 Skipping cache, fetching fresh jobs from Firebase...' : '🔄 Fetching jobs from Firebase...');
     return await fetchAndCacheJobs(userId);
   } catch (error) {
     console.error('Error fetching jobs:', error);

@@ -16,7 +16,8 @@ export const createJobHandlers = ({
   viewingJob,
   estimates,
   resetForm,
-  loadJobs
+  loadJobs,
+  setJobs
 }) => {
   /**
    * Handle adding a new job with photo uploads
@@ -40,7 +41,41 @@ export const createJobHandlers = ({
       // Prepare photos array (filter out any that are still uploading)
       const photosToUpload = (formData.photos || []).filter(photo => photo.file);
       
-      // Create the job document first
+      // Create optimistic job object with temporary ID for instant UI feedback
+      const optimisticJob = {
+        id: `temp-${Date.now()}`, // Temporary ID
+        title: formData.title.trim(),
+        client: formData.client.trim(),
+        location: formData.location?.trim() || '',
+        date: formData.date || '',
+        time: formData.time || '',
+        estimatedCost: formData.estimatedCost || '',
+        status: formData.status || 'scheduled',
+        notes: formData.notes?.trim() || '',
+        estimateIds: formData.estimateIds || [],
+        photos: [], // Photos will load after upload
+        userId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        _isOptimistic: true, // Flag to show loading state
+        _photosUploading: photosToUpload.length // Track photo count
+      };
+
+      // Close modal immediately for better UX
+      resetForm(clearEstimateModals);
+      console.log('📊 Modal closed immediately (optimistic UI)');
+
+      // Add optimistic job to cache
+      const { getJobs, saveJobs } = await import('../../../utils/localStorageUtils');
+      const currentJobs = getJobs() || [];
+      const updatedJobsWithOptimistic = [optimisticJob, ...currentJobs];
+      saveJobs(updatedJobsWithOptimistic);
+      
+      // Update state directly for INSTANT UI feedback
+      setJobs(updatedJobsWithOptimistic);
+      console.log('💾 Optimistic job added to state immediately');
+
+      // Now create the real job in Firebase in the background
       const jobData = {
         title: formData.title.trim(),
         client: formData.client.trim(),
@@ -54,16 +89,18 @@ export const createJobHandlers = ({
         userId,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        photos: [] // Will be updated after upload
+        photos: []
       };
 
-      // Add job to Firestore - FIXED PATH to users subcollection
       const jobRef = await addDoc(collection(db, 'users', userId, 'jobs'), jobData);
       const jobId = jobRef.id;
+
+      console.log('✅ Job created in Firebase:', jobId);
 
       // Upload photos if any
       let uploadedPhotos = [];
       if (photosToUpload.length > 0) {
+        console.log(`📸 Uploading ${photosToUpload.length} photos...`);
         uploadedPhotos = await uploadMultipleJobPhotos(
           photosToUpload.map(p => p.file),
           jobId,
@@ -73,23 +110,22 @@ export const createJobHandlers = ({
           }
         );
 
-        // Update job with photo URLs - FIXED PATH
         await updateDoc(doc(db, 'users', userId, 'jobs', jobId), {
           photos: uploadedPhotos,
           updatedAt: serverTimestamp()
         });
+        console.log('✅ Photos uploaded successfully');
       }
 
-      // Reload jobs to show the new job
-      await loadJobs();
-      
-      // Reset form and close modal
-      resetForm(clearEstimateModals);
+      // Reload to get the real job with real ID and photos
+      console.log('📊 Reloading with real job data');
+      await loadJobs(true);
 
-      console.log('✅ Job added successfully with', uploadedPhotos.length, 'photos');
     } catch (error) {
       console.error('❌ Error adding job:', error);
       alert('Failed to add job. Please try again.');
+      // Reload to remove optimistic job if it failed
+      await loadJobs(true);
     }
   };
 
@@ -170,13 +206,17 @@ export const createJobHandlers = ({
       // FIXED PATH
       await updateDoc(doc(db, 'users', userId, 'jobs', editingJob.id), jobData);
 
-      // Reload jobs to show updated data
-      await loadJobs();
-
-      // Reset form and close modal
-      resetForm(clearEstimateModals);
-
       console.log('✅ Job updated successfully');
+      
+      // Reload jobs with skipCache to get fresh data immediately
+      await loadJobs(true);
+      
+      // Give React time to fully process state updates and re-render
+      setTimeout(() => {
+        console.log('📊 Closing modal after render cycle');
+        resetForm(clearEstimateModals);
+      }, 300);
+
     } catch (error) {
       console.error('❌ Error updating job:', error);
       alert('Failed to update job. Please try again.');
