@@ -499,9 +499,9 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerifi
               invoice={invoice}
               isDarkMode={isDarkMode}
               colors={colors}
-              onEdit={handleViewInvoice}
-              onDelete={handleDeleteInvoice}
-              onSend={handleSendInvoice}
+              onViewInvoice={handleViewInvoice}
+              onDeleteInvoice={handleDeleteInvoice}
+              onSendInvoice={handleSendInvoice}
               onUpdateStatus={handleUpdateInvoiceStatus}
             />
           ))}
