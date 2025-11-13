@@ -17,7 +17,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
 
-const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
+const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
   const auth = getAuth();
   const storage = getStorage();
   const user = auth.currentUser;
@@ -299,13 +299,23 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
       
       await updateDoc(userDocRef, updateData);
 
+      // Reload the user's auth data to get updated photoURL
+      await user.reload();
+
       setSuccess('Profile updated successfully!');
+      
+      // Call onUpdate callback if provided
+      if (onUpdate) {
+        // Fetch the updated user data from Firestore
+        const updatedUserDoc = await getDoc(userDocRef);
+        if (updatedUserDoc.exists()) {
+          onUpdate(updatedUserDoc.data());
+        }
+      }
       
       // Close modal after short delay
       setTimeout(() => {
         onClose();
-        // Reload the page to reflect changes
-        window.location.reload();
       }, 1500);
 
     } catch (err) {
@@ -337,8 +347,7 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
         alignItems: 'flex-start',
         justifyContent: 'center',
         zIndex: 1000,
-        padding: '1rem',
-        paddingBottom: '6rem', // Extra padding for bottom nav bar
+        padding: '4rem 1rem',
         overflowY: 'auto'
       }}
     >
@@ -350,8 +359,7 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
         maxWidth: '500px',
         width: '100%',
         position: 'relative',
-        margin: '2rem auto',
-        marginBottom: '6rem' // Extra margin at bottom
+        margin: '0 0 2rem 0'
       }}>
         <button
           onClick={onClose}

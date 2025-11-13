@@ -9,6 +9,7 @@ import {
 } from 'firebase/firestore';
 import { db, auth } from '../../../firebase/firebase'; // Import BOTH db and auth
 import { uploadMultipleJobPhotos, deleteMultipleJobPhotos } from '../photoStorageUtils';
+import { createInvoiceHandlers } from './invoiceHandlers';
 
 export const createJobHandlers = ({
   formData,
@@ -96,6 +97,42 @@ export const createJobHandlers = ({
       const jobId = jobRef.id;
 
       console.log('✅ Job created in Firebase:', jobId);
+
+      // 🎯 AUTO-CREATE INVOICE if job has a cost
+      let invoiceId = null;
+      const hasEstimates = formData.estimateIds && formData.estimateIds.length > 0;
+      const hasEstimatedCost = formData.estimatedCost && parseFloat(formData.estimatedCost) > 0;
+      
+      if (hasEstimates || hasEstimatedCost) {
+        try {
+          console.log('💳 Creating invoice automatically...');
+          const invoiceHandlers = createInvoiceHandlers({
+            estimates,
+            jobs: [],
+            loadJobs: () => {}, // Not needed for creation
+            setViewingInvoice: () => {} // Not needed for creation
+          });
+          
+          invoiceId = await invoiceHandlers.createInvoiceForJob({
+            ...jobData,
+            id: jobId,
+            title: jobData.title || jobData.name
+          });
+          
+          if (invoiceId) {
+            console.log('✅ Invoice auto-created:', invoiceId);
+            // Update job with invoiceId
+            await updateDoc(doc(db, 'users', userId, 'jobs', jobId), {
+              invoiceId: invoiceId,
+              updatedAt: serverTimestamp()
+            });
+            console.log('✅ Job updated with invoice ID');
+          }
+        } catch (error) {
+          console.error('⚠️ Failed to auto-create invoice:', error);
+          // Don't fail the whole job creation if invoice fails
+        }
+      }
 
       // Upload photos if any
       let uploadedPhotos = [];
@@ -207,6 +244,41 @@ export const createJobHandlers = ({
       await updateDoc(doc(db, 'users', userId, 'jobs', editingJob.id), jobData);
 
       console.log('✅ Job updated successfully');
+      
+      // 🎯 AUTO-CREATE INVOICE if job has a cost but no invoice yet
+      const hasEstimates = formData.estimateIds && formData.estimateIds.length > 0;
+      const hasEstimatedCost = formData.estimatedCost && parseFloat(formData.estimatedCost) > 0;
+      
+      if ((hasEstimates || hasEstimatedCost) && !editingJob.invoiceId) {
+        try {
+          console.log('💳 Creating invoice for updated job...');
+          const invoiceHandlers = createInvoiceHandlers({
+            estimates,
+            jobs: [],
+            loadJobs: () => {},
+            setViewingInvoice: () => {}
+          });
+          
+          const invoiceId = await invoiceHandlers.createInvoiceForJob({
+            ...jobData,
+            id: editingJob.id,
+            title: jobData.title || jobData.name,
+            client: jobData.client
+          });
+          
+          if (invoiceId) {
+            console.log('✅ Invoice auto-created for updated job:', invoiceId);
+            await updateDoc(doc(db, 'users', userId, 'jobs', editingJob.id), {
+              invoiceId: invoiceId,
+              updatedAt: serverTimestamp()
+            });
+            console.log('✅ Job updated with invoice ID');
+          }
+        } catch (error) {
+          console.error('⚠️ Failed to auto-create invoice:', error);
+          // Don't fail the whole update if invoice fails
+        }
+      }
       
       // Reload jobs with skipCache to get fresh data immediately
       await loadJobs(true);

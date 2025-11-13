@@ -114,7 +114,11 @@ const AccountView = ({
           onClose={() => setShowEditProfile(false)}
           isDarkMode={isDarkMode}
           userData={userData}
-          onUpdate={(updatedData) => {
+          onUpdate={async (updatedData) => {
+            // Reload the current user to get updated photoURL
+            if (user) {
+              await user.reload();
+            }
             onUserDataUpdate(updatedData);
             setSuccess('Profile updated successfully!');
             setTimeout(() => setSuccess(''), 3000);

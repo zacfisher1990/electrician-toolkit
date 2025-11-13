@@ -21,24 +21,40 @@ const AccountHeader = ({ user, userData, isEmailVerified, isDarkMode }) => {
       alignItems: 'center'
     }}>
       {/* Avatar */}
-      <div style={{
-        width: '100px',
-        height: '100px',
-        borderRadius: '50%',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '2.5rem',
-        fontWeight: '700',
-        color: 'white',
-        marginBottom: '1rem',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-      }}>
-        {userData?.displayName ? userData.displayName.charAt(0).toUpperCase() : 
-         user.displayName ? user.displayName.charAt(0).toUpperCase() : 
-         user.email.charAt(0).toUpperCase()}
-      </div>
+      {user.photoURL || userData?.photoURL ? (
+        <img
+          src={user.photoURL || userData?.photoURL}
+          alt="Profile"
+          style={{
+            width: '100px',
+            height: '100px',
+            borderRadius: '50%',
+            objectFit: 'cover',
+            marginBottom: '1rem',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            border: `3px solid ${colors.border}`
+          }}
+        />
+      ) : (
+        <div style={{
+          width: '100px',
+          height: '100px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '2.5rem',
+          fontWeight: '700',
+          color: 'white',
+          marginBottom: '1rem',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+        }}>
+          {userData?.displayName ? userData.displayName.charAt(0).toUpperCase() : 
+           user.displayName ? user.displayName.charAt(0).toUpperCase() : 
+           user.email.charAt(0).toUpperCase()}
+        </div>
+      )}
 
       {/* Name */}
       <h2 style={{

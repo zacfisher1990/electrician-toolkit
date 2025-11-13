@@ -1,5 +1,14 @@
 import { clearJobsCache } from '../../../utils/localStorageUtils';
 
+// Clear invoices cache helper
+const clearInvoicesCache = () => {
+  try {
+    localStorage.removeItem('invoices_cache');
+  } catch (error) {
+    console.error('Error clearing invoices cache:', error);
+  }
+};
+
 /**
  * Invoice operation handlers
  */
@@ -93,9 +102,10 @@ export const createInvoiceHandlers = ({
         });
       }
       
-      // Close modal and refresh
+      // Close modal and refresh - clear BOTH caches
       setViewingInvoice(null);
       clearJobsCache();
+      clearInvoicesCache(); // Clear invoices cache so Invoices component loads fresh data
       loadJobs();
       
       return invoiceId;
@@ -113,9 +123,14 @@ export const createInvoiceHandlers = ({
       const invoice = invoices.find(inv => inv.id === job.invoiceId);
       if (invoice) {
         setViewingInvoice(invoice);
+      } else {
+        console.error('Invoice not found:', job.invoiceId);
+        alert('Invoice not found. It may have been deleted.');
       }
     } else {
-      // Generate new invoice from job
+      // No invoice exists - create one now as fallback (for old jobs created before auto-invoice feature)
+      console.warn('⚠️ Job has no invoice, creating one now...');
+      
       // Check if job has estimated cost or estimates
       const hasEstimates = job.estimateIds && job.estimateIds.length > 0;
       const hasEstimatedCost = job.estimatedCost && parseFloat(job.estimatedCost) > 0;
@@ -129,7 +144,7 @@ export const createInvoiceHandlers = ({
         // Generate the invoice
         const generatedInvoice = await generateInvoiceFromJob(job);
         
-        // Automatically save it
+        // Save it
         const invoiceId = await handleSaveInvoice(generatedInvoice);
         
         // Load and display the saved invoice
@@ -146,9 +161,45 @@ export const createInvoiceHandlers = ({
     }
   };
 
+  /**
+   * Create invoice automatically when job is saved with a cost
+   * This should be called from jobHandlers after creating/updating a job
+   */
+  const createInvoiceForJob = async (job) => {
+    // Check if job already has an invoice
+    if (job.invoiceId) {
+      return job.invoiceId;
+    }
+
+    // Check if job has estimated cost or estimates
+    const hasEstimates = job.estimateIds && job.estimateIds.length > 0;
+    const hasEstimatedCost = job.estimatedCost && parseFloat(job.estimatedCost) > 0;
+    
+    if (!hasEstimates && !hasEstimatedCost) {
+      // No cost, no invoice needed
+      return null;
+    }
+    
+    try {
+      // Generate the invoice
+      const generatedInvoice = await generateInvoiceFromJob(job);
+      
+      // Save it
+      const invoiceId = await handleSaveInvoice(generatedInvoice);
+      
+      console.log('Invoice automatically created:', invoiceId);
+      return invoiceId;
+    } catch (error) {
+      console.error('Error auto-creating invoice:', error);
+      // Don't throw - job creation should still succeed even if invoice fails
+      return null;
+    }
+  };
+
   return {
     generateInvoiceFromJob,
     handleSaveInvoice,
-    handleViewInvoice
+    handleViewInvoice,
+    createInvoiceForJob  // Export for use in jobHandlers
   };
 };
