@@ -12,7 +12,7 @@ import InvoiceCard from './InvoiceCard';
 import SendInvoiceModal from './SendInvoiceModal';
 import InvoiceStatusTabs from './InvoiceStatusTabs';
 import { sendInvoiceViaEmail, downloadInvoice, getUserBusinessInfo } from './invoiceSendService';
-import AuthModal from '../profile/AuthModal';
+import AuthModal from '../account/AuthModal';
 import VerificationRequiredModal from '../../components/VerificationRequiredModal';
 
 function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerified, onResendVerification, navigationData }) {

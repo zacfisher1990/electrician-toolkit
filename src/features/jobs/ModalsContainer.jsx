@@ -3,7 +3,7 @@ import JobModal from './JobModal';
 import JobEstimatesSummaryModal from './JobEstimatesSummaryModal';
 import EstimateModal from './EstimateModal';
 import InvoiceViewModal from './InvoiceViewModal';
-import AuthModal from '../profile/AuthModal';
+import AuthModal from '../account/AuthModal';
 
 const ModalsContainer = ({
   // Auth Modal

@@ -184,7 +184,7 @@ function Header({
                 overflow: 'hidden'
               }}>
                 <div style={{ padding: '0.5rem 0' }}>
-                  {/* Profile Button */}
+                  {/* Account Button */}
                   <button
                     onClick={() => {
                       onNavigate('profile');
@@ -207,7 +207,7 @@ function Header({
                     onMouseLeave={(e) => e.target.style.background = 'transparent'}
                   >
                     <User size={16} />
-                    <span>Profile</span>
+                    <span>Account</span>
                   </button>
 
                   <div style={{

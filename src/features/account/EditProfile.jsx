@@ -334,10 +334,11 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
         bottom: 0,
         background: 'rgba(0, 0, 0, 0.5)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
         zIndex: 1000,
         padding: '1rem',
+        paddingBottom: '6rem', // Extra padding for bottom nav bar
         overflowY: 'auto'
       }}
     >
@@ -349,7 +350,8 @@ const EditProfile = ({ isOpen, onClose, isDarkMode }) => {
         maxWidth: '500px',
         width: '100%',
         position: 'relative',
-        margin: '2rem 0'
+        margin: '2rem auto',
+        marginBottom: '6rem' // Extra margin at bottom
       }}>
         <button
           onClick={onClose}

@@ -35,7 +35,7 @@ import EVChargingCalculator from './features/tools/calculators/EVChargingCalcula
 import SupportSpacingCalculator from './features/tools/calculators/SupportSpacingCalculator.jsx';
 import Home from './features/home/Home.jsx';
 import Tools from './features/tools/Tools';
-import Profile from './features/profile/Profile.jsx';
+import Account from './features/account/index.jsx';
 import Jobs from './features/jobs/Jobs.jsx';
 import Estimates from './features/estimates/Estimates.jsx';
 import Invoices from './features/invoices/Invoices.jsx';
@@ -341,7 +341,7 @@ function App() {
       case 'calculators':
         return <Tools isDarkMode={isDarkMode} onNavigate={handleNavigate} />;
       case 'profile':
-        return <Profile isDarkMode={isDarkMode} />;
+        return <Account isDarkMode={isDarkMode} />;
       case 'jobs':
         return (
             <Jobs 
@@ -401,7 +401,7 @@ function App() {
   return { title: 'Tools', icon: Wrench };
 }
     if (activeView === 'profile') {
-      return { title: 'Profile', icon: User };
+      return { title: 'Account', icon: User };
     }
     if (activeView === 'jobs') {
       return { title: 'Job Log', icon: Briefcase };

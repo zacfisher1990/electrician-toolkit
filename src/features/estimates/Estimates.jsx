@@ -11,7 +11,7 @@ import AddEstimateSection from './AddEstimateSection';
 import SendEstimateModal from './SendEstimateModal';
 import EstimateStatusTabs from './EstimateStatusTabs';
 import { saveEstimates, getEstimates, clearEstimatesCache } from '../../utils/localStorageUtils';
-import AuthModal from '../profile/AuthModal';
+import AuthModal from '../account/AuthModal';
 import VerificationRequiredModal from '../../components/VerificationRequiredModal';
 
 const Estimates = ({ 
