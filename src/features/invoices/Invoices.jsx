@@ -24,6 +24,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerifi
   const [searchQuery, setSearchQuery] = useState('');
   const [sendingInvoice, setSendingInvoice] = useState(null);
   const [userBusinessInfo, setUserBusinessInfo] = useState(null);
+  const [userData, setUserData] = useState(null); // Add userData state
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
@@ -72,7 +73,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerifi
     }
   }, [navigationData, invoices]);
 
-  // Load user business info for PDF generation
+  // Load user business info for PDF generation AND userData for payment methods
   const loadUserBusinessInfo = async () => {
     try {
       const user = auth.currentUser;
@@ -85,6 +86,18 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerifi
       const info = await getUserBusinessInfo(user.uid);
       console.log('Loaded business info:', info);
       setUserBusinessInfo(info);
+
+      // Also load full user data for payment methods
+      const { doc, getDoc } = await import('firebase/firestore');
+      const { db } = await import('../../firebase/firebase');
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const fullUserData = userDoc.data();
+        console.log('Loaded user data with payment methods:', fullUserData);
+        setUserData(fullUserData);
+      }
     } catch (error) {
       console.error('Error loading user business info:', error);
     }
@@ -376,6 +389,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerifi
       {sendingInvoice && (
         <SendInvoiceModal
           invoice={sendingInvoice}
+          userData={userData}
           isDarkMode={isDarkMode}
           onClose={() => setSendingInvoice(null)}
           onSend={handleSendInvoiceEmail}

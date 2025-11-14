@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Mail, Download, Send, CheckCircle, AlertCircle, MessageSquare } from 'lucide-react';
 import Toast from '../../components/Toast';
 
@@ -8,18 +8,39 @@ const SendInvoiceModal = ({
   onSend,
   onDownload,
   onGeneratePDF, // New prop for getting PDF blob
+  userData, // Add userData prop for payment methods
   isDarkMode = false 
 }) => {
   const [email, setEmail] = useState(invoice.clientEmail || '');
-  const [message, setMessage] = useState(
-    `Hi ${invoice.clientName || invoice.client || 'there'},\n\nPlease find attached invoice #${invoice.invoiceNumber || 'N/A'} for $${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}.\n\nThank you for your business!`
-  );
+  
+  // Generate default message with payment methods
+  const generateDefaultMessage = () => {
+    let baseMessage = `Hi ${invoice.clientName || invoice.client || 'there'},\n\nPlease find attached invoice #${invoice.invoiceNumber || 'N/A'} for $${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}.`;
+    
+    // Add payment methods if available
+    if (userData?.paymentMethods && userData.paymentMethods.length > 0) {
+      baseMessage += '\n\nYou can pay using any of these methods:';
+      userData.paymentMethods.forEach(method => {
+        baseMessage += `\n• ${method.name}: ${method.url}`;
+      });
+    }
+    
+    baseMessage += '\n\nThank you for your business!';
+    return baseMessage;
+  };
+
+  const [message, setMessage] = useState(generateDefaultMessage());
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
-  const [showToast, setShowToast] = useState(false); // Add toast state
-  const [toastMessage, setToastMessage] = useState(''); // Add toast message state
-  const [toastType, setToastType] = useState('success'); // Add toast type state
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
+
+  // Update message when userData changes or modal opens
+  useEffect(() => {
+    setMessage(generateDefaultMessage());
+  }, [userData?.paymentMethods]);
 
   const colors = {
     bg: isDarkMode ? '#000000' : '#f9fafb',
@@ -95,8 +116,18 @@ const SendInvoiceModal = ({
         { type: 'application/pdf' }
       );
       
-      // Pre-filled message
-      const shareMessage = `Hi ${invoice.clientName || invoice.client || 'there'}, please find attached invoice #${invoice.invoiceNumber || 'N/A'} for $${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}. Thank you for your business!`;
+      // Pre-filled message with payment methods
+      let shareMessage = `Hi ${invoice.clientName || invoice.client || 'there'}, please find attached invoice #${invoice.invoiceNumber || 'N/A'} for $${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}.`;
+      
+      // Add payment methods to text message
+      if (userData?.paymentMethods && userData.paymentMethods.length > 0) {
+        shareMessage += '\n\nYou can pay using:';
+        userData.paymentMethods.forEach(method => {
+          shareMessage += `\n${method.name}: ${method.url}`;
+        });
+      }
+      
+      shareMessage += '\n\nThank you for your business!';
       
       // Check if Web Share API is available and can share files
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -241,10 +272,9 @@ const SendInvoiceModal = ({
             </div>
           ) : (
             <>
-              {/* Invoice Preview */}
+              {/* Invoice Details */}
               <div style={{
-                background: colors.bg,
-                border: `1px solid ${colors.border}`,
+                background: isDarkMode ? '#1a1a1a' : '#f9fafb',
                 borderRadius: '0.5rem',
                 padding: '1rem',
                 marginBottom: '1.5rem'
@@ -354,7 +384,7 @@ const SendInvoiceModal = ({
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Add a personal message..."
-                  rows={5}
+                  rows={userData?.paymentMethods && userData.paymentMethods.length > 0 ? 8 : 5}
                   style={{
                     width: '100%',
                     padding: '0.75rem',
@@ -369,6 +399,18 @@ const SendInvoiceModal = ({
                     boxSizing: 'border-box'
                   }}
                 />
+                {userData?.paymentMethods && userData.paymentMethods.length > 0 && (
+                  <p style={{
+                    margin: '0.5rem 0 0 0',
+                    fontSize: '0.75rem',
+                    color: '#10b981',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
+                  }}>
+                    ✓ Payment methods included automatically
+                  </p>
+                )}
               </div>
 
               {/* Error Message */}

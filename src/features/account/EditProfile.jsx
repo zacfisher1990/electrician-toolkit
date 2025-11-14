@@ -16,6 +16,7 @@ import {
   getDoc 
 } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
+import PaymentMethodsSection from './PaymentMethodsSection';
 
 const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
   const auth = getAuth();
@@ -31,7 +32,8 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
     email: '',
     phone: '',
     company: '',
-    licenseNumber: ''
+    licenseNumber: '',
+    paymentMethods: []
   });
   
   const [photoFile, setPhotoFile] = useState(null);
@@ -68,7 +70,8 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
             email: user.email || '',
             phone: userData.phone || '',
             company: userData.company || '',
-            licenseNumber: userData.licenseNumber || ''
+            licenseNumber: userData.licenseNumber || '',
+            paymentMethods: userData.paymentMethods || []
           });
           setLogoPreview(userData.companyLogo || null);
         } else {
@@ -78,7 +81,8 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
             email: user.email || '',
             phone: '',
             company: '',
-            licenseNumber: ''
+            licenseNumber: '',
+            paymentMethods: []
           });
         }
         
@@ -101,6 +105,14 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  // Handle payment methods change
+  const handlePaymentMethodsChange = (methods) => {
+    setFormData(prev => ({
+      ...prev,
+      paymentMethods: methods
     }));
   };
 
@@ -269,54 +281,49 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
       let logoURL = null;
       if (logoFile) {
         logoURL = await uploadLogo();
-      }
-
-      // Update display name
-      if (formData.displayName !== user.displayName) {
-        updates.displayName = formData.displayName;
+        updates.companyLogo = logoURL;
       }
 
       // Update Firebase Auth profile
-      if (updates.displayName || updates.photoURL) {
-        await updateProfile(user, updates);
+      if (formData.displayName !== user.displayName || updates.photoURL) {
+        await updateProfile(user, {
+          displayName: formData.displayName,
+          ...(updates.photoURL && { photoURL: updates.photoURL })
+        });
       }
 
-      // Update Firestore user document with additional fields
+      // Update Firestore document
       const userDocRef = doc(db, 'users', user.uid);
-      const updateData = {
+      const firestoreUpdates = {
         displayName: formData.displayName,
         phone: formData.phone,
         company: formData.company,
-        licenseNumber: formData.licenseNumber,
-        photoURL: updates.photoURL || user.photoURL || '',
+        licenseNumber: formData.licenseNumber || '',
+        paymentMethods: formData.paymentMethods || [],
         updatedAt: new Date().toISOString()
       };
-      
-      // Only update companyLogo if a new one was uploaded
-      if (logoURL) {
-        updateData.companyLogo = logoURL;
-      }
-      
-      await updateDoc(userDocRef, updateData);
 
-      // Reload the user's auth data to get updated photoURL
-      await user.reload();
+      if (updates.photoURL) {
+        firestoreUpdates.photoURL = updates.photoURL;
+      }
+
+      if (logoURL) {
+        firestoreUpdates.companyLogo = logoURL;
+      }
+
+      await updateDoc(userDocRef, firestoreUpdates);
+
+      // Get updated user data
+      const updatedUserDoc = await getDoc(userDocRef);
+      const updatedUserData = updatedUserDoc.data();
 
       setSuccess('Profile updated successfully!');
       
-      // Call onUpdate callback if provided
-      if (onUpdate) {
-        // Fetch the updated user data from Firestore
-        const updatedUserDoc = await getDoc(userDocRef);
-        if (updatedUserDoc.exists()) {
-          onUpdate(updatedUserDoc.data());
-        }
-      }
-      
-      // Close modal after short delay
+      // Wait a bit to show success message
       setTimeout(() => {
+        onUpdate(updatedUserData);
         onClose();
-      }, 1500);
+      }, 1000);
 
     } catch (err) {
       console.error('Error updating profile:', err);
@@ -326,126 +333,129 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
     }
   };
 
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget && !loading) {
-      onClose();
-    }
-  };
-
-  // Main edit profile modal
   return (
-    <div
-      onClick={handleBackdropClick}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '4rem 1rem',
-        overflowY: 'auto'
-      }}
-    >
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.75)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999,
+      padding: '1rem',
+      paddingBottom: '5rem'
+    }}>
       <div style={{
         background: colors.cardBg,
-        borderRadius: '0.75rem',
-        border: `1px solid ${colors.border}`,
-        padding: '2rem 1.5rem',
-        maxWidth: '500px',
+        borderRadius: '1rem',
         width: '100%',
-        position: 'relative',
-        margin: '0 0 2rem 0'
+        maxWidth: '600px',
+        maxHeight: '85vh',
+        overflow: 'auto',
+        position: 'relative'
       }}>
-        <button
-          onClick={onClose}
-          disabled={loading}
-          style={{
-            position: 'absolute',
-            top: '1rem',
-            right: '1rem',
-            background: 'transparent',
-            border: 'none',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            color: colors.subtext,
-            padding: '0.25rem',
-            display: 'flex',
-            alignItems: 'center'
-          }}
-        >
-          <X size={24} />
-        </button>
-
-        <h2 style={{
-          margin: '0 0 1.5rem 0',
-          color: colors.text,
-          fontSize: '1.5rem',
-          fontWeight: '700'
+        {/* Header */}
+        <div style={{
+          padding: '1.5rem',
+          borderBottom: `1px solid ${colors.border}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'sticky',
+          top: 0,
+          background: colors.cardBg,
+          zIndex: 1
         }}>
-          Edit Profile
-        </h2>
+          <h2 style={{
+            margin: 0,
+            fontSize: '1.25rem',
+            fontWeight: '700',
+            color: colors.text
+          }}>
+            Edit Profile
+          </h2>
+          <button
+            onClick={onClose}
+            disabled={loading}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              padding: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '0.375rem',
+              color: colors.subtext,
+              opacity: loading ? 0.5 : 1
+            }}
+          >
+            <X size={24} />
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          {/* Photo Upload Section */}
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ padding: '1.5rem' }}>
+          {/* Profile Photo */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            marginBottom: '2rem'
+            marginBottom: '1.5rem'
           }}>
-            <div style={{
-              position: 'relative',
-              marginBottom: '1rem'
-            }}>
-              <div style={{
-                width: '120px',
-                height: '120px',
-                borderRadius: '50%',
-                background: photoPreview ? 'transparent' : '#10b981',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                border: `3px solid ${colors.border}`
-              }}>
-                {photoPreview ? (
-                  <img 
-                    src={photoPreview} 
-                    alt="Profile" 
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
-                  />
-                ) : (
-                  <User size={60} color="white" />
-                )}
-              </div>
+            <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
+              {photoPreview ? (
+                <img
+                  src={photoPreview}
+                  alt="Profile"
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: `3px solid ${colors.border}`
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: '100px',
+                  height: '100px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '2.5rem',
+                  fontWeight: '700',
+                  color: 'white'
+                }}>
+                  {formData.displayName ? formData.displayName.charAt(0).toUpperCase() : 
+                   user.email.charAt(0).toUpperCase()}
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading}
                 style={{
                   position: 'absolute',
-                  bottom: '0',
-                  right: '0',
-                  width: '40px',
-                  height: '40px',
+                  bottom: 0,
+                  right: 0,
+                  width: '36px',
+                  height: '36px',
                   borderRadius: '50%',
                   background: '#2563eb',
                   border: `3px solid ${colors.cardBg}`,
+                  cursor: loading ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: loading ? 'not-allowed' : 'pointer'
+                  justifyContent: 'center'
                 }}
               >
-                <Camera size={20} color="white" />
+                <Camera size={18} color="white" />
               </button>
             </div>
             <input
@@ -458,10 +468,10 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
             <p style={{
               margin: 0,
               color: colors.subtext,
-              fontSize: '0.8125rem',
+              fontSize: '0.875rem',
               textAlign: 'center'
             }}>
-              Click camera icon to upload photo (max 5MB)
+              Click camera icon to change photo
             </p>
           </div>
 
@@ -492,9 +502,9 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
                 name="displayName"
                 value={formData.displayName}
                 onChange={handleChange}
-                required
                 disabled={loading}
-                placeholder="John Doe"
+                required
+                placeholder="John Smith"
                 style={{
                   width: '100%',
                   padding: '0.75rem 0.75rem 0.75rem 2.5rem',
@@ -517,7 +527,7 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
               fontSize: '0.875rem',
               fontWeight: '500'
             }}>
-              Email *
+              Email
             </label>
             <div style={{ position: 'relative' }}>
               <Mail 
@@ -532,17 +542,15 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
               />
               <input
                 type="email"
-                name="email"
                 value={formData.email}
-                disabled={true}
-                placeholder="john@example.com"
+                disabled
                 style={{
                   width: '100%',
                   padding: '0.75rem 0.75rem 0.75rem 2.5rem',
                   border: `1px solid ${colors.border}`,
                   borderRadius: '0.5rem',
                   fontSize: '0.9375rem',
-                  background: isDarkMode ? '#0f0f0f' : '#f3f4f6',
+                  background: colors.border,
                   color: colors.subtext,
                   boxSizing: 'border-box',
                   cursor: 'not-allowed'
@@ -550,11 +558,11 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
               />
             </div>
             <p style={{
-              margin: '0.5rem 0 0 0',
-              color: colors.subtext,
-              fontSize: '0.75rem'
+              margin: '0.25rem 0 0 0',
+              fontSize: '0.75rem',
+              color: colors.subtext
             }}>
-              Email address cannot be changed
+              Email cannot be changed
             </p>
           </div>
 
@@ -734,7 +742,7 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
             />
           </div>
 
-          <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ marginBottom: '1rem' }}>
             <label style={{
               display: 'block',
               marginBottom: '0.5rem',
@@ -775,6 +783,14 @@ const EditProfile = ({ isOpen, onClose, isDarkMode, userData, onUpdate }) => {
               />
             </div>
           </div>
+
+          {/* Payment Methods Section */}
+          <PaymentMethodsSection
+            paymentMethods={formData.paymentMethods}
+            onChange={handlePaymentMethodsChange}
+            isDarkMode={isDarkMode}
+            colors={colors}
+          />
 
           {/* Error/Success Messages */}
           {error && (

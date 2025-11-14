@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Mail, Phone, Building2, FileText, Settings } from 'lucide-react';
+import { User, Mail, Phone, Building2, FileText, Settings, DollarSign, ExternalLink } from 'lucide-react';
 import { getColors } from '../../theme';
 
 /**
@@ -35,6 +35,8 @@ const AccountInfoCard = ({ user, userData, isDarkMode, onEditProfile }) => {
       isEmpty: !userData?.company
     }
   ];
+
+  const hasPaymentMethods = userData?.paymentMethods && userData.paymentMethods.length > 0;
 
   return (
     <div style={{
@@ -101,7 +103,7 @@ const AccountInfoCard = ({ user, userData, isDarkMode, onEditProfile }) => {
             padding: '0.875rem',
             background: isDarkMode ? '#1a1a1a' : '#f9fafb',
             borderRadius: '0.5rem',
-            marginBottom: 0
+            marginBottom: hasPaymentMethods ? '0.75rem' : 0
           }}
         >
           <FileText size={18} style={{ color: colors.subtext, flexShrink: 0 }} />
@@ -154,6 +156,75 @@ const AccountInfoCard = ({ user, userData, isDarkMode, onEditProfile }) => {
             )}
           </div>
         </div>
+
+        {/* Payment Methods */}
+        {hasPaymentMethods && (
+          <div
+            style={{
+              padding: '0.875rem',
+              background: isDarkMode ? '#1a1a1a' : '#f9fafb',
+              borderRadius: '0.5rem',
+              border: `1px solid #10b981`
+            }}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              marginBottom: '0.75rem'
+            }}>
+              <DollarSign size={18} style={{ color: '#10b981', flexShrink: 0 }} />
+              <p style={{
+                margin: 0,
+                fontSize: '0.75rem',
+                color: colors.subtext,
+                fontWeight: '500'
+              }}>
+                Payment Methods
+              </p>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {userData.paymentMethods.map((method, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.625rem',
+                    background: isDarkMode ? '#0a0a0a' : '#ffffff',
+                    borderRadius: '0.375rem',
+                    border: `1px solid ${colors.border}`
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{
+                      margin: '0 0 0.125rem 0',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      color: colors.text
+                    }}>
+                      {method.name}
+                    </p>
+                    <p style={{
+                      margin: 0,
+                      fontSize: '0.75rem',
+                      color: colors.subtext,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {method.url}
+                    </p>
+                  </div>
+                  {method.url.startsWith('http') && (
+                    <ExternalLink size={14} style={{ color: colors.subtext, marginLeft: '0.5rem' }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Edit Profile Button */}
