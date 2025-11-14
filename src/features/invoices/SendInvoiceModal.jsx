@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { X, Mail, Download, Send, CheckCircle, AlertCircle } from 'lucide-react';
-import Toast from '../../components/Toast'; // Add this import
+import { X, Mail, Download, Send, CheckCircle, AlertCircle, MessageSquare } from 'lucide-react';
+import Toast from '../../components/Toast';
 
 const SendInvoiceModal = ({ 
   invoice, 
   onClose, 
   onSend,
   onDownload,
+  onGeneratePDF, // New prop for getting PDF blob
   isDarkMode = false 
 }) => {
   const [email, setEmail] = useState(invoice.clientEmail || '');
@@ -69,6 +70,82 @@ const SendInvoiceModal = ({
       console.error('Download error:', error);
       // Show error toast
       setToastMessage(error.message || 'Failed to download invoice');
+      setToastType('error');
+      setShowToast(true);
+    }
+  };
+
+  const handleSendViaText = async () => {
+    try {
+      // Generate the PDF blob
+      if (!onGeneratePDF) {
+        throw new Error('PDF generation not available');
+      }
+
+      const pdfBlob = await onGeneratePDF();
+      
+      if (!pdfBlob) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      // Create a File object from the blob
+      const file = new File(
+        [pdfBlob], 
+        `Invoice-${invoice.invoiceNumber || 'draft'}.pdf`, 
+        { type: 'application/pdf' }
+      );
+      
+      // Pre-filled message
+      const shareMessage = `Hi ${invoice.clientName || invoice.client || 'there'}, please find attached invoice #${invoice.invoiceNumber || 'N/A'} for $${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}. Thank you for your business!`;
+      
+      // Check if Web Share API is available and can share files
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          text: shareMessage,
+          files: [file]
+        });
+        
+        // Show success toast
+        setToastMessage('Share menu opened successfully!');
+        setToastType('success');
+        setShowToast(true);
+      } else if (navigator.share) {
+        // Fallback: share without file (just the message)
+        await navigator.share({
+          text: shareMessage
+        });
+        
+        // Show info toast
+        setToastMessage('Message shared! Please attach the downloaded PDF manually.');
+        setToastType('info');
+        setShowToast(true);
+        
+        // Also trigger download
+        if (onDownload) {
+          await onDownload();
+        }
+      } else {
+        // No share API available - copy message and download PDF
+        await navigator.clipboard.writeText(shareMessage);
+        
+        // Trigger download
+        if (onDownload) {
+          await onDownload();
+        }
+        
+        setToastMessage('Message copied! PDF downloaded. You can now text both to your client.');
+        setToastType('success');
+        setShowToast(true);
+      }
+    } catch (error) {
+      console.error('Error sharing invoice:', error);
+      
+      // If user canceled the share, don't show error
+      if (error.name === 'AbortError') {
+        return;
+      }
+      
+      setToastMessage(error.message || 'Unable to share. Try the download option instead.');
       setToastType('error');
       setShowToast(true);
     }
@@ -319,56 +396,81 @@ const SendInvoiceModal = ({
               {/* Action Buttons */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '0.75rem'
+                gridTemplateColumns: '1fr 1fr 1fr',
+                gap: '0.5rem'
               }}>
                 {/* Download Button */}
                 <button
                   onClick={handleDownload}
                   disabled={sending}
                   style={{
-                    padding: '0.75rem 1rem',
+                    padding: '0.75rem 0.5rem',
                     background: 'transparent',
                     border: `1px solid ${colors.border}`,
                     borderRadius: '0.5rem',
                     color: colors.text,
-                    fontSize: '0.9375rem',
+                    fontSize: '0.8125rem',
                     fontWeight: '600',
                     cursor: sending ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '0.5rem',
+                    gap: '0.375rem',
                     opacity: sending ? 0.5 : 1,
                     transition: 'all 0.2s'
                   }}
                 >
-                  <Download size={18} />
-                  Download
+                  <Download size={16} />
+                  <span style={{ display: 'inline' }}>PDF</span>
                 </button>
 
-                {/* Send Button */}
+                {/* Send via Text Button */}
+                <button
+                  onClick={handleSendViaText}
+                  disabled={sending}
+                  style={{
+                    padding: '0.75rem 0.5rem',
+                    background: 'transparent',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.5rem',
+                    color: colors.text,
+                    fontSize: '0.8125rem',
+                    fontWeight: '600',
+                    cursor: sending ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.375rem',
+                    opacity: sending ? 0.5 : 1,
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <MessageSquare size={16} />
+                  <span style={{ display: 'inline' }}>Text</span>
+                </button>
+
+                {/* Send Email Button */}
                 <button
                   onClick={handleSend}
                   disabled={sending || !email}
                   style={{
-                    padding: '0.75rem 1rem',
+                    padding: '0.75rem 0.5rem',
                     background: (!email || sending) ? colors.textSecondary : colors.buttonBg,
                     border: 'none',
                     borderRadius: '0.5rem',
                     color: colors.buttonText,
-                    fontSize: '0.9375rem',
+                    fontSize: '0.8125rem',
                     fontWeight: '600',
                     cursor: (!email || sending) ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '0.5rem',
+                    gap: '0.375rem',
                     transition: 'all 0.2s'
                   }}
                 >
-                  <Send size={18} />
-                  {sending ? 'Sending...' : 'Send'}
+                  <Send size={16} />
+                  <span style={{ display: 'inline' }}>{sending ? 'Sending...' : 'Email'}</span>
                 </button>
               </div>
             </>

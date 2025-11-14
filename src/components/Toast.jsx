@@ -1,14 +1,6 @@
 import React, { useEffect } from 'react';
-import { CheckCircle, AlertCircle, X } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
 
-/**
- * Toast Notification Component
- * @param {string} message - The message to display
- * @param {string} type - 'success' or 'error'
- * @param {function} onClose - Callback when toast is dismissed
- * @param {number} duration - How long to show toast in ms (default 3000)
- * @param {boolean} isDarkMode - Dark mode flag
- */
 const Toast = ({ 
   message, 
   type = 'success', 
@@ -17,46 +9,71 @@ const Toast = ({
   isDarkMode = false 
 }) => {
   useEffect(() => {
-    if (duration > 0) {
+    if (duration) {
       const timer = setTimeout(() => {
         onClose();
       }, duration);
-      
       return () => clearTimeout(timer);
     }
   }, [duration, onClose]);
 
-  const colors = {
-    success: {
-      bg: isDarkMode ? '#065f46' : '#d1fae5',
-      text: isDarkMode ? '#6ee7b7' : '#065f46',
-      border: isDarkMode ? '#10b981' : '#6ee7b7',
-      icon: '#10b981'
-    },
-    error: {
-      bg: isDarkMode ? '#7f1d1d' : '#fee2e2',
-      text: isDarkMode ? '#fca5a5' : '#991b1b',
-      border: isDarkMode ? '#ef4444' : '#fca5a5',
-      icon: '#ef4444'
+  const getToastStyles = () => {
+    switch (type) {
+      case 'success':
+        return {
+          bg: isDarkMode ? '#065f46' : '#d1fae5',
+          border: isDarkMode ? '#047857' : '#10b981',
+          text: isDarkMode ? '#d1fae5' : '#065f46',
+          icon: CheckCircle
+        };
+      case 'error':
+        return {
+          bg: isDarkMode ? '#7f1d1d' : '#fee2e2',
+          border: isDarkMode ? '#991b1b' : '#ef4444',
+          text: isDarkMode ? '#fecaca' : '#7f1d1d',
+          icon: XCircle
+        };
+      case 'warning':
+        return {
+          bg: isDarkMode ? '#78350f' : '#fef3c7',
+          border: isDarkMode ? '#92400e' : '#f59e0b',
+          text: isDarkMode ? '#fde68a' : '#78350f',
+          icon: AlertCircle
+        };
+      case 'info':
+        return {
+          bg: isDarkMode ? '#1e3a8a' : '#dbeafe',
+          border: isDarkMode ? '#1e40af' : '#3b82f6',
+          text: isDarkMode ? '#bfdbfe' : '#1e3a8a',
+          icon: Info
+        };
+      default:
+        return {
+          bg: isDarkMode ? '#065f46' : '#d1fae5',
+          border: isDarkMode ? '#047857' : '#10b981',
+          text: isDarkMode ? '#d1fae5' : '#065f46',
+          icon: CheckCircle
+        };
     }
   };
 
-  const style = colors[type] || colors.success;
+  const styles = getToastStyles();
+  const Icon = styles.icon;
 
   return (
     <div style={{
       position: 'fixed',
-      bottom: '80px', // Above bottom navigation
+      bottom: '6rem',
       left: '50%',
       transform: 'translateX(-50%)',
       zIndex: 9999,
-      animation: 'slideUp 0.3s ease-out',
       width: 'calc(100% - 2rem)',
-      maxWidth: '400px'
+      maxWidth: '400px',
+      animation: 'slideUp 0.3s ease-out'
     }}>
       <div style={{
-        background: style.bg,
-        border: `1px solid ${style.border}`,
+        background: styles.bg,
+        border: `1px solid ${styles.border}`,
         borderRadius: '0.75rem',
         padding: '1rem',
         display: 'flex',
@@ -64,24 +81,16 @@ const Toast = ({
         gap: '0.75rem',
         boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
       }}>
-        {/* Icon */}
-        {type === 'success' ? (
-          <CheckCircle size={24} color={style.icon} style={{ flexShrink: 0 }} />
-        ) : (
-          <AlertCircle size={24} color={style.icon} style={{ flexShrink: 0 }} />
-        )}
-        
-        {/* Message */}
-        <span style={{
-          color: style.text,
-          fontSize: '0.9375rem',
+        <Icon size={20} color={styles.text} style={{ flexShrink: 0 }} />
+        <p style={{
+          margin: 0,
+          color: styles.text,
+          fontSize: '0.875rem',
           fontWeight: '500',
           flex: 1
         }}>
           {message}
-        </span>
-        
-        {/* Close Button */}
+        </p>
         <button
           onClick={onClose}
           style={{
@@ -89,22 +98,16 @@ const Toast = ({
             border: 'none',
             cursor: 'pointer',
             padding: '0.25rem',
+            color: styles.text,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            flexShrink: 0,
-            color: style.text,
-            opacity: 0.7,
-            transition: 'opacity 0.2s'
+            flexShrink: 0
           }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
         >
-          <X size={18} />
+          <XCircle size={18} />
         </button>
       </div>
-      
-      {/* Add keyframe animation */}
       <style>{`
         @keyframes slideUp {
           from {

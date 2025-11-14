@@ -12,6 +12,7 @@ import InvoiceCard from './InvoiceCard';
 import SendInvoiceModal from './SendInvoiceModal';
 import InvoiceStatusTabs from './InvoiceStatusTabs';
 import { sendInvoiceViaEmail, downloadInvoice, getUserBusinessInfo } from './invoiceSendService';
+import { generateInvoicePDF } from './generateInvoicePDF';
 import AuthModal from '../account/AuthModal';
 import VerificationRequiredModal from '../../components/VerificationRequiredModal';
 
@@ -235,6 +236,30 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerifi
     }
   };
 
+  // Handler for generating PDF blob (for sharing via text)
+  const handleGenerateInvoicePDF = async () => {
+    try {
+      if (!sendingInvoice) {
+        throw new Error('No invoice selected');
+      }
+
+      let businessInfo = userBusinessInfo;
+      if (!businessInfo) {
+        console.log('User business info not loaded, loading now...');
+        businessInfo = await getUserBusinessInfo(auth.currentUser?.uid);
+        setUserBusinessInfo(businessInfo);
+      }
+
+      console.log('Generating PDF blob for sharing with:', { sendingInvoice, businessInfo });
+      const pdfBlob = generateInvoicePDF(sendingInvoice, businessInfo);
+      return pdfBlob;
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      throw error;
+    }
+  };
+
   // Handle add invoice click
   const handleAddInvoiceClick = () => {
     if (!isUserLoggedIn) {
@@ -355,6 +380,7 @@ function Invoices({ isDarkMode = false, estimates = [], jobs = [], isEmailVerifi
           onClose={() => setSendingInvoice(null)}
           onSend={handleSendInvoiceEmail}
           onDownload={handleDownloadInvoice}
+          onGeneratePDF={handleGenerateInvoicePDF}
         />
       )}
 
