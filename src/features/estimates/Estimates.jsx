@@ -3,6 +3,7 @@ import { FileText, Search, X } from 'lucide-react';
 import { getColors } from '../../theme';
 import { getUserEstimates, createEstimate, updateEstimate, deleteEstimate as deleteEstimateFromFirebase, recordEstimateSent } from './estimatesService';
 import { sendEstimateViaEmail, downloadEstimate, getUserBusinessInfo } from './estimateSendService';
+import { generateEstimatePDF } from './generateEstimatePDF';
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import EstimateCard from './EstimateCard';
@@ -281,6 +282,30 @@ const Estimates = ({
     }
   };
 
+  // Handler for generating PDF blob (for sharing via text)
+  const handleGenerateEstimatePDF = async () => {
+    try {
+      if (!sendingEstimate) {
+        throw new Error('No estimate selected');
+      }
+
+      let businessInfo = userInfo;
+      if (!businessInfo) {
+        console.log('User business info not loaded, loading now...');
+        businessInfo = await getUserBusinessInfo(auth.currentUser?.uid);
+        setUserInfo(businessInfo);
+      }
+
+      console.log('Generating PDF blob for sharing with:', { sendingEstimate, businessInfo });
+      const pdfBlob = generateEstimatePDF(sendingEstimate, businessInfo);
+      return pdfBlob;
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      throw error;
+    }
+  };
+
   // Handle add estimate click
   const handleAddEstimateClick = () => {
     if (!isUserLoggedIn) {
@@ -392,6 +417,7 @@ const Estimates = ({
           onClose={() => setSendingEstimate(null)}
           onSend={handleSendFromModal}
           onDownload={handleDownloadFromModal}
+          onGeneratePDF={handleGenerateEstimatePDF}
         />
       )}
 
