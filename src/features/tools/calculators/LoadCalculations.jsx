@@ -1,10 +1,17 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { BarChart3, CheckCircle, Info } from 'lucide-react';
+import { BarChart3, CheckCircle, Info, Home, Building2, Zap } from 'lucide-react';
 import { exportToPDF } from '../../../utils/pdfExport';
-import styles from './Calculator.module.css';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox 
+} from './CalculatorLayout';
 
 // Residential Load Calculator (NEC 220.82 Standard Method)
-const ResidentialLoadCalculator = ({ data, setData, colors }) => {
+const ResidentialLoadCalculator = ({ data, setData, isDarkMode }) => {
   const calculateResidentialLoad = () => {
     const sqft = parseFloat(data.squareFootage) || 0;
     const sac = parseFloat(data.smallApplianceCircuits) || 0;
@@ -74,325 +81,268 @@ const ResidentialLoadCalculator = ({ data, setData, colors }) => {
   const results = calculateResidentialLoad();
 
   return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem', minHeight: '2.5rem' }}>
-            Square<br/>Footage<br/>   <br/>
-          </label>
-          <input 
-            type="number" 
-            value={data.squareFootage} 
-            onChange={(e) => setData(prev => ({...prev, squareFootage: e.target.value}))}
-            placeholder="Living area"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
+    <>
+      {/* Basic Information */}
+      <Section 
+        title="Basic Information" 
+        icon={Home} 
+        color="#3b82f6" 
+        isDarkMode={isDarkMode}
+      >
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '0.75rem' 
+        }}>
+          <InputGroup label="Square Footage" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.squareFootage}
+              onChange={(e) => setData(prev => ({...prev, squareFootage: e.target.value}))}
+              placeholder="Living area"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
+
+          <InputGroup label="Small Appliance Circuits" helper="@ 1500 VA each" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.smallApplianceCircuits}
+              onChange={(e) => setData(prev => ({...prev, smallApplianceCircuits: e.target.value}))}
+              placeholder="Min 2"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
+
+          <InputGroup label="Laundry Circuits" helper="@ 1500 VA" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.laundryCircuits}
+              onChange={(e) => setData(prev => ({...prev, laundryCircuits: e.target.value}))}
+              placeholder="Typically 1"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
+        </div>
+      </Section>
+
+      {/* Major Appliances */}
+      <Section 
+        title="Major Appliances" 
+        icon={Zap} 
+        color="#f59e0b" 
+        isDarkMode={isDarkMode}
+      >
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '0.75rem', 
+          marginBottom: '0.75rem' 
+        }}>
+          <InputGroup label="Electric Range (kW)" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.rangeKW}
+              onChange={(e) => setData(prev => ({...prev, rangeKW: e.target.value}))}
+              placeholder="Nameplate rating"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
+
+          <InputGroup label="Electric Dryer (kW)" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.dryerKW}
+              onChange={(e) => setData(prev => ({...prev, dryerKW: e.target.value}))}
+              placeholder="Min 5 kW"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
+
+          <InputGroup label="Water Heater (kW)" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.waterHeaterKW}
+              onChange={(e) => setData(prev => ({...prev, waterHeaterKW: e.target.value}))}
+              placeholder="Nameplate"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
         </div>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Small Appliance Circuits
-          </label>
-          <input 
-            type="number" 
-            value={data.smallApplianceCircuits} 
-            onChange={(e) => setData(prev => ({...prev, smallApplianceCircuits: e.target.value}))}
-            placeholder="Min 2"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>@ 1500 VA each</div>
-        </div>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '0.75rem' 
+        }}>
+          <InputGroup label="HVAC/Heat (kW)" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.hvacKW}
+              onChange={(e) => setData(prev => ({...prev, hvacKW: e.target.value}))}
+              placeholder="Heating load"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Laundry Circuits <br/>   <br/>
-          </label>
-          <input 
-            type="number" 
-            value={data.laundryCircuits} 
-            onChange={(e) => setData(prev => ({...prev, laundryCircuits: e.target.value}))}
-            placeholder="Typically 1"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>@ 1500 VA</div>
-        </div>
+          <InputGroup label="Other Loads (kW)" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.otherLoadsKW}
+              onChange={(e) => setData(prev => ({...prev, otherLoadsKW: e.target.value}))}
+              placeholder="Additional"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Electric Range (kW)
-          </label>
-          <input 
-            type="number" 
-            value={data.rangeKW} 
-            onChange={(e) => setData(prev => ({...prev, rangeKW: e.target.value}))}
-            placeholder="Nameplate rating"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
+          <InputGroup label="Service Voltage" isDarkMode={isDarkMode}>
+            <Select
+              value={data.voltage}
+              onChange={(e) => setData(prev => ({...prev, voltage: e.target.value}))}
+              isDarkMode={isDarkMode}
+              options={[
+                { value: '120', label: '120V' },
+                { value: '240', label: '240V' }
+              ]}
+            />
+          </InputGroup>
         </div>
+      </Section>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Electric Dryer (kW)
-          </label>
-          <input 
-            type="number" 
-            value={data.dryerKW} 
-            onChange={(e) => setData(prev => ({...prev, dryerKW: e.target.value}))}
-            placeholder="Min 5 kW"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
-        </div>
-
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Water Heater (kW)
-          </label>
-          <input 
-            type="number" 
-            value={data.waterHeaterKW} 
-            onChange={(e) => setData(prev => ({...prev, waterHeaterKW: e.target.value}))}
-            placeholder="Rating"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
-        </div>
-
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            HVAC/Heat (kW)
-          </label>
-          <input 
-            type="number" 
-            value={data.hvacKW} 
-            onChange={(e) => setData(prev => ({...prev, hvacKW: e.target.value}))}
-            placeholder="Largest load"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
-        </div>
-
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Other Loads (kW)
-          </label>
-          <input 
-            type="number" 
-            value={data.otherLoadsKW} 
-            onChange={(e) => setData(prev => ({...prev, otherLoadsKW: e.target.value}))}
-            placeholder="Pool, spa, etc"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
-        </div>
-
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Service Voltage
-          </label>
-          <select 
-            value={data.voltage} 
-            onChange={(e) => setData(prev => ({...prev, voltage: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
+      {/* Results */}
+      {results.totalDemandVA > 0 && (
+        <Section isDarkMode={isDarkMode}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '0.75rem', 
+            marginBottom: '0.75rem' 
+          }}>
+            <ResultCard
+              label="Total Demand"
+              value={results.totalDemandKW.toFixed(2)}
+              unit="kW"
+              color="#3b82f6"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
             
-            <option value="240">240V</option>
-            <option value="208">208V</option>
-          </select>
-           <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', visibility: 'hidden' }}>placeholder</div>
-        </div>
-      </div>
-
-      {data.squareFootage && (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Total Demand
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.totalDemandKW.toFixed(2)}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                kW
-              </div>
-            </div>
+            <ResultCard
+              label="Service Amperage"
+              value={results.totalAmperage.toFixed(1)}
+              unit="Amps"
+              color="#10b981"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
             
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Total Amperage
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.totalAmperage.toFixed(1)}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                amps
-              </div>
-            </div>
-
-            <div style={{
-              background: '#dbeafe',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                Recommended Service
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                {results.recommendedService}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                amp service
-              </div>
-            </div>
+            <ResultCard
+              label="Recommended Service"
+              value={results.recommendedService}
+              unit="Amp"
+              color="#8b5cf6"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
           </div>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            marginBottom: '1rem'
-          }}>
-            <div style={{ fontWeight: '600', color: colors.cardText, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
-              Connected Loads:
-            </div>
-            <div style={{ fontSize: '0.875rem', color: colors.labelText, display: 'grid', gap: '0.25rem' }}>
-              <div>General Lighting: {results.generalLighting.toLocaleString()} VA</div>
-              <div>Small Appliance: {results.smallApplianceLoad.toLocaleString()} VA</div>
-              <div>Laundry: {results.laundryLoad.toLocaleString()} VA</div>
-              <div style={{ borderTop: `1px solid ${colors.cardBorder}`, marginTop: '0.5rem', paddingTop: '0.5rem' }}>
-                <strong>Subtotal: {results.subtotalVA.toLocaleString()} VA</strong>
+          {/* Load Breakdown */}
+          <InfoBox type="info" isDarkMode={isDarkMode} title="Load Breakdown">
+            <div style={{ fontSize: '0.8125rem' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <strong>General Lighting:</strong> {results.generalLighting.toLocaleString()} VA
               </div>
-            </div>
-          </div>
-
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5', width: '100%' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Demand Loads (with factors applied):
+              <div style={{ marginBottom: '0.5rem' }}>
+                <strong>Small Appliance:</strong> {results.smallApplianceLoad.toLocaleString()} VA
+              </div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <strong>Laundry:</strong> {results.laundryLoad.toLocaleString()} VA
+              </div>
+              <div style={{ 
+                marginBottom: '0.5rem', 
+                paddingTop: '0.5rem', 
+                borderTop: `1px solid ${isDarkMode ? '#4b5563' : '#e5e7eb'}` 
+              }}>
+                <strong>Lighting Subtotal:</strong> {results.subtotalVA.toLocaleString()} VA
+              </div>
+              <div style={{ marginBottom: '0.5rem', opacity: 0.8 }}>
+                <strong>After Demand Factors:</strong> {results.demandLighting.toFixed(0)} VA
+              </div>
+              {results.rangeDemand > 0 && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>Range:</strong> {results.rangeDemand.toLocaleString()} W
                 </div>
-                <div>Lighting: {results.demandLighting.toFixed(0)} VA</div>
-                {data.rangeKW > 0 && <div>Range: {results.rangeDemand.toLocaleString()} W</div>}
-                {data.dryerKW > 0 && <div>Dryer: {results.dryerDemand.toLocaleString()} W</div>}
-                {data.waterHeaterKW > 0 && <div>Water Heater: {results.waterHeaterDemand.toLocaleString()} W</div>}
-                {data.hvacKW > 0 && <div>HVAC: {results.hvacDemand.toLocaleString()} W</div>}
-                {data.otherLoadsKW > 0 && <div>Other: {results.otherDemand.toLocaleString()} W</div>}
-              </div>
+              )}
+              {results.dryerDemand > 0 && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>Dryer:</strong> {results.dryerDemand.toLocaleString()} W
+                </div>
+              )}
+              {results.waterHeaterDemand > 0 && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>Water Heater:</strong> {results.waterHeaterDemand.toLocaleString()} W
+                </div>
+              )}
+              {results.hvacDemand > 0 && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>HVAC:</strong> {results.hvacDemand.toLocaleString()} W
+                </div>
+              )}
+              {results.otherDemand > 0 && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>Other Loads:</strong> {results.otherDemand.toLocaleString()} W
+                </div>
+              )}
             </div>
-          </div>
-        </>
+          </InfoBox>
+
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode}>
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+              Calculation Complete
+            </div>
+            <div style={{ fontSize: '0.8125rem' }}>
+              Based on NEC 220.82 Standard Method for Dwelling Units
+            </div>
+          </InfoBox>
+        </Section>
       )}
-    </div>
+
+      {/* NEC Reference */}
+      <InfoBox type="info" isDarkMode={isDarkMode}>
+        <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+          NEC 220.82 - Dwelling Unit Optional Calculation:
+        </div>
+        <div style={{ fontSize: '0.8125rem' }}>
+          General lighting: 3 VA per sq ft • Small appliance: 1500 VA per circuit • Laundry: 1500 VA<br />
+          Demand factors: First 3000 VA @ 100%, Next 117000 VA @ 35%, Remainder @ 25%
+        </div>
+      </InfoBox>
+    </>
   );
 };
 
-// Commercial Load Calculator (Basic)
-const CommercialLoadCalculator = ({ data, setData, colors }) => {
+// Commercial Load Calculator
+const CommercialLoadCalculator = ({ data, setData, isDarkMode }) => {
   const lightingVAPerSqFt = {
-    'office': 3.5, 'warehouse': 0.25, 'retail': 3.0, 'school': 3.0,
-    'restaurant': 2.0, 'hotel': 2.0, 'hospital': 2.0, 'industrial': 2.0
+    'office': 3.5,
+    'warehouse': 0.25,
+    'retail': 3.0,
+    'school': 3.0,
+    'restaurant': 2.0,
+    'hotel': 2.0,
+    'hospital': 2.0,
+    'industrial': 2.0
+  };
+
+  const occupancyNames = {
+    'office': 'Office',
+    'warehouse': 'Warehouse',
+    'retail': 'Retail',
+    'school': 'School',
+    'restaurant': 'Restaurant',
+    'hotel': 'Hotel',
+    'hospital': 'Hospital',
+    'industrial': 'Industrial'
   };
 
   const calculateCommercialLoad = () => {
@@ -405,7 +355,8 @@ const CommercialLoadCalculator = ({ data, setData, colors }) => {
     const volts = parseFloat(data.voltage);
 
     const lightingVA = sqft * lightingVAPerSqFt[data.occupancyType];
-    const totalConnectedKW = (lightingVA / 1000) + hvac + receptacles + motors + other;
+    const lightingKW = lightingVA / 1000;
+    const totalConnectedKW = lightingKW + hvac + receptacles + motors + other;
     const demandLoadKW = totalConnectedKW * demand;
 
     let amperage;
@@ -417,11 +368,7 @@ const CommercialLoadCalculator = ({ data, setData, colors }) => {
 
     return {
       lightingVA,
-      lightingKW: lightingVA / 1000,
-      hvac,
-      receptacles,
-      motors,
-      other,
+      lightingKW,
       totalConnectedKW,
       demandLoadKW,
       amperage
@@ -431,328 +378,260 @@ const CommercialLoadCalculator = ({ data, setData, colors }) => {
   const results = calculateCommercialLoad();
 
   return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Square Footage
-          </label>
-          <input 
-            type="number" 
-            value={data.squareFootage} 
-            onChange={(e) => setData(prev => ({...prev, squareFootage: e.target.value}))}
-            placeholder="Building area"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-        </div>
+    <>
+      {/* Building Information */}
+      <Section 
+        title="Building Information" 
+        icon={Building2} 
+        color="#3b82f6" 
+        isDarkMode={isDarkMode}
+      >
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '0.75rem' 
+        }}>
+          <InputGroup label="Square Footage" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.squareFootage}
+              onChange={(e) => setData(prev => ({...prev, squareFootage: e.target.value}))}
+              placeholder="Total area"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Occupancy Type
-          </label>
-          <select 
-            value={data.occupancyType} 
-            onChange={(e) => setData(prev => ({...prev, occupancyType: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
-            <option value="office">Office (3.5 VA/sq ft)</option>
-            <option value="warehouse">Warehouse (0.25 VA/sq ft)</option>
-            <option value="retail">Retail (3.0 VA/sq ft)</option>
-            <option value="school">School (3.0 VA/sq ft)</option>
-            <option value="restaurant">Restaurant (2.0 VA/sq ft)</option>
-            <option value="hotel">Hotel (2.0 VA/sq ft)</option>
-            <option value="hospital">Hospital (2.0 VA/sq ft)</option>
-            <option value="industrial">Industrial (2.0 VA/sq ft)</option>
-          </select>
-        </div>
+          <InputGroup label="Occupancy Type" isDarkMode={isDarkMode}>
+            <Select
+              value={data.occupancyType}
+              onChange={(e) => setData(prev => ({...prev, occupancyType: e.target.value}))}
+              isDarkMode={isDarkMode}
+              options={Object.entries(occupancyNames).map(([value, label]) => ({
+                value,
+                label: `${label} (${lightingVAPerSqFt[value]} VA/sq ft)`
+              }))}
+            />
+          </InputGroup>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            HVAC Load (kW)
-          </label>
-          <input 
-            type="number" 
-            value={data.hvacLoad} 
-            onChange={(e) => setData(prev => ({...prev, hvacLoad: e.target.value}))}
-            placeholder="Total HVAC"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
+          <InputGroup label="Demand Factor" helper="% of connected load" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.demandFactor}
+              onChange={(e) => setData(prev => ({...prev, demandFactor: e.target.value}))}
+              placeholder="80"
+              min="0"
+              max="100"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
         </div>
+      </Section>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Receptacle Load (kW)
-          </label>
-          <input 
-            type="number" 
-            value={data.receptacleLoad} 
-            onChange={(e) => setData(prev => ({...prev, receptacleLoad: e.target.value}))}
-            placeholder="Receptacles"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
+      {/* Electrical System */}
+      <Section 
+        title="Electrical System" 
+        icon={Zap} 
+        color="#f59e0b" 
+        isDarkMode={isDarkMode}
+      >
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '0.75rem' 
+        }}>
+          <InputGroup label="System Voltage" isDarkMode={isDarkMode}>
+            <Select
+              value={data.voltage}
+              onChange={(e) => setData(prev => ({...prev, voltage: e.target.value}))}
+              isDarkMode={isDarkMode}
+              options={[
+                { value: '120', label: '120V' },
+                { value: '208', label: '208V' },
+                { value: '240', label: '240V' },
+                { value: '277', label: '277V' },
+                { value: '480', label: '480V' }
+              ]}
+            />
+          </InputGroup>
+
+          <InputGroup label="Phase Configuration" isDarkMode={isDarkMode}>
+            <Select
+              value={data.phase}
+              onChange={(e) => setData(prev => ({...prev, phase: e.target.value}))}
+              isDarkMode={isDarkMode}
+              options={[
+                { value: 'single', label: 'Single Phase' },
+                { value: 'three', label: 'Three Phase' }
+              ]}
+            />
+          </InputGroup>
         </div>
+      </Section>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Motor Loads (kW)
-          </label>
-          <input 
-            type="number" 
-            value={data.motorLoads} 
-            onChange={(e) => setData(prev => ({...prev, motorLoads: e.target.value}))}
-            placeholder="Total motors"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
+      {/* Additional Loads */}
+      <Section 
+        title="Additional Loads" 
+        icon={BarChart3} 
+        color="#10b981" 
+        isDarkMode={isDarkMode}
+      >
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '0.75rem' 
+        }}>
+          <InputGroup label="HVAC Load (kW)" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.hvacLoad}
+              onChange={(e) => setData(prev => ({...prev, hvacLoad: e.target.value}))}
+              placeholder="0"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
+
+          <InputGroup label="Receptacle Load (kW)" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.receptacleLoad}
+              onChange={(e) => setData(prev => ({...prev, receptacleLoad: e.target.value}))}
+              placeholder="0"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
+
+          <InputGroup label="Motor Loads (kW)" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.motorLoads}
+              onChange={(e) => setData(prev => ({...prev, motorLoads: e.target.value}))}
+              placeholder="0"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
+
+          <InputGroup label="Other Loads (kW)" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={data.otherLoads}
+              onChange={(e) => setData(prev => ({...prev, otherLoads: e.target.value}))}
+              placeholder="0"
+              isDarkMode={isDarkMode}
+            />
+          </InputGroup>
         </div>
+      </Section>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Other Loads (kW)
-          </label>
-          <input 
-            type="number" 
-            value={data.otherLoads} 
-            onChange={(e) => setData(prev => ({...prev, otherLoads: e.target.value}))}
-            placeholder="Additional"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-        </div>
-
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Demand Factor (%)
-          </label>
-          <input 
-            type="number" 
-            value={data.demandFactor} 
-            onChange={(e) => setData(prev => ({...prev, demandFactor: e.target.value}))}
-            placeholder="80-100%"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Peak load %</div>
-        </div>
-
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            System Voltage
-          </label>
-          <select 
-            value={data.voltage} 
-            onChange={(e) => setData(prev => ({...prev, voltage: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
-            <option value="208">208V</option>
-            <option value="240">240V</option>
-            <option value="277">277V</option>
-            <option value="480">480V</option>
-            <option value="600">600V</option>
-          </select>
-        </div>
-
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            System<br/> Phase
-          </label>
-          
-          <select 
-            value={data.phase} 
-            onChange={(e) => setData(prev => ({...prev, phase: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
-            <option value="single">Single Phase</option>
-            <option value="three">Three Phase</option>
-          </select>
-        </div>
-      </div>
-
-      {data.squareFootage && (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Connected Load
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.totalConnectedKW.toFixed(2)}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                kW
-              </div>
-            </div>
+      {/* Results */}
+      {results.totalConnectedKW > 0 && (
+        <Section isDarkMode={isDarkMode}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '0.75rem', 
+            marginBottom: '0.75rem' 
+          }}>
+            <ResultCard
+              label="Connected Load"
+              value={results.totalConnectedKW.toFixed(2)}
+              unit="kW"
+              color="#6b7280"
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
             
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Demand Load
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.demandLoadKW.toFixed(2)}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                kW
-              </div>
-            </div>
-
-            <div style={{
-              background: '#dbeafe',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                Total Amperage
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                {results.amperage.toFixed(1)}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                amps
-              </div>
-            </div>
+            <ResultCard
+              label="Demand Load"
+              value={results.demandLoadKW.toFixed(2)}
+              unit="kW"
+              color="#3b82f6"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
+            
+            <ResultCard
+              label="Total Amperage"
+              value={results.amperage.toFixed(1)}
+              unit="Amps"
+              color="#10b981"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
           </div>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            marginBottom: '1rem'
-          }}>
-            <div style={{ fontWeight: '600', color: colors.cardText, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
-              Connected Loads:
-            </div>
-            <div style={{ fontSize: '0.875rem', color: colors.labelText, display: 'grid', gap: '0.25rem' }}>
-              <div>Lighting: {results.lightingKW.toFixed(2)} kW ({results.lightingVA.toFixed(0)} VA)</div>
-              {data.hvacLoad > 0 && <div>HVAC: {results.hvac.toFixed(2)} kW</div>}
-              {data.receptacleLoad > 0 && <div>Receptacles: {results.receptacles.toFixed(2)} kW</div>}
-              {data.motorLoads > 0 && <div>Motors: {results.motors.toFixed(2)} kW</div>}
-              {data.otherLoads > 0 && <div>Other: {results.other.toFixed(2)} kW</div>}
-            </div>
-          </div>
-
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  System Configuration
+          {/* Load Breakdown */}
+          <InfoBox type="info" isDarkMode={isDarkMode} title="Load Breakdown">
+            <div style={{ fontSize: '0.8125rem' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <strong>Lighting:</strong> {results.lightingKW.toFixed(2)} kW ({results.lightingVA.toFixed(0)} VA)
+              </div>
+              {parseFloat(data.hvacLoad) > 0 && (
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <strong>HVAC:</strong> {parseFloat(data.hvacLoad).toFixed(2)} kW
                 </div>
-                <div>{data.voltage}V {data.phase === 'single' ? 'Single' : 'Three'} Phase</div>
-                <div>{data.demandFactor}% demand factor applied</div>
+              )}
+              {parseFloat(data.receptacleLoad) > 0 && (
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <strong>Receptacles:</strong> {parseFloat(data.receptacleLoad).toFixed(2)} kW
+                </div>
+              )}
+              {parseFloat(data.motorLoads) > 0 && (
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <strong>Motors:</strong> {parseFloat(data.motorLoads).toFixed(2)} kW
+                </div>
+              )}
+              {parseFloat(data.otherLoads) > 0 && (
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <strong>Other:</strong> {parseFloat(data.otherLoads).toFixed(2)} kW
+                </div>
+              )}
+              <div style={{ 
+                marginTop: '0.5rem', 
+                paddingTop: '0.5rem', 
+                borderTop: `1px solid ${isDarkMode ? '#4b5563' : '#e5e7eb'}`,
+                opacity: 0.8 
+              }}>
+                {data.phase === 'single' 
+                  ? `Amperage = (${results.demandLoadKW.toFixed(2)} kW × 1000) ÷ ${data.voltage}V`
+                  : `Amperage = (${results.demandLoadKW.toFixed(2)} kW × 1000) ÷ (1.732 × ${data.voltage}V)`
+                }
               </div>
             </div>
-          </div>
-        </>
+          </InfoBox>
+
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode}>
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+              Calculation Complete
+            </div>
+            <div style={{ fontSize: '0.8125rem' }}>
+              Based on NEC Article 220 - Branch-Circuit, Feeder, and Service Load Calculations
+            </div>
+          </InfoBox>
+        </Section>
       )}
-    </div>
+
+      {/* NEC Reference */}
+      <InfoBox type="info" isDarkMode={isDarkMode}>
+        <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+          NEC Article 220 - Commercial Load Calculations:
+        </div>
+        <div style={{ fontSize: '0.8125rem' }}>
+          Lighting loads per NEC Table 220.12 • Demand factors per local jurisdiction • Always verify with actual connected loads and applicable codes
+        </div>
+      </InfoBox>
+    </>
   );
 };
 
-const LoadCalculations = forwardRef(({ isDarkMode = false, onBack }, ref) => {
+const LoadCalculations = forwardRef(({ isDarkMode = false }, ref) => {
   const [activeTab, setActiveTab] = useState('residential');
-
-  // Lifted state for both calculators
+  
   const [residentialData, setResidentialData] = useState({
     squareFootage: '',
     smallApplianceCircuits: '2',
     laundryCircuits: '1',
     rangeKW: '',
-    dryerKW: '5',
+    dryerKW: '',
     waterHeaterKW: '',
     hvacKW: '',
     otherLoadsKW: '',
@@ -762,31 +641,18 @@ const LoadCalculations = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [commercialData, setCommercialData] = useState({
     squareFootage: '',
     occupancyType: 'office',
+    demandFactor: '80',
+    voltage: '208',
+    phase: 'three',
     hvacLoad: '',
     receptacleLoad: '',
     motorLoads: '',
-    otherLoads: '',
-    demandFactor: '100',
-    voltage: '480',
-    phase: 'three'
+    otherLoads: ''
   });
 
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
-  };
-
-  // Expose exportPDF function to parent via ref
   useImperativeHandle(ref, () => ({
-    exportPDF: () => {
-      let pdfData;
+    exportPDF() {
+      let pdfData = null;
 
       if (activeTab === 'residential') {
         if (!residentialData.squareFootage) {
@@ -820,7 +686,11 @@ const LoadCalculations = forwardRef(({ isDarkMode = false, onBack }, ref) => {
 
         let rangeDemand = 0;
         if (range > 0) {
-          rangeDemand = range <= 12 ? 8000 : 8000 + ((range - 12) * 400);
+          if (range <= 12) {
+            rangeDemand = 8000;
+          } else {
+            rangeDemand = 8000 + ((range - 12) * 400);
+          }
         }
 
         const dryerDemand = Math.max(dryer * 1000, 5000);
@@ -958,68 +828,65 @@ const LoadCalculations = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   }));
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      {/* Tab Navigation */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        display: 'flex',
-        gap: '0.5rem',
-        flexWrap: 'wrap'
-      }}>
-        {[
-          { id: 'residential', label: 'Residential' },
-          { id: 'commercial', label: 'Commercial' }
-        ].map(tab => (
-          <button 
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              flex: '1 1 auto',
-              minWidth: '140px',
-              padding: '0.625rem 1rem',
-              background: activeTab === tab.id ? '#3b82f6' : colors.sectionBg,
-              color: activeTab === tab.id ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === tab.id ? '#3b82f6' : colors.cardBorder}`,
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+    <div style={{ margin: '0 -0.75rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Tab Navigation */}
+        <div style={{
+          display: 'flex',
+          gap: '0.5rem',
+          marginBottom: '0.75rem'
+        }}>
+        <button 
+          onClick={() => setActiveTab('residential')}
+          style={{
+            flex: 1,
+            padding: '0.75rem 1rem',
+            background: activeTab === 'residential' ? '#3b82f6' : 'transparent',
+            color: activeTab === 'residential' ? 'white' : (isDarkMode ? '#d1d5db' : '#374151'),
+            border: `1px solid ${activeTab === 'residential' ? '#3b82f6' : (isDarkMode ? '#4b5563' : '#e5e7eb')}`,
+            borderRadius: '0.5rem',
+            cursor: 'pointer',
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            transition: 'all 0.2s'
+          }}
+        >
+          Residential
+        </button>
+        <button 
+          onClick={() => setActiveTab('commercial')}
+          style={{
+            flex: 1,
+            padding: '0.75rem 1rem',
+            background: activeTab === 'commercial' ? '#3b82f6' : 'transparent',
+            color: activeTab === 'commercial' ? 'white' : (isDarkMode ? '#d1d5db' : '#374151'),
+            border: `1px solid ${activeTab === 'commercial' ? '#3b82f6' : (isDarkMode ? '#4b5563' : '#e5e7eb')}`,
+            borderRadius: '0.5rem',
+            cursor: 'pointer',
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            transition: 'all 0.2s'
+          }}
+        >
+          Commercial
+        </button>
       </div>
 
       {/* Active Tab Content */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        {activeTab === 'residential' ? (
-          <ResidentialLoadCalculator 
-            data={residentialData} 
-            setData={setResidentialData} 
-            colors={colors} 
-          />
-        ) : (
-          <CommercialLoadCalculator 
-            data={commercialData} 
-            setData={setCommercialData} 
-            colors={colors} 
-          />
-        )}
-      </div>
+      {activeTab === 'residential' ? (
+        <ResidentialLoadCalculator 
+          data={residentialData} 
+          setData={setResidentialData} 
+          isDarkMode={isDarkMode} 
+        />
+      ) : (
+        <CommercialLoadCalculator 
+          data={commercialData} 
+          setData={setCommercialData} 
+          isDarkMode={isDarkMode} 
+        />
+      )}
+      </CalculatorLayout>
     </div>
   );
 });

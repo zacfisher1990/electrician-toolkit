@@ -1,4 +1,4 @@
-// theme.js - Centralized color theme for the Electrician Toolkit app
+// theme.js - Centralized color theme for Pro X Trades apps
 // Following industry best practices for dark mode (Material Design standards)
 
 export const lightTheme = {

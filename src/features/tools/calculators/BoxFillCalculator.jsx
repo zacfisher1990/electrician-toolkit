@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, AlertTriangle, Box, Zap, Info } from 'lucide-react';
 import { 
   boxCapacities, 
   wireVolumeAllowances, 
@@ -9,8 +9,16 @@ import {
   getWireVolumeAllowance,
   necReferences 
 } from './boxFillData';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox 
+} from './CalculatorLayout';
 
-const BoxFillCalculator = ({ isDarkMode = false, onBack }) => {
+const BoxFillCalculator = ({ isDarkMode = false }) => {
   const [boxType, setBoxType] = useState('4x1.5-square');
   const [customBoxCapacity, setCustomBoxCapacity] = useState('');
   const [isCustomBox, setIsCustomBox] = useState(false);
@@ -23,18 +31,6 @@ const BoxFillCalculator = ({ isDarkMode = false, onBack }) => {
     clamps: '',
     groundWires: false
   });
-
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
-  };
 
   const addConductor = () => {
     setConductors([...conductors, { size: '12', count: '' }]);
@@ -124,229 +120,151 @@ const BoxFillCalculator = ({ isDarkMode = false, onBack }) => {
   const isOverfilled = results.totalFill > boxCapacity;
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      
+    <CalculatorLayout isDarkMode={isDarkMode}>
       {/* Box Selection */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Box Selection
-        </h3>
-        
-        <div>
-          <label style={{ 
-            display: 'block', 
-            fontSize: '0.875rem', 
-            fontWeight: '500', 
-            color: colors.labelText,
-            marginBottom: '0.5rem' 
-          }}>
-            Box Type
-          </label>
-          <select 
+      <Section 
+        title="Box Selection" 
+        icon={Box} 
+        color="#dc2626" 
+        isDarkMode={isDarkMode}
+      >
+        <InputGroup label="Box Type" isDarkMode={isDarkMode}>
+          <Select 
             value={boxType} 
             onChange={(e) => handleBoxTypeChange(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
-            <optgroup label="Custom">
-              <option value="custom">Custom Box (Enter cu.in. below)</option>
-            </optgroup>
-            <optgroup label="Device Boxes (3&quot; x 2&quot;)">
-              {Object.entries(boxCapacities)
+            isDarkMode={isDarkMode}
+            options={[
+              { value: 'custom', label: 'Custom Box (Enter cu.in. below)' },
+              ...Object.entries(boxCapacities)
                 .filter(([key, box]) => box.type === 'device' && key.startsWith('3x2'))
-                .map(([key, box]) => (
-                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
-                ))}
-            </optgroup>
-            <optgroup label="Device Boxes (4&quot; x 2-1/8&quot;)">
-              {Object.entries(boxCapacities)
+                .map(([key, box]) => ({
+                  value: key,
+                  label: `${box.name} - ${box.capacity} cu.in.`
+                })),
+              ...Object.entries(boxCapacities)
                 .filter(([key, box]) => box.type === 'device' && key.startsWith('4x2'))
-                .map(([key, box]) => (
-                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
-                ))}
-            </optgroup>
-            <optgroup label="Square Boxes">
-              {Object.entries(boxCapacities)
+                .map(([key, box]) => ({
+                  value: key,
+                  label: `${box.name} - ${box.capacity} cu.in.`
+                })),
+              ...Object.entries(boxCapacities)
                 .filter(([key, box]) => box.type === 'square')
-                .map(([key, box]) => (
-                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
-                ))}
-            </optgroup>
-            <optgroup label="Round/Octagon Boxes">
-              {Object.entries(boxCapacities)
+                .map(([key, box]) => ({
+                  value: key,
+                  label: `${box.name} - ${box.capacity} cu.in.`
+                })),
+              ...Object.entries(boxCapacities)
                 .filter(([key, box]) => box.type === 'round-octagon')
-                .map(([key, box]) => (
-                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
-                ))}
-            </optgroup>
-            <optgroup label="Masonry Boxes">
-              {Object.entries(boxCapacities)
+                .map(([key, box]) => ({
+                  value: key,
+                  label: `${box.name} - ${box.capacity} cu.in.`
+                })),
+              ...Object.entries(boxCapacities)
                 .filter(([key, box]) => box.type === 'masonry')
-                .map(([key, box]) => (
-                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
-                ))}
-            </optgroup>
-            <optgroup label="FS/FD Boxes">
-              {Object.entries(boxCapacities)
+                .map(([key, box]) => ({
+                  value: key,
+                  label: `${box.name} - ${box.capacity} cu.in.`
+                })),
+              ...Object.entries(boxCapacities)
                 .filter(([key, box]) => box.type === 'fs-fd')
-                .map(([key, box]) => (
-                  <option key={key} value={key}>{box.name} - {box.capacity} cu.in.</option>
-                ))}
-            </optgroup>
-          </select>
-          
-          {/* Custom Box Capacity Input */}
-          {isCustomBox && (
-            <div style={{ marginTop: '1rem' }}>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Box Capacity (cu.in.)
-              </label>
-              <input 
-                type="number"
-                value={customBoxCapacity}
-                onChange={(e) => setCustomBoxCapacity(e.target.value)}
-                placeholder="Enter cubic inches"
-                step="0.1"
-                min="0"
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              />
-              <p style={{ 
-                fontSize: '0.75rem', 
-                color: colors.subtleText, 
-                marginTop: '0.25rem',
-                margin: '0.25rem 0 0 0'
-              }}>
-                Non-metallic boxes are marked with their volume. Custom enclosures may require calculation.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+                .map(([key, box]) => ({
+                  value: key,
+                  label: `${box.name} - ${box.capacity} cu.in.`
+                }))
+            ]}
+          />
+        </InputGroup>
+
+        {isCustomBox && (
+          <InputGroup label="Custom Box Capacity" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={customBoxCapacity}
+              onChange={(e) => setCustomBoxCapacity(e.target.value)}
+              placeholder="Enter capacity"
+              isDarkMode={isDarkMode}
+              unit="cu.in."
+            />
+          </InputGroup>
+        )}
+      </Section>
 
       {/* Conductors */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Conductors
-        </h3>
-        
+      <Section 
+        title="Conductors" 
+        icon={Zap} 
+        color="#10b981" 
+        isDarkMode={isDarkMode}
+      >
         {conductors.map((conductor, index) => (
-          <div key={index} style={{ 
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            marginBottom: '0.75rem',
-            border: `1px solid ${colors.cardBorder}`
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-              <h4 style={{ fontWeight: '600', color: colors.labelText, margin: 0, fontSize: '0.875rem' }}>
-                Wire Size {index + 1}
-              </h4>
+          <div 
+            key={index}
+            style={{
+              marginBottom: conductors.length > 1 ? '0.75rem' : 0
+            }}
+          >
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: '1fr 1fr auto', 
+              gap: '0.75rem',
+              alignItems: 'end'
+            }}>
+              <InputGroup 
+                label={index === 0 ? "Wire Size" : ""} 
+                isDarkMode={isDarkMode}
+              >
+                <Select
+                  value={conductor.size}
+                  onChange={(e) => updateConductor(index, 'size', e.target.value)}
+                  isDarkMode={isDarkMode}
+                  options={availableWireSizes.map(size => ({
+                    value: size,
+                    label: `${size} AWG`
+                  }))}
+                />
+              </InputGroup>
+
+              <InputGroup 
+                label={index === 0 ? "Quantity" : ""} 
+                isDarkMode={isDarkMode}
+              >
+                <Input
+                  type="number"
+                  value={conductor.count}
+                  onChange={(e) => updateConductor(index, 'count', e.target.value)}
+                  placeholder="Qty"
+                  min="0"
+                  isDarkMode={isDarkMode}
+                />
+              </InputGroup>
+
               {conductors.length > 1 && (
                 <button
                   onClick={() => removeConductor(index)}
-                  style={{ 
-                    color: '#dc2626', 
-                    background: 'none', 
-                    border: 'none', 
-                    cursor: 'pointer', 
-                    padding: '0.25rem',
+                  style={{
+                    padding: '0.75rem',
+                    background: 'transparent',
+                    border: `1px solid ${isDarkMode ? '#4b5563' : '#e5e7eb'}`,
+                    borderRadius: '0.5rem',
+                    cursor: 'pointer',
+                    color: '#ef4444',
                     display: 'flex',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = '#fee2e2';
+                    e.target.style.borderColor = '#ef4444';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'transparent';
+                    e.target.style.borderColor = isDarkMode ? '#4b5563' : '#e5e7eb';
                   }}
                 >
-                  <Trash2 size={20} />
+                  <Trash2 size={16} />
                 </button>
               )}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <select 
-                value={conductor.size} 
-                onChange={(e) => updateConductor(index, 'size', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              >
-                {availableWireSizes.map(size => (
-                  <option key={size} value={size}>{size} AWG</option>
-                ))}
-              </select>
-              <input 
-                type="number" 
-                value={conductor.count} 
-                onChange={(e) => updateConductor(index, 'count', e.target.value)}
-                placeholder="Quantity"
-                min="0"
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              />
             </div>
           </div>
         ))}
@@ -358,7 +276,7 @@ const BoxFillCalculator = ({ isDarkMode = false, onBack }) => {
             background: '#3b82f6',
             color: 'white',
             border: 'none',
-            borderRadius: '8px',
+            borderRadius: '0.5rem',
             padding: '0.75rem',
             fontSize: '0.875rem',
             fontWeight: '600',
@@ -366,327 +284,198 @@ const BoxFillCalculator = ({ isDarkMode = false, onBack }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.5rem'
+            gap: '0.5rem',
+            marginTop: '0.75rem',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = '#2563eb';
+            e.target.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = '#3b82f6';
+            e.target.style.transform = 'translateY(0)';
           }}
         >
           <Plus size={16} />
-          Add Wire Size
+          Add Conductor
         </button>
-        <p style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.5rem', margin: '0.5rem 0 0 0' }}>
-          Count all insulated conductors entering, leaving, or passing through the box
-        </p>
-      </div>
+      </Section>
 
-      {/* Devices and Other Items */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
+      {/* Devices and Fittings */}
+      <Section 
+        title="Devices & Fittings" 
+        icon={Info} 
+        color="#f59e0b" 
+        isDarkMode={isDarkMode}
+      >
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '0.75rem',
+          marginBottom: '0.75rem'
         }}>
-          Devices & Other Items
-        </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Receptacles/Outlets
-            </label>
-            <input 
-              type="number" 
-              value={devices.outlets} 
+          <InputGroup label="Outlets/Receptacles" helper="2 volumes each" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={devices.outlets}
               onChange={(e) => setDevices({...devices, outlets: e.target.value})}
               placeholder="0"
               min="0"
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
+              isDarkMode={isDarkMode}
             />
-            <p style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', margin: '0.25rem 0 0 0' }}>
-              Each device counts as 2 conductors
-            </p>
-          </div>
+          </InputGroup>
 
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Switches
-            </label>
-            <input 
-              type="number" 
-              value={devices.switches} 
+          <InputGroup label="Switches" helper="2 volumes each" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={devices.switches}
               onChange={(e) => setDevices({...devices, switches: e.target.value})}
               placeholder="0"
               min="0"
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
+              isDarkMode={isDarkMode}
             />
-            <p style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', margin: '0.25rem 0 0 0' }}>
-              Each device counts as 2 conductors
-            </p>
-          </div>
+          </InputGroup>
 
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Cable Clamps
-            </label>
-            <input 
-              type="number" 
-              value={devices.clamps} 
+          <InputGroup label="Internal Clamps" helper="1 volume if present" isDarkMode={isDarkMode}>
+            <Input
+              type="number"
+              value={devices.clamps}
               onChange={(e) => setDevices({...devices, clamps: e.target.value})}
               placeholder="0"
               min="0"
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
+              isDarkMode={isDarkMode}
             />
-            <p style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem', margin: '0.25rem 0 0 0' }}>
-              One or more = 1 conductor volume
-            </p>
-          </div>
+          </InputGroup>
         </div>
 
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+        <label style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.75rem', 
+          cursor: 'pointer',
+          fontSize: '0.875rem',
+          fontWeight: '500',
+          color: isDarkMode ? '#d1d5db' : '#374151'
+        }}>
           <input 
             type="checkbox" 
             checked={devices.groundWires} 
             onChange={(e) => setDevices({...devices, groundWires: e.target.checked})}
             style={{ width: '1.125rem', height: '1.125rem', cursor: 'pointer' }}
           />
-          <span style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.labelText }}>
-            Equipment Grounding Conductors Present
-          </span>
+          Equipment Grounding Conductors Present
         </label>
-        <p style={{ fontSize: '0.75rem', color: colors.subtleText, marginLeft: '2rem', margin: '0.25rem 0 0 2rem' }}>
+        <div style={{ 
+          fontSize: '0.75rem', 
+          color: isDarkMode ? '#9ca3af' : '#6b7280',
+          marginLeft: '2rem',
+          marginTop: '0.25rem'
+        }}>
           All grounds combined count as 1 conductor volume
-        </p>
-      </div>
+        </div>
+      </Section>
 
       {/* Results */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1.125rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem'
-        }}>
-          Results
-        </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-              Box Capacity
-            </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-              {boxCapacity}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-              cu.in.
-            </div>
-          </div>
-          
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-              Calculated Fill
-            </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-              {results.totalFill.toFixed(2)}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-              cu.in.
-            </div>
-          </div>
-          
-          <div style={{
-            background: isOverfilled ? '#fee2e2' : '#dbeafe',
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.75rem', color: isOverfilled ? '#991b1b' : '#1e40af', marginBottom: '0.25rem' }}>
-              Fill Percentage
-            </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: isOverfilled ? '#dc2626' : '#1e40af' }}>
-              {fillPercentage}%
-            </div>
-            <div style={{ fontSize: '0.75rem', color: isOverfilled ? '#991b1b' : '#1e40af', marginTop: '0.25rem' }}>
-              {isOverfilled ? 'OVERFILLED' : 'Within Limits'}
-            </div>
-          </div>
-        </div>
-
-        {results.conductorDetails.length > 0 && results.conductorDetails.some(c => c.count > 0) && (
+      {boxCapacity > 0 && (
+        <Section isDarkMode={isDarkMode}>
           <div style={{ 
-            background: colors.sectionBg,
-            padding: '1rem', 
-            borderRadius: '8px',
-            marginBottom: '1rem',
-            border: `1px solid ${colors.cardBorder}`
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '0.75rem', 
+            marginBottom: '0.75rem' 
           }}>
-            <strong style={{ color: colors.cardText, display: 'block', marginBottom: '0.75rem', fontSize: '0.875rem' }}>
-              Conductor Breakdown:
-            </strong>
-            {results.conductorDetails.map((detail, index) => (
-              detail.count > 0 && (
-                <div key={index} style={{ 
-                  marginTop: index > 0 ? '0.75rem' : 0,
-                  paddingTop: index > 0 ? '0.75rem' : 0,
-                  borderTop: index > 0 ? `1px solid ${colors.cardBorder}` : 'none',
-                  fontSize: '0.875rem',
-                  color: colors.labelText
-                }}>
-                  <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
-                    {detail.count}× {detail.size} AWG
-                  </div>
-                  <div style={{ fontSize: '0.8125rem', color: colors.subtleText }}>
-                    {detail.allowanceEach} cu.in. each = {detail.subtotal.toFixed(2)} cu.in. total
-                  </div>
-                </div>
-              )
-            ))}
+            <ResultCard
+              label="Box Capacity"
+              value={boxCapacity}
+              unit="cu.in."
+              color="#6b7280"
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
+            
+            <ResultCard
+              label="Calculated Fill"
+              value={results.totalFill.toFixed(2)}
+              unit="cu.in."
+              color="#6b7280"
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
+            
+            <ResultCard
+              label="Fill Percentage"
+              value={`${fillPercentage}%`}
+              unit={isOverfilled ? 'OVERFILLED' : 'Within Limits'}
+              color={isOverfilled ? '#ef4444' : '#3b82f6'}
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
           </div>
-        )}
 
-        {!isOverfilled && results.totalFill > 0 ? (
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Box fill is within NEC limits
-                </div>
-                {results.deviceFill > 0 && (
-                  <div>Devices: {results.deviceFill.toFixed(2)} cu.in.</div>
-                )}
-                {results.clampFill > 0 && (
-                  <div>Clamps: {results.clampFill.toFixed(2)} cu.in.</div>
-                )}
-                {results.groundFill > 0 && (
-                  <div>Grounds: {results.groundFill.toFixed(2)} cu.in.</div>
-                )}
+          {/* Conductor Breakdown */}
+          {results.conductorDetails.length > 0 && results.conductorDetails.some(c => c.count > 0) && (
+            <InfoBox type="info" isDarkMode={isDarkMode} title="Conductor Breakdown">
+              {results.conductorDetails.map((detail, index) => (
+                detail.count > 0 && (
+                  <div key={index} style={{ 
+                    marginTop: index > 0 ? '0.5rem' : 0,
+                    paddingTop: index > 0 ? '0.5rem' : 0,
+                    borderTop: index > 0 ? `1px solid ${isDarkMode ? '#4b5563' : '#e5e7eb'}` : 'none',
+                    fontSize: '0.8125rem'
+                  }}>
+                    <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                      {detail.count}× {detail.size} AWG
+                    </div>
+                    <div style={{ opacity: 0.8 }}>
+                      {detail.allowanceEach} cu.in. each = {detail.subtotal.toFixed(2)} cu.in. total
+                    </div>
+                  </div>
+                )
+              ))}
+            </InfoBox>
+          )}
+
+          {/* Status Message */}
+          {!isOverfilled && results.totalFill > 0 ? (
+            <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode}>
+              <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                Box fill is within NEC limits
               </div>
-            </div>
-          </div>
-        ) : isOverfilled ? (
-          <div style={{
-            background: '#fef3c7',
-            border: '1px solid #fcd34d',
-            borderRadius: '8px',
-            padding: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <AlertTriangle size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#92400e', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.9375rem' }}>
-                  BOX OVERFILLED - Violates NEC 314.16
-                </div>
-                <div style={{ marginBottom: '0.5rem' }}>
-                  Reduce number of devices or use larger box
-                </div>
-                {results.deviceFill > 0 && (
-                  <div>Devices: {results.deviceFill.toFixed(2)} cu.in.</div>
-                )}
-                {results.clampFill > 0 && (
-                  <div>Clamps: {results.clampFill.toFixed(2)} cu.in.</div>
-                )}
-                {results.groundFill > 0 && (
-                  <div>Grounds: {results.groundFill.toFixed(2)} cu.in.</div>
-                )}
+              <div style={{ fontSize: '0.8125rem' }}>
+                {results.deviceFill > 0 && <div>Devices: {results.deviceFill.toFixed(2)} cu.in.</div>}
+                {results.clampFill > 0 && <div>Clamps: {results.clampFill.toFixed(2)} cu.in.</div>}
+                {results.groundFill > 0 && <div>Grounds: {results.groundFill.toFixed(2)} cu.in.</div>}
               </div>
-            </div>
-          </div>
-        ) : null}
-      </div>
+            </InfoBox>
+          ) : isOverfilled ? (
+            <InfoBox type="warning" icon={AlertTriangle} isDarkMode={isDarkMode}>
+              <div style={{ fontWeight: '600', marginBottom: '0.25rem', fontSize: '0.9375rem' }}>
+                BOX OVERFILLED - Violates NEC 314.16
+              </div>
+              <div style={{ fontSize: '0.8125rem', marginBottom: '0.5rem' }}>
+                Reduce number of devices or use larger box
+              </div>
+              <div style={{ fontSize: '0.8125rem' }}>
+                {results.deviceFill > 0 && <div>Devices: {results.deviceFill.toFixed(2)} cu.in.</div>}
+                {results.clampFill > 0 && <div>Clamps: {results.clampFill.toFixed(2)} cu.in.</div>}
+                {results.groundFill > 0 && <div>Grounds: {results.groundFill.toFixed(2)} cu.in.</div>}
+              </div>
+            </InfoBox>
+          ) : null}
+        </Section>
+      )}
 
       {/* NEC Reference */}
-      <div style={{
-        background: colors.sectionBg,
-        padding: '1rem',
-        borderRadius: '8px',
-        border: `1px solid ${colors.cardBorder}`,
-        fontSize: '0.8125rem',
-        color: colors.labelText
-      }}>
-        <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
+      <InfoBox type="info" isDarkMode={isDarkMode}>
+        <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
           NEC 314.16 Requirements:
         </div>
-        Conductor = table volume • Device = 2 volumes • All grounds = 1 volume • Clamps = 1 volume
-      </div>
-    </div>
+        <div style={{ fontSize: '0.8125rem' }}>
+          Conductor = table volume • Device = 2 volumes • All grounds = 1 volume • Clamps = 1 volume
+        </div>
+      </InfoBox>
+    </CalculatorLayout>
   );
 };
 
