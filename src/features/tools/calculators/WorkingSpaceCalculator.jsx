@@ -1,6 +1,15 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { AlertTriangle, CheckCircle, Info, Zap } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Info, Zap, Ruler, Box } from 'lucide-react';
 import { exportToPDF } from '../../../utils/pdfExport';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox
+} from './CalculatorLayout';
+import { getColors } from '../../../theme';
 
 // NEC Table 110.26(A)(1) - Working Space Dimensions
 const voltageRanges = [
@@ -160,16 +169,7 @@ const WorkingSpaceCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) 
   const [equipmentHeight, setEquipmentHeight] = useState('72');
   const [showConditionHelp, setShowConditionHelp] = useState(false);
 
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-  };
+  const colors = getColors(isDarkMode);
 
   const requiredDepth = getWorkingSpaceDepth(voltage, condition);
   const requiredWidth = getMinimumWidth(parseFloat(equipmentWidth));
@@ -225,76 +225,37 @@ const WorkingSpaceCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) 
   }));
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      
-      {/* Voltage and Condition Selection */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Electrical System Information
-        </h3>
-        
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Voltage to Ground
-            </label>
-            <select 
-              value={voltage} 
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Electrical System Information */}
+        <Section 
+          title="Electrical System Information" 
+          icon={Zap} 
+          color="#3b82f6" 
+          isDarkMode={isDarkMode}
+        >
+          <InputGroup 
+            label="Voltage to Ground" 
+            isDarkMode={isDarkMode}
+            helpText={selectedVoltage.description}
+          >
+            <Select
+              value={voltage}
               onChange={(e) => setVoltage(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              {voltageRanges.map(range => (
-                <option key={range.value} value={range.value}>
-                  {range.label}
-                </option>
-              ))}
-            </select>
-            <div style={{ 
-              fontSize: '0.75rem', 
-              color: colors.labelText, 
-              marginTop: '0.5rem',
-              fontStyle: 'italic'
-            }}>
-              {selectedVoltage.description}
-            </div>
-          </div>
+              isDarkMode={isDarkMode}
+              options={voltageRanges.map(range => ({
+                value: range.value,
+                label: range.label
+              }))}
+            />
+          </InputGroup>
 
-          <div>
+          <InputGroup isDarkMode={isDarkMode}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <label style={{ 
                 fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText
+                fontWeight: '600',
+                color: colors.text
               }}>
                 Working Space Condition
               </label>
@@ -313,435 +274,238 @@ const WorkingSpaceCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) 
                 <Info size={18} />
               </button>
             </div>
-            <select 
-              value={condition} 
+            <Select
+              value={condition}
               onChange={(e) => setCondition(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              {conditionTypes.map(cond => (
-                <option key={cond.value} value={cond.value}>
-                  {cond.label}
-                </option>
-              ))}
-            </select>
+              isDarkMode={isDarkMode}
+              options={conditionTypes.map(cond => ({
+                value: cond.value,
+                label: cond.label
+              }))}
+            />
             <div style={{ 
-              fontSize: '0.75rem', 
-              color: colors.labelText, 
-              marginTop: '0.5rem',
+              marginTop: '0.375rem',
+              fontSize: '0.75rem',
+              color: colors.subtext,
               fontStyle: 'italic'
             }}>
               {selectedCondition.description}
             </div>
-          </div>
+          </InputGroup>
 
           {showConditionHelp && (
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              border: `1px solid ${colors.cardBorder}`
-            }}>
-              <div style={{ fontWeight: '600', color: colors.cardText, marginBottom: '0.5rem', fontSize: '0.875rem' }}>
-                {selectedCondition.label} Examples:
+            <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title={`${selectedCondition.label} Examples`}>
+              <div style={{ fontSize: '0.8125rem' }}>
+                <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                  {conditionExamples.map((example, index) => (
+                    <li key={index} style={{ marginBottom: '0.25rem' }}>{example}</li>
+                  ))}
+                </ul>
               </div>
-              <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.875rem', color: colors.labelText }}>
-                {conditionExamples.map((example, index) => (
-                  <li key={index} style={{ marginBottom: '0.25rem' }}>{example}</li>
-                ))}
-              </ul>
-            </div>
+            </InfoBox>
           )}
-        </div>
-      </div>
+        </Section>
 
-      {/* Equipment Details */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Equipment Details
-        </h3>
-        
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Equipment Type
-            </label>
-            <select 
-              value={equipmentType} 
+        {/* Equipment Details */}
+        <Section 
+          title="Equipment Details" 
+          icon={Box} 
+          color="#8b5cf6" 
+          isDarkMode={isDarkMode}
+        >
+          <InputGroup label="Equipment Type" isDarkMode={isDarkMode}>
+            <Select
+              value={equipmentType}
               onChange={(e) => setEquipmentType(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              {equipmentTypes.map(type => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
+              isDarkMode={isDarkMode}
+              options={equipmentTypes.map(type => ({
+                value: type.value,
+                label: type.label
+              }))}
+            />
+          </InputGroup>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Equipment Width (inches)
-              </label>
-              <input
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '0.75rem' 
+          }}>
+            <InputGroup label="Equipment Width" isDarkMode={isDarkMode}>
+              <Input
                 type="number"
                 value={equipmentWidth}
                 onChange={(e) => setEquipmentWidth(e.target.value)}
                 min="1"
                 step="1"
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
+                isDarkMode={isDarkMode}
+                unit="in"
               />
-            </div>
+            </InputGroup>
 
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Equipment Height (inches)
-              </label>
-              <input
+            <InputGroup label="Equipment Height" isDarkMode={isDarkMode}>
+              <Input
                 type="number"
                 value={equipmentHeight}
                 onChange={(e) => setEquipmentHeight(e.target.value)}
                 min="1"
                 step="1"
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
+                isDarkMode={isDarkMode}
+                unit="in"
               />
-            </div>
+            </InputGroup>
           </div>
-        </div>
-      </div>
+        </Section>
 
-      {/* Results - Three Dimensions */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1.125rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem'
-        }}>
-          Required Working Space Dimensions
-        </h3>
-        
-        {requiredDepth !== null ? (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-              {/* Depth */}
-              <div style={{
-                background: '#dbeafe',
-                padding: '1.25rem',
-                borderRadius: '8px',
-                textAlign: 'center'
+        {/* Results */}
+        <Section isDarkMode={isDarkMode}>
+          {requiredDepth !== null ? (
+            <>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
+                gap: '0.75rem', 
+                marginBottom: '0.75rem' 
               }}>
-                <div style={{ fontSize: '0.7rem', color: '#1e40af', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase' }}>
-                  Depth (Front to Back)
-                </div>
-                <div style={{ fontSize: '2rem', fontWeight: '700', color: '#1e40af', lineHeight: '1' }}>
-                  {requiredDepth}′
-                </div>
-                <div style={{ fontSize: '0.875rem', color: '#1e40af', marginTop: '0.5rem' }}>
-                  ({requiredDepth * 12}" minimum)
-                </div>
-              </div>
-              
-              {/* Width */}
-              <div style={{
-                background: '#d1fae5',
-                padding: '1.25rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.7rem', color: '#047857', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase' }}>
-                  Width (Side to Side)
-                </div>
-                <div style={{ fontSize: '2rem', fontWeight: '700', color: '#047857', lineHeight: '1' }}>
-                  {requiredWidth}"
-                </div>
-                <div style={{ fontSize: '0.875rem', color: '#047857', marginTop: '0.5rem' }}>
-                  ({(requiredWidth / 12).toFixed(2)}′ minimum)
-                </div>
+                <ResultCard
+                  label="Depth (Front to Back)"
+                  value={`${requiredDepth}′`}
+                  unit={`(${requiredDepth * 12}" minimum)`}
+                  color="#3b82f6"
+                  variant="prominent"
+                  isDarkMode={isDarkMode}
+                />
+                
+                <ResultCard
+                  label="Width (Side to Side)"
+                  value={`${requiredWidth}"`}
+                  unit={`(${(requiredWidth / 12).toFixed(2)}′ minimum)`}
+                  color="#10b981"
+                  variant="prominent"
+                  isDarkMode={isDarkMode}
+                />
+                
+                <ResultCard
+                  label="Height (Floor to Ceiling)"
+                  value={`${requiredHeight}′`}
+                  unit={`(${requiredHeight * 12}" minimum)`}
+                  color="#f59e0b"
+                  variant="prominent"
+                  isDarkMode={isDarkMode}
+                />
               </div>
 
-              {/* Height */}
-              <div style={{
-                background: '#fef3c7',
-                padding: '1.25rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.7rem', color: '#92400e', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase' }}>
-                  Height (Floor to Ceiling)
-                </div>
-                <div style={{ fontSize: '2rem', fontWeight: '700', color: '#92400e', lineHeight: '1' }}>
-                  {requiredHeight}′
-                </div>
-                <div style={{ fontSize: '0.875rem', color: '#92400e', marginTop: '0.5rem' }}>
-                  ({requiredHeight * 12}" minimum)
-                </div>
-              </div>
-            </div>
-
-            {/* Summary Card */}
-            <div style={{
-              background: '#d1fae5',
-              border: '1px solid #6ee7b7',
-              borderRadius: '8px',
-              padding: '1rem',
-              marginBottom: '1rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5', width: '100%' }}>
+              <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode}>
+                <div style={{ fontSize: '0.8125rem' }}>
                   <div><strong>Voltage:</strong> {selectedVoltage.label}</div>
                   <div><strong>Condition:</strong> {selectedCondition.label}</div>
                   <div><strong>Equipment:</strong> {selectedEquipment.label}</div>
-                  <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #6ee7b7' }}>
+                  <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid currentColor', opacity: 0.3 }}>
+                  </div>
+                  <div style={{ marginTop: '0.25rem' }}>
                     <strong>Working Space Volume:</strong> {workingSpaceVolume.toFixed(1)} cubic feet
                   </div>
                 </div>
-              </div>
-            </div>
+              </InfoBox>
 
-            {/* Visual Representation */}
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1.5rem',
-              borderRadius: '8px',
-              border: `1px solid ${colors.cardBorder}`,
-              marginBottom: '1rem'
-            }}>
-              <div style={{ fontWeight: '600', color: colors.cardText, marginBottom: '1rem', fontSize: '0.875rem' }}>
-                Working Space Layout (Top View):
-              </div>
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                {/* Equipment Box */}
-                <div style={{
-                  width: '120px',
-                  height: '40px',
-                  background: '#ef4444',
-                  border: '2px solid #dc2626',
-                  borderRadius: '4px',
-                  display: 'flex',
+              {/* Visual Representation */}
+              <InfoBox type="info" icon={Ruler} isDarkMode={isDarkMode} title="Working Space Layout (Top View)">
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '0.75rem',
-                  fontWeight: '600'
+                  gap: '0.5rem',
+                  padding: '1rem 0'
                 }}>
-                  EQUIPMENT
-                </div>
-                {/* Arrow showing depth */}
-                <div style={{
-                  width: '2px',
-                  height: `${Math.min(requiredDepth * 15, 80)}px`,
-                  background: '#3b82f6',
-                  position: 'relative'
-                }}>
+                  {/* Equipment Box */}
                   <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    background: colors.sectionBg,
-                    padding: '0.25rem 0.5rem',
+                    width: '120px',
+                    height: '40px',
+                    background: '#ef4444',
+                    border: '2px solid #dc2626',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
                     fontSize: '0.75rem',
-                    fontWeight: '600',
-                    color: '#3b82f6',
-                    whiteSpace: 'nowrap'
+                    fontWeight: '600'
                   }}>
-                    {requiredDepth}′ depth
+                    EQUIPMENT
+                  </div>
+                  {/* Arrow showing depth */}
+                  <div style={{
+                    width: '2px',
+                    height: `${Math.min(requiredDepth * 15, 80)}px`,
+                    background: '#3b82f6',
+                    position: 'relative'
+                  }}>
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      background: colors.cardBg,
+                      padding: '0.25rem 0.5rem',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      color: '#3b82f6',
+                      whiteSpace: 'nowrap',
+                      borderRadius: '4px'
+                    }}>
+                      {requiredDepth}′ depth
+                    </div>
+                  </div>
+                  {/* Working Space */}
+                  <div style={{
+                    width: '120px',
+                    height: '40px',
+                    background: '#10b981',
+                    border: '2px dashed #059669',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    fontWeight: '600'
+                  }}>
+                    WORKING SPACE
                   </div>
                 </div>
-                {/* Working Space */}
-                <div style={{
-                  width: '120px',
-                  height: '40px',
-                  background: '#10b981',
-                  border: '2px dashed #059669',
-                  borderRadius: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '0.75rem',
-                  fontWeight: '600'
-                }}>
-                  WORKING SPACE
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div style={{
-            background: '#fee2e2',
-            border: '1px solid #fca5a5',
-            borderRadius: '8px',
-            padding: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <AlertTriangle size={20} color="#dc2626" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#7f1d1d', lineHeight: '1.5' }}>
+              </InfoBox>
+            </>
+          ) : (
+            <InfoBox type="error" icon={AlertTriangle} isDarkMode={isDarkMode}>
+              <div style={{ fontSize: '0.8125rem' }}>
                 Unable to determine working space for this configuration. Please verify NEC requirements.
               </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Special Requirements */}
-      {specialRequirements.length > 0 && (
-        <div style={{
-          background: colors.cardBg,
-          border: `1px solid ${colors.cardBorder}`,
-          borderRadius: '12px',
-          padding: '1.5rem',
-          marginBottom: '1rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ 
-            fontSize: '1rem', 
-            fontWeight: '600', 
-            color: colors.cardText,
-            marginTop: 0,
-            marginBottom: '1rem',
-            borderBottom: `1px solid ${colors.cardBorder}`,
-            paddingBottom: '0.5rem'
-          }}>
-            Additional Requirements
-          </h3>
-          <div style={{
-            background: '#fef3c7',
-            border: '1px solid #fcd34d',
-            borderRadius: '8px',
-            padding: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <Zap size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#92400e', lineHeight: '1.5' }}>
-                <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                  {specialRequirements.map((req, index) => (
-                    <li key={index} style={{ marginBottom: '0.5rem' }}>{req}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* NEC References */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          NEC References
-        </h3>
-        <div style={{ fontSize: '0.875rem', color: colors.labelText, lineHeight: '1.5' }}>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.mainArticle}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.workingSpaceTable}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.width}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.height}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.entrance}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.illumination}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.headroom}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.dedicatedSpace}</div>
-          {(voltage === 'over-2500' || voltage === '601-2500') && (
-            <div>• {necReferences.arcFlash}</div>
+            </InfoBox>
           )}
-        </div>
-      </div>
+        </Section>
+
+        {/* Additional Requirements */}
+        {specialRequirements.length > 0 && (
+          <InfoBox type="warning" icon={Zap} isDarkMode={isDarkMode} title="Additional Requirements">
+            <div style={{ fontSize: '0.8125rem' }}>
+              <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                {specialRequirements.map((req, index) => (
+                  <li key={index} style={{ marginBottom: '0.5rem' }}>{req}</li>
+                ))}
+              </ul>
+            </div>
+          </InfoBox>
+        )}
+
+        {/* NEC References */}
+        <InfoBox type="info" isDarkMode={isDarkMode}>
+          <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+            NEC References:
+          </div>
+          <div style={{ fontSize: '0.8125rem' }}>
+            Article 110.26 • Table 110.26(A)(1) • 110.26(A)(2) Width • 110.26(A)(3) Height • 110.26(C) Entrance • 110.26(D) Illumination
+          </div>
+        </InfoBox>
+      </CalculatorLayout>
     </div>
   );
 });

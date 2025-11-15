@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Ruler, CheckCircle, AlertCircle } from 'lucide-react';
+import { Ruler, CheckCircle, AlertCircle, Cable, ArrowUpDown, Info, Circle, MoveHorizontal, MoveVertical } from 'lucide-react';
 import {
   materialTypes,
   cableTypes,
@@ -10,6 +10,15 @@ import {
   generalRequirements,
   necReferences
 } from './supportSpacingData';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox,
+  TabGroup
+} from './CalculatorLayout';
 
 const SupportSpacingCalculator = ({ isDarkMode = false, onBack }) => {
   const [materialType, setMaterialType] = useState('cable');
@@ -18,18 +27,6 @@ const SupportSpacingCalculator = ({ isDarkMode = false, onBack }) => {
   const [conduitSize, setConduitSize] = useState('3/4');
   const [orientation, setOrientation] = useState('horizontal');
   const [runLength, setRunLength] = useState('');
-
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
-  };
 
   // Get spacing requirements
   const getSpacingRequirements = () => {
@@ -86,449 +83,224 @@ const SupportSpacingCalculator = ({ isDarkMode = false, onBack }) => {
 
   const supportCalc = calculateSupports();
 
+  // Material type tabs
+  const materialTabs = materialTypes.map(type => ({
+    id: type.value,
+    label: type.label,
+    icon: type.value === 'cable' ? Cable : Circle
+  }));
+
+  // Orientation tabs
+  const orientationTabs = [
+    { id: 'horizontal', label: 'Horizontal', icon: MoveHorizontal },
+    { id: 'vertical', label: 'Vertical', icon: MoveVertical }
+  ];
+
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      
-      {/* Material Selection */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Material Type
-        </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-          {materialTypes.map(type => (
-            <button
-              key={type.value}
-              onClick={() => setMaterialType(type.value)}
-              style={{
-                padding: '0.75rem',
-                borderRadius: '8px',
-                border: `2px solid ${materialType === type.value ? '#3b82f6' : colors.cardBorder}`,
-                background: materialType === type.value ? '#dbeafe' : colors.inputBg,
-                color: materialType === type.value ? '#1e40af' : colors.cardText,
-                fontWeight: '600',
-                fontSize: '0.9375rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              {type.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Material Selection */}
+        <Section 
+          title="Material Type" 
+          icon={Cable} 
+          color="#3b82f6" 
+          isDarkMode={isDarkMode}
+        >
+          <TabGroup
+            tabs={materialTabs}
+            activeTab={materialType}
+            onChange={setMaterialType}
+            isDarkMode={isDarkMode}
+          />
+        </Section>
 
-      {/* Cable/Conduit Selection */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          {materialType === 'cable' ? 'Cable Type' : 'Conduit Type & Size'}
-        </h3>
-        
-        {materialType === 'cable' ? (
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Cable Type
-            </label>
-            <select 
-              value={cableType} 
-              onChange={(e) => setCableType(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              {Object.entries(cableTypes).map(([key, cable]) => (
-                <option key={key} value={key}>{cable.name}</option>
-              ))}
-            </select>
-          </div>
-        ) : (
-          <div>
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Conduit Type
-              </label>
-              <select 
-                value={conduitType} 
-                onChange={(e) => setConduitType(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              >
-                {Object.entries(conduitTypes).map(([key, conduit]) => (
-                  <option key={key} value={key}>{conduit.name}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Conduit Size
-              </label>
-              <select 
-                value={conduitSize} 
-                onChange={(e) => setConduitSize(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              >
-                {conduitSizes.map(size => (
-                  <option key={size} value={size}>{size}"</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
-      </div>
+        {/* Cable/Conduit Selection */}
+        <Section 
+          title={materialType === 'cable' ? 'Cable Type' : 'Conduit Type & Size'} 
+          icon={materialType === 'cable' ? Cable : Circle} 
+          color="#8b5cf6" 
+          isDarkMode={isDarkMode}
+        >
+          {materialType === 'cable' ? (
+            <InputGroup label="Cable Type" isDarkMode={isDarkMode}>
+              <Select
+                value={cableType}
+                onChange={(e) => setCableType(e.target.value)}
+                isDarkMode={isDarkMode}
+                options={Object.entries(cableTypes).map(([key, cable]) => ({
+                  value: key,
+                  label: cable.name
+                }))}
+              />
+            </InputGroup>
+          ) : (
+            <>
+              <InputGroup label="Conduit Type" isDarkMode={isDarkMode}>
+                <Select
+                  value={conduitType}
+                  onChange={(e) => setConduitType(e.target.value)}
+                  isDarkMode={isDarkMode}
+                  options={Object.entries(conduitTypes).map(([key, conduit]) => ({
+                    value: key,
+                    label: conduit.name
+                  }))}
+                />
+              </InputGroup>
 
-      {/* Orientation Selection */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Installation Orientation
-        </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-          <button
-            onClick={() => setOrientation('horizontal')}
-            style={{
-              padding: '0.75rem',
-              borderRadius: '8px',
-              border: `2px solid ${orientation === 'horizontal' ? '#3b82f6' : colors.cardBorder}`,
-              background: orientation === 'horizontal' ? '#dbeafe' : colors.inputBg,
-              color: orientation === 'horizontal' ? '#1e40af' : colors.cardText,
-              fontWeight: '600',
-              fontSize: '0.9375rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
+              <InputGroup label="Conduit Size" isDarkMode={isDarkMode}>
+                <Select
+                  value={conduitSize}
+                  onChange={(e) => setConduitSize(e.target.value)}
+                  isDarkMode={isDarkMode}
+                  options={conduitSizes.map(size => ({
+                    value: size,
+                    label: `${size}"`
+                  }))}
+                />
+              </InputGroup>
+            </>
+          )}
+        </Section>
+
+        {/* Orientation Selection */}
+        <Section 
+          title="Installation Orientation" 
+          icon={MoveHorizontal} 
+          color="#f59e0b" 
+          isDarkMode={isDarkMode}
+        >
+          <TabGroup
+            tabs={orientationTabs}
+            activeTab={orientation}
+            onChange={setOrientation}
+            isDarkMode={isDarkMode}
+          />
+        </Section>
+
+        {/* Run Length Input */}
+        <Section 
+          title="Run Length (Optional)" 
+          icon={Ruler} 
+          color="#10b981" 
+          isDarkMode={isDarkMode}
+        >
+          <InputGroup 
+            label="Total Length" 
+            isDarkMode={isDarkMode}
+            helpText="Enter your run length to calculate the exact number of supports needed"
           >
-            Horizontal
-          </button>
-          <button
-            onClick={() => setOrientation('vertical')}
-            style={{
-              padding: '0.75rem',
-              borderRadius: '8px',
-              border: `2px solid ${orientation === 'vertical' ? '#3b82f6' : colors.cardBorder}`,
-              background: orientation === 'vertical' ? '#dbeafe' : colors.inputBg,
-              color: orientation === 'vertical' ? '#1e40af' : colors.cardText,
-              fontWeight: '600',
-              fontSize: '0.9375rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            Vertical
-          </button>
-        </div>
-      </div>
+            <Input
+              type="number"
+              value={runLength}
+              onChange={(e) => setRunLength(e.target.value)}
+              placeholder="Enter length"
+              step="0.5"
+              min="0"
+              isDarkMode={isDarkMode}
+              unit="ft"
+            />
+          </InputGroup>
+        </Section>
 
-      {/* Run Length Input */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Run Length (Optional)
-        </h3>
-        
-        <label style={{ 
-          display: 'block', 
-          fontSize: '0.875rem', 
-          fontWeight: '500', 
-          color: colors.labelText,
-          marginBottom: '0.5rem' 
-        }}>
-          Total Length (feet)
-        </label>
-        <input 
-          type="number"
-          value={runLength}
-          onChange={(e) => setRunLength(e.target.value)}
-          placeholder="Enter length to calculate number of supports"
-          step="0.5"
-          min="0"
-          style={{
-            width: '100%',
-            padding: '0.625rem',
-            fontSize: '0.9375rem',
-            border: `1px solid ${colors.inputBorder}`,
-            borderRadius: '8px',
-            backgroundColor: colors.inputBg,
-            color: colors.cardText,
-            boxSizing: 'border-box'
-          }}
-        />
-        <p style={{ 
-          fontSize: '0.75rem', 
-          color: colors.subtleText, 
-          marginTop: '0.25rem',
-          margin: '0.25rem 0 0 0'
-        }}>
-          Enter your run length to calculate the exact number of supports needed
-        </p>
-      </div>
-
-      {/* Requirements Display */}
-      {requirements && (
-        <div style={{
-          background: colors.cardBg,
-          border: `1px solid ${colors.cardBorder}`,
-          borderRadius: '12px',
-          padding: '1.5rem',
-          marginBottom: '1rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ 
-            fontSize: '1.125rem', 
-            fontWeight: '600', 
-            color: colors.cardText,
-            marginTop: 0,
-            marginBottom: '1rem'
-          }}>
-            NEC Requirements
-          </h3>
-          
-          <div style={{ 
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            marginBottom: '1rem'
-          }}>
+        {/* Requirements Display */}
+        {requirements && (
+          <Section isDarkMode={isDarkMode}>
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(2, 1fr)', 
-              gap: '1rem',
-              marginBottom: '1rem'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+              gap: '0.75rem', 
+              marginBottom: '0.75rem' 
             }}>
-              <div>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Support Spacing
-                </div>
-                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: colors.cardText }}>
-                  {requirements.spacing}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText }}>
-                  feet max
-                </div>
-              </div>
+              <ResultCard
+                label="Support Spacing"
+                value={requirements.spacing}
+                unit="feet max"
+                color="#3b82f6"
+                variant="prominent"
+                isDarkMode={isDarkMode}
+              />
               
-              <div>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  From Termination
-                </div>
-                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: colors.cardText }}>
-                  {requirements.termination}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText }}>
-                  inches max
-                </div>
-              </div>
+              <ResultCard
+                label="From Termination"
+                value={requirements.termination}
+                unit="inches max"
+                color="#8b5cf6"
+                variant="prominent"
+                isDarkMode={isDarkMode}
+              />
             </div>
-            
-            <div style={{
-              padding: '0.75rem',
-              background: '#dbeafe',
-              borderRadius: '6px',
-              border: '1px solid #93c5fd'
-            }}>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'start', 
-                gap: '0.5rem'
-              }}>
-                <CheckCircle size={18} color="#1e40af" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-                <div>
-                  <div style={{ fontSize: '0.8125rem', color: '#1e40af', fontWeight: '600', marginBottom: '0.25rem' }}>
-                    NEC {requirements.necRef}
+
+            <InfoBox type="info" icon={CheckCircle} isDarkMode={isDarkMode} title={`NEC ${requirements.necRef}`}>
+              <div style={{ fontSize: '0.8125rem' }}>
+                {requirements.notes}
+              </div>
+            </InfoBox>
+
+            {/* Support Calculation Results */}
+            {supportCalc && (
+              <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title={`Support Layout for ${runLength}' Run:`}>
+                <div style={{ fontSize: '0.8125rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                    <span>First support from termination:</span>
+                    <span style={{ fontWeight: '600' }}>{supportCalc.firstSupport.toFixed(2)}' ({(supportCalc.firstSupport * 12).toFixed(1)}")</span>
                   </div>
-                  <div style={{ fontSize: '0.8125rem', color: '#1e3a8a', lineHeight: '1.4' }}>
-                    {requirements.notes}
+                  
+                  {supportCalc.intermediateSupports > 0 && (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                        <span>Intermediate supports needed:</span>
+                        <span style={{ fontWeight: '600' }}>{supportCalc.intermediateSupports}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                        <span>Spacing between supports:</span>
+                        <span style={{ fontWeight: '600' }}>{supportCalc.spacing.toFixed(2)}' (max {supportCalc.maxSpacing}')</span>
+                      </div>
+                    </>
+                  )}
+                  
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    paddingTop: '0.5rem',
+                    borderTop: '1px solid currentColor',
+                    marginTop: '0.5rem',
+                    opacity: 0.3
+                  }}>
+                  </div>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    marginTop: '0.25rem'
+                  }}>
+                    <span style={{ fontWeight: '600' }}>Total supports needed:</span>
+                    <span style={{ fontWeight: '700', fontSize: '1rem' }}>{supportCalc.totalWithEnds}</span>
+                  </div>
+                  
+                  <div style={{ 
+                    fontSize: '0.75rem',
+                    marginTop: '0.5rem',
+                    fontStyle: 'italic',
+                    opacity: 0.8
+                  }}>
+                    (Includes supports at both termination points)
                   </div>
                 </div>
-              </div>
-            </div>
+              </InfoBox>
+            )}
+          </Section>
+        )}
+
+        {/* General NEC Requirements */}
+        <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title={generalRequirements.title}>
+          <div style={{ fontSize: '0.8125rem' }}>
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: '1.6' }}>
+              {generalRequirements.rules.map((rule, index) => (
+                <li key={index} style={{ marginBottom: '0.25rem' }}>{rule}</li>
+              ))}
+            </ul>
           </div>
-
-          {/* Support Calculation Results */}
-          {supportCalc && (
-            <div style={{
-              background: '#d1fae5',
-              border: '1px solid #6ee7b7',
-              borderRadius: '8px',
-              padding: '1rem'
-            }}>
-              <div style={{ 
-                fontSize: '0.875rem', 
-                color: '#047857',
-                fontWeight: '600',
-                marginBottom: '0.75rem'
-              }}>
-                Support Layout for {runLength}' Run:
-              </div>
-              
-              <div style={{ 
-                display: 'grid', 
-                gap: '0.5rem',
-                fontSize: '0.8125rem',
-                color: '#065f46'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>First support from termination:</span>
-                  <span style={{ fontWeight: '600' }}>{supportCalc.firstSupport.toFixed(2)}' ({(supportCalc.firstSupport * 12).toFixed(1)}")</span>
-                </div>
-                
-                {supportCalc.intermediateSupports > 0 && (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Intermediate supports needed:</span>
-                      <span style={{ fontWeight: '600' }}>{supportCalc.intermediateSupports}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Spacing between supports:</span>
-                      <span style={{ fontWeight: '600' }}>{supportCalc.spacing.toFixed(2)}' (max {supportCalc.maxSpacing}')</span>
-                    </div>
-                  </>
-                )}
-                
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
-                  paddingTop: '0.5rem',
-                  borderTop: '1px solid #6ee7b7',
-                  marginTop: '0.25rem'
-                }}>
-                  <span style={{ fontWeight: '600' }}>Total supports needed:</span>
-                  <span style={{ fontWeight: '700', fontSize: '1rem' }}>{supportCalc.totalWithEnds}</span>
-                </div>
-                
-                <div style={{ 
-                  fontSize: '0.75rem',
-                  color: '#059669',
-                  marginTop: '0.25rem',
-                  fontStyle: 'italic'
-                }}>
-                  (Includes supports at both termination points)
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* General NEC Requirements */}
-      <div style={{
-        background: colors.sectionBg,
-        padding: '1rem',
-        borderRadius: '8px',
-        border: `1px solid ${colors.cardBorder}`,
-        fontSize: '0.8125rem',
-        color: colors.labelText
-      }}>
-        <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-          {generalRequirements.title}
-        </div>
-        <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.25rem', lineHeight: '1.6' }}>
-          {generalRequirements.rules.map((rule, index) => (
-            <li key={index} style={{ marginBottom: '0.25rem' }}>{rule}</li>
-          ))}
-        </ul>
-      </div>
+        </InfoBox>
+      </CalculatorLayout>
     </div>
   );
 };

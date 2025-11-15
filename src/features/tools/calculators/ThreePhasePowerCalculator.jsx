@@ -1,7 +1,15 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { Zap, Info, CheckCircle } from 'lucide-react';
+import { Zap, Info, CheckCircle, Calculator, Settings, Gauge } from 'lucide-react';
 import { exportToPDF } from '../../../utils/pdfExport';
-import styles from './Calculator.module.css';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox,
+  TabGroup
+} from './CalculatorLayout';
 
 const ThreePhasePowerCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [calculationMode, setCalculationMode] = useState('find-power');
@@ -11,18 +19,6 @@ const ThreePhasePowerCalculator = forwardRef(({ isDarkMode = false, onBack }, re
   const [power, setPower] = useState('');
   const [configuration, setConfiguration] = useState('line-to-line');
   const [efficiency, setEfficiency] = useState('');
-
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
-  };
 
   const calculate3Phase = () => {
     const V = parseFloat(voltage);
@@ -93,6 +89,13 @@ const ThreePhasePowerCalculator = forwardRef(({ isDarkMode = false, onBack }, re
   };
 
   const results = calculate3Phase();
+
+  // Calculation mode tabs
+  const modeTabs = [
+    { id: 'find-power', label: 'Find Power', icon: Zap },
+    { id: 'find-current', label: 'Find Current', icon: Gauge },
+    { id: 'motor-power', label: 'Motor', icon: Settings }
+  ];
 
   // Expose exportPDF function to parent via ref
   useImperativeHandle(ref, () => ({
@@ -175,591 +178,308 @@ const ThreePhasePowerCalculator = forwardRef(({ isDarkMode = false, onBack }, re
   }));
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      {/* Calculation Mode Selection */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Calculation Mode
-        </h3>
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Calculation Mode Selection */}
+        <Section 
+          title="Calculation Mode" 
+          icon={Calculator} 
+          color="#3b82f6" 
+          isDarkMode={isDarkMode}
+        >
+          <TabGroup
+            tabs={modeTabs}
+            activeTab={calculationMode}
+            onChange={setCalculationMode}
+            isDarkMode={isDarkMode}
+          />
+        </Section>
 
-        <div style={{ display: 'grid', gap: '0.5rem' }}>
-          {[
-            { value: 'find-power', label: 'Find Power (from Voltage & Current)' },
-            { value: 'find-current', label: 'Find Current (from Power & Voltage)' },
-            { value: 'motor-power', label: 'Motor Power & Efficiency' }
-          ].map(mode => (
-            <label 
-              key={mode.value}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.75rem',
-                background: calculationMode === mode.value ? colors.sectionBg : 'transparent',
-                border: `1px solid ${calculationMode === mode.value ? '#3b82f6' : colors.cardBorder}`,
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseOver={(e) => {
-                if (calculationMode !== mode.value) {
-                  e.currentTarget.style.background = colors.sectionBg;
-                }
-              }}
-              onMouseOut={(e) => {
-                if (calculationMode !== mode.value) {
-                  e.currentTarget.style.background = 'transparent';
-                }
-              }}
-            >
-              <input
-                type="radio"
-                name="calculationMode"
-                value={mode.value}
-                checked={calculationMode === mode.value}
-                onChange={(e) => setCalculationMode(e.target.value)}
-                style={{ width: '1.125rem', height: '1.125rem', cursor: 'pointer' }}
-              />
-              <span style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.cardText }}>
-                {mode.label}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Input Fields */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Input Values
-        </h3>
-
-        {calculationMode === 'motor-power' ? (
-          // Motor Power Mode
-          <div style={{ display: 'grid', gap: '1rem' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText, 
-                marginBottom: '0.5rem' 
+        {/* Input Fields */}
+        <Section 
+          title="Input Values" 
+          icon={Zap} 
+          color="#f59e0b" 
+          isDarkMode={isDarkMode}
+        >
+          {calculationMode === 'motor-power' ? (
+            // Motor Power Mode
+            <>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                gap: '0.75rem' 
               }}>
-                Output Power (kW)
-              </label>
-              <input 
-                type="number" 
-                value={power} 
-                onChange={(e) => setPower(e.target.value)}
-                placeholder="Motor output power"
-                step="0.1"
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
+                <InputGroup label="Output Power" isDarkMode={isDarkMode}>
+                  <Input
+                    type="number"
+                    value={power}
+                    onChange={(e) => setPower(e.target.value)}
+                    placeholder="Motor output"
+                    step="0.1"
+                    isDarkMode={isDarkMode}
+                    unit="kW"
+                  />
+                </InputGroup>
 
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText, 
-                marginBottom: '0.5rem' 
-              }}>
-                Motor Efficiency (%)
-              </label>
-              <input 
-                type="number" 
-                value={efficiency} 
-                onChange={(e) => setEfficiency(e.target.value)}
-                placeholder="85-95% typical"
-                step="0.1"
-                min="0"
-                max="100"
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              />
-              <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>
-                Optional: For current calculation, enter voltage and PF below
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  Voltage (V) - Optional
-                </label>
-                <select 
-                  value={voltage} 
-                  onChange={(e) => setVoltage(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <option value="">Select</option>
-                  <option value="208">208V</option>
-                  <option value="240">240V</option>
-                  <option value="380">380V</option>
-                  <option value="400">400V</option>
-                  <option value="415">415V</option>
-                  <option value="480">480V</option>
-                  <option value="600">600V</option>
-                </select>
+                <InputGroup label="Motor Efficiency" isDarkMode={isDarkMode}>
+                  <Input
+                    type="number"
+                    value={efficiency}
+                    onChange={(e) => setEfficiency(e.target.value)}
+                    placeholder="85-95% typical"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                    isDarkMode={isDarkMode}
+                    unit="%"
+                  />
+                </InputGroup>
               </div>
 
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  Power Factor - Optional
-                </label>
-                <input 
-                  type="number" 
-                  value={powerFactor} 
-                  onChange={(e) => setPowerFactor(e.target.value)}
-                  placeholder="0.80-0.95"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        ) : (
-          // Power/Current Mode
-          <div style={{ display: 'grid', gap: '1rem' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText, 
-                marginBottom: '0.5rem' 
-              }}>
-                Voltage Configuration
-              </label>
-              <select 
-                value={configuration} 
-                onChange={(e) => setConfiguration(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              >
-                <option value="line-to-line">Line-to-Line (Most Common)</option>
-                <option value="line-to-neutral">Line-to-Neutral</option>
-              </select>
-              <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>
-                Line-to-Line: Voltage between any two phases
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  Voltage (V)
-                </label>
-                <select 
-                  value={voltage} 
-                  onChange={(e) => setVoltage(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <option value="208">208V</option>
-                  <option value="240">240V</option>
-                  <option value="380">380V</option>
-                  <option value="400">400V</option>
-                  <option value="415">415V</option>
-                  <option value="480">480V</option>
-                  <option value="600">600V</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  Power Factor
-                </label>
-                <input 
-                  type="number" 
-                  value={powerFactor} 
-                  onChange={(e) => setPowerFactor(e.target.value)}
-                  placeholder="0.80-0.95"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            </div>
-
-            {calculationMode === 'find-power' && (
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  Current (Amps)
-                </label>
-                <input 
-                  type="number" 
-                  value={current} 
-                  onChange={(e) => setCurrent(e.target.value)}
-                  placeholder="Line current"
-                  step="0.1"
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            )}
-
-            {calculationMode === 'find-current' && (
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  Power (kW)
-                </label>
-                <input 
-                  type="number" 
-                  value={power} 
-                  onChange={(e) => setPower(e.target.value)}
-                  placeholder="Real power"
-                  step="0.1"
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Results */}
-      {results && (
-        <>
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.cardBorder}`,
-            borderRadius: '12px',
-            padding: '1.5rem',
-            marginBottom: '1rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1rem', 
-              fontWeight: '600', 
-              color: colors.cardText,
-              marginTop: 0,
-              marginBottom: '1rem'
-            }}>
-              Results
-            </h3>
-
-            {calculationMode === 'motor-power' ? (
-              <div style={{ display: 'grid', gap: '1rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-                  <div style={{
-                    background: colors.sectionBg,
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                      Output Power
-                    </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                      {results.outputKW.toFixed(2)}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                      kW ({results.outputHP.toFixed(2)} HP)
-                    </div>
-                  </div>
-
-                  <div style={{
-                    background: '#dbeafe',
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                      Input Power Required
-                    </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                      {results.inputKW.toFixed(2)}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                      kW @ {results.efficiency.toFixed(1)}% efficiency
-                    </div>
-                  </div>
+              <InfoBox type="info" isDarkMode={isDarkMode}>
+                <div style={{ fontSize: '0.8125rem', fontWeight: '600', marginBottom: '0.25rem' }}>
+                  Optional: For current calculation
                 </div>
+                <div style={{ fontSize: '0.75rem' }}>
+                  Enter voltage and power factor below to estimate current draw
+                </div>
+              </InfoBox>
 
-                {results.amps > 0 && (
-                  <div style={{
-                    background: colors.sectionBg,
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                      Estimated Current Draw
-                    </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                      {results.amps.toFixed(2)}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                      Amps @ {voltage}V, PF {powerFactor}
-                    </div>
-                  </div>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                gap: '0.75rem',
+                marginTop: '0.75rem'
+              }}>
+                <InputGroup label="Voltage (Optional)" isDarkMode={isDarkMode}>
+                  <Select
+                    value={voltage}
+                    onChange={(e) => setVoltage(e.target.value)}
+                    isDarkMode={isDarkMode}
+                    options={[
+                      { value: '', label: 'Select' },
+                      { value: '208', label: '208V' },
+                      { value: '240', label: '240V' },
+                      { value: '380', label: '380V' },
+                      { value: '400', label: '400V' },
+                      { value: '415', label: '415V' },
+                      { value: '480', label: '480V' },
+                      { value: '600', label: '600V' }
+                    ]}
+                  />
+                </InputGroup>
+
+                <InputGroup label="Power Factor (Optional)" isDarkMode={isDarkMode}>
+                  <Input
+                    type="number"
+                    value={powerFactor}
+                    onChange={(e) => setPowerFactor(e.target.value)}
+                    placeholder="0.80-0.95"
+                    step="0.01"
+                    min="0"
+                    max="1"
+                    isDarkMode={isDarkMode}
+                  />
+                </InputGroup>
+              </div>
+            </>
+          ) : (
+            // Power/Current Mode
+            <>
+              <InputGroup 
+                label="Voltage Configuration" 
+                isDarkMode={isDarkMode}
+                helpText="Line-to-Line: Voltage between any two phases"
+              >
+                <Select
+                  value={configuration}
+                  onChange={(e) => setConfiguration(e.target.value)}
+                  isDarkMode={isDarkMode}
+                  options={[
+                    { value: 'line-to-line', label: 'Line-to-Line (Most Common)' },
+                    { value: 'line-to-neutral', label: 'Line-to-Neutral' }
+                  ]}
+                />
+              </InputGroup>
+
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                gap: '0.75rem' 
+              }}>
+                <InputGroup label="Voltage" isDarkMode={isDarkMode}>
+                  <Select
+                    value={voltage}
+                    onChange={(e) => setVoltage(e.target.value)}
+                    isDarkMode={isDarkMode}
+                    options={[
+                      { value: '208', label: '208V' },
+                      { value: '240', label: '240V' },
+                      { value: '380', label: '380V' },
+                      { value: '400', label: '400V' },
+                      { value: '415', label: '415V' },
+                      { value: '480', label: '480V' },
+                      { value: '600', label: '600V' }
+                    ]}
+                  />
+                </InputGroup>
+
+                <InputGroup label="Power Factor" isDarkMode={isDarkMode}>
+                  <Input
+                    type="number"
+                    value={powerFactor}
+                    onChange={(e) => setPowerFactor(e.target.value)}
+                    placeholder="0.80-0.95"
+                    step="0.01"
+                    min="0"
+                    max="1"
+                    isDarkMode={isDarkMode}
+                  />
+                </InputGroup>
+
+                {calculationMode === 'find-power' && (
+                  <InputGroup label="Current" isDarkMode={isDarkMode}>
+                    <Input
+                      type="number"
+                      value={current}
+                      onChange={(e) => setCurrent(e.target.value)}
+                      placeholder="Line current"
+                      step="0.1"
+                      isDarkMode={isDarkMode}
+                      unit="A"
+                    />
+                  </InputGroup>
+                )}
+
+                {calculationMode === 'find-current' && (
+                  <InputGroup label="Power" isDarkMode={isDarkMode}>
+                    <Input
+                      type="number"
+                      value={power}
+                      onChange={(e) => setPower(e.target.value)}
+                      placeholder="Real power"
+                      step="0.1"
+                      isDarkMode={isDarkMode}
+                      unit="kW"
+                    />
+                  </InputGroup>
                 )}
               </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-                <div style={{
-                  background: colors.sectionBg,
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                    Real Power (kW)
-                  </div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                    {results.kW.toFixed(2)}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                    Working Power
-                  </div>
-                </div>
+            </>
+          )}
+        </Section>
 
-                <div style={{
-                  background: colors.sectionBg,
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  textAlign: 'center'
+        {/* Results */}
+        {results && (
+          <Section isDarkMode={isDarkMode}>
+            {calculationMode === 'motor-power' ? (
+              <>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
+                  gap: '0.75rem', 
+                  marginBottom: '0.75rem' 
                 }}>
-                  <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                    Apparent Power (kVA)
-                  </div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                    {results.kVA.toFixed(2)}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                    Total Power
-                  </div>
-                </div>
-
-                <div style={{
-                  background: '#dbeafe',
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                    Current (A)
-                  </div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                    {results.amps.toFixed(2)}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                    Line Current
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Formula Info */}
-          <div style={{
-            background: colors.sectionBg,
-            border: `1px solid ${colors.cardBorder}`,
-            borderRadius: '12px',
-            padding: '1rem',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <Info size={20} color="#3b82f6" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: colors.labelText, lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', color: colors.cardText, marginBottom: '0.5rem' }}>
-                  {calculationMode === 'motor-power' ? 'Motor Efficiency:' : 'Three-Phase Formulas:'}
-                </div>
-                <div style={{ display: 'grid', gap: '0.25rem' }}>
-                  {calculationMode === 'motor-power' ? (
-                    <>
-                      <div>• Input Power = Output Power ÷ Efficiency</div>
-                      <div>• 1 kW = 1.341 HP</div>
-                      <div>• Typical motor efficiency: 85-95%</div>
-                      <div>• Higher efficiency motors use less power</div>
-                    </>
-                  ) : (
-                    <>
-                      <div>• P (kW) = √3 × V × I × PF ÷ 1000</div>
-                      <div>• S (kVA) = √3 × V × I ÷ 1000</div>
-                      <div>• I (A) = P × 1000 ÷ (√3 × V × PF)</div>
-                      <div>• √3 = 1.732 (constant for 3-phase)</div>
-                      <div>• {configuration === 'line-to-line' ? 'Using Line-to-Line voltage' : 'Using Line-to-Neutral voltage'}</div>
-                    </>
+                  <ResultCard
+                    label="Output Power"
+                    value={results.outputKW.toFixed(2)}
+                    unit={`kW (${results.outputHP.toFixed(2)} HP)`}
+                    color="#10b981"
+                    variant="prominent"
+                    isDarkMode={isDarkMode}
+                  />
+                  
+                  <ResultCard
+                    label="Input Power Required"
+                    value={results.inputKW.toFixed(2)}
+                    unit={`kW @ ${results.efficiency.toFixed(1)}% eff`}
+                    color="#3b82f6"
+                    variant="prominent"
+                    isDarkMode={isDarkMode}
+                  />
+                  
+                  {results.amps > 0 && (
+                    <ResultCard
+                      label="Estimated Current"
+                      value={results.amps.toFixed(2)}
+                      unit={`A @ ${voltage}V, PF ${powerFactor}`}
+                      color="#f59e0b"
+                      variant="prominent"
+                      isDarkMode={isDarkMode}
+                    />
                   )}
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Additional Info */}
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '12px',
-            padding: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Three-Phase Advantages:
+                <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Motor Efficiency">
+                  <div style={{ fontSize: '0.8125rem' }}>
+                    <div>• Input Power = Output Power ÷ Efficiency</div>
+                    <div>• 1 kW = 1.341 HP</div>
+                    <div>• Typical motor efficiency: 85-95%</div>
+                    <div>• Higher efficiency motors use less power</div>
+                  </div>
+                </InfoBox>
+              </>
+            ) : (
+              <>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
+                  gap: '0.75rem', 
+                  marginBottom: '0.75rem' 
+                }}>
+                  <ResultCard
+                    label="Real Power"
+                    value={results.kW.toFixed(2)}
+                    unit="kW (Working)"
+                    color="#10b981"
+                    variant="prominent"
+                    isDarkMode={isDarkMode}
+                  />
+                  
+                  <ResultCard
+                    label="Apparent Power"
+                    value={results.kVA.toFixed(2)}
+                    unit="kVA (Total)"
+                    color="#8b5cf6"
+                    variant="prominent"
+                    isDarkMode={isDarkMode}
+                  />
+                  
+                  <ResultCard
+                    label="Line Current"
+                    value={results.amps.toFixed(2)}
+                    unit="Amps"
+                    color="#3b82f6"
+                    variant="prominent"
+                    isDarkMode={isDarkMode}
+                  />
                 </div>
-                <div style={{ display: 'grid', gap: '0.25rem' }}>
-                  <div>• Delivers constant, smooth power (no pulsation)</div>
-                  <div>• More efficient for high-power applications</div>
-                  <div>• Smaller conductor sizes for same power</div>
-                  <div>• Standard for industrial and commercial buildings</div>
-                  <div>• Required for large motors and heavy equipment</div>
-                </div>
+
+                <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Three-Phase Formulas">
+                  <div style={{ fontSize: '0.8125rem' }}>
+                    <div>• P (kW) = √3 × V × I × PF ÷ 1000</div>
+                    <div>• S (kVA) = √3 × V × I ÷ 1000</div>
+                    <div>• I (A) = P × 1000 ÷ (√3 × V × PF)</div>
+                    <div>• √3 = 1.732 (constant for 3-phase)</div>
+                    <div>• {configuration === 'line-to-line' ? 'Using Line-to-Line voltage' : 'Using Line-to-Neutral voltage'}</div>
+                  </div>
+                </InfoBox>
+              </>
+            )}
+
+            <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title="Three-Phase Advantages">
+              <div style={{ fontSize: '0.8125rem' }}>
+                <div>• Delivers constant, smooth power (no pulsation)</div>
+                <div>• More efficient for high-power applications</div>
+                <div>• Smaller conductor sizes for same power</div>
+                <div>• Standard for industrial and commercial buildings</div>
+                <div>• Required for large motors and heavy equipment</div>
               </div>
-            </div>
-          </div>
-        </>
-      )}
+            </InfoBox>
+          </Section>
+        )}
+      </CalculatorLayout>
     </div>
   );
 });

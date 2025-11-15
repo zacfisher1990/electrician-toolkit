@@ -1,6 +1,14 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { AlertTriangle, CheckCircle, Info, Sun, Zap } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Info, Sun, Zap, Thermometer, Cable, Calculator } from 'lucide-react';
 import { exportToPDF } from '../../../utils/pdfExport';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox 
+} from './CalculatorLayout';
 
 // PV Module specifications (common examples)
 const moduleTypes = [
@@ -49,17 +57,6 @@ const SolarPVCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [tempCoeff, setTempCoeff] = useState('standard');
   const [conductorLength, setConductorLength] = useState('50');
   const [voltageDropPercent, setVoltageDropPercent] = useState('2');
-
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-  };
 
   // Handle module type change
   const handleModuleTypeChange = (type) => {
@@ -238,647 +235,300 @@ const SolarPVCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   }));
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      
-      {/* PV Module Specifications */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          PV Module Specifications
-        </h3>
-        
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Module Type
-            </label>
-            <select 
-              value={moduleType} 
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* PV Module Specifications */}
+        <Section 
+          title="PV Module Specifications" 
+          icon={Sun} 
+          color="#f59e0b" 
+          isDarkMode={isDarkMode}
+        >
+          <InputGroup 
+            label="Module Type" 
+            isDarkMode={isDarkMode}
+            helpText="Values from module datasheet at Standard Test Conditions (STC): 1000 W/m², 25°C, AM 1.5"
+          >
+            <Select
+              value={moduleType}
               onChange={(e) => handleModuleTypeChange(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              {moduleTypes.map(type => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
+              isDarkMode={isDarkMode}
+              options={moduleTypes}
+            />
+          </InputGroup>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Vmp (Max Power Voltage)
-              </label>
-              <input
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '0.75rem' 
+          }}>
+            <InputGroup label="Vmp (Max Power V)" isDarkMode={isDarkMode}>
+              <Input
                 type="number"
                 value={vmp}
                 onChange={(e) => setVmp(e.target.value)}
                 step="0.1"
                 disabled={moduleType !== 'custom'}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: moduleType !== 'custom' ? colors.sectionBg : colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
+                isDarkMode={isDarkMode}
+                unit="V"
               />
-            </div>
+            </InputGroup>
 
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Imp (Max Power Current)
-              </label>
-              <input
+            <InputGroup label="Imp (Max Power A)" isDarkMode={isDarkMode}>
+              <Input
                 type="number"
                 value={imp}
                 onChange={(e) => setImp(e.target.value)}
                 step="0.01"
                 disabled={moduleType !== 'custom'}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: moduleType !== 'custom' ? colors.sectionBg : colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
+                isDarkMode={isDarkMode}
+                unit="A"
               />
-            </div>
+            </InputGroup>
 
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Voc (Open Circuit Voltage)
-              </label>
-              <input
+            <InputGroup label="Voc (Open Circuit)" isDarkMode={isDarkMode}>
+              <Input
                 type="number"
                 value={voc}
                 onChange={(e) => setVoc(e.target.value)}
                 step="0.1"
                 disabled={moduleType !== 'custom'}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: moduleType !== 'custom' ? colors.sectionBg : colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
+                isDarkMode={isDarkMode}
+                unit="V"
               />
-            </div>
+            </InputGroup>
 
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Isc (Short Circuit Current)
-              </label>
-              <input
+            <InputGroup label="Isc (Short Circuit)" isDarkMode={isDarkMode}>
+              <Input
                 type="number"
                 value={isc}
                 onChange={(e) => setIsc(e.target.value)}
                 step="0.01"
                 disabled={moduleType !== 'custom'}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: moduleType !== 'custom' ? colors.sectionBg : colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
+                isDarkMode={isDarkMode}
+                unit="A"
               />
-            </div>
+            </InputGroup>
           </div>
+        </Section>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '0.75rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            fontSize: '0.75rem',
-            color: colors.labelText,
-            fontStyle: 'italic'
+        {/* Array Configuration */}
+        <Section 
+          title="Array Configuration" 
+          icon={Calculator} 
+          color="#3b82f6" 
+          isDarkMode={isDarkMode}
+        >
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '0.75rem' 
           }}>
-            Values from module datasheet at Standard Test Conditions (STC): 1000 W/m², 25°C, AM 1.5
-          </div>
-        </div>
-      </div>
+            <InputGroup label="Modules in Series" isDarkMode={isDarkMode}>
+              <Input
+                type="number"
+                value={seriesModules}
+                onChange={(e) => setSeriesModules(e.target.value)}
+                min="1"
+                isDarkMode={isDarkMode}
+                placeholder="per string"
+              />
+            </InputGroup>
 
-      {/* Array Configuration */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Array Configuration
-        </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Modules in Series (per string)
-            </label>
-            <input
-              type="number"
-              value={seriesModules}
-              onChange={(e) => setSeriesModules(e.target.value)}
-              min="1"
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            />
+            <InputGroup label="Parallel Strings" isDarkMode={isDarkMode}>
+              <Input
+                type="number"
+                value={parallelStrings}
+                onChange={(e) => setParallelStrings(e.target.value)}
+                min="1"
+                isDarkMode={isDarkMode}
+              />
+            </InputGroup>
           </div>
 
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Parallel Strings
-            </label>
-            <input
-              type="number"
-              value={parallelStrings}
-              onChange={(e) => setParallelStrings(e.target.value)}
-              min="1"
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-        </div>
+          <InfoBox type="info" isDarkMode={isDarkMode}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontWeight: '600', fontSize: '1rem', marginBottom: '0.25rem' }}>
+                Total Modules: {results.totalModules}
+              </div>
+              <div style={{ fontSize: '0.8125rem' }}>
+                ({seriesModules} × {parallelStrings} configuration)
+              </div>
+            </div>
+          </InfoBox>
+        </Section>
 
-        <div style={{
-          background: '#dbeafe',
-          padding: '1rem',
-          borderRadius: '8px',
-          marginTop: '1rem',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '0.875rem', color: '#1e40af', fontWeight: '600' }}>
-            Total Modules: {results.totalModules}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
-            ({seriesModules} × {parallelStrings} configuration)
-          </div>
-        </div>
-      </div>
-
-      {/* Environmental Conditions */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Environmental Conditions
-        </h3>
-        
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Minimum Temperature (°C)
-              </label>
-              <input
+        {/* Environmental Conditions */}
+        <Section 
+          title="Environmental Conditions" 
+          icon={Thermometer} 
+          color="#ef4444" 
+          isDarkMode={isDarkMode}
+        >
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '0.75rem' 
+          }}>
+            <InputGroup 
+              label="Minimum Temperature" 
+              isDarkMode={isDarkMode}
+              helpText="Determines max voltage"
+            >
+              <Input
                 type="number"
                 value={minTemp}
                 onChange={(e) => setMinTemp(e.target.value)}
                 step="1"
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
+                isDarkMode={isDarkMode}
+                unit="°C"
               />
-            </div>
+            </InputGroup>
 
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Maximum Temperature (°C)
-              </label>
-              <input
+            <InputGroup label="Maximum Temperature" isDarkMode={isDarkMode}>
+              <Input
                 type="number"
                 value={maxTemp}
                 onChange={(e) => setMaxTemp(e.target.value)}
                 step="1"
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
+                isDarkMode={isDarkMode}
+                unit="°C"
               />
-            </div>
+            </InputGroup>
           </div>
 
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Temperature Coefficient Type
-            </label>
-            <select 
-              value={tempCoeff} 
+          <InputGroup label="Temperature Coefficient Type" isDarkMode={isDarkMode}>
+            <Select
+              value={tempCoeff}
               onChange={(e) => setTempCoeff(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              <option value="standard">Standard (-0.33%/°C for Voc)</option>
-              <option value="premium">Premium (-0.27%/°C for Voc)</option>
-            </select>
-          </div>
+              isDarkMode={isDarkMode}
+              options={[
+                { value: 'standard', label: 'Standard (-0.33%/°C for Voc)' },
+                { value: 'premium', label: 'Premium (-0.27%/°C for Voc)' }
+              ]}
+            />
+          </InputGroup>
+        </Section>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '0.75rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            fontSize: '0.75rem',
-            color: colors.labelText,
-            fontStyle: 'italic'
+        {/* Conductor Specifications */}
+        <Section 
+          title="Conductor Specifications" 
+          icon={Cable} 
+          color="#8b5cf6" 
+          isDarkMode={isDarkMode}
+        >
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '0.75rem' 
           }}>
-            Minimum temperature determines maximum voltage. Use coldest expected temperature for your location.
+            <InputGroup label="One-Way Length" isDarkMode={isDarkMode}>
+              <Input
+                type="number"
+                value={conductorLength}
+                onChange={(e) => setConductorLength(e.target.value)}
+                min="1"
+                isDarkMode={isDarkMode}
+                unit="ft"
+              />
+            </InputGroup>
+
+            <InputGroup label="Max Voltage Drop" isDarkMode={isDarkMode}>
+              <Input
+                type="number"
+                value={voltageDropPercent}
+                onChange={(e) => setVoltageDropPercent(e.target.value)}
+                min="0.5"
+                max="5"
+                step="0.5"
+                isDarkMode={isDarkMode}
+                unit="%"
+              />
+            </InputGroup>
           </div>
-        </div>
-      </div>
+        </Section>
 
-      {/* Conductor Specifications */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Conductor Specifications
-        </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              One-Way Conductor Length (feet)
-            </label>
-            <input
-              type="number"
-              value={conductorLength}
-              onChange={(e) => setConductorLength(e.target.value)}
-              min="1"
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Max Voltage Drop (%)
-            </label>
-            <input
-              type="number"
-              value={voltageDropPercent}
-              onChange={(e) => setVoltageDropPercent(e.target.value)}
-              min="0.5"
-              max="5"
-              step="0.5"
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Results */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1.125rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem'
-        }}>
-          System Calculations
-        </h3>
-
-        {/* System Summary */}
-        <div style={{
-          background: '#fef3c7',
-          border: '1px solid #fcd34d',
-          borderRadius: '8px',
-          padding: '1rem',
-          marginBottom: '1rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-            <Sun size={24} color="#d97706" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-            <div style={{ fontSize: '0.875rem', color: '#92400e', lineHeight: '1.5', width: '100%' }}>
-              <div style={{ fontWeight: '700', fontSize: '1rem', marginBottom: '0.5rem' }}>
-                System: {(results.systemPower / 1000).toFixed(2)} kW DC
-              </div>
+        {/* System Results */}
+        <Section isDarkMode={isDarkMode}>
+          {/* System Summary */}
+          <InfoBox type="warning" icon={Sun} isDarkMode={isDarkMode} title={`System: ${(results.systemPower / 1000).toFixed(2)} kW DC`}>
+            <div style={{ fontSize: '0.8125rem' }}>
               <div><strong>Configuration:</strong> {seriesModules} modules × {parallelStrings} strings = {results.totalModules} modules</div>
               <div><strong>String Voltage:</strong> {results.maxPowerVoltage}V (at STC)</div>
               <div><strong>Array Current:</strong> {results.maxPowerCurrent}A (at STC)</div>
             </div>
-          </div>
-        </div>
+          </InfoBox>
 
-        {/* Key Results Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-          <div style={{
-            background: '#fee2e2',
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
+          {/* Key Results Grid */}
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
+            gap: '0.75rem', 
+            marginTop: '0.75rem',
+            marginBottom: '0.75rem' 
           }}>
-            <div style={{ fontSize: '0.7rem', color: '#7f1d1d', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase' }}>
-              Max System Voltage
-            </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#dc2626', lineHeight: '1' }}>
-              {results.maxVoltage}V
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#7f1d1d', marginTop: '0.5rem' }}>
-              at {minTemp}°C
-            </div>
+            <ResultCard
+              label="Max System Voltage"
+              value={`${results.maxVoltage}`}
+              unit={`at ${minTemp}°C`}
+              color="#ef4444"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
+            
+            <ResultCard
+              label="Max Array Current"
+              value={`${results.totalArrayCurrent}`}
+              unit="125% of Isc"
+              color="#3b82f6"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
+            
+            <ResultCard
+              label="Conductor Size"
+              value={results.conductorSize.replace(' AWG', '')}
+              unit="PV Wire 90°C"
+              color="#10b981"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
+            
+            <ResultCard
+              label="OCPD Rating"
+              value={`${results.ocpdRating}A`}
+              unit="156% of Isc"
+              color="#f59e0b"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
           </div>
 
-          <div style={{
-            background: '#dbeafe',
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.7rem', color: '#1e40af', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase' }}>
-              Max Array Current
-            </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#1e40af', lineHeight: '1' }}>
-              {results.totalArrayCurrent}A
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.5rem' }}>
-              125% of Isc
-            </div>
-          </div>
-
-          <div style={{
-            background: '#d1fae5',
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.7rem', color: '#047857', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase' }}>
-              Conductor Size
-            </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#047857', lineHeight: '1' }}>
-              {results.conductorSize}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#047857', marginTop: '0.5rem' }}>
-              PV Wire 90°C
-            </div>
-          </div>
-
-          <div style={{
-            background: '#fef3c7',
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.7rem', color: '#92400e', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase' }}>
-              OCPD Rating
-            </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#92400e', lineHeight: '1' }}>
-              {results.ocpdRating}A
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#92400e', marginTop: '0.5rem' }}>
-              156% of Isc
-            </div>
-          </div>
-        </div>
-
-        {/* Voltage Drop Info */}
-        <div style={{
-          background: results.voltageDrop.acceptable ? '#d1fae5' : '#fee2e2',
-          border: `1px solid ${results.voltageDrop.acceptable ? '#6ee7b7' : '#fca5a5'}`,
-          borderRadius: '8px',
-          padding: '1rem',
-          marginBottom: '1rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-            {results.voltageDrop.acceptable ? (
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-            ) : (
-              <AlertTriangle size={20} color="#dc2626" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-            )}
-            <div style={{ 
-              fontSize: '0.875rem', 
-              color: results.voltageDrop.acceptable ? '#047857' : '#7f1d1d', 
-              lineHeight: '1.5' 
-            }}>
-              <div><strong>Voltage Drop:</strong> {results.voltageDrop.volts}V ({results.voltageDrop.percent}%)</div>
-              <div style={{ marginTop: '0.25rem' }}>
-                {results.voltageDrop.acceptable 
-                  ? `Acceptable - Within ${voltageDropPercent}% limit`
-                  : `Exceeds ${voltageDropPercent}% limit - Consider larger conductor or shorter run`
-                }
+          {/* Voltage Drop Status */}
+          {results.voltageDrop.acceptable ? (
+            <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode}>
+              <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                Voltage Drop: {results.voltageDrop.volts}V ({results.voltageDrop.percent}%)
               </div>
-            </div>
-          </div>
-        </div>
+              <div style={{ fontSize: '0.8125rem' }}>
+                Acceptable - Within {voltageDropPercent}% limit
+              </div>
+            </InfoBox>
+          ) : (
+            <InfoBox type="error" icon={AlertTriangle} isDarkMode={isDarkMode}>
+              <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                Voltage Drop: {results.voltageDrop.volts}V ({results.voltageDrop.percent}%)
+              </div>
+              <div style={{ fontSize: '0.8125rem' }}>
+                Exceeds {voltageDropPercent}% limit - Consider larger conductor or shorter run
+              </div>
+            </InfoBox>
+          )}
 
-        {/* Important Notes */}
-        <div style={{
-          background: colors.sectionBg,
-          padding: '1rem',
-          borderRadius: '8px',
-          border: `1px solid ${colors.cardBorder}`
-        }}>
-          <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-            <Info size={20} color="#3b82f6" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-            <div style={{ fontSize: '0.875rem', color: colors.labelText, lineHeight: '1.5' }}>
-              <strong style={{ color: colors.cardText }}>Important Notes:</strong>
-              <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.25rem' }}>
+          {/* Important Notes */}
+          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Important Notes">
+            <div style={{ fontSize: '0.8125rem' }}>
+              <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
                 <li>Use PV wire rated 90°C (USE-2, PV, or equivalent)</li>
                 <li>Max voltage calculated at minimum temperature per NEC 690.7</li>
                 <li>Conductor sizing includes 125% factor per NEC 690.8(B)(1)</li>
@@ -886,43 +536,21 @@ const SolarPVCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
                 <li>Verify inverter input voltage and current ratings</li>
                 <li>Consider rapid shutdown requirements (NEC 690.12)</li>
                 <li>Ground-fault protection required per NEC 690.41</li>
-                <li>Install proper disconnecting means per NEC 690.13-690.17</li>
               </ul>
             </div>
-          </div>
-        </div>
-      </div>
+          </InfoBox>
+        </Section>
 
-      {/* NEC References */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          NEC References
-        </h3>
-        <div style={{ fontSize: '0.875rem', color: colors.labelText, lineHeight: '1.5' }}>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.main}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.maxVoltage}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.shortCircuit}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.ocpd}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.conductorSizing}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.rapidShutdown}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.groundFault}</div>
-          <div>• {necReferences.disconnects}</div>
-        </div>
-      </div>
+        {/* NEC References */}
+        <InfoBox type="info" isDarkMode={isDarkMode}>
+          <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+            NEC References:
+          </div>
+          <div style={{ fontSize: '0.8125rem' }}>
+            Article 690 (PV Systems) • 690.7 (Max Voltage) • 690.8 (Circuit Sizing) • 690.12 (Rapid Shutdown)
+          </div>
+        </InfoBox>
+      </CalculatorLayout>
     </div>
   );
 });

@@ -1,7 +1,14 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { Settings, AlertCircle, CheckCircle } from 'lucide-react';
+import { Settings, AlertCircle, CheckCircle, Gauge, Thermometer, Info } from 'lucide-react';
 import { exportToPDF } from '../../../utils/pdfExport';
-import styles from './Calculator.module.css';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox
+} from './CalculatorLayout';
 
 const VFDSizingCalculator = forwardRef(({ isDarkMode, onBack }, ref) => {
   const [motorHP, setMotorHP] = useState('');
@@ -11,18 +18,6 @@ const VFDSizingCalculator = forwardRef(({ isDarkMode, onBack }, ref) => {
   const [altitude, setAltitude] = useState('0');
   const [ambientTemp, setAmbientTemp] = useState('40');
   const [loadType, setLoadType] = useState('variable');
-
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
-  };
 
   // Calculate motor FLA based on HP and voltage
   const calculateMotorFLA = (hp, volts, ph) => {
@@ -166,479 +161,224 @@ const VFDSizingCalculator = forwardRef(({ isDarkMode, onBack }, ref) => {
   }));
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      
-
-      {/* Motor Information */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Motor Information
-        </h3>
-        
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Motor Horsepower (HP)
-            </label>
-            <input
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Motor Information */}
+        <Section 
+          title="Motor Information" 
+          icon={Settings} 
+          color="#3b82f6" 
+          isDarkMode={isDarkMode}
+        >
+          <InputGroup label="Motor Horsepower" isDarkMode={isDarkMode}>
+            <Input
               type="number"
               value={motorHP}
               onChange={(e) => setMotorHP(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
               placeholder="Enter HP"
               step="0.5"
+              isDarkMode={isDarkMode}
+              unit="HP"
             />
-          </div>
+          </InputGroup>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Voltage (V)
-              </label>
-              <select
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '0.75rem' 
+          }}>
+            <InputGroup label="Voltage" isDarkMode={isDarkMode}>
+              <Select
                 value={voltage}
                 onChange={(e) => setVoltage(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              >
-                <option value="230">230V</option>
-                <option value="460">460V</option>
-                <option value="575">575V</option>
-              </select>
-            </div>
+                isDarkMode={isDarkMode}
+                options={[
+                  { value: '230', label: '230V' },
+                  { value: '460', label: '460V' },
+                  { value: '575', label: '575V' }
+                ]}
+              />
+            </InputGroup>
 
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Phases
-              </label>
-              <select
+            <InputGroup label="Phases" isDarkMode={isDarkMode}>
+              <Select
                 value={phases}
                 onChange={(e) => setPhases(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              >
-                <option value="1">Single Phase</option>
-                <option value="3">Three Phase</option>
-              </select>
-            </div>
+                isDarkMode={isDarkMode}
+                options={[
+                  { value: '1', label: 'Single Phase' },
+                  { value: '3', label: 'Three Phase' }
+                ]}
+              />
+            </InputGroup>
           </div>
 
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Load Type
-            </label>
-            <select
+          <InputGroup label="Load Type" isDarkMode={isDarkMode}>
+            <Select
               value={loadType}
               onChange={(e) => setLoadType(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              <option value="variable">Variable Torque (Fans, Pumps)</option>
-              <option value="constant">Constant Torque (Conveyors)</option>
-              <option value="highTorque">High Starting Torque</option>
-            </select>
-          </div>
-        </div>
-      </div>
+              isDarkMode={isDarkMode}
+              options={[
+                { value: 'variable', label: 'Variable Torque (Fans, Pumps)' },
+                { value: 'constant', label: 'Constant Torque (Conveyors)' },
+                { value: 'highTorque', label: 'High Starting Torque' }
+              ]}
+            />
+          </InputGroup>
+        </Section>
 
-      {/* Environmental Conditions */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Environmental Conditions
-        </h3>
-        
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Duty Cycle
-            </label>
-            <select
+        {/* Environmental Conditions */}
+        <Section 
+          title="Environmental Conditions" 
+          icon={Thermometer} 
+          color="#f59e0b" 
+          isDarkMode={isDarkMode}
+        >
+          <InputGroup label="Duty Cycle" isDarkMode={isDarkMode}>
+            <Select
               value={dutyCycle}
               onChange={(e) => setDutyCycle(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              <option value="light">Light Duty (Intermittent)</option>
-              <option value="normal">Normal Duty</option>
-              <option value="heavy">Heavy Duty (Continuous)</option>
-            </select>
-          </div>
+              isDarkMode={isDarkMode}
+              options={[
+                { value: 'light', label: 'Light Duty (Intermittent)' },
+                { value: 'normal', label: 'Normal Duty' },
+                { value: 'heavy', label: 'Heavy Duty (Continuous)' }
+              ]}
+            />
+          </InputGroup>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Altitude (feet)
-              </label>
-              <input
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '0.75rem' 
+          }}>
+            <InputGroup label="Altitude" isDarkMode={isDarkMode}>
+              <Input
                 type="number"
                 value={altitude}
                 onChange={(e) => setAltitude(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
                 placeholder="0"
                 step="100"
+                isDarkMode={isDarkMode}
+                unit="ft"
               />
-            </div>
+            </InputGroup>
 
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Ambient Temp (°C)
-              </label>
-              <input
+            <InputGroup label="Ambient Temp" isDarkMode={isDarkMode}>
+              <Input
                 type="number"
                 value={ambientTemp}
                 onChange={(e) => setAmbientTemp(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
                 placeholder="40"
+                isDarkMode={isDarkMode}
+                unit="°C"
               />
-            </div>
+            </InputGroup>
           </div>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`
-          }}>
-            <h4 style={{ 
-              fontSize: '0.875rem', 
-              fontWeight: '600', 
-              color: colors.cardText,
-              marginTop: 0,
-              marginBottom: '0.75rem'
-            }}>
-              Derating Factors
-            </h4>
-            <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem', color: colors.labelText }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Derating Factors">
+            <div style={{ fontSize: '0.8125rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                 <span>Altitude Factor:</span>
-                <span style={{ fontWeight: '600', color: colors.cardText }}>
-                  {(altitudeFactor * 100).toFixed(0)}%
-                </span>
+                <span style={{ fontWeight: '600' }}>{(altitudeFactor * 100).toFixed(0)}%</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                 <span>Temperature Factor:</span>
-                <span style={{ fontWeight: '600', color: colors.cardText }}>
-                  {(tempFactor * 100).toFixed(0)}%
-                </span>
+                <span style={{ fontWeight: '600' }}>{(tempFactor * 100).toFixed(0)}%</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Duty Cycle Factor:</span>
-                <span style={{ fontWeight: '600', color: colors.cardText }}>
-                  {(dutyCycleFactor * 100).toFixed(0)}%
-                </span>
+                <span style={{ fontWeight: '600' }}>{(dutyCycleFactor * 100).toFixed(0)}%</span>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </InfoBox>
+        </Section>
 
-      {/* Results */}
-      {motorHP && (
-        <div>
-          {/* Calculation Results */}
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.cardBorder}`,
-            borderRadius: '12px',
-            padding: '1.5rem',
-            marginBottom: '1rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1rem', 
-              fontWeight: '600', 
-              color: colors.cardText,
-              marginTop: 0,
-              marginBottom: '1rem'
+        {/* Results */}
+        {motorHP && (
+          <Section isDarkMode={isDarkMode}>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
+              gap: '0.75rem', 
+              marginBottom: '0.75rem' 
             }}>
-              Results
-            </h3>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-              <div style={{
-                background: colors.sectionBg,
-                padding: '1rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Motor FLA
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                  {motorFLA.toFixed(1)}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                  Amperes
-                </div>
-              </div>
+              <ResultCard
+                label="Motor FLA"
+                value={motorFLA.toFixed(1)}
+                unit="Amperes"
+                color="#8b5cf6"
+                variant="prominent"
+                isDarkMode={isDarkMode}
+              />
               
-              <div style={{
-                background: colors.sectionBg,
-                padding: '1rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Required VFD Current
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                  {requiredVFDCurrent.toFixed(1)}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                  Amperes
-                </div>
-              </div>
+              <ResultCard
+                label="Required VFD Current"
+                value={requiredVFDCurrent.toFixed(1)}
+                unit="Amperes"
+                color="#f59e0b"
+                variant="prominent"
+                isDarkMode={isDarkMode}
+              />
               
-              <div style={{
-                background: '#dbeafe',
-                padding: '1rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                  Recommended VFD
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                  {recommendedVFD ? recommendedVFD.amps : 'N/A'}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                  Amperes
-                </div>
-              </div>
+              <ResultCard
+                label="Recommended VFD"
+                value={recommendedVFD ? recommendedVFD.amps : 'N/A'}
+                unit="Amperes"
+                color="#3b82f6"
+                variant="prominent"
+                isDarkMode={isDarkMode}
+              />
             </div>
 
             {recommendedVFD && (
-              <div style={{
-                background: colors.sectionBg,
-                padding: '1rem',
-                borderRadius: '8px',
-                border: `1px solid ${colors.cardBorder}`
-              }}>
-                <h4 style={{ 
-                  fontSize: '0.875rem', 
-                  fontWeight: '600', 
-                  color: colors.cardText,
-                  marginTop: 0,
-                  marginBottom: '0.75rem'
-                }}>
-                  VFD Specifications
-                </h4>
-                <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem', color: colors.labelText }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="VFD Specifications">
+                <div style={{ fontSize: '0.8125rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                     <span>Current Rating:</span>
-                    <span style={{ fontWeight: '600', color: colors.cardText }}>
-                      {recommendedVFD.amps} Amperes
-                    </span>
+                    <span style={{ fontWeight: '600' }}>{recommendedVFD.amps} Amperes</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                     <span>Motor HP (460V):</span>
-                    <span style={{ fontWeight: '600', color: colors.cardText }}>
-                      {recommendedVFD.hp460V} HP
-                    </span>
+                    <span style={{ fontWeight: '600' }}>{recommendedVFD.hp460V} HP</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                     <span>Motor HP (230V):</span>
-                    <span style={{ fontWeight: '600', color: colors.cardText }}>
-                      {recommendedVFD.hp230V} HP
-                    </span>
+                    <span style={{ fontWeight: '600' }}>{recommendedVFD.hp230V} HP</span>
                   </div>
                   <div style={{ 
                     display: 'flex', 
                     justifyContent: 'space-between',
                     paddingTop: '0.5rem',
-                    borderTop: `1px solid ${colors.cardBorder}`,
-                    marginTop: '0.25rem'
+                    borderTop: '1px solid currentColor',
+                    marginTop: '0.25rem',
+                    opacity: 0.3
                   }}>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.25rem' }}>
                     <span>Safety Margin:</span>
-                    <span style={{ fontWeight: '600', color: '#059669' }}>
+                    <span style={{ fontWeight: '600', color: '#10b981' }}>
                       {((recommendedVFD.amps / requiredVFDCurrent - 1) * 100).toFixed(0)}%
                     </span>
                   </div>
                 </div>
-              </div>
+              </InfoBox>
             )}
-          </div>
 
-          {/* Success Message */}
-          {recommendedVFD && !hasWarnings && (
-            <div style={{
-              background: '#d1fae5',
-              border: '1px solid #6ee7b7',
-              borderRadius: '8px',
-              padding: '1rem',
-              marginBottom: '1rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                  <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
-                    VFD Selection Complete
-                  </div>
-                  <div style={{ fontSize: '0.8125rem' }}>
-                    Selected VFD meets all requirements with adequate safety margin for reliable operation.
-                  </div>
+            {/* Success Message */}
+            {recommendedVFD && !hasWarnings && (
+              <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title="VFD Selection Complete">
+                <div style={{ fontSize: '0.8125rem' }}>
+                  Selected VFD meets all requirements with adequate safety margin for reliable operation.
                 </div>
-              </div>
-            </div>
-          )}
+              </InfoBox>
+            )}
 
-          {/* Warnings */}
-          {hasWarnings && (
-            <div style={{
-              background: '#fef3c7',
-              border: '1px solid #fcd34d',
-              borderRadius: '8px',
-              padding: '1rem',
-              marginBottom: '1rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-                <AlertCircle size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-                <div style={{ lineHeight: '1.5' }}>
-                  <div style={{ 
-                    fontSize: '0.9375rem', 
-                    fontWeight: '600', 
-                    color: '#78350f',
-                    marginBottom: '0.5rem'
-                  }}>
-                    Important Considerations
-                  </div>
-                  <ul style={{ 
-                    fontSize: '0.8125rem', 
-                    color: '#92400e',
-                    margin: 0,
-                    paddingLeft: '1.25rem'
-                  }}>
+            {/* Warnings */}
+            {hasWarnings && (
+              <InfoBox type="warning" icon={AlertCircle} isDarkMode={isDarkMode} title="Important Considerations">
+                <div style={{ fontSize: '0.8125rem' }}>
+                  <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
                     {altitudeFactor < 1.0 && (
                       <li style={{ marginBottom: '0.25rem' }}>
                         High altitude installation requires derating ({(altitudeFactor * 100).toFixed(0)}% of rated capacity)
@@ -659,26 +399,21 @@ const VFDSizingCalculator = forwardRef(({ isDarkMode, onBack }, ref) => {
                     <li>Ensure adequate cooling and ventilation</li>
                   </ul>
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+              </InfoBox>
+            )}
+          </Section>
+        )}
 
-      {/* Installation Notes */}
-      <div style={{
-        background: colors.sectionBg,
-        padding: '1rem',
-        borderRadius: '8px',
-        border: `1px solid ${colors.cardBorder}`,
-        fontSize: '0.8125rem',
-        color: colors.labelText
-      }}>
-        <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-          VFD Installation Notes:
-        </div>
-        Always follow manufacturer specifications • Use shielded cables for motor connections • Install line and load reactors when recommended • Ensure proper grounding and bonding • Consider bypass contactor for critical applications
-      </div>
+        {/* Installation Notes */}
+        <InfoBox type="info" isDarkMode={isDarkMode}>
+          <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+            VFD Installation Notes:
+          </div>
+          <div style={{ fontSize: '0.8125rem' }}>
+            Always follow manufacturer specifications • Use shielded cables for motor connections • Install line and load reactors when recommended • Ensure proper grounding and bonding • Consider bypass contactor for critical applications
+          </div>
+        </InfoBox>
+      </CalculatorLayout>
     </div>
   );
 });
