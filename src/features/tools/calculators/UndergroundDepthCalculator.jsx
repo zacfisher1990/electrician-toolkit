@@ -1,6 +1,5 @@
-import React, { useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle, CheckCircle, Info, Shovel, MapPin, Zap, Shield } from 'lucide-react';
-import { exportToPDF } from '../../../utils/pdfExport';
 import CalculatorLayout, { 
   Section, 
   InputGroup, 
@@ -138,7 +137,7 @@ const necReferences = {
   raceway: 'NEC 300.5(I) - Raceway Seals'
 };
 
-const UndergroundDepthCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
+const UndergroundDepthCalculator = ({ isDarkMode = false, onBack }) => {
   const [installationType, setInstallationType] = useState('direct_burial');
   const [locationType, setLocationType] = useState('general');
   const [voltage, setVoltage] = useState('0-600');
@@ -149,40 +148,6 @@ const UndergroundDepthCalculator = forwardRef(({ isDarkMode = false, onBack }, r
   const protectionInfo = getProtectionOptions(requiredDepth);
   const selectedInstallation = installationTypes.find(t => t.value === installationType);
   const selectedLocation = locationTypes.find(t => t.value === locationType);
-
-  // Expose exportPDF function to parent via ref
-  useImperativeHandle(ref, () => ({
-    exportPDF: () => {
-      const pdfData = {
-        calculatorName: 'Underground Depth Requirements Calculator',
-        inputs: {
-          installationType: selectedInstallation.label,
-          locationType: selectedLocation.label,
-          voltageRating: voltage === '0-600' ? '0-600V' : 'Over 600V',
-          warningTape: useWarningTape ? 'Yes (Recommended)' : 'No'
-        },
-        results: {
-          minimumDepth: requiredDepth !== null ? `${requiredDepth} inches` : 'See special conditions',
-          depthInFeet: requiredDepth !== null ? `${(requiredDepth / 12).toFixed(2)} feet` : 'N/A',
-          warningTapeDepth: useWarningTape && requiredDepth >= 12 ? `${requiredDepth - 12} inches from surface` : 'N/A',
-          protectionRecommendation: protectionInfo
-        },
-        additionalInfo: {
-          specialNotes: specialNotes.length > 0 ? specialNotes : ['No special conditions apply'],
-          installationDescription: selectedInstallation.description
-        },
-        necReferences: [
-          necReferences.mainTable,
-          necReferences.column,
-          necReferences.protection,
-          necReferences.backfill,
-          ...(specialNotes.length > 0 ? [necReferences.exceptions] : [])
-        ]
-      };
-
-      exportToPDF(pdfData);
-    }
-  }));
 
   return (
     <div style={{ margin: '0 -1rem' }}>
@@ -233,6 +198,40 @@ const UndergroundDepthCalculator = forwardRef(({ isDarkMode = false, onBack }, r
               }))}
             />
           </InputGroup>
+        </Section>
+
+        {/* Additional Protection */}
+        <Section 
+          title="Additional Protection" 
+          icon={Shield} 
+          color="#8b5cf6" 
+          isDarkMode={isDarkMode}
+        >
+          <label style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.75rem', 
+            cursor: 'pointer',
+            fontSize: '0.875rem',
+            fontWeight: '500'
+          }}>
+            <input 
+              type="checkbox" 
+              checked={useWarningTape} 
+              onChange={(e) => setUseWarningTape(e.target.checked)}
+              style={{ width: '1.125rem', height: '1.125rem', cursor: 'pointer' }}
+            />
+            <span>Use Warning/Detectable Tape (Recommended)</span>
+          </label>
+
+          {useWarningTape && requiredDepth >= 12 && (
+            <InfoBox type="info" icon={Info} isDarkMode={isDarkMode}>
+              <div style={{ fontSize: '0.8125rem' }}>
+                Install warning tape approximately 12 inches above the cable/conduit.
+                Tape depth: <strong>{requiredDepth - 12} inches</strong> from surface.
+              </div>
+            </InfoBox>
+          )}
         </Section>
 
         {/* Results */}
@@ -313,6 +312,6 @@ const UndergroundDepthCalculator = forwardRef(({ isDarkMode = false, onBack }, r
       </CalculatorLayout>
     </div>
   );
-});
+};
 
 export default UndergroundDepthCalculator;

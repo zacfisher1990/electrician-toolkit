@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, TrendingDown, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, Settings, BarChart3, Radio, Building, Lightbulb, Gauge, Triangle, Box, ArrowDown, ArrowUp, Ruler, Minus, TriangleRight } from 'lucide-react';
+import { Search, X, TrendingDown, Tally3, Target, Cable, SquareDivide, Omega, Plug, Package, Circle, Settings, BarChart3, Radio, Building, Lightbulb, Gauge, Triangle, Box, ArrowDown, ArrowUp, Ruler, Minus, TriangleRight, Palette } from 'lucide-react';
 import { PiSolarPanel, PiChargingStation, PiPipe, PiComputerTower, PiShovel, PiNumberCircleThree, PiLineSegments } from 'react-icons/pi';
 import { TbCircuitGround, TbCircuitMotor, TbCircuitInductor } from 'react-icons/tb';
 import { FaCircleHalfStroke } from 'react-icons/fa6';
@@ -28,7 +28,8 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
         { id: 'working-space', name: 'Working Space', icon: Ruler, keywords: 'working space clearance 110.26 condition panel switchboard equipment depth width height electrical room' },
         { id: 'support-spacing', name: 'Support Spacing', icon: GiClamp, keywords: 'support spacing straps clamps cable conduit hangers nm romex emt pvc mounting vertical horizontal 300.11 334.30' },
         { id: 'receptacles', name: 'Receptacle Spacing', icon: Plug, keywords: 'receptacle outlet gfci plug socket 210.52 counter kitchen bathroom wall spacing' },
-        { id: 'lighting', name: 'Lighting', icon: Lightbulb, keywords: 'lighting lumens foot candles fixtures spacing watts illumination' }
+        { id: 'lighting', name: 'Lighting', icon: Lightbulb, keywords: 'lighting lumens foot candles fixtures spacing watts illumination' },
+        { id: 'phase-color', name: 'Phase Color', icon: Palette, keywords: 'phase color wire conductor identification circuit panel breaker black red blue brown orange yellow 120 208 277 480' }
       ]
     },
     {
@@ -48,8 +49,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
         { id: 'ampacity', name: 'Ampacity', icon: Cable, keywords: 'ampacity current rating 310 temperature' },
         { id: 'load-calculations', name: 'Load Calculations', icon: BarChart3, keywords: 'load calculation service size residential commercial demand' },
         { id: 'service-entrance', name: 'Service Entrance', icon: Building, keywords: 'service entrance sizing panel main 230' },
-        { id: 'grounding-bonding', name: 'Grounding & Bonding', icon: TbCircuitGround, keywords: 'grounding bonding ground electrode equipment gec egc jumper 250' },
-        { id: 'neutral-sizing', name: 'Neutral Sizing', icon: PiLineSegments, keywords: 'neutral sizing conductor 220.61 feeder service range dryer balanced load line to neutral' }
+        { id: 'grounding-bonding', name: 'Grounding & Bonding', icon: TbCircuitGround, keywords: 'grounding bonding ground electrode equipment gec egc jumper 250' }
       ]
     },
     {
@@ -57,7 +57,6 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
       calculators: [
         { id: 'motor-calculations', name: 'Motors', icon: TbCircuitMotor, keywords: 'motor flc protection starter 430' },
         { id: 'transformer-sizing', name: 'Transformers', icon: TbCircuitInductor, keywords: 'transformer kva sizing current primary secondary 450' },
-        { id: 'vfd-sizing', name: 'VFD Sizing', icon: PiComputerTower, keywords: 'vfd variable frequency drive motor speed control inverter ac drive' },
         { id: 'solar-pv', name: 'Solar PV', icon: PiSolarPanel, keywords: 'solar pv photovoltaic 690 panel array inverter string conductor ocpd renewable' },
         { id: 'ev-charging', name: 'EV Charging', icon: PiChargingStation, keywords: 'ev charging electric vehicle evse 625 charger station load continuous diversity feeder branch circuit nec' }
       ]

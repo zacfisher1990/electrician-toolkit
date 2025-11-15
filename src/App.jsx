@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, FileDown, Omega, Wrench, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap, TriangleRight } from 'lucide-react';
-import { PiInvoice, PiComputerTower, PiShovel, PiNumberCircleThree, PiLineSegments, PiPipe } from 'react-icons/pi';
+import { Menu, FileDown, Omega, Wrench, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap, TriangleRight, Palette } from 'lucide-react';
+import { PiInvoice, PiShovel, PiNumberCircleThree, PiPipe } from 'react-icons/pi';
 import { TbCircuitGround, TbCircuitMotor, TbCircuitInductor } from 'react-icons/tb';
 import { FaCircleHalfStroke } from 'react-icons/fa6';
 import { FiDivideCircle } from 'react-icons/fi';
@@ -21,7 +21,6 @@ import ConduitBendingCalculator from './features/tools/calculators/ConduitBendin
 import LightingCalculator from './features/tools/calculators/lighting/LightingCalculator.jsx';
 import ReceptacleCalculator from './features/tools/calculators/ReceptacleCalculator.jsx';
 import BottomNavigation from './components/BottomNavigation.jsx';
-import VFDSizingCalculator from './features/tools/calculators/VFDSizingCalculator.jsx';
 import ReactanceImpedanceCalculator from './features/tools/calculators/ReactanceImpedance/ReactanceImpedanceCalculator.jsx';
 import PowerFactorCorrection from './features/tools/calculators/PowerFactorCorrection.jsx';
 import PowerTriangleCalculator from './features/tools/calculators/PowerTriangleCalculator.jsx';
@@ -29,10 +28,10 @@ import ThreePhasePowerCalculator from './features/tools/calculators/ThreePhasePo
 import UndergroundDepthCalculator from './features/tools/calculators/UndergroundDepthCalculator.jsx';
 import OverheadClearanceCalculator from './features/tools/calculators/OverheadClearanceCalculator.jsx';
 import WorkingSpaceCalculator from './features/tools/calculators/WorkingSpaceCalculator.jsx';
-import NeutralSizingCalculator from './features/tools/calculators/NeutralSizingCalculator.jsx';
 import SolarPVCalculator from './features/tools/calculators/SolarPVCalculator.jsx';
 import EVChargingCalculator from './features/tools/calculators/EVChargingCalculator.jsx';
 import SupportSpacingCalculator from './features/tools/calculators/SupportSpacingCalculator.jsx';
+import PhaseColorCalculator from './features/tools/calculators/PhaseColorCalculator.jsx';
 import Home from './features/home/Home.jsx';
 import Tools from './features/tools/Tools';
 import Account from './features/account/index.jsx';
@@ -318,8 +317,6 @@ function App() {
         return <LightingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'receptacles':
         return <ReceptacleCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
-      case 'vfd-sizing':
-        return <VFDSizingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'power-triangle':
         return <PowerTriangleCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'three-phase-power':
@@ -330,14 +327,14 @@ function App() {
         return <OverheadClearanceCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'working-space':
         return <WorkingSpaceCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
-      case 'neutral-sizing':
-        return <NeutralSizingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'solar-pv':
         return <SolarPVCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'ev-charging':
         return <EVChargingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'support-spacing':
         return <SupportSpacingCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
+      case 'phase-color':
+        return <PhaseColorCalculator isDarkMode={isDarkMode} onExportSuccess={handleExportSuccess} />;
       case 'calculators':
         return <Tools isDarkMode={isDarkMode} onNavigate={handleNavigate} />;
       case 'profile':
@@ -429,17 +426,16 @@ function App() {
       'conduit-bending': { title: 'Conduit Bending', icon: PiPipe },
       'lighting': { title: 'Lighting', icon: Lightbulb },
       'receptacles': { title: 'Receptacle Spacing', icon: Plug },
-      'vfd-sizing': { title: 'VFD Sizing', icon: PiComputerTower },
       'power-triangle': { title: 'Power Triangle', icon: TriangleRight },
       'three-phase-power': { title: 'Three-Phase Power', icon: PiNumberCircleThree },
       'pull-box': { title: 'Pull Box Sizing', icon: Box },
       'underground-depth': { title: 'Underground Depth', icon: PiShovel },
       'overhead-clearance': { title: 'Overhead Clearance', icon: ArrowUp },
       'working-space': { title: 'Working Space', icon: Ruler },
-      'neutral-sizing': { title: 'Neutral Sizing', icon: PiLineSegments },
       'solar-pv': { title: 'Solar PV', icon: Sun },
       'ev-charging': { title: 'EV Charging', icon: Zap },
-      'support-spacing': { title: 'Support Spacing', icon: GiClamp }
+      'support-spacing': { title: 'Support Spacing', icon: GiClamp },
+      'phase-color': { title: 'Phase Color', icon: Palette }
     };
     
     return headerMap[activeView] || { title: 'Electrician\'s Toolkit', icon: Calculator };

@@ -1,6 +1,5 @@
-import React, { useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle, CheckCircle, Info, Zap, Ruler, Box } from 'lucide-react';
-import { exportToPDF } from '../../../utils/pdfExport';
 import CalculatorLayout, { 
   Section, 
   InputGroup, 
@@ -161,7 +160,7 @@ const necReferences = {
   arcFlash: 'NFPA 70E - Arc Flash Protection Requirements'
 };
 
-const WorkingSpaceCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
+const WorkingSpaceCalculator = ({ isDarkMode = false, onBack }) => {
   const [voltage, setVoltage] = useState('151-600');
   const [condition, setCondition] = useState('condition-1');
   const [equipmentType, setEquipmentType] = useState('panelboard');
@@ -183,46 +182,6 @@ const WorkingSpaceCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) 
 
   // Calculate total working space volume
   const workingSpaceVolume = requiredDepth * (requiredWidth / 12) * requiredHeight;
-
-  // Expose exportPDF function to parent via ref
-  useImperativeHandle(ref, () => ({
-    exportPDF: () => {
-      const pdfData = {
-        calculatorName: 'Working Space Requirements Calculator',
-        inputs: {
-          voltageRange: selectedVoltage.label,
-          condition: selectedCondition.label,
-          equipmentType: selectedEquipment.label,
-          equipmentWidth: `${equipmentWidth} inches`,
-          equipmentHeight: `${equipmentHeight} inches`
-        },
-        results: {
-          requiredDepth: `${requiredDepth} feet (${requiredDepth * 12} inches)`,
-          requiredWidth: `${requiredWidth} inches (${(requiredWidth / 12).toFixed(2)} feet)`,
-          requiredHeight: `${requiredHeight} feet (${requiredHeight * 12} inches)`,
-          workingSpaceVolume: `${workingSpaceVolume.toFixed(1)} cubic feet`
-        },
-        additionalInfo: {
-          conditionDescription: selectedCondition.description,
-          conditionExamples: conditionExamples,
-          specialRequirements: specialRequirements
-        },
-        necReferences: [
-          necReferences.mainArticle,
-          necReferences.workingSpaceTable,
-          necReferences.width,
-          necReferences.height,
-          necReferences.entrance,
-          necReferences.illumination,
-          necReferences.headroom,
-          necReferences.dedicatedSpace,
-          ...(voltage === 'over-2500' || voltage === '601-2500' ? [necReferences.arcFlash] : [])
-        ]
-      };
-
-      exportToPDF(pdfData);
-    }
-  }));
 
   return (
     <div style={{ margin: '0 -1rem' }}>
@@ -508,6 +467,6 @@ const WorkingSpaceCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) 
       </CalculatorLayout>
     </div>
   );
-});
+};
 
 export default WorkingSpaceCalculator;
