@@ -9,7 +9,7 @@ const AddJobSection = ({
 }) => {
   return (
     <div className={styles.addJobContainer} style={{
-      background: isDarkMode ? '#1a1a1a' : '#3b82f6',
+      background: '#3b82f6',
       border: `1px solid ${colors.border}`,
       marginBottom: '0.75rem',
       borderRadius: '0.75rem',
@@ -18,7 +18,7 @@ const AddJobSection = ({
       <button
         onClick={handleAddJobClick}
         className={styles.addJobButton}
-        style={{ color: isDarkMode ? colors.text : '#ffffff' }}
+        style={{ color: '#ffffff' }}
       >
         <div style={{
           display: 'flex',

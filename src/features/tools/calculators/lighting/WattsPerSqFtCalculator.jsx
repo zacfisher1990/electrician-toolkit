@@ -1,178 +1,200 @@
 import React from 'react';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Zap, FileDown, Briefcase } from 'lucide-react';
 import { calculateWattsPerSqFt } from './utils/lightingCalculations';
 import { BUILDING_TYPE_NAMES, WATTS_PER_SQ_FT } from './utils/lightingConstants';
-import styles from '../Calculator.module.css';
+import { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox 
+} from '../CalculatorLayout';
 
-const WattsPerSqFtCalculator = ({ wattsData, setWattsData, colors }) => {
+const WattsPerSqFtCalculator = ({ wattsData, setWattsData, isDarkMode, onExport, onAttachToJob }) => {
   const results = calculateWattsPerSqFt(wattsData.area, wattsData.buildingType);
 
   return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Building Area (sq ft)
-          </label>
-          <input
-            type="number"
-            value={wattsData.area}
-            onChange={(e) => setWattsData(prev => ({...prev, area: e.target.value}))}
-            placeholder="Enter area"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-        </div>
+    <>
+      {/* Building Parameters */}
+      <Section 
+        title="Building Parameters" 
+        icon={Zap} 
+        color="#3b82f6" 
+        isDarkMode={isDarkMode}
+      >
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '0.75rem' 
+        }}>
+          <InputGroup label="Building Area" isDarkMode={isDarkMode}>
+            <Input 
+              type="number" 
+              value={wattsData.area} 
+              onChange={(e) => setWattsData(prev => ({...prev, area: e.target.value}))}
+              placeholder="Enter area"
+              isDarkMode={isDarkMode}
+              unit="sq ft"
+            />
+          </InputGroup>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Building Type
-          </label>
-          <select
-            value={wattsData.buildingType}
-            onChange={(e) => setWattsData(prev => ({...prev, buildingType: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
-            {Object.entries(BUILDING_TYPE_NAMES).map(([key, name]) => (
-              <option key={key} value={key}>
-                {name} ({WATTS_PER_SQ_FT[key]} W/sq ft)
-              </option>
-            ))}
-          </select>
+          <InputGroup label="Building Type" isDarkMode={isDarkMode}>
+            <Select 
+              value={wattsData.buildingType} 
+              onChange={(e) => setWattsData(prev => ({...prev, buildingType: e.target.value}))}
+              isDarkMode={isDarkMode}
+              options={Object.entries(BUILDING_TYPE_NAMES).map(([key, name]) => ({
+                value: key,
+                label: `${name} (${WATTS_PER_SQ_FT[key]} W/sq ft)`
+              }))}
+            />
+          </InputGroup>
         </div>
-      </div>
+      </Section>
 
+      {/* Results */}
       {results && (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Unit Load
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.unitLoad}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                W/sq ft
-              </div>
-            </div>
+        <Section isDarkMode={isDarkMode}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
+            gap: '0.75rem', 
+            marginBottom: '0.75rem' 
+          }}>
+            <ResultCard
+              label="Unit Load"
+              value={results.unitLoad}
+              unit="W/sq ft"
+              color="#6b7280"
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
             
-            <div style={{
-              background: '#dbeafe',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                Total Load
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                {results.totalWatts}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                watts
-              </div>
-            </div>
+            <ResultCard
+              label="Total Load"
+              value={results.totalWatts.toLocaleString()}
+              unit="watts"
+              color="#3b82f6"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
 
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Current @ 120V
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.amperage}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                Amps
-              </div>
-            </div>
+            <ResultCard
+              label="Current @ 120V"
+              value={results.amperage}
+              unit="Amps"
+              color="#6b7280"
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
 
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Required Circuits
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.circuits}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                × 20A circuits
-              </div>
-            </div>
+            <ResultCard
+              label="Required Circuits"
+              value={results.circuits}
+              unit="× 20A circuits"
+              color="#10b981"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
           </div>
 
+          {/* Calculation Summary */}
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title="Calculation Summary">
+            <div style={{ fontSize: '0.8125rem' }}>
+              <div style={{ marginBottom: '0.25rem' }}>
+                <strong>Load:</strong> Area ({wattsData.area} sq ft) × Unit Load ({results.unitLoad} W/sq ft) = {results.totalWatts.toLocaleString()} watts
+              </div>
+              <div style={{ marginBottom: '0.25rem' }}>
+                <strong>Total VA:</strong> {results.totalVA.toLocaleString()} VA (for resistive loads, watts = VA)
+              </div>
+              <div>
+                <strong>Circuits:</strong> {results.amperage} A ÷ 16A (80% of 20A breaker) = {results.circuits} circuits
+              </div>
+            </div>
+          </InfoBox>
+
+          {/* NEC Requirements */}
+          <InfoBox type="info" isDarkMode={isDarkMode} title="NEC Requirements">
+            <div style={{ fontSize: '0.8125rem' }}>
+              <div style={{ marginBottom: '0.25rem' }}>• <strong>NEC Table 220.12:</strong> General lighting loads by occupancy type</div>
+              <div style={{ marginBottom: '0.25rem' }}>• <strong>NEC 210.19(A)(1):</strong> Branch circuit ampacity requirements</div>
+              <div style={{ marginBottom: '0.25rem' }}>• <strong>NEC 210.20(A):</strong> Continuous loads (3+ hours) require 125% sizing for conductors and overcurrent protection</div>
+              <div style={{ marginBottom: '0.25rem' }}>• Calculated using building area, not just lit area</div>
+              <div>• Additional loads (receptacles, appliances) calculated separately</div>
+            </div>
+          </InfoBox>
+
+          {/* Action Buttons */}
           <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1rem'
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '0.75rem',
+            marginTop: '0.75rem'
           }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Calculation Summary
-                </div>
-                <div>Area ({wattsData.area} sq ft) × Unit Load ({results.unitLoad} W/sq ft) = {results.totalWatts} watts</div>
-                <div>Total VA: {results.totalVA} VA (for resistive loads, watts = VA)</div>
-                <div>Circuits needed: {results.amperage} A ÷ 16A (80% of 20A breaker) = {results.circuits} circuits</div>
-              </div>
-            </div>
+            <button
+              onClick={onExport}
+              style={{
+                padding: '0.75rem',
+                background: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#2563eb';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#3b82f6';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <FileDown size={16} />
+              Export PDF
+            </button>
+            
+            <button
+              onClick={onAttachToJob}
+              style={{
+                padding: '0.75rem',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#059669';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#10b981';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <Briefcase size={16} />
+              Attach to Job
+            </button>
           </div>
-
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            fontSize: '0.875rem',
-            color: colors.labelText
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-              NEC Requirements:
-            </div>
-            <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
-              <li><strong>NEC Table 220.12:</strong> General lighting loads by occupancy type</li>
-              <li><strong>NEC 210.19(A)(1):</strong> Branch circuit ampacity requirements</li>
-              <li><strong>NEC 210.20(A):</strong> Continuous loads (3+ hours) require 125% sizing for conductors and overcurrent protection</li>
-              <li>Calculated using building area, not just lit area</li>
-              <li>Additional loads (receptacles, appliances) calculated separately</li>
-            </ul>
-          </div>
-        </>
+        </Section>
       )}
-    </div>
+    </>
   );
 };
 

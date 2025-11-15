@@ -1,4 +1,13 @@
 import React from 'react';
+import { Zap, FileDown, Briefcase } from 'lucide-react';
+import { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox 
+} from '../CalculatorLayout';
 
 const InductiveReactanceTab = ({ 
   frequency, 
@@ -8,191 +17,177 @@ const InductiveReactanceTab = ({
   inductanceUnit, 
   setInductanceUnit,
   result,
-  colors 
+  isDarkMode,
+  onExport,
+  onAttachToJob
 }) => {
   return (
-    <div>
-      {/* Input Card */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
+    <>
+      {/* Circuit Parameters */}
+      <Section 
+        title="Circuit Parameters" 
+        icon={Zap} 
+        color="#3b82f6" 
+        isDarkMode={isDarkMode}
+      >
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '0.75rem' 
         }}>
-          Circuit Parameters
-        </h3>
-        
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText, 
-              marginBottom: '0.5rem' 
-            }}>
-              Frequency (Hz)
-            </label>
-            <input 
+          <InputGroup 
+            label="Frequency" 
+            helpText="Common: 50 Hz or 60 Hz"
+            isDarkMode={isDarkMode}
+          >
+            <Input 
               type="number" 
               value={frequency} 
               onChange={(e) => setFrequency(e.target.value)}
               placeholder="60"
-              style={{ 
-                width: '100%', 
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`, 
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
+              isDarkMode={isDarkMode}
+              unit="Hz"
             />
-            <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>
-              Common: 50 Hz or 60 Hz
-            </div>
-          </div>
+          </InputGroup>
 
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText, 
-              marginBottom: '0.5rem' 
-            }}>
-              Inductance
-            </label>
+          <InputGroup label="Inductance" isDarkMode={isDarkMode}>
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.5rem' }}>
-              <input 
+              <Input 
                 type="number" 
                 value={inductance} 
                 onChange={(e) => setInductance(e.target.value)}
                 placeholder="Enter value"
-                style={{ 
-                  width: '100%', 
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`, 
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
+                isDarkMode={isDarkMode}
               />
-              <select 
+              <Select 
                 value={inductanceUnit} 
                 onChange={(e) => setInductanceUnit(e.target.value)}
-                style={{ 
-                  width: '100%', 
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`, 
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              >
-                <option value="H">H</option>
-                <option value="mH">mH</option>
-                <option value="μH">μH</option>
-              </select>
+                isDarkMode={isDarkMode}
+                options={[
+                  { value: 'H', label: 'H' },
+                  { value: 'mH', label: 'mH' },
+                  { value: 'μH', label: 'μH' }
+                ]}
+              />
             </div>
-          </div>
+          </InputGroup>
         </div>
-      </div>
+      </Section>
 
       {/* Results */}
       {result && (
-        <div>
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.cardBorder}`,
-            borderRadius: '12px',
-            padding: '1.5rem',
-            marginBottom: '1rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        <Section isDarkMode={isDarkMode}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+            gap: '0.75rem', 
+            marginBottom: '0.75rem' 
           }}>
-            <h3 style={{ 
-              fontSize: '1rem', 
-              fontWeight: '600', 
-              color: colors.cardText,
-              marginTop: 0,
-              marginBottom: '1rem'
-            }}>
-              Results
-            </h3>
+            <ResultCard
+              label="Inductive Reactance (XL)"
+              value={result.reactance}
+              unit="Ohms (Ω)"
+              color="#3b82f6"
+              variant="prominent"
+              isDarkMode={isDarkMode}
+            />
+          </div>
+
+          {/* Calculation Details */}
+          <InfoBox type="info" isDarkMode={isDarkMode} title="Calculation Details">
+            <div style={{ fontSize: '0.8125rem' }}>
+              <div style={{ marginBottom: '0.25rem' }}>
+                <strong>Formula:</strong> XL = 2πfL
+              </div>
+              <div style={{ marginBottom: '0.25rem' }}>
+                <strong>Frequency:</strong> {result.frequency} Hz
+              </div>
+              <div>
+                <strong>Inductance:</strong> {result.inductance} {result.unit}
+              </div>
+            </div>
+          </InfoBox>
+
+          {/* About Inductive Reactance */}
+          <InfoBox type="info" isDarkMode={isDarkMode} title="About Inductive Reactance">
+            <div style={{ fontSize: '0.8125rem' }}>
+              <div style={{ marginBottom: '0.25rem' }}>• Inductive reactance increases with frequency</div>
+              <div style={{ marginBottom: '0.25rem' }}>• In AC circuits, inductors oppose changes in current</div>
+              <div style={{ marginBottom: '0.25rem' }}>• Current lags voltage by 90° in a pure inductor</div>
+              <div>• XL is directly proportional to both frequency and inductance</div>
+            </div>
+          </InfoBox>
+
+          {/* Action Buttons */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '0.75rem',
+            marginTop: '0.75rem'
+          }}>
+            <button
+              onClick={onExport}
+              style={{
+                padding: '0.75rem',
+                background: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#2563eb';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#3b82f6';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <FileDown size={16} />
+              Export PDF
+            </button>
             
-            <div style={{
-              background: '#dbeafe',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center',
-              marginBottom: '1rem'
-            }}>
-              <div style={{ fontSize: '0.875rem', color: '#1e40af', marginBottom: '0.5rem', fontWeight: '600' }}>
-                Inductive Reactance (XL)
-              </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#1e40af' }}>
-                {result.reactance}
-              </div>
-              <div style={{ fontSize: '0.875rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                Ohms (Ω)
-              </div>
-            </div>
-
-            <div style={{ 
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              border: `1px solid ${colors.cardBorder}`
-            }}>
-              <strong style={{ color: colors.cardText, display: 'block', marginBottom: '0.75rem', fontSize: '0.875rem' }}>
-                Calculation Details:
-              </strong>
-              <div style={{ fontSize: '0.875rem', color: colors.labelText, lineHeight: '1.75' }}>
-                <div><strong>Formula:</strong> XL = 2πfL</div>
-                <div><strong>Frequency:</strong> {result.frequency} Hz</div>
-                <div><strong>Inductance:</strong> {result.inductance} {result.unit}</div>
-              </div>
-            </div>
+            <button
+              onClick={onAttachToJob}
+              style={{
+                padding: '0.75rem',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#059669';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#10b981';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <Briefcase size={16} />
+              Attach to Job
+            </button>
           </div>
-
-          {/* Info Box */}
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            fontSize: '0.8125rem',
-            color: colors.labelText
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-              About Inductive Reactance:
-            </div>
-            <div style={{ lineHeight: '1.75' }}>
-              • Inductive reactance increases with frequency<br />
-              • In AC circuits, inductors oppose changes in current<br />
-              • Current lags voltage by 90° in a pure inductor<br />
-              • XL is directly proportional to both frequency and inductance
-            </div>
-          </div>
-        </div>
+        </Section>
       )}
-    </div>
+    </>
   );
 };
 

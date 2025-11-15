@@ -180,29 +180,24 @@ function App() {
     };
   }, [lastScrollY, clockedInJob]);
 
- useEffect(() => {
-  const newColor = isDarkMode ? '#121212' : '#f9fafb';
-  
-  // Update meta theme-color
-  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-  if (metaThemeColor) {
-    metaThemeColor.setAttribute('content', newColor);
-  }
-  
-  // ALSO set body background to prevent black showing through
-  document.body.style.backgroundColor = newColor;
-  
-  // Set the html element background too
-  document.documentElement.style.backgroundColor = newColor;
-}, [isDarkMode]);
+  // Set body and html background colors for dark mode
+  useEffect(() => {
+    const bgColor = isDarkMode ? '#121212' : '#f9fafb';
+    document.body.style.backgroundColor = bgColor;
+    document.documentElement.style.backgroundColor = bgColor;
+  }, [isDarkMode]);
 
-   
-  // Update theme-color meta tag based on dark mode
+  // Update theme-color meta tag to match header exactly
+  // This controls the Android status bar and notch area color
   useEffect(() => {
     const updateThemeColor = () => {
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', isDarkMode ? '#1e1e1e' : '#2563eb');
+        // Match the exact colors used in Header.jsx
+        const headerColor = clockedInJob 
+          ? '#ef4444' // Red when clocked in
+          : (isDarkMode ? '#1a1a1a' : '#2563eb'); // Dark gray or blue
+        metaThemeColor.setAttribute('content', headerColor);
       }
     };
 
@@ -221,7 +216,7 @@ function App() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isDarkMode]);
+  }, [isDarkMode, clockedInJob]);
 
   const handleNavigate = (view, data) => {
     // Always set navigationData - this clears it when data is null/undefined

@@ -9,7 +9,7 @@ const AddInvoiceSection = ({
 }) => {
   return (
     <div className={styles.addInvoiceContainer} style={{
-      background: isDarkMode ? '#1a1a1a' : '#3b82f6',
+      background: '#3b82f6',
       border: `1px solid ${colors.border}`,
       marginBottom: '0.75rem',
       borderRadius: '0.75rem',
@@ -18,7 +18,7 @@ const AddInvoiceSection = ({
       <button
         onClick={handleAddInvoiceClick}
         className={styles.addInvoiceButton}
-        style={{ color: isDarkMode ? colors.text : '#ffffff' }}
+        style={{ color: '#ffffff' }}
       >
         <div style={{
           display: 'flex',
