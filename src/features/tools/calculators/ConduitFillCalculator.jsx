@@ -99,7 +99,7 @@ const ConduitFillCalculator = ({ isDarkMode = false }) => {
   const results = calculateFill();
 
   return (
-    <div style={{ margin: '0 -0.75rem' }}>
+    <div style={{ margin: '0 -1rem' }}>
       <CalculatorLayout isDarkMode={isDarkMode}>
         {/* Conduit Selection */}
         <Section 

@@ -98,7 +98,7 @@ const TransformerSizingCalculator = ({ isDarkMode = false }) => {
   ];
 
   return (
-    <div style={{ margin: '0 -0.75rem' }}>
+    <div style={{ margin: '0 -1rem' }}>
       <CalculatorLayout
         isDarkMode={isDarkMode}
       >

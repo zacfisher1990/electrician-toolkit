@@ -120,14 +120,15 @@ const BoxFillCalculator = ({ isDarkMode = false }) => {
   const isOverfilled = results.totalFill > boxCapacity;
 
   return (
-    <CalculatorLayout isDarkMode={isDarkMode}>
-      {/* Box Selection */}
-      <Section 
-        title="Box Selection" 
-        icon={Box} 
-        color="#dc2626" 
-        isDarkMode={isDarkMode}
-      >
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Box Selection */}
+        <Section 
+          title="Box Selection" 
+          icon={Box} 
+          color="#dc2626" 
+          isDarkMode={isDarkMode}
+        >
         <InputGroup label="Box Type" isDarkMode={isDarkMode}>
           <Select 
             value={boxType} 
@@ -476,6 +477,7 @@ const BoxFillCalculator = ({ isDarkMode = false }) => {
         </div>
       </InfoBox>
     </CalculatorLayout>
+    </div>
   );
 };
 
