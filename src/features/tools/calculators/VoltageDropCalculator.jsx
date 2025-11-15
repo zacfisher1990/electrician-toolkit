@@ -184,7 +184,7 @@ const VoltageDropCalculator = forwardRef(({ isDarkMode = false, onExportSuccess 
   }));
 
   return (
-    <div style={{ margin: '0 -1rem' }}>
+    <div style={{ margin: '0 -rem' }}>
       <CalculatorLayout isDarkMode={isDarkMode}>
         {/* Circuit Parameters */}
         <Section 
@@ -365,65 +365,7 @@ const VoltageDropCalculator = forwardRef(({ isDarkMode = false, onExportSuccess 
             gap: '0.75rem',
             marginTop: '0.75rem'
           }}>
-            <button
-              onClick={handleExport}
-              style={{
-                padding: '0.75rem',
-                background: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.5rem',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = '#2563eb';
-                e.target.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = '#3b82f6';
-                e.target.style.transform = 'translateY(0)';
-              }}
-            >
-              <FileDown size={16} />
-              Export PDF
-            </button>
             
-            <button
-              onClick={handleOpenJobSelector}
-              style={{
-                padding: '0.75rem',
-                background: '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.5rem',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = '#059669';
-                e.target.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = '#10b981';
-                e.target.style.transform = 'translateY(0)';
-              }}
-            >
-              <Briefcase size={16} />
-              Attach to Job
-            </button>
           </div>
         </Section>
       )}
