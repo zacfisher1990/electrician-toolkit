@@ -1,10 +1,16 @@
 import React, { useState, useImperativeHandle, forwardRef, useMemo } from 'react';
-import { Shield, CheckCircle, Info } from 'lucide-react';
+import { Shield, CheckCircle, Info, Zap, Link } from 'lucide-react';
 import { exportToPDF } from '../../../utils/pdfExport';
-import styles from './Calculator.module.css';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Select, 
+  ResultCard, 
+  InfoBox
+} from './CalculatorLayout';
 
-// Grounding Electrode Conductor Calculator - moved outside
-const GECCalculator = ({ gecData, setGecData, colors }) => {
+// Grounding Electrode Conductor Calculator
+const GECCalculator = ({ gecData, setGecData, isDarkMode }) => {
   const gecTable = {
     copper: {
       '2 or smaller': '8', '1 or 1/0': '6', '2/0 or 3/0': '4',
@@ -49,135 +55,90 @@ const GECCalculator = ({ gecData, setGecData, colors }) => {
   const results = determineGEC();
 
   return (
-    <div className={styles.menu}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Service Conductor Size
-          </label>
-          <select 
+    <div>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: '0.75rem',
+        marginBottom: '0.75rem'
+      }}>
+        <InputGroup 
+          label="Service Conductor Size" 
+          helpText="Largest ungrounded service conductor"
+          isDarkMode={isDarkMode}
+        >
+          <Select 
             value={gecData.serviceSize} 
             onChange={(e) => setGecData(prev => ({...prev, serviceSize: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
-            <option value="">Select Size</option>
-            <option value="8">8 AWG</option>
-            <option value="6">6 AWG</option>
-            <option value="4">4 AWG</option>
-            <option value="2">2 AWG</option>
-            <option value="1">1 AWG</option>
-            <option value="1/0">1/0 AWG</option>
-            <option value="2/0">2/0 AWG</option>
-            <option value="3/0">3/0 AWG</option>
-            <option value="4/0">4/0 AWG</option>
-            <option value="250">250 kcmil</option>
-            <option value="350">350 kcmil</option>
-            <option value="500">500 kcmil</option>
-            <option value="750">750 kcmil</option>
-            <option value="1000">1000 kcmil</option>
-            <option value="1500">1500 kcmil</option>
-          </select>
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>
-            Largest ungrounded service conductor
-          </div>
-        </div>
+            isDarkMode={isDarkMode}
+            options={[
+              { value: '', label: 'Select Size' },
+              { value: '8', label: '8 AWG' },
+              { value: '6', label: '6 AWG' },
+              { value: '4', label: '4 AWG' },
+              { value: '2', label: '2 AWG' },
+              { value: '1', label: '1 AWG' },
+              { value: '1/0', label: '1/0 AWG' },
+              { value: '2/0', label: '2/0 AWG' },
+              { value: '3/0', label: '3/0 AWG' },
+              { value: '4/0', label: '4/0 AWG' },
+              { value: '250', label: '250 kcmil' },
+              { value: '350', label: '350 kcmil' },
+              { value: '500', label: '500 kcmil' },
+              { value: '750', label: '750 kcmil' },
+              { value: '1000', label: '1000 kcmil' },
+              { value: '1500', label: '1500 kcmil' }
+            ]}
+          />
+        </InputGroup>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            GEC Material <br/>  <br></br>
-          </label>
-          <select 
+        <InputGroup label="GEC Material" isDarkMode={isDarkMode}>
+          <Select 
             value={gecData.conductorMaterial} 
             onChange={(e) => setGecData(prev => ({...prev, conductorMaterial: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
-            <option value="copper">Copper</option>
-            <option value="aluminum">Aluminum</option>
-          </select>
-        </div>
+            isDarkMode={isDarkMode}
+            options={[
+              { value: 'copper', label: 'Copper' },
+              { value: 'aluminum', label: 'Aluminum' }
+            ]}
+          />
+        </InputGroup>
       </div>
 
       {results && results.gecSize !== 'N/A' && (
         <>
-          <div style={{
-            background: '#dbeafe',
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-              Grounding Electrode Conductor
-            </div>
-            <div style={{ fontSize: '2rem', fontWeight: '700', color: '#1e40af' }}>
-              {results.gecSize} AWG
-            </div>
-            <div style={{ fontSize: '0.875rem', color: '#1e40af', marginTop: '0.25rem' }}>
-              {gecData.conductorMaterial.charAt(0).toUpperCase() + gecData.conductorMaterial.slice(1)}
-            </div>
-          </div>
+          <ResultCard
+            label="Grounding Electrode Conductor"
+            value={results.gecSize}
+            unit={`AWG ${gecData.conductorMaterial.charAt(0).toUpperCase() + gecData.conductorMaterial.slice(1)}`}
+            color="#3b82f6"
+            isDarkMode={isDarkMode}
+          />
 
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Per NEC Table 250.66
-                </div>
-                <div>Service conductor: {results.serviceSize} AWG {gecData.conductorMaterial}</div>
-              </div>
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode}>
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+              Per NEC Table 250.66
             </div>
-          </div>
+            <div style={{ fontSize: '0.8125rem' }}>
+              Service conductor: {results.serviceSize} AWG {gecData.conductorMaterial}
+            </div>
+          </InfoBox>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            fontSize: '0.875rem',
-            color: colors.labelText
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-              Important Notes:
-            </div>
-            <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Important Notes">
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
               <li>GEC to rod/pipe/plate need not be larger than 6 AWG copper</li>
               <li>GEC to concrete-encased electrode need not be larger than 4 AWG copper</li>
               <li>Must be continuous without splices (except as permitted)</li>
             </ul>
-          </div>
+          </InfoBox>
         </>
       )}
     </div>
   );
 };
 
-// Equipment Grounding Conductor Calculator - moved outside
-const EGCCalculator = ({ egcData, setEgcData, colors }) => {
+// Equipment Grounding Conductor Calculator
+const EGCCalculator = ({ egcData, setEgcData, isDarkMode }) => {
   const egcTable = {
     copper: {
       15: '14', 20: '12', 30: '10', 40: '10', 60: '10',
@@ -213,124 +174,112 @@ const EGCCalculator = ({ egcData, setEgcData, colors }) => {
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Overcurrent Device Rating (A)
-          </label>
-          <input 
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={egcData.ocpdRating} 
-            onChange={(e) => {
-              const value = e.target.value.replace(/[^0-9]/g, '');
-              setEgcData(prev => ({...prev, ocpdRating: value}));
-            }}
-            placeholder="Enter rating"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>
-            Circuit breaker or fuse rating
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: '0.75rem',
+        marginBottom: '0.75rem'
+      }}>
+        <InputGroup 
+          label="Overcurrent Device Rating" 
+          helpText="Circuit breaker or fuse rating"
+          isDarkMode={isDarkMode}
+        >
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={egcData.ocpdRating}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '');
+                setEgcData(prev => ({...prev, ocpdRating: value}));
+              }}
+              placeholder="Enter rating"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                paddingRight: '2.5rem',
+                border: '1px solid',
+                borderColor: isDarkMode ? '#2a2a2a' : '#e5e7eb',
+                borderRadius: '0.5rem',
+                fontSize: '0.9375rem',
+                background: isDarkMode ? '#1e1e1e' : '#ffffff',
+                color: isDarkMode ? '#e0e0e0' : '#111827',
+                boxSizing: 'border-box',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#3b82f6';
+                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = isDarkMode ? '#2a2a2a' : '#e5e7eb';
+                e.target.style.boxShadow = 'none';
+              }}
+            />
+            <span style={{
+              position: 'absolute',
+              right: '0.75rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              fontSize: '0.875rem',
+              color: isDarkMode ? '#a0a0a0' : '#6b7280',
+              pointerEvents: 'none'
+            }}>
+              A
+            </span>
           </div>
-        </div>
+        </InputGroup>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            EGC Material <br/>  <br></br>
-          </label>
-          <select 
+        <InputGroup label="EGC Material" isDarkMode={isDarkMode}>
+          <Select 
             value={egcData.conductorMaterial} 
             onChange={(e) => setEgcData(prev => ({...prev, conductorMaterial: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
-            <option value="copper">Copper</option>
-            <option value="aluminum">Aluminum</option>
-          </select>
-        </div>
+            isDarkMode={isDarkMode}
+            options={[
+              { value: 'copper', label: 'Copper' },
+              { value: 'aluminum', label: 'Aluminum' }
+            ]}
+          />
+        </InputGroup>
       </div>
 
       {results && (
         <>
-          <div style={{
-            background: '#dbeafe',
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-              Equipment Grounding Conductor
-            </div>
-            <div style={{ fontSize: '2rem', fontWeight: '700', color: '#1e40af' }}>
-              {results.egcSize} AWG
-            </div>
-            <div style={{ fontSize: '0.875rem', color: '#1e40af', marginTop: '0.25rem' }}>
-              {egcData.conductorMaterial.charAt(0).toUpperCase() + egcData.conductorMaterial.slice(1)}
-            </div>
-          </div>
+          <ResultCard
+            label="Equipment Grounding Conductor"
+            value={results.egcSize}
+            unit={`AWG ${egcData.conductorMaterial.charAt(0).toUpperCase() + egcData.conductorMaterial.slice(1)}`}
+            color="#3b82f6"
+            isDarkMode={isDarkMode}
+          />
 
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Per NEC Table 250.122
-                </div>
-                <div>OCPD rating: {results.ocpdRating}A</div>
-              </div>
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode}>
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+              Per NEC Table 250.122
             </div>
-          </div>
+            <div style={{ fontSize: '0.8125rem' }}>
+              OCPD rating: {results.ocpdRating}A (using {results.applicableRating}A table value)
+            </div>
+          </InfoBox>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            fontSize: '0.875rem',
-            color: colors.labelText
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-              Important Notes:
-            </div>
-            <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Important Notes">
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
               <li>Increase proportionally if conductors upsized for voltage drop</li>
               <li>Size per each raceway if conductors run in parallel</li>
               <li>Based on rating of OCPD ahead of circuit</li>
             </ul>
-          </div>
+          </InfoBox>
         </>
       )}
     </div>
   );
 };
 
-// Bonding Jumper Calculator - moved outside
-const BondingJumperCalculator = ({ bondingData, setBondingData, colors }) => {
+// Bonding Jumper Calculator
+const BondingJumperCalculator = ({ bondingData, setBondingData, isDarkMode }) => {
   const bondingTable = {
     copper: {
       '2 or smaller': '8', '1 or 1/0': '6', '2/0 or 3/0': '4',
@@ -376,141 +325,89 @@ const BondingJumperCalculator = ({ bondingData, setBondingData, colors }) => {
 
   return (
     <div>
-      <div style={{ display: 'grid', gap: '1rem', marginBottom: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Bonding Jumper Type
-          </label>
-          <select 
+      <div style={{ marginBottom: '0.75rem' }}>
+        <InputGroup label="Bonding Jumper Type" isDarkMode={isDarkMode}>
+          <Select 
             value={bondingData.jumperType} 
             onChange={(e) => setBondingData(prev => ({...prev, jumperType: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
-            <option value="main">Main Bonding Jumper (Service)</option>
-            <option value="system">System Bonding Jumper (Separately Derived)</option>
-          </select>
-        </div>
+            isDarkMode={isDarkMode}
+            options={[
+              { value: 'main', label: 'Main Bonding Jumper (Service)' },
+              { value: 'system', label: 'System Bonding Jumper (Separately Derived)' }
+            ]}
+          />
+        </InputGroup>
+      </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-              Conductor Size
-            </label>
-            <select 
-              value={bondingData.serviceSize} 
-              onChange={(e) => setBondingData(prev => ({...prev, serviceSize: e.target.value}))}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              <option value="">Select Size</option>
-              <option value="8">8 AWG</option>
-              <option value="6">6 AWG</option>
-              <option value="4">4 AWG</option>
-              <option value="2">2 AWG</option>
-              <option value="1">1 AWG</option>
-              <option value="1/0">1/0 AWG</option>
-              <option value="2/0">2/0 AWG</option>
-              <option value="3/0">3/0 AWG</option>
-              <option value="4/0">4/0 AWG</option>
-              <option value="250">250 kcmil</option>
-              <option value="500">500 kcmil</option>
-              <option value="750">750 kcmil</option>
-              <option value="1000">1000 kcmil</option>
-            </select>
-          </div>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: '0.75rem',
+        marginBottom: '0.75rem'
+      }}>
+        <InputGroup label="Conductor Size" isDarkMode={isDarkMode}>
+          <Select 
+            value={bondingData.serviceSize} 
+            onChange={(e) => setBondingData(prev => ({...prev, serviceSize: e.target.value}))}
+            isDarkMode={isDarkMode}
+            options={[
+              { value: '', label: 'Select Size' },
+              { value: '8', label: '8 AWG' },
+              { value: '6', label: '6 AWG' },
+              { value: '4', label: '4 AWG' },
+              { value: '2', label: '2 AWG' },
+              { value: '1', label: '1 AWG' },
+              { value: '1/0', label: '1/0 AWG' },
+              { value: '2/0', label: '2/0 AWG' },
+              { value: '3/0', label: '3/0 AWG' },
+              { value: '4/0', label: '4/0 AWG' },
+              { value: '250', label: '250 kcmil' },
+              { value: '500', label: '500 kcmil' },
+              { value: '750', label: '750 kcmil' },
+              { value: '1000', label: '1000 kcmil' }
+            ]}
+          />
+        </InputGroup>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-              Material
-            </label>
-            <select 
-              value={bondingData.conductorMaterial} 
-              onChange={(e) => setBondingData(prev => ({...prev, conductorMaterial: e.target.value}))}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              <option value="copper">Copper</option>
-              <option value="aluminum">Aluminum</option>
-            </select>
-          </div>
-        </div>
+        <InputGroup label="Material" isDarkMode={isDarkMode}>
+          <Select 
+            value={bondingData.conductorMaterial} 
+            onChange={(e) => setBondingData(prev => ({...prev, conductorMaterial: e.target.value}))}
+            isDarkMode={isDarkMode}
+            options={[
+              { value: 'copper', label: 'Copper' },
+              { value: 'aluminum', label: 'Aluminum' }
+            ]}
+          />
+        </InputGroup>
       </div>
 
       {results && results.jumperSize !== 'N/A' && (
         <>
-          <div style={{
-            background: '#dbeafe',
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-              {bondingData.jumperType === 'main' ? 'Main' : 'System'} Bonding Jumper
-            </div>
-            <div style={{ fontSize: '2rem', fontWeight: '700', color: '#1e40af' }}>
-              {results.jumperSize} AWG
-            </div>
-            <div style={{ fontSize: '0.875rem', color: '#1e40af', marginTop: '0.25rem' }}>
-              {bondingData.conductorMaterial.charAt(0).toUpperCase() + bondingData.conductorMaterial.slice(1)}
-            </div>
-          </div>
+          <ResultCard
+            label={`${bondingData.jumperType === 'main' ? 'Main' : 'System'} Bonding Jumper`}
+            value={results.jumperSize}
+            unit={`AWG ${bondingData.conductorMaterial.charAt(0).toUpperCase() + bondingData.conductorMaterial.slice(1)}`}
+            color="#3b82f6"
+            isDarkMode={isDarkMode}
+          />
 
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Per NEC {bondingData.jumperType === 'main' ? '250.28(D)' : '250.30(A)(1)'}
-                </div>
-                <div>Conductor size: {results.serviceSize} AWG {bondingData.conductorMaterial}</div>
-              </div>
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode}>
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+              Per NEC {bondingData.jumperType === 'main' ? '250.28(D)' : '250.30(A)(1)'}
             </div>
-          </div>
+            <div style={{ fontSize: '0.8125rem' }}>
+              Conductor size: {results.serviceSize} AWG {bondingData.conductorMaterial}
+            </div>
+          </InfoBox>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            fontSize: '0.875rem',
-            color: colors.labelText
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-              {bondingData.jumperType === 'main' ? 'Main' : 'System'} Bonding Jumper Requirements:
-            </div>
-            <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+          <InfoBox 
+            type="info" 
+            icon={Info} 
+            isDarkMode={isDarkMode} 
+            title={`${bondingData.jumperType === 'main' ? 'Main' : 'System'} Bonding Jumper Requirements`}
+          >
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
               {bondingData.jumperType === 'main' ? (
                 <>
                   <li>Connects grounded conductor to equipment grounding conductor</li>
@@ -525,7 +422,7 @@ const BondingJumperCalculator = ({ bondingData, setBondingData, colors }) => {
                 </>
               )}
             </ul>
-          </div>
+          </InfoBox>
         </>
       )}
     </div>
@@ -552,17 +449,11 @@ const GroundingBondingCalculator = forwardRef(({ isDarkMode = false, onBack }, r
     jumperType: 'main'
   });
 
-  // Dark mode colors - memoized to prevent unnecessary re-renders
-  const colors = useMemo(() => ({
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
-  }), [isDarkMode]);
+  const tabs = [
+    { id: 'gec', label: 'Grounding Electrode', icon: Shield },
+    { id: 'egc', label: 'Equipment Grounding', icon: Zap },
+    { id: 'bonding', label: 'Bonding Jumpers', icon: Link }
+  ];
 
   // Expose exportPDF function to parent via ref
   useImperativeHandle(ref, () => ({
@@ -757,60 +648,92 @@ const GroundingBondingCalculator = forwardRef(({ isDarkMode = false, onBack }, r
   }));
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      {/* Tab Navigation */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        display: 'flex',
-        gap: '0.5rem',
-        flexWrap: 'wrap'
-      }}>
-        {[
-          { id: 'gec', label: 'Grounding Electrode' },
-          { id: 'egc', label: 'Equipment Grounding' },
-          { id: 'bonding', label: 'Bonding Jumpers' }
-        ].map(tab => (
-          <button 
-            className={styles.btn}
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              flex: '1 1 auto',
-              minWidth: '140px',
-              padding: '0.625rem 1rem',
-              background: activeTab === tab.id ? '#3b82f6' : colors.sectionBg,
-              color: activeTab === tab.id ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === tab.id ? '#3b82f6' : colors.cardBorder}`,
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Tab Navigation - Using Section wrapper to match card width */}
+        <Section isDarkMode={isDarkMode} style={{ padding: '0.75rem' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '0.5rem'
+          }}>
+            {tabs.map(tab => {
+              const isActive = activeTab === tab.id;
+              const TabIcon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    padding: '0.75rem 0.5rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    background: isActive ? '#3b82f6' : isDarkMode ? '#1a1a1a' : '#f3f4f6',
+                    color: isActive ? '#ffffff' : isDarkMode ? '#e0e0e0' : '#111827',
+                    fontSize: '0.8125rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.25rem',
+                    minHeight: '60px'
+                  }}
+                >
+                  <TabIcon size={18} />
+                  <span style={{ 
+                    fontSize: '0.75rem',
+                    lineHeight: '1.2',
+                    textAlign: 'center'
+                  }}>
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </Section>
 
-      {/* Active Tab Content */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        {activeTab === 'gec' && <GECCalculator gecData={gecData} setGecData={setGecData} colors={colors} />}
-        {activeTab === 'egc' && <EGCCalculator egcData={egcData} setEgcData={setEgcData} colors={colors} />}
-        {activeTab === 'bonding' && <BondingJumperCalculator bondingData={bondingData} setBondingData={setBondingData} colors={colors} />}
-      </div>
+        {/* Active Tab Content */}
+        <Section 
+          title={
+            activeTab === 'gec' ? 'Grounding Electrode Conductor' :
+            activeTab === 'egc' ? 'Equipment Grounding Conductor' :
+            'Bonding Jumper Sizing'
+          }
+          icon={
+            activeTab === 'gec' ? Shield :
+            activeTab === 'egc' ? Zap :
+            Link
+          }
+          color="#3b82f6"
+          isDarkMode={isDarkMode}
+        >
+          {activeTab === 'gec' && (
+            <GECCalculator 
+              gecData={gecData} 
+              setGecData={setGecData} 
+              isDarkMode={isDarkMode} 
+            />
+          )}
+          {activeTab === 'egc' && (
+            <EGCCalculator 
+              egcData={egcData} 
+              setEgcData={setEgcData} 
+              isDarkMode={isDarkMode} 
+            />
+          )}
+          {activeTab === 'bonding' && (
+            <BondingJumperCalculator 
+              bondingData={bondingData} 
+              setBondingData={setBondingData} 
+              isDarkMode={isDarkMode} 
+            />
+          )}
+        </Section>
+      </CalculatorLayout>
     </div>
   );
 });

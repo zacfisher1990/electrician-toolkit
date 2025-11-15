@@ -1,6 +1,15 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Info, Zap, MapPin, Shield, BookOpen } from 'lucide-react';
 import { exportToPDF } from '../../../utils/pdfExport';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Select, 
+  Input,
+  ResultCard, 
+  InfoBox
+} from './CalculatorLayout';
+import { getColors } from '../../../theme';
 
 // NEC Table 225.18 & 225.19 - Overhead Clearance Requirements
 const conductorTypes = [
@@ -22,7 +31,7 @@ const conductorTypes = [
 ];
 
 const clearanceLocations = [
-  { value: 'above_roof', label: 'Above Roofs', subcategories: true },
+  { value: 'above_roof', label: 'Above Roofs' },
   { value: 'driveways_residential', label: 'Driveways & Parking (Residential)' },
   { value: 'streets_alleys', label: 'Streets, Alleys, Roads, Parking (Commercial)' },
   { value: 'other_spaces', label: 'Other Spaces & Ways (Accessible to Pedestrians)' },
@@ -176,16 +185,7 @@ const OverheadClearanceCalculator = forwardRef(({ isDarkMode = false, onBack }, 
   const [includeExtraClearance, setIncludeExtraClearance] = useState(false);
   const [extraClearance, setExtraClearance] = useState('2');
 
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-  };
+  const colors = getColors(isDarkMode);
 
   const requiredClearance = getClearanceRequirement(
     conductorType, 
@@ -236,413 +236,206 @@ const OverheadClearanceCalculator = forwardRef(({ isDarkMode = false, onBack }, 
   }));
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      
-      {/* Conductor Type Selection */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Conductor Information
-        </h3>
-        
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Conductor Type
-            </label>
-            <select 
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Conductor Information */}
+        <Section 
+          title="Conductor Information" 
+          icon={Zap} 
+          color="#3b82f6" 
+          isDarkMode={isDarkMode}
+        >
+          <InputGroup 
+            label="Conductor Type" 
+            helpText={selectedConductor.description}
+            isDarkMode={isDarkMode}
+          >
+            <Select 
               value={conductorType} 
               onChange={(e) => setConductorType(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              {conductorTypes.map(type => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-            <div style={{ 
-              fontSize: '0.75rem', 
-              color: colors.labelText, 
-              marginTop: '0.5rem',
-              fontStyle: 'italic'
-            }}>
-              {selectedConductor.description}
-            </div>
-          </div>
-        </div>
-      </div>
+              isDarkMode={isDarkMode}
+              options={conductorTypes.map(type => ({
+                value: type.value,
+                label: type.label
+              }))}
+            />
+          </InputGroup>
+        </Section>
 
-      {/* Location Selection */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Clearance Location
-        </h3>
-        
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Location Type
-            </label>
-            <select 
+        {/* Clearance Location */}
+        <Section 
+          title="Clearance Location" 
+          icon={MapPin} 
+          color="#10b981" 
+          isDarkMode={isDarkMode}
+        >
+          <InputGroup label="Location Type" isDarkMode={isDarkMode}>
+            <Select 
               value={location} 
               onChange={(e) => setLocation(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              {clearanceLocations.map(loc => (
-                <option key={loc.value} value={loc.value}>
-                  {loc.label}
-                </option>
-              ))}
-            </select>
-          </div>
+              isDarkMode={isDarkMode}
+              options={clearanceLocations.map(loc => ({
+                value: loc.value,
+                label: loc.label
+              }))}
+            />
+          </InputGroup>
 
           {location === 'above_roof' && (
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Roof Type
-              </label>
-              <select 
+            <InputGroup label="Roof Type" isDarkMode={isDarkMode}>
+              <Select 
                 value={roofType} 
                 onChange={(e) => setRoofType(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              >
-                {roofTypes.map(type => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+                isDarkMode={isDarkMode}
+                options={roofTypes.map(type => ({
+                  value: type.value,
+                  label: type.label
+                }))}
+              />
+            </InputGroup>
           )}
-        </div>
-      </div>
+        </Section>
 
-      {/* Additional Safety Margin */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Safety Margin (Optional)
-        </h3>
-        
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', marginBottom: '1rem' }}>
-          <input 
-            type="checkbox" 
-            checked={includeExtraClearance} 
-            onChange={(e) => setIncludeExtraClearance(e.target.checked)}
-            style={{ width: '1.125rem', height: '1.125rem', cursor: 'pointer' }}
-          />
-          <span style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.labelText }}>
-            Add Extra Clearance for Safety Factor
-          </span>
-        </label>
-
-        {includeExtraClearance && (
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Additional Clearance (feet)
-            </label>
-            <input
-              type="number"
-              value={extraClearance}
-              onChange={(e) => setExtraClearance(e.target.value)}
-              min="0"
-              step="0.5"
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
+        {/* Safety Margin */}
+        <Section 
+          title="Safety Margin (Optional)" 
+          icon={Shield} 
+          color="#f59e0b" 
+          isDarkMode={isDarkMode}
+        >
+          <label style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.75rem', 
+            cursor: 'pointer', 
+            marginBottom: includeExtraClearance ? '0.75rem' : 0 
+          }}>
+            <input 
+              type="checkbox" 
+              checked={includeExtraClearance} 
+              onChange={(e) => setIncludeExtraClearance(e.target.checked)}
+              style={{ width: '1.125rem', height: '1.125rem', cursor: 'pointer' }}
             />
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              border: `1px solid ${colors.cardBorder}`,
-              marginTop: '1rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-                <Info size={18} color="#3b82f6" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-                <div style={{ fontSize: '0.875rem', color: colors.labelText, lineHeight: '1.5' }}>
-                  Adding extra clearance provides additional safety margin beyond NEC minimums.
-                  Recommended for areas with heavy snow loads or future settling.
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+            <span style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.text }}>
+              Add Extra Clearance for Safety Factor
+            </span>
+          </label>
 
-      {/* Results */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1.125rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem'
-        }}>
-          Required Clearance
-        </h3>
-        
+          {includeExtraClearance && (
+            <>
+              <InputGroup label="Additional Clearance" isDarkMode={isDarkMode}>
+                <Input
+                  type="number"
+                  value={extraClearance}
+                  onChange={(e) => setExtraClearance(e.target.value)}
+                  min="0"
+                  step="0.5"
+                  isDarkMode={isDarkMode}
+                  unit="ft"
+                />
+              </InputGroup>
+              
+              <InfoBox type="info" isDarkMode={isDarkMode}>
+                Adding extra clearance provides additional safety margin beyond NEC minimums.
+                Recommended for areas with heavy snow loads or future settling.
+              </InfoBox>
+            </>
+          )}
+        </Section>
+
+        {/* Results */}
         {requiredClearance !== null ? (
-          <>
+          <Section 
+            title="Required Clearance" 
+            icon={CheckCircle} 
+            color="#10b981" 
+            isDarkMode={isDarkMode}
+          >
             <div style={{ 
               display: 'grid', 
               gridTemplateColumns: includeExtraClearance ? '1fr 1fr' : '1fr', 
-              gap: '1rem', 
-              marginBottom: '1rem' 
+              gap: '0.75rem', 
+              marginBottom: '0.75rem' 
             }}>
-              <div style={{
-                background: '#dbeafe',
-                padding: '1.5rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.5rem', fontWeight: '600' }}>
-                  NEC MINIMUM CLEARANCE
-                </div>
-                <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#1e40af', lineHeight: '1' }}>
-                  {requiredClearance}′
-                </div>
-                <div style={{ fontSize: '0.875rem', color: '#1e40af', marginTop: '0.5rem' }}>
-                  ({(requiredClearance * 12).toFixed(1)} inches)
-                </div>
-              </div>
+              <ResultCard
+                label="NEC MINIMUM CLEARANCE"
+                value={`${requiredClearance}′`}
+                unit={`(${(requiredClearance * 12).toFixed(1)} inches)`}
+                color="#3b82f6"
+                isDarkMode={isDarkMode}
+              />
               
               {includeExtraClearance && (
-                <div style={{
-                  background: '#d1fae5',
-                  padding: '1.5rem',
-                  borderRadius: '8px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '0.75rem', color: '#047857', marginBottom: '0.5rem', fontWeight: '600' }}>
-                    TOTAL WITH SAFETY MARGIN
-                  </div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#047857', lineHeight: '1' }}>
-                    {totalClearance.toFixed(1)}′
-                  </div>
-                  <div style={{ fontSize: '0.875rem', color: '#047857', marginTop: '0.5rem' }}>
-                    ({(totalClearance * 12).toFixed(1)} inches)
-                  </div>
-                </div>
+                <ResultCard
+                  label="TOTAL WITH SAFETY MARGIN"
+                  value={`${totalClearance.toFixed(1)}′`}
+                  unit={`(${(totalClearance * 12).toFixed(1)} inches)`}
+                  color="#10b981"
+                  isDarkMode={isDarkMode}
+                />
               )}
             </div>
 
-            <div style={{
-              background: '#d1fae5',
-              border: '1px solid #6ee7b7',
-              borderRadius: '8px',
-              padding: '1rem',
-              marginBottom: '1rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-                <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-                <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                  <div><strong>Conductor:</strong> {selectedConductor.label}</div>
-                  <div><strong>Location:</strong> {selectedLocation.label}</div>
-                  {location === 'above_roof' && (
-                    <div><strong>Roof Type:</strong> {selectedRoofType.label}</div>
-                  )}
+            {/* Configuration Summary */}
+            <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode}>
+              <div style={{ fontSize: '0.8125rem' }}>
+                <div style={{ marginBottom: '0.25rem' }}>
+                  <strong>Conductor:</strong> {selectedConductor.label}
                 </div>
-              </div>
-            </div>
-
-            {safetyRecommendations.length > 0 && (
-              <div style={{
-                background: colors.sectionBg,
-                padding: '1rem',
-                borderRadius: '8px',
-                border: `1px solid ${colors.cardBorder}`,
-                marginBottom: '1rem'
-              }}>
-                <div style={{ fontSize: '0.875rem', color: colors.labelText, lineHeight: '1.5' }}>
-                  <div style={{ fontWeight: '600', color: colors.cardText, marginBottom: '0.5rem' }}>
-                    Safety Recommendations:
+                <div style={{ marginBottom: location === 'above_roof' ? '0.25rem' : 0 }}>
+                  <strong>Location:</strong> {selectedLocation.label}
+                </div>
+                {location === 'above_roof' && (
+                  <div>
+                    <strong>Roof Type:</strong> {selectedRoofType.label}
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                    {safetyRecommendations.map((rec, index) => (
-                      <li key={index} style={{ marginBottom: '0.25rem' }}>{rec}</li>
-                    ))}
-                  </ul>
-                </div>
+                )}
               </div>
-            )}
-          </>
-        ) : (
-          <div style={{
-            background: '#fee2e2',
-            border: '1px solid #fca5a5',
-            borderRadius: '8px',
-            padding: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <AlertTriangle size={20} color="#dc2626" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#7f1d1d', lineHeight: '1.5' }}>
-                Unable to determine clearance for this configuration. Please verify NEC requirements.
-              </div>
-            </div>
-          </div>
-        )}
+            </InfoBox>
 
-        {specialNotes.length > 0 && (
-          <div style={{
-            background: '#fef3c7',
-            border: '1px solid #fcd34d',
-            borderRadius: '8px',
-            padding: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <AlertTriangle size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#92400e', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Special Considerations:</div>
-                <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+            {/* Safety Recommendations */}
+            {safetyRecommendations.length > 0 && (
+              <InfoBox type="info" isDarkMode={isDarkMode} title="Safety Recommendations">
+                <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
+                  {safetyRecommendations.map((rec, index) => (
+                    <li key={index} style={{ marginBottom: '0.25rem' }}>{rec}</li>
+                  ))}
+                </ul>
+              </InfoBox>
+            )}
+
+            {/* Special Notes */}
+            {specialNotes.length > 0 && (
+              <InfoBox type="warning" icon={AlertTriangle} isDarkMode={isDarkMode} title="Special Considerations">
+                <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
                   {specialNotes.map((note, index) => (
                     <li key={index} style={{ marginBottom: '0.25rem' }}>{note}</li>
                   ))}
                 </ul>
-              </div>
-            </div>
-          </div>
+              </InfoBox>
+            )}
+          </Section>
+        ) : (
+          <Section isDarkMode={isDarkMode}>
+            <InfoBox type="error" icon={AlertTriangle} isDarkMode={isDarkMode}>
+              Unable to determine clearance for this configuration. Please verify NEC requirements.
+            </InfoBox>
+          </Section>
         )}
-      </div>
 
-      {/* NEC Reference */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          NEC References
-        </h3>
-        <div style={{ fontSize: '0.875rem', color: colors.labelText, lineHeight: '1.5' }}>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.mainArticle}</div>
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.clearanceTable}</div>
-          {location === 'above_roof' && (
-            <div style={{ marginBottom: '0.5rem' }}>• {necReferences.roofClearance}</div>
-          )}
-          <div style={{ marginBottom: '0.5rem' }}>• {necReferences.support}</div>
-          <div>• {necReferences.protection}</div>
-        </div>
-      </div>
+        {/* NEC References */}
+        <InfoBox type="info" isDarkMode={isDarkMode} title="NEC References">
+          <div style={{ fontSize: '0.8125rem' }}>
+            <div style={{ marginBottom: '0.25rem' }}>• {necReferences.mainArticle}</div>
+            <div style={{ marginBottom: '0.25rem' }}>• {necReferences.clearanceTable}</div>
+            {location === 'above_roof' && (
+              <div style={{ marginBottom: '0.25rem' }}>• {necReferences.roofClearance}</div>
+            )}
+            <div style={{ marginBottom: '0.25rem' }}>• {necReferences.support}</div>
+            <div>• {necReferences.protection}</div>
+          </div>
+        </InfoBox>
+      </CalculatorLayout>
     </div>
   );
 });

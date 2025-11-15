@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Info, FileDown, Briefcase } from 'lucide-react';
+import { Info, FileDown, Briefcase, Zap, Calculator } from 'lucide-react';
 import { getUserJobs, addCalculationToJob } from '../../jobs/jobsService';
-import styles from './Calculator.module.css';
+import { getColors } from '../../../theme';
+import { 
+  Section, 
+  InputGroup, 
+  ResultCard, 
+  InfoBox,
+  Button
+} from './CalculatorLayout';
 
-const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
+const OhmsLawBasic = ({ isDarkMode, onExport }) => {
+  const colors = getColors(isDarkMode);
   const [voltage, setVoltage] = useState('');
   const [current, setCurrent] = useState('');
   const [resistance, setResistance] = useState('');
@@ -155,171 +163,120 @@ const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
     onExport(pdfData);
   };
 
+  const isVoltageDisabled = (current && resistance) || (current && power) || (resistance && power);
+  const isCurrentDisabled = (voltage && resistance) || (voltage && power) || (resistance && power);
+  const isResistanceDisabled = (voltage && current) || (voltage && power) || (current && power);
+  const isPowerDisabled = (voltage && current) || (voltage && resistance) || (current && resistance);
+
   return (
     <div>
       {/* Info Box */}
-      <div style={{
-        background: '#dbeafe',
-        border: '1px solid #3b82f6',
-        borderRadius: '8px',
-        padding: '1rem',
-        marginBottom: '1rem'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-          <Info size={20} color="#1e40af" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-          <p style={{ 
-            margin: 0, 
-            fontSize: '0.875rem', 
-            color: '#1e40af',
-            lineHeight: '1.5'
-          }}>
-            Enter any 2 known values to calculate the remaining values
-          </p>
+      <InfoBox type="info" icon={Info} isDarkMode={isDarkMode}>
+        <div style={{ fontSize: '0.875rem' }}>
+          Enter any 2 known values to calculate the remaining values
         </div>
-      </div>
+      </InfoBox>
 
-      {/* Input Card */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText, 
-              marginBottom: '0.5rem' 
-            }}>
-              Volts (E)
-            </label>
+      {/* Input Section */}
+      <Section 
+        title="Enter Values" 
+        icon={Zap} 
+        color="#3b82f6" 
+        isDarkMode={isDarkMode}
+      >
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
+          gap: '0.75rem', 
+          marginBottom: '0.75rem' 
+        }}>
+          <InputGroup label="Volts (E)" isDarkMode={isDarkMode}>
             <input
               type="number"
               value={voltage || basicResults.V}
               onChange={(e) => setVoltage(e.target.value)}
               placeholder="Enter voltage"
-              disabled={
-                (current && resistance) || 
-                (current && power) || 
-                (resistance && power)
-              }
+              disabled={isVoltageDisabled}
               style={{ 
                 width: '100%', 
-                padding: '0.625rem',
+                padding: '0.75rem',
                 fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`, 
-                borderRadius: '8px',
-                backgroundColor: ((current && resistance) || (current && power) || (resistance && power)) ? colors.sectionBg : colors.inputBg,
-                color: colors.cardText,
+                border: `1px solid ${colors.border}`, 
+                borderRadius: '0.5rem',
+                backgroundColor: isVoltageDisabled ? colors.inputBg : colors.cardBg,
+                color: colors.text,
                 boxSizing: 'border-box',
-                cursor: ((current && resistance) || (current && power) || (resistance && power)) ? 'not-allowed' : 'text'
+                cursor: isVoltageDisabled ? 'not-allowed' : 'text',
+                opacity: isVoltageDisabled ? 0.6 : 1
               }}
             />
-          </div>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText, 
-              marginBottom: '0.5rem' 
-            }}>
-              Amps (I)
-            </label>
+          </InputGroup>
+
+          <InputGroup label="Amps (I)" isDarkMode={isDarkMode}>
             <input
               type="number"
               value={current || basicResults.I}
               onChange={(e) => setCurrent(e.target.value)}
               placeholder="Enter current"
-              disabled={
-                (voltage && resistance) || 
-                (voltage && power) || 
-                (resistance && power)
-              }
+              disabled={isCurrentDisabled}
               style={{ 
                 width: '100%', 
-                padding: '0.625rem',
+                padding: '0.75rem',
                 fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`, 
-                borderRadius: '8px',
-                backgroundColor: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? colors.sectionBg : colors.inputBg,
-                color: colors.cardText,
+                border: `1px solid ${colors.border}`, 
+                borderRadius: '0.5rem',
+                backgroundColor: isCurrentDisabled ? colors.inputBg : colors.cardBg,
+                color: colors.text,
                 boxSizing: 'border-box',
-                cursor: ((voltage && resistance) || (voltage && power) || (resistance && power)) ? 'not-allowed' : 'text'
+                cursor: isCurrentDisabled ? 'not-allowed' : 'text',
+                opacity: isCurrentDisabled ? 0.6 : 1
               }}
             />
-          </div>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText, 
-              marginBottom: '0.5rem' 
-            }}>
-              Ohms (R)
-            </label>
+          </InputGroup>
+
+          <InputGroup label="Ohms (R)" isDarkMode={isDarkMode}>
             <input
               type="number"
               value={resistance || basicResults.R}
               onChange={(e) => setResistance(e.target.value)}
               placeholder="Enter resistance"
-              disabled={
-                (voltage && current) || 
-                (voltage && power) || 
-                (current && power)
-              }
+              disabled={isResistanceDisabled}
               style={{ 
                 width: '100%', 
-                padding: '0.625rem',
+                padding: '0.75rem',
                 fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`, 
-                borderRadius: '8px',
-                backgroundColor: ((voltage && current) || (voltage && power) || (current && power)) ? colors.sectionBg : colors.inputBg,
-                color: colors.cardText,
+                border: `1px solid ${colors.border}`, 
+                borderRadius: '0.5rem',
+                backgroundColor: isResistanceDisabled ? colors.inputBg : colors.cardBg,
+                color: colors.text,
                 boxSizing: 'border-box',
-                cursor: ((voltage && current) || (voltage && power) || (current && power)) ? 'not-allowed' : 'text'
+                cursor: isResistanceDisabled ? 'not-allowed' : 'text',
+                opacity: isResistanceDisabled ? 0.6 : 1
               }}
             />
-          </div>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText, 
-              marginBottom: '0.5rem' 
-            }}>
-              Watts (P)
-            </label>
+          </InputGroup>
+
+          <InputGroup label="Watts (P)" isDarkMode={isDarkMode}>
             <input
               type="number"
               value={power || basicResults.P}
               onChange={(e) => setPower(e.target.value)}
               placeholder="Enter power"
-              disabled={
-                (voltage && current) || 
-                (voltage && resistance) || 
-                (current && resistance)
-              }
+              disabled={isPowerDisabled}
               style={{ 
                 width: '100%', 
-                padding: '0.625rem',
+                padding: '0.75rem',
                 fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`, 
-                borderRadius: '8px',
-                backgroundColor: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? colors.sectionBg : colors.inputBg,
-                color: colors.cardText,
+                border: `1px solid ${colors.border}`, 
+                borderRadius: '0.5rem',
+                backgroundColor: isPowerDisabled ? colors.inputBg : colors.cardBg,
+                color: colors.text,
                 boxSizing: 'border-box',
-                cursor: ((voltage && current) || (voltage && resistance) || (current && resistance)) ? 'not-allowed' : 'text'
+                cursor: isPowerDisabled ? 'not-allowed' : 'text',
+                opacity: isPowerDisabled ? 0.6 : 1
               }}
             />
-          </div>
+          </InputGroup>
         </div>
 
         <button
@@ -330,7 +287,7 @@ const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
             color: 'white',
             fontWeight: '600',
             padding: '0.75rem',
-            borderRadius: '8px',
+            borderRadius: '0.5rem',
             border: 'none',
             cursor: 'pointer',
             fontSize: '0.875rem'
@@ -338,163 +295,127 @@ const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
         >
           Clear All
         </button>
-      </div>
+      </Section>
 
       {/* Results */}
       {(basicResults.V || basicResults.I || basicResults.R || basicResults.P) && (
-        <div style={{
-          background: colors.cardBg,
-          border: `1px solid ${colors.cardBorder}`,
-          borderRadius: '12px',
-          padding: '1.5rem',
-          marginBottom: '1rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ 
-            fontSize: '1rem', 
-            fontWeight: '600', 
-            color: colors.cardText,
-            marginTop: 0,
-            marginBottom: '1rem'
+        <Section 
+          title="Results" 
+          icon={Calculator} 
+          color="#10b981" 
+          isDarkMode={isDarkMode}
+        >
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(2, 1fr)', 
+            gap: '0.75rem',
+            marginBottom: '0.75rem'
           }}>
-            Results
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
             {basicResults.V && (
-              <div style={{
-                background: colors.sectionBg,
-                padding: '1rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Voltage
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                  {basicResults.V}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                  Volts
-                </div>
-              </div>
+              <ResultCard
+                label="Voltage"
+                value={basicResults.V}
+                unit="Volts"
+                variant="subtle"
+                isDarkMode={isDarkMode}
+              />
             )}
             {basicResults.I && (
-              <div style={{
-                background: colors.sectionBg,
-                padding: '1rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Current
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                  {basicResults.I}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                  Amperes
-                </div>
-              </div>
+              <ResultCard
+                label="Current"
+                value={basicResults.I}
+                unit="Amperes"
+                variant="subtle"
+                isDarkMode={isDarkMode}
+              />
             )}
             {basicResults.R && (
-              <div style={{
-                background: colors.sectionBg,
-                padding: '1rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Resistance
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                  {basicResults.R}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                  Ohms
-                </div>
-              </div>
+              <ResultCard
+                label="Resistance"
+                value={basicResults.R}
+                unit="Ohms"
+                variant="subtle"
+                isDarkMode={isDarkMode}
+              />
             )}
             {basicResults.P && (
-              <div style={{
-                background: colors.sectionBg,
-                padding: '1rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Power
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                  {basicResults.P}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                  Watts
-                </div>
-              </div>
+              <ResultCard
+                label="Power"
+                value={basicResults.P}
+                unit="Watts"
+                variant="subtle"
+                isDarkMode={isDarkMode}
+              />
             )}
           </div>
-        </div>
-      )}
 
-      {/* Action Buttons */}
-      {(voltage || current || resistance || power) && (
-        <div style={{
-          display: 'flex',
-          gap: '0.5rem',
-          marginTop: '1rem'
-        }}>
-          <button
-            onClick={handleExport}
-            style={{
-              flex: 1,
-              padding: '0.875rem',
-              background: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '0.9375rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              transition: 'background 0.2s',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.background = '#2563eb'}
-            onMouseOut={(e) => e.currentTarget.style.background = '#3b82f6'}
-          >
-            <FileDown size={18} />
-            Export to PDF
-          </button>
-          
-          <button
-            onClick={handleOpenJobSelector}
-            style={{
-              flex: 1,
-              padding: '0.875rem',
-              background: '#10b981',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '0.9375rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              transition: 'background 0.2s',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.background = '#059669'}
-            onMouseOut={(e) => e.currentTarget.style.background = '#10b981'}
-          >
-            <Briefcase size={18} />
-            Attach to Job
-          </button>
-        </div>
+          {/* Action Buttons */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '0.75rem'
+          }}>
+            <button
+              onClick={handleExport}
+              style={{
+                padding: '0.75rem',
+                background: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#2563eb';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#3b82f6';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <FileDown size={16} />
+              Export PDF
+            </button>
+            
+            <button
+              onClick={handleOpenJobSelector}
+              style={{
+                padding: '0.75rem',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#059669';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#10b981';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <Briefcase size={16} />
+              Attach to Job
+            </button>
+          </div>
+        </Section>
       )}
 
       {/* Job Selector Modal */}
@@ -514,7 +435,7 @@ const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
         }}>
           <div style={{
             background: colors.cardBg,
-            borderRadius: '12px',
+            borderRadius: '0.75rem',
             padding: '1.5rem',
             maxWidth: '400px',
             width: '100%',
@@ -524,7 +445,7 @@ const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
             <h3 style={{ 
               marginTop: 0, 
               marginBottom: '1rem',
-              color: colors.cardText,
+              color: colors.text,
               fontSize: '1.125rem',
               fontWeight: '600'
             }}>
@@ -536,7 +457,7 @@ const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
                 <div style={{ 
                   textAlign: 'center', 
                   padding: '2rem', 
-                  color: colors.labelText 
+                  color: colors.subtext 
                 }}>
                   Loading jobs...
                 </div>
@@ -547,11 +468,11 @@ const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
                     onClick={() => handleAttachToJob(job.id)}
                     style={{
                       padding: '1rem',
-                      background: colors.sectionBg,
-                      borderRadius: '8px',
+                      background: colors.inputBg,
+                      borderRadius: '0.5rem',
                       marginBottom: '0.5rem',
                       cursor: 'pointer',
-                      border: `1px solid ${colors.cardBorder}`,
+                      border: `1px solid ${colors.border}`,
                       transition: 'all 0.2s'
                     }}
                     onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -559,14 +480,14 @@ const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
                   >
                     <div style={{ 
                       fontWeight: '600', 
-                      color: colors.cardText,
+                      color: colors.text,
                       marginBottom: '0.25rem'
                     }}>
                       {job.name}
                     </div>
                     <div style={{ 
                       fontSize: '0.875rem', 
-                      color: colors.labelText 
+                      color: colors.subtext 
                     }}>
                       {job.location || 'No location'}
                     </div>
@@ -576,7 +497,7 @@ const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
                 <div style={{ 
                   textAlign: 'center', 
                   padding: '2rem', 
-                  color: colors.labelText 
+                  color: colors.subtext 
                 }}>
                   <p>No jobs found. Create a job first.</p>
                 </div>
@@ -591,7 +512,7 @@ const OhmsLawBasic = ({ isDarkMode, colors, onExport }) => {
                 background: '#6b7280',
                 color: 'white',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '0.5rem',
                 fontSize: '0.875rem',
                 fontWeight: '600',
                 cursor: 'pointer',

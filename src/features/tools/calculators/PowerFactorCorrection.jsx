@@ -1,7 +1,16 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { Activity, Info, TrendingUp } from 'lucide-react';
+import { Activity, Info, TrendingUp, Zap, DollarSign, Calculator } from 'lucide-react';
 import { exportToPDF } from '../../../utils/pdfExport';
-import styles from './Calculator.module.css';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox,
+  TabGroup
+} from './CalculatorLayout';
+import { getColors } from '../../../theme';
 
 const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {
   const [activeTab, setActiveTab] = useState('correction');
@@ -22,17 +31,7 @@ const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {
   const [operatingHours, setOperatingHours] = useState('8760');
   const [pfPenalty, setPfPenalty] = useState('');
 
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
-  };
+  const colors = getColors(isDarkMode);
 
   // Capacitor Sizing Calculations
   const calculateCapacitor = () => {
@@ -121,7 +120,6 @@ const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {
   useImperativeHandle(ref, () => ({
     exportPDF: () => {
       if (activeTab === 'correction') {
-        // Check if we have enough data to export
         if (!realPower || !existingPF) {
           alert('Please enter all required values before exporting to PDF');
           return;
@@ -161,7 +159,6 @@ const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {
         exportToPDF(pdfData);
 
       } else if (activeTab === 'savings') {
-        // Check if we have enough data to export
         if (!savingsRealPower || !savingsExistingPF || !demandCharge) {
           alert('Please enter all required values before exporting to PDF');
           return;
@@ -206,161 +203,67 @@ const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {
     }
   }));
 
+  const tabs = [
+    { id: 'correction', label: 'Capacitor Sizing', icon: Calculator },
+    { id: 'savings', label: 'Cost Savings', icon: DollarSign }
+  ];
+
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Tab Navigation */}
+        <TabGroup 
+          tabs={tabs}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          isDarkMode={isDarkMode}
+        />
 
-      {/* Tab Navigation */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ 
-          display: 'flex', 
-          gap: '0.5rem',
-          flexWrap: 'wrap'
-        }}>
-          <button 
-            onClick={() => setActiveTab('correction')}
-            style={{
-              flex: '1 1 auto',
-              minWidth: '140px',
-              padding: '0.75rem 1rem',
-              background: activeTab === 'correction' ? '#3b82f6' : 'transparent',
-              color: activeTab === 'correction' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'correction' ? '#3b82f6' : colors.cardBorder}`,
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            Capacitor Sizing
-          </button>
-          <button 
-            onClick={() => setActiveTab('savings')}
-            style={{
-              flex: '1 1 auto',
-              minWidth: '140px',
-              padding: '0.75rem 1rem',
-              background: activeTab === 'savings' ? '#3b82f6' : 'transparent',
-              color: activeTab === 'savings' ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === 'savings' ? '#3b82f6' : colors.cardBorder}`,
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            Cost Savings
-          </button>
-        </div>
-      </div>
-
-      {/* Active Tab Content */}
-      {activeTab === 'correction' ? (
-        <div>
-          {/* Input Card */}
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.cardBorder}`,
-            borderRadius: '12px',
-            padding: '1.5rem',
-            marginBottom: '1rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1rem', 
-              fontWeight: '600', 
-              color: colors.cardText,
-              marginTop: 0,
-              marginBottom: '1rem',
-              borderBottom: `1px solid ${colors.cardBorder}`,
-              paddingBottom: '0.5rem'
-            }}>
-              System Parameters
-            </h3>
-            
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.875rem', 
-                    fontWeight: '500', 
-                    color: colors.labelText, 
-                    marginBottom: '0.5rem' 
-                  }}>
-                    Real Power (kW) 
-                  </label>
-                  <input 
+        {/* Active Tab Content */}
+        {activeTab === 'correction' ? (
+          <>
+            {/* System Parameters */}
+            <Section 
+              title="System Parameters" 
+              icon={Zap} 
+              color="#3b82f6" 
+              isDarkMode={isDarkMode}
+            >
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                gap: '0.75rem' 
+              }}>
+                <InputGroup label="Real Power (kW)" isDarkMode={isDarkMode}>
+                  <Input 
                     type="number" 
                     value={realPower} 
                     onChange={(e) => setRealPower(e.target.value)}
                     placeholder="Enter load"
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.625rem',
-                      fontSize: '0.9375rem',
-                      border: `1px solid ${colors.inputBorder}`, 
-                      borderRadius: '8px',
-                      backgroundColor: colors.inputBg,
-                      color: colors.cardText,
-                      boxSizing: 'border-box'
-                    }}
+                    isDarkMode={isDarkMode}
                   />
-                </div>
+                </InputGroup>
 
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.875rem', 
-                    fontWeight: '500', 
-                    color: colors.labelText, 
-                    marginBottom: '0.5rem' 
-                  }}>
-                    System Voltage (V)
-                  </label>
-                  <select 
+                <InputGroup label="System Voltage" isDarkMode={isDarkMode}>
+                  <Select 
                     value={voltage} 
                     onChange={(e) => setVoltage(e.target.value)}
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.625rem',
-                      fontSize: '0.9375rem',
-                      border: `1px solid ${colors.inputBorder}`, 
-                      borderRadius: '8px',
-                      backgroundColor: colors.inputBg,
-                      color: colors.cardText,
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <option value="208">208V</option>
-                    <option value="240">240V</option>
-                    <option value="480">480V</option>
-                    <option value="600">600V</option>
-                  </select>
-                </div>
-              </div>
+                    isDarkMode={isDarkMode}
+                    options={[
+                      { value: '208', label: '208V' },
+                      { value: '240', label: '240V' },
+                      { value: '480', label: '480V' },
+                      { value: '600', label: '600V' }
+                    ]}
+                  />
+                </InputGroup>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.875rem', 
-                    fontWeight: '500', 
-                    color: colors.labelText, 
-                    marginBottom: '0.5rem' 
-                  }}>
-                    Existing Power Factor
-                  </label>
-                  <input 
+                <InputGroup 
+                  label="Existing Power Factor" 
+                  helpText="Current (uncorrected)"
+                  isDarkMode={isDarkMode}
+                >
+                  <Input 
                     type="number" 
                     value={existingPF} 
                     onChange={(e) => setExistingPF(e.target.value)}
@@ -368,351 +271,186 @@ const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {
                     step="0.01"
                     min="0.5"
                     max="1"
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.625rem',
-                      fontSize: '0.9375rem',
-                      border: `1px solid ${colors.inputBorder}`, 
-                      borderRadius: '8px',
-                      backgroundColor: colors.inputBg,
-                      color: colors.cardText,
-                      boxSizing: 'border-box'
-                    }}
+                    isDarkMode={isDarkMode}
                   />
-                  <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>
-                    Current (uncorrected)
-                  </div>
-                </div>
+                </InputGroup>
 
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.875rem', 
-                    fontWeight: '500', 
-                    color: colors.labelText, 
-                    marginBottom: '0.5rem' 
-                  }}>
-                    Target Power  <br/>Factor <br/>
-                  </label>
-                  <select 
+                <InputGroup label="Target Power Factor" isDarkMode={isDarkMode}>
+                  <Select 
                     value={targetPF} 
                     onChange={(e) => setTargetPF(e.target.value)}
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.625rem',
-                      fontSize: '0.9375rem',
-                      border: `1px solid ${colors.inputBorder}`, 
-                      borderRadius: '8px',
-                      backgroundColor: colors.inputBg,
-                      color: colors.cardText,
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <option value="0.90">0.90 (90%)</option>
-                    <option value="0.95">0.95 (95%) - Recommended</option>
-                    <option value="0.98">0.98 (98%)</option>
-                    <option value="0.99">0.99 (99%)</option>
-                  </select>
-                </div>
-              </div>
+                    isDarkMode={isDarkMode}
+                    options={[
+                      { value: '0.90', label: '0.90 (90%)' },
+                      { value: '0.95', label: '0.95 (95%) - Recommended' },
+                      { value: '0.98', label: '0.98 (98%)' },
+                      { value: '0.99', label: '0.99 (99%)' }
+                    ]}
+                  />
+                </InputGroup>
 
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  Frequency (Hz)
-                </label>
-                <select 
-                  value={frequency} 
-                  onChange={(e) => setFrequency(e.target.value)}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`, 
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
+                <InputGroup label="Frequency" isDarkMode={isDarkMode}>
+                  <Select 
+                    value={frequency} 
+                    onChange={(e) => setFrequency(e.target.value)}
+                    isDarkMode={isDarkMode}
+                    options={[
+                      { value: '50', label: '50 Hz' },
+                      { value: '60', label: '60 Hz' }
+                    ]}
+                  />
+                </InputGroup>
+              </div>
+            </Section>
+
+            {/* Results */}
+            {capacitorResult && (
+              <>
+                {/* Required Capacitor Bank */}
+                <Section 
+                  title="Required Capacitor Bank" 
+                  icon={Activity} 
+                  color="#10b981" 
+                  isDarkMode={isDarkMode}
                 >
-                  <option value="50">50 Hz</option>
-                  <option value="60">60 Hz</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Results */}
-          {capacitorResult && (
-            <div>
-              {/* Capacitor Requirements */}
-              <div style={{
-                background: colors.cardBg,
-                border: `1px solid ${colors.cardBorder}`,
-                borderRadius: '12px',
-                padding: '1.5rem',
-                marginBottom: '1rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-              }}>
-                <h3 style={{ 
-                  fontSize: '1rem', 
-                  fontWeight: '600', 
-                  color: colors.cardText,
-                  marginTop: 0,
-                  marginBottom: '1rem'
-                }}>
-                  Required Capacitor Bank
-                </h3>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-                  <div style={{
-                    background: '#dbeafe',
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                      Capacitor Size
-                    </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                      {capacitorResult.kVAR}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                      kVAR
-                    </div>
-                  </div>
-                  
-                  <div style={{
-                    background: colors.sectionBg,
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                      Capacitance
-                    </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                      {capacitorResult.capacitance}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                      μF per phase
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ 
-                  background: colors.sectionBg,
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  border: `1px solid ${colors.cardBorder}`
-                }}>
-                  <div style={{ fontSize: '0.875rem', color: colors.labelText, marginBottom: '0.5rem' }}>
-                    <strong style={{ color: colors.cardText }}>Power Factor Improvement:</strong>
-                  </div>
-                  <div style={{ fontSize: '0.8125rem', color: colors.labelText, display: 'grid', gap: '0.25rem' }}>
-                    <div>From: {capacitorResult.existingPF}% → To: {capacitorResult.targetPF}%</div>
-                    <div>Real Power: {realPower} kW (constant)</div>
-                    <div>System Voltage: {voltage}V, {frequency} Hz</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* System Improvements */}
-              <div style={{
-                background: colors.cardBg,
-                border: `1px solid ${colors.cardBorder}`,
-                borderRadius: '12px',
-                padding: '1.5rem',
-                marginBottom: '1rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-              }}>
-                <h3 style={{ 
-                  fontSize: '1rem', 
-                  fontWeight: '600', 
-                  color: colors.cardText,
-                  marginTop: 0,
-                  marginBottom: '1rem'
-                }}>
-                  System Improvements
-                </h3>
-                
-                <div style={{ display: 'grid', gap: '1rem' }}>
                   <div style={{ 
-                    background: colors.sectionBg,
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    border: `1px solid ${colors.cardBorder}`
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                    gap: '0.75rem',
+                    marginBottom: '0.75rem'
                   }}>
-                    <div style={{ fontSize: '0.875rem', fontWeight: '600', color: colors.cardText, marginBottom: '0.5rem' }}>
-                      Apparent Power Reduction
-                    </div>
-                    <div style={{ fontSize: '0.8125rem', color: colors.labelText, display: 'grid', gap: '0.25rem' }}>
-                      <div>Before: {capacitorResult.existingApparentPower} kVA</div>
-                      <div>After: {capacitorResult.correctedApparentPower} kVA</div>
-                      <div style={{ 
-                        fontSize: '0.875rem', 
-                        fontWeight: '600', 
-                        color: '#059669',
-                        marginTop: '0.25rem'
-                      }}>
-                        Reduction: {capacitorResult.powerReduction}%
+                    <ResultCard
+                      label="CAPACITOR SIZE"
+                      value={capacitorResult.kVAR}
+                      unit="kVAR"
+                      color="#3b82f6"
+                      isDarkMode={isDarkMode}
+                    />
+                    <ResultCard
+                      label="CAPACITANCE"
+                      value={capacitorResult.capacitance}
+                      unit="μF per phase"
+                      variant="subtle"
+                      isDarkMode={isDarkMode}
+                    />
+                  </div>
+
+                  <InfoBox type="info" isDarkMode={isDarkMode} title="Power Factor Improvement">
+                    <div style={{ fontSize: '0.8125rem' }}>
+                      <div style={{ marginBottom: '0.25rem' }}>
+                        From: {capacitorResult.existingPF}% → To: {capacitorResult.targetPF}%
+                      </div>
+                      <div style={{ marginBottom: '0.25rem' }}>
+                        Real Power: {realPower} kW (constant)
+                      </div>
+                      <div>
+                        System Voltage: {voltage}V, {frequency} Hz
                       </div>
                     </div>
-                  </div>
+                  </InfoBox>
+                </Section>
 
-                  <div style={{ 
-                    background: colors.sectionBg,
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    border: `1px solid ${colors.cardBorder}`
-                  }}>
-                    <div style={{ fontSize: '0.875rem', fontWeight: '600', color: colors.cardText, marginBottom: '0.5rem' }}>
-                      Line Current Reduction
-                    </div>
-                    <div style={{ fontSize: '0.8125rem', color: colors.labelText, display: 'grid', gap: '0.25rem' }}>
-                      <div>Before: {capacitorResult.existingCurrent} A</div>
-                      <div>After: {capacitorResult.correctedCurrent} A</div>
-                      <div style={{ 
-                        fontSize: '0.875rem', 
-                        fontWeight: '600', 
-                        color: '#059669',
-                        marginTop: '0.25rem'
-                      }}>
-                        Reduction: {capacitorResult.currentReduction}%
+                {/* System Improvements */}
+                <Section 
+                  title="System Improvements" 
+                  icon={TrendingUp} 
+                  color="#f59e0b" 
+                  isDarkMode={isDarkMode}
+                >
+                  <div style={{ display: 'grid', gap: '0.75rem' }}>
+                    <InfoBox type="info" isDarkMode={isDarkMode} title="Apparent Power Reduction">
+                      <div style={{ fontSize: '0.8125rem' }}>
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          Before: {capacitorResult.existingApparentPower} kVA
+                        </div>
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          After: {capacitorResult.correctedApparentPower} kVA
+                        </div>
+                        <div style={{ 
+                          fontSize: '0.875rem', 
+                          fontWeight: '600', 
+                          color: '#059669',
+                          marginTop: '0.5rem'
+                        }}>
+                          Reduction: {capacitorResult.powerReduction}%
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    </InfoBox>
 
-              {/* Benefits Info */}
-              <div style={{
-                background: '#d1fae5',
-                border: '1px solid #6ee7b7',
-                borderRadius: '8px',
-                padding: '1rem'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-                  <TrendingUp size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-                  <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                    <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                      Benefits of Power Factor Correction:
-                    </div>
-                    <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
-                      <li style={{ marginBottom: '0.25rem' }}>Reduced utility demand charges</li>
-                      <li style={{ marginBottom: '0.25rem' }}>Lower line losses and voltage drop</li>
-                      <li style={{ marginBottom: '0.25rem' }}>Increased system capacity</li>
-                      <li style={{ marginBottom: '0.25rem' }}>Reduced equipment heating</li>
-                      <li>Improved voltage regulation</li>
-                    </ul>
+                    <InfoBox type="info" isDarkMode={isDarkMode} title="Line Current Reduction">
+                      <div style={{ fontSize: '0.8125rem' }}>
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          Before: {capacitorResult.existingCurrent} A
+                        </div>
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          After: {capacitorResult.correctedCurrent} A
+                        </div>
+                        <div style={{ 
+                          fontSize: '0.875rem', 
+                          fontWeight: '600', 
+                          color: '#059669',
+                          marginTop: '0.5rem'
+                        }}>
+                          Reduction: {capacitorResult.currentReduction}%
+                        </div>
+                      </div>
+                    </InfoBox>
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div>
-          {/* Cost Savings Tab Input Card */}
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.cardBorder}`,
-            borderRadius: '12px',
-            padding: '1.5rem',
-            marginBottom: '1rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1rem', 
-              fontWeight: '600', 
-              color: colors.cardText,
-              marginTop: 0,
-              marginBottom: '1rem',
-              borderBottom: `1px solid ${colors.cardBorder}`,
-              paddingBottom: '0.5rem'
-            }}>
-              Load & Power Factor
-            </h3>
-            
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.875rem', 
-                    fontWeight: '500', 
-                    color: colors.labelText, 
-                    marginBottom: '0.5rem' 
-                  }}>
-                    Real Power <br/> (kW)
-                  </label>
-                  <input 
+                </Section>
+
+                {/* Benefits Info */}
+                <InfoBox type="success" icon={TrendingUp} isDarkMode={isDarkMode} title="Benefits of Power Factor Correction">
+                  <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
+                    <li style={{ marginBottom: '0.25rem' }}>Reduced utility demand charges</li>
+                    <li style={{ marginBottom: '0.25rem' }}>Lower line losses and voltage drop</li>
+                    <li style={{ marginBottom: '0.25rem' }}>Increased system capacity</li>
+                    <li style={{ marginBottom: '0.25rem' }}>Reduced equipment heating</li>
+                    <li>Improved voltage regulation</li>
+                  </ul>
+                </InfoBox>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Load & Power Factor */}
+            <Section 
+              title="Load & Power Factor" 
+              icon={Zap} 
+              color="#3b82f6" 
+              isDarkMode={isDarkMode}
+            >
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                gap: '0.75rem' 
+              }}>
+                <InputGroup label="Real Power (kW)" isDarkMode={isDarkMode}>
+                  <Input 
                     type="number" 
                     value={savingsRealPower} 
                     onChange={(e) => setSavingsRealPower(e.target.value)}
                     placeholder="Enter load"
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.625rem',
-                      fontSize: '0.9375rem',
-                      border: `1px solid ${colors.inputBorder}`, 
-                      borderRadius: '8px',
-                      backgroundColor: colors.inputBg,
-                      color: colors.cardText,
-                      boxSizing: 'border-box'
-                    }}
+                    isDarkMode={isDarkMode}
                   />
-                </div>
+                </InputGroup>
 
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.875rem', 
-                    fontWeight: '500', 
-                    color: colors.labelText, 
-                    marginBottom: '0.5rem' 
-                  }}>
-                    Operating Hours/Year
-                  </label>
-                  <input 
+                <InputGroup 
+                  label="Operating Hours/Year" 
+                  helpText="8760 = 24/7 operation"
+                  isDarkMode={isDarkMode}
+                >
+                  <Input 
                     type="number" 
                     value={operatingHours} 
                     onChange={(e) => setOperatingHours(e.target.value)}
                     placeholder="8760"
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.625rem',
-                      fontSize: '0.9375rem',
-                      border: `1px solid ${colors.inputBorder}`, 
-                      borderRadius: '8px',
-                      backgroundColor: colors.inputBg,
-                      color: colors.cardText,
-                      boxSizing: 'border-box'
-                    }}
+                    isDarkMode={isDarkMode}
                   />
-                  <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>
-                    8760 = 24/7 operation
-                  </div>
-                </div>
-              </div>
+                </InputGroup>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.875rem', 
-                    fontWeight: '500', 
-                    color: colors.labelText, 
-                    marginBottom: '0.5rem' 
-                  }}>
-                    Existing Power Factor
-                  </label>
-                  <input 
+                <InputGroup label="Existing Power Factor" isDarkMode={isDarkMode}>
+                  <Input 
                     type="number" 
                     value={savingsExistingPF} 
                     onChange={(e) => setSavingsExistingPF(e.target.value)}
@@ -720,346 +458,191 @@ const PowerFactorCorrection = forwardRef(({ isDarkMode = false }, ref) => {
                     step="0.01"
                     min="0.5"
                     max="1"
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.625rem',
-                      fontSize: '0.9375rem',
-                      border: `1px solid ${colors.inputBorder}`, 
-                      borderRadius: '8px',
-                      backgroundColor: colors.inputBg,
-                      color: colors.cardText,
-                      boxSizing: 'border-box'
-                    }}
+                    isDarkMode={isDarkMode}
                   />
-                </div>
+                </InputGroup>
 
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.875rem', 
-                    fontWeight: '500', 
-                    color: colors.labelText, 
-                    marginBottom: '0.5rem' 
-                  }}>
-                    Target Power <br/> Factor
-                  </label>
-                  <select 
+                <InputGroup label="Target Power Factor" isDarkMode={isDarkMode}>
+                  <Select 
                     value={savingsTargetPF} 
                     onChange={(e) => setSavingsTargetPF(e.target.value)}
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.625rem',
-                      fontSize: '0.9375rem',
-                      border: `1px solid ${colors.inputBorder}`, 
-                      borderRadius: '8px',
-                      backgroundColor: colors.inputBg,
-                      color: colors.cardText,
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <option value="0.90">0.90 (90%)</option>
-                    <option value="0.95">0.95 (95%)</option>
-                    <option value="0.98">0.98 (98%)</option>
-                  </select>
-                </div>
+                    isDarkMode={isDarkMode}
+                    options={[
+                      { value: '0.90', label: '0.90 (90%)' },
+                      { value: '0.95', label: '0.95 (95%)' },
+                      { value: '0.98', label: '0.98 (98%)' }
+                    ]}
+                  />
+                </InputGroup>
               </div>
-            </div>
-          </div>
+            </Section>
 
-          {/* Utility Rates Card */}
-          <div style={{
-            background: colors.cardBg,
-            border: `1px solid ${colors.cardBorder}`,
-            borderRadius: '12px',
-            padding: '1.5rem',
-            marginBottom: '1rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1rem', 
-              fontWeight: '600', 
-              color: colors.cardText,
-              marginTop: 0,
-              marginBottom: '1rem',
-              borderBottom: `1px solid ${colors.cardBorder}`,
-              paddingBottom: '0.5rem'
-            }}>
-              Utility Rates
-            </h3>
-            
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  Demand Charge ($/kVA/month)
-                </label>
-                <input 
-                  type="number" 
-                  value={demandCharge} 
-                  onChange={(e) => setDemandCharge(e.target.value)}
-                  placeholder="10 - 25"
-                  step="0.01"
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`, 
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                />
-                <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>
-                  Check your utility bill
-                </div>
+            {/* Utility Rates */}
+            <Section 
+              title="Utility Rates" 
+              icon={DollarSign} 
+              color="#10b981" 
+              isDarkMode={isDarkMode}
+            >
+              <div style={{ display: 'grid', gap: '0.75rem' }}>
+                <InputGroup 
+                  label="Demand Charge ($/kVA/month)" 
+                  helpText="Check your utility bill"
+                  isDarkMode={isDarkMode}
+                >
+                  <Input 
+                    type="number" 
+                    value={demandCharge} 
+                    onChange={(e) => setDemandCharge(e.target.value)}
+                    placeholder="10 - 25"
+                    step="0.01"
+                    isDarkMode={isDarkMode}
+                  />
+                </InputGroup>
+
+                <InputGroup 
+                  label="Energy Rate ($/kWh) - Optional" 
+                  helpText="For energy loss savings"
+                  isDarkMode={isDarkMode}
+                >
+                  <Input 
+                    type="number" 
+                    value={energyRate} 
+                    onChange={(e) => setEnergyRate(e.target.value)}
+                    placeholder="0.08 - 0.15"
+                    step="0.001"
+                    isDarkMode={isDarkMode}
+                  />
+                </InputGroup>
+
+                <InputGroup 
+                  label="Monthly PF Penalty ($/month) - Optional" 
+                  helpText="If utility charges PF penalty"
+                  isDarkMode={isDarkMode}
+                >
+                  <Input 
+                    type="number" 
+                    value={pfPenalty} 
+                    onChange={(e) => setPfPenalty(e.target.value)}
+                    placeholder="0"
+                    isDarkMode={isDarkMode}
+                  />
+                </InputGroup>
               </div>
+            </Section>
 
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  Energy Rate ($/kWh) - Optional
-                </label>
-                <input 
-                  type="number" 
-                  value={energyRate} 
-                  onChange={(e) => setEnergyRate(e.target.value)}
-                  placeholder="0.08 - 0.15"
-                  step="0.001"
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`, 
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                />
-                <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>
-                  For energy loss savings
-                </div>
-              </div>
+            {/* Results */}
+            {savingsResult && (
+              <>
+                {/* Annual Cost Savings */}
+                <Section 
+                  title="Annual Cost Savings" 
+                  icon={TrendingUp} 
+                  color="#10b981" 
+                  isDarkMode={isDarkMode}
+                >
+                  <ResultCard
+                    label="TOTAL ANNUAL SAVINGS"
+                    value={`$${savingsResult.totalAnnualSavings}`}
+                    unit="per year"
+                    color="#10b981"
+                    variant="prominent"
+                    isDarkMode={isDarkMode}
+                  />
 
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.875rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  Monthly PF Penalty ($/month) - Optional
-                </label>
-                <input 
-                  type="number" 
-                  value={pfPenalty} 
-                  onChange={(e) => setPfPenalty(e.target.value)}
-                  placeholder="0"
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`, 
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                />
-                <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>
-                  If utility charges PF penalty
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Results */}
-          {savingsResult && (
-            <div>
-              {/* Annual Savings */}
-              <div style={{
-                background: colors.cardBg,
-                border: `1px solid ${colors.cardBorder}`,
-                borderRadius: '12px',
-                padding: '1.5rem',
-                marginBottom: '1rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-              }}>
-                <h3 style={{ 
-                  fontSize: '1rem', 
-                  fontWeight: '600', 
-                  color: colors.cardText,
-                  marginTop: 0,
-                  marginBottom: '1rem'
-                }}>
-                  Annual Cost Savings
-                </h3>
-                
-                <div style={{
-                  background: '#d1fae5',
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  textAlign: 'center',
-                  marginBottom: '1rem'
-                }}>
-                  <div style={{ fontSize: '0.875rem', color: '#059669', marginBottom: '0.5rem', fontWeight: '600' }}>
-                    Total Annual Savings
-                  </div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#059669' }}>
-                    ${savingsResult.totalAnnualSavings}
-                  </div>
-                  <div style={{ fontSize: '0.875rem', color: '#059669', marginTop: '0.25rem' }}>
-                    per year
-                  </div>
-                </div>
-
-                <div style={{ 
-                  background: colors.sectionBg,
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  border: `1px solid ${colors.cardBorder}`
-                }}>
-                  <div style={{ fontSize: '0.875rem', color: colors.labelText, marginBottom: '0.5rem' }}>
-                    <strong style={{ color: colors.cardText }}>Savings Breakdown:</strong>
-                  </div>
-                  <div style={{ fontSize: '0.8125rem', color: colors.labelText, display: 'grid', gap: '0.25rem' }}>
-                    <div>Demand Charge Savings: ${savingsResult.annualDemandSavings}/year</div>
-                    {parseFloat(savingsResult.annualEnergySavings) > 0 && (
-                      <div>Energy Loss Savings: ${savingsResult.annualEnergySavings}/year</div>
-                    )}
-                    {parseFloat(savingsResult.annualPenaltySavings) > 0 && (
-                      <div>Penalty Elimination: ${savingsResult.annualPenaltySavings}/year</div>
-                    )}
-                    <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: `1px solid ${colors.cardBorder}` }}>
-                      kVA Reduction: {savingsResult.kVAReduction} kVA
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ROI Analysis */}
-              <div style={{
-                background: colors.cardBg,
-                border: `1px solid ${colors.cardBorder}`,
-                borderRadius: '12px',
-                padding: '1.5rem',
-                marginBottom: '1rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-              }}>
-                <h3 style={{ 
-                  fontSize: '1rem', 
-                  fontWeight: '600', 
-                  color: colors.cardText,
-                  marginTop: 0,
-                  marginBottom: '1rem'
-                }}>
-                  Return on Investment
-                </h3>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-                  <div style={{
-                    background: colors.sectionBg,
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                      Estimated Cost
-                    </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                      ${savingsResult.estimatedCost}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                      {savingsResult.kVARRequired} kVAR @ $75/kVAR
-                    </div>
-                  </div>
-                  
-                  <div style={{
-                    background: '#dbeafe',
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                      Payback Period
-                    </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                      {savingsResult.paybackMonths}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                      months ({savingsResult.paybackYears} years)
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ 
-                  background: colors.sectionBg,
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  border: `1px solid ${colors.cardBorder}`
-                }}>
-                  <div style={{ fontSize: '0.875rem', color: colors.labelText, display: 'grid', gap: '0.25rem' }}>
-                    <div><strong style={{ color: colors.cardText }}>5-Year Net Savings:</strong></div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#059669', marginTop: '0.25rem' }}>
-                      ${savingsResult.fiveYearSavings}
-                    </div>
-                    <div style={{ fontSize: '0.8125rem', color: colors.subtleText, marginTop: '0.25rem' }}>
-                      Total savings minus initial investment
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Info Note */}
-              <div style={{
-                background: '#dbeafe',
-                border: '1px solid #3b82f6',
-                borderRadius: '8px',
-                padding: '1rem'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-                  <Info size={20} color="#1e40af" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-                  <div style={{ fontSize: '0.875rem', color: '#1e40af', lineHeight: '1.5' }}>
-                    <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
-                      Note:
-                    </div>
+                  <InfoBox type="info" isDarkMode={isDarkMode} title="Savings Breakdown">
                     <div style={{ fontSize: '0.8125rem' }}>
-                      Actual costs and savings may vary based on equipment selection, installation costs, utility rate structures, and load profiles. Consult with a qualified electrical engineer for detailed analysis.
+                      <div style={{ marginBottom: '0.25rem' }}>
+                        Demand Charge Savings: ${savingsResult.annualDemandSavings}/year
+                      </div>
+                      {parseFloat(savingsResult.annualEnergySavings) > 0 && (
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          Energy Loss Savings: ${savingsResult.annualEnergySavings}/year
+                        </div>
+                      )}
+                      {parseFloat(savingsResult.annualPenaltySavings) > 0 && (
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          Penalty Elimination: ${savingsResult.annualPenaltySavings}/year
+                        </div>
+                      )}
+                      <div style={{ 
+                        marginTop: '0.5rem', 
+                        paddingTop: '0.5rem', 
+                        borderTop: `1px solid ${colors.border}` 
+                      }}>
+                        kVA Reduction: {savingsResult.kVAReduction} kVA
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+                  </InfoBox>
+                </Section>
 
-      {/* Reference Footer */}
-      <div style={{
-        background: colors.sectionBg,
-        padding: '1rem',
-        borderRadius: '8px',
-        border: `1px solid ${colors.cardBorder}`,
-        fontSize: '0.8125rem',
-        color: colors.labelText
-      }}>
-        <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-          Power Factor Basics:
-        </div>
-        PF = Real Power (kW) ÷ Apparent Power (kVA) • Low PF causes higher current and utility charges • Target 0.95+ for optimal efficiency • Capacitors supply reactive power locally
-      </div>
+                {/* Return on Investment */}
+                <Section 
+                  title="Return on Investment" 
+                  icon={DollarSign} 
+                  color="#f59e0b" 
+                  isDarkMode={isDarkMode}
+                >
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                    gap: '0.75rem',
+                    marginBottom: '0.75rem'
+                  }}>
+                    <ResultCard
+                      label="ESTIMATED COST"
+                      value={`$${savingsResult.estimatedCost}`}
+                      unit={`${savingsResult.kVARRequired} kVAR @ $75/kVAR`}
+                      variant="subtle"
+                      isDarkMode={isDarkMode}
+                    />
+                    <ResultCard
+                      label="PAYBACK PERIOD"
+                      value={savingsResult.paybackMonths}
+                      unit={`months (${savingsResult.paybackYears} years)`}
+                      color="#3b82f6"
+                      isDarkMode={isDarkMode}
+                    />
+                  </div>
+
+                  <InfoBox type="success" isDarkMode={isDarkMode}>
+                    <div style={{ fontSize: '0.8125rem' }}>
+                      <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                        5-Year Net Savings:
+                      </div>
+                      <div style={{ 
+                        fontSize: '1.25rem', 
+                        fontWeight: '700', 
+                        color: '#059669',
+                        marginBottom: '0.25rem'
+                      }}>
+                        ${savingsResult.fiveYearSavings}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: colors.subtext }}>
+                        Total savings minus initial investment
+                      </div>
+                    </div>
+                  </InfoBox>
+                </Section>
+
+                {/* Info Note */}
+                <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Note">
+                  <div style={{ fontSize: '0.8125rem' }}>
+                    Actual costs and savings may vary based on equipment selection, installation costs, utility rate structures, and load profiles. Consult with a qualified electrical engineer for detailed analysis.
+                  </div>
+                </InfoBox>
+              </>
+            )}
+          </>
+        )}
+
+        {/* Reference Footer */}
+        <InfoBox type="info" isDarkMode={isDarkMode} title="Power Factor Basics">
+          <div style={{ fontSize: '0.8125rem' }}>
+            PF = Real Power (kW) ÷ Apparent Power (kVA) • Low PF causes higher current and utility charges • Target 0.95+ for optimal efficiency • Capacitors supply reactive power locally
+          </div>
+        </InfoBox>
+      </CalculatorLayout>
     </div>
   );
 });

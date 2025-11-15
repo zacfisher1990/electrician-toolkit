@@ -1,5 +1,5 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Zap, Thermometer, Info } from 'lucide-react';
 import {
   wireMaterials,
   temperatureRatings,
@@ -15,6 +15,14 @@ import {
   necReferences
 } from './data/ampacityData';
 import { exportToPDF } from '../../../utils/pdfExport';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox
+} from './CalculatorLayout';
 
 const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
   const [wireSize, setWireSize] = useState('12');
@@ -23,17 +31,6 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
   const [ambientTemp, setAmbientTemp] = useState('30');
   const [numConductors, setNumConductors] = useState('3');
   const [continuousLoad, setContinuousLoad] = useState(false);
-
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-  };
 
   const currentAmpacity = getBaseAmpacity(wireType, tempRating, wireSize);
   const ocpdLimit = getOCPDLimit(wireType, wireSize);
@@ -86,385 +83,216 @@ const AmpacityLookupCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
   }));
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      
-      {/* Wire Selection */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Wire Selection
-        </h3>
-        
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Wire Size
-            </label>
-            <select 
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Wire Selection */}
+        <Section 
+          title="Wire Selection" 
+          icon={Zap} 
+          color="#3b82f6" 
+          isDarkMode={isDarkMode}
+        >
+          <InputGroup label="Wire Size" isDarkMode={isDarkMode}>
+            <Select 
               value={wireSize} 
               onChange={(e) => setWireSize(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            >
-              {wireSizes.map(size => (
-                <option key={size.value} value={size.value}>
-                  {size.label}
-                </option>
-              ))}
-            </select>
-          </div>
+              isDarkMode={isDarkMode}
+              options={wireSizes}
+            />
+          </InputGroup>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Wire Material
-              </label>
-              <select 
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+            gap: '0.75rem' 
+          }}>
+            <InputGroup label="Wire Material" isDarkMode={isDarkMode}>
+              <Select 
                 value={wireType} 
                 onChange={(e) => setWireType(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              >
-                {wireMaterials.map(material => (
-                  <option key={material.value} value={material.value}>
-                    {material.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+                isDarkMode={isDarkMode}
+                options={wireMaterials}
+              />
+            </InputGroup>
 
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Temperature Rating
-              </label>
-              <select 
+            <InputGroup label="Temperature Rating" isDarkMode={isDarkMode}>
+              <Select 
                 value={tempRating} 
                 onChange={(e) => setTempRating(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              >
-                {temperatureRatings.map(rating => (
-                  <option key={rating.value} value={rating.value}>
-                    {rating.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+                isDarkMode={isDarkMode}
+                options={temperatureRatings}
+              />
+            </InputGroup>
           </div>
-        </div>
-      </div>
+        </Section>
 
-      {/* Derating Factors */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Derating Factors (Optional)
-        </h3>
-        
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Ambient Temp (°C)
-              </label>
-              <select 
+        {/* Derating Factors */}
+        <Section 
+          title="Derating Factors" 
+          icon={Thermometer} 
+          color="#f59e0b" 
+          isDarkMode={isDarkMode}
+        >
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+            gap: '0.75rem' 
+          }}>
+            <InputGroup label="Ambient Temperature" isDarkMode={isDarkMode}>
+              <Select 
                 value={ambientTemp} 
                 onChange={(e) => setAmbientTemp(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
-              >
-                {ambientTemperatures.map(temp => (
-                  <option key={temp.value} value={temp.value}>
-                    {temp.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+                isDarkMode={isDarkMode}
+                options={ambientTemperatures}
+              />
+            </InputGroup>
             
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: colors.labelText,
-                marginBottom: '0.5rem' 
-              }}>
-                Current-Carrying Conductors
-              </label>
-              <input
+            <InputGroup 
+              label="Current-Carrying Conductors" 
+              helpText="Number in raceway/cable"
+              isDarkMode={isDarkMode}
+            >
+              <Input
                 type="number"
                 value={numConductors}
                 onChange={(e) => setNumConductors(e.target.value)}
                 min="1"
-                style={{
-                  width: '100%',
-                  padding: '0.625rem',
-                  fontSize: '0.9375rem',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '8px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  boxSizing: 'border-box'
-                }}
+                isDarkMode={isDarkMode}
               />
-            </div>
+            </InputGroup>
           </div>
           
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-            <input 
-              type="checkbox" 
-              checked={continuousLoad} 
-              onChange={(e) => setContinuousLoad(e.target.checked)}
-              style={{ width: '1.125rem', height: '1.125rem', cursor: 'pointer' }}
-            />
-            <span style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.labelText }}>
-              Continuous Load (3+ hours) - Apply 80% factor
-            </span>
-          </label>
-
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`
-          }}>
-            <h4 style={{ 
-              fontSize: '0.875rem', 
-              fontWeight: '600', 
-              color: colors.cardText,
-              marginTop: 0,
-              marginBottom: '0.75rem'
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.75rem', 
+              cursor: 'pointer',
+              padding: '0.5rem 0'
             }}>
-              Applied Factors
-            </h4>
-            <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem', color: colors.labelText }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <input 
+                type="checkbox" 
+                checked={continuousLoad} 
+                onChange={(e) => setContinuousLoad(e.target.checked)}
+                style={{ 
+                  width: '1.125rem', 
+                  height: '1.125rem', 
+                  cursor: 'pointer',
+                  accentColor: '#3b82f6'
+                }}
+              />
+              <span style={{ 
+                fontSize: '0.875rem', 
+                fontWeight: '600', 
+                color: isDarkMode ? '#e0e0e0' : '#111827'
+              }}>
+                Continuous Load (3+ hours) - Apply 80% factor
+              </span>
+            </label>
+          </div>
+
+          <InfoBox type="info" isDarkMode={isDarkMode} title="Applied Factors">
+            <div style={{ fontSize: '0.8125rem' }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                marginBottom: '0.25rem'
+              }}>
                 <span>Temperature Factor:</span>
-                <span style={{ fontWeight: '600', color: colors.cardText }}>
+                <span style={{ fontWeight: '600' }}>
                   ×{deratingResults.tempFactor.toFixed(2)}
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                marginBottom: continuousLoad ? '0.25rem' : 0
+              }}>
                 <span>Conductor Adjustment:</span>
-                <span style={{ fontWeight: '600', color: colors.cardText }}>
+                <span style={{ fontWeight: '600' }}>
                   ×{deratingResults.conductorFactor.toFixed(2)}
                 </span>
               </div>
               {continuousLoad && (
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Continuous Load:</span>
-                  <span style={{ fontWeight: '600', color: colors.cardText }}>
+                  <span style={{ fontWeight: '600' }}>
                     ×0.80
                   </span>
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      </div>
+          </InfoBox>
+        </Section>
 
-      {/* Results */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1.125rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem'
-        }}>
-          Results
-        </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: hasDerating ? 'repeat(3, 1fr)' : '1fr', gap: '1rem', marginBottom: '1rem' }}>
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
+        {/* Results */}
+        <Section 
+          title="Ampacity Results" 
+          icon={CheckCircle} 
+          color="#10b981" 
+          isDarkMode={isDarkMode}
+        >
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: hasDerating ? 'repeat(auto-fit, minmax(120px, 1fr))' : '1fr', 
+            gap: '0.75rem',
+            marginBottom: '0.75rem'
           }}>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-              Base Ampacity
-            </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-              {deratingResults.base} A
-            </div>
+            <ResultCard
+              label="Base Ampacity"
+              value={deratingResults.base}
+              unit="Amps"
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
+            
+            {hasDerating && (
+              <>
+                <ResultCard
+                  label="Derated"
+                  value={deratingResults.derated}
+                  unit="Amps"
+                  variant="subtle"
+                  isDarkMode={isDarkMode}
+                />
+                
+                <ResultCard
+                  label="Final Ampacity"
+                  value={continuousLoad ? deratingResults.continuous : deratingResults.derated}
+                  unit="Amps"
+                  color="#3b82f6"
+                  isDarkMode={isDarkMode}
+                />
+              </>
+            )}
           </div>
-          
-          {hasDerating && (
-            <>
-              <div style={{
-                background: colors.sectionBg,
-                padding: '1rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                  Derated Ampacity
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                  {deratingResults.derated} A
-                </div>
-              </div>
-              
-              <div style={{
-                background: '#dbeafe',
-                padding: '1rem',
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                  Final Ampacity
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                  {continuousLoad ? deratingResults.continuous : deratingResults.derated} A
-                </div>
-              </div>
-            </>
-          )}
-        </div>
 
-        <div style={{
-          background: '#d1fae5',
-          border: '1px solid #6ee7b7',
-          borderRadius: '8px',
-          padding: '1rem',
-          marginBottom: '1rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-            <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-            <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5', width: '100%' }}>
-              <div style={{ marginBottom: '0.5rem' }}>
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode}>
+            <div style={{ fontSize: '0.8125rem' }}>
+              <div style={{ marginBottom: '0.25rem' }}>
                 <strong>Wire:</strong> {formatWireSize(wireSize)} {wireType}
               </div>
-              <div style={{ marginBottom: '0.5rem' }}>
+              <div>
                 <strong>Temperature Rating:</strong> {formatTempRating(tempRating)}
               </div>
             </div>
-          </div>
-        </div>
+          </InfoBox>
 
-        {ocpdLimit && (
-          <div style={{
-            background: '#fef3c7',
-            border: '1px solid #fcd34d',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <AlertTriangle size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#92400e', lineHeight: '1.5' }}>
-                <strong>NEC 240.4(D) Limit:</strong> {ocpdLimit}A max overcurrent protection
+          {ocpdLimit && (
+            <InfoBox type="warning" icon={AlertTriangle} isDarkMode={isDarkMode}>
+              <div style={{ fontWeight: '600', fontSize: '0.875rem' }}>
+                NEC 240.4(D) Limit: {ocpdLimit}A max overcurrent protection
               </div>
-            </div>
-          </div>
-        )}
+            </InfoBox>
+          )}
 
-        <div style={{
-          background: colors.sectionBg,
-          padding: '1rem',
-          borderRadius: '8px',
-          border: `1px solid ${colors.cardBorder}`
-        }}>
-          <div style={{ fontSize: '0.875rem', color: colors.labelText, lineHeight: '1.5' }}>
-            <div style={{ fontWeight: '600', color: colors.cardText, marginBottom: '0.5rem' }}>
-              Common Applications:
+          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Common Applications">
+            <div style={{ fontSize: '0.8125rem' }}>
+              {getCommonApplications(currentAmpacity, wireSize)}
             </div>
-            {getCommonApplications(currentAmpacity, wireSize)}
-          </div>
-        </div>
-      </div>
+          </InfoBox>
+        </Section>
+      </CalculatorLayout>
     </div>
   );
 });

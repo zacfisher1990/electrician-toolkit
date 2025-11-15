@@ -1,10 +1,17 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { TrendingUp, CheckCircle, AlertCircle } from 'lucide-react';
+import { TrendingUp, CheckCircle, Info, CornerRightDown, CornerUpRight, Layers, Grid3X3 } from 'lucide-react';
 import { exportToPDF } from '../../../utils/pdfExport';
-import styles from './Calculator.module.css';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox
+} from './CalculatorLayout';
 
-// Move calculator components OUTSIDE to prevent recreation on each render
-const OffsetBendCalculator = ({ offsetData, setOffsetData, colors }) => {
+// Offset Bend Calculator
+const OffsetBendCalculator = ({ offsetData, setOffsetData, isDarkMode }) => {
   const multipliers = {
     '10': { distance: 6.0, shrink: 0.01 },
     '22.5': { distance: 2.6, shrink: 0.06 },
@@ -28,133 +35,94 @@ const OffsetBendCalculator = ({ offsetData, setOffsetData, colors }) => {
   const results = calculateOffset();
 
   return (
-    <div className={styles.menu}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Obstacle Height (inches)
-          </label>
-          <input
+    <div>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: '0.75rem',
+        marginBottom: '0.75rem'
+      }}>
+        <InputGroup 
+          label="Obstacle Height" 
+          helpText="Height to clear obstacle"
+          isDarkMode={isDarkMode}
+        >
+          <Input
             type="number"
             value={offsetData.obstacleHeight}
             onChange={(e) => setOffsetData(prev => ({...prev, obstacleHeight: e.target.value}))}
             placeholder="Enter height"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
+            isDarkMode={isDarkMode}
+            unit="in"
           />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Height to clear obstacle</div>
-        </div>
+        </InputGroup>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Bend Angle <br/>  <br/>
-          </label>
-          <select
+        <InputGroup 
+          label="Bend Angle" 
+          helpText="Most common: 30° or 45°"
+          isDarkMode={isDarkMode}
+        >
+          <Select
             value={offsetData.bendAngle}
             onChange={(e) => setOffsetData(prev => ({...prev, bendAngle: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
-            <option value="10">10°</option>
-            <option value="22.5">22.5°</option>
-            <option value="30">30°</option>
-            <option value="45">45°</option>
-            <option value="60">60°</option>
-          </select>
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Most common: 30° or 45°</div>
-        </div>
+            isDarkMode={isDarkMode}
+            options={[
+              { value: '10', label: '10°' },
+              { value: '22.5', label: '22.5°' },
+              { value: '30', label: '30°' },
+              { value: '45', label: '45°' },
+              { value: '60', label: '60°' }
+            ]}
+          />
+        </InputGroup>
       </div>
 
       {results && (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{
-              background: '#dbeafe',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                Distance Between Bends
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                {results.distanceBetweenBends}"
-              </div>
-            </div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
+            gap: '0.75rem',
+            marginBottom: '0.75rem'
+          }}>
+            <ResultCard
+              label="Distance Between Bends"
+              value={`${results.distanceBetweenBends}"`}
+              unit=""
+              color="#3b82f6"
+              isDarkMode={isDarkMode}
+            />
             
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Shrinkage
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.shrinkage}"
-              </div>
-            </div>
+            <ResultCard
+              label="Shrinkage"
+              value={`${results.shrinkage}"`}
+              unit=""
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
           </div>
 
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  How to Make the Bend
-                </div>
-                <div>Mark first bend, measure {results.distanceBetweenBends}" from center of first bend, then make second bend at {results.angle}°.</div>
-              </div>
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title="How to Make the Bend">
+            <div style={{ fontSize: '0.8125rem' }}>
+              Mark first bend, measure {results.distanceBetweenBends}" from center of first bend, then make second bend at {results.angle}°.
             </div>
-          </div>
+          </InfoBox>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            fontSize: '0.875rem',
-            color: colors.labelText
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-              Offset Bend Tips:
-            </div>
-            <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Offset Bend Tips">
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
               <li>30° bends are most common for typical offsets</li>
               <li>45° bends create shorter, steeper offsets</li>
               <li>Always account for shrinkage in measurements</li>
             </ul>
-          </div>
+          </InfoBox>
         </>
       )}
     </div>
   );
 };
 
-const StubUpCalculator = ({ stubUpData, setStubUpData, colors }) => {
+// Stub-Up Calculator
+const StubUpCalculator = ({ stubUpData, setStubUpData, isDarkMode }) => {
   const deductions = {
     '1/2': 5, '3/4': 6, '1': 8, '1-1/4': 11, '1-1/2': 14,
     '2': 16, '2-1/2': 21, '3': 26, '3-1/2': 30, '4': 34
@@ -176,143 +144,94 @@ const StubUpCalculator = ({ stubUpData, setStubUpData, colors }) => {
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Desired Stub Height (inches)
-          </label>
-          <input
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: '0.75rem',
+        marginBottom: '0.75rem'
+      }}>
+        <InputGroup 
+          label="Desired Stub Height" 
+          helpText="Back of 90° to floor"
+          isDarkMode={isDarkMode}
+        >
+          <Input
             type="number"
             value={stubUpData.stubHeight}
             onChange={(e) => setStubUpData(prev => ({...prev, stubHeight: e.target.value}))}
             placeholder="Enter stub height"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
+            isDarkMode={isDarkMode}
+            unit="in"
           />
-          <div style={{ fontSize: '0.75rem', color: colors.subtleText, marginTop: '0.25rem' }}>Back of 90° to floor</div>
-        </div>
+        </InputGroup>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Conduit Size <br/>  <br/>
-          </label>
-          <select
+        <InputGroup label="Conduit Size" isDarkMode={isDarkMode}>
+          <Select
             value={stubUpData.conduitSize}
             onChange={(e) => setStubUpData(prev => ({...prev, conduitSize: e.target.value}))}
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
-          >
-            {Object.keys(deductions).map(size => (
-              <option key={size} value={size}>{size}"</option>
-            ))}
-          </select>
-        </div>
+            isDarkMode={isDarkMode}
+            options={Object.keys(deductions).map(size => ({
+              value: size,
+              label: `${size}"`
+            }))}
+          />
+        </InputGroup>
       </div>
 
       {results && (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{
-              background: '#dbeafe',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                Mark At
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                {results.markDistance}"
-              </div>
-            </div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', 
+            gap: '0.75rem',
+            marginBottom: '0.75rem'
+          }}>
+            <ResultCard
+              label="Mark At"
+              value={`${results.markDistance}"`}
+              unit=""
+              color="#3b82f6"
+              isDarkMode={isDarkMode}
+            />
             
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Deduction
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.deduction}"
-              </div>
-            </div>
+            <ResultCard
+              label="Deduction"
+              value={`${results.deduction}"`}
+              unit=""
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
 
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Conduit Size
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {stubUpData.conduitSize}"
-              </div>
-            </div>
+            <ResultCard
+              label="Conduit Size"
+              value={`${stubUpData.conduitSize}"`}
+              unit=""
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
           </div>
 
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  How to Bend
-                </div>
-                <div>Measure from end of conduit, mark at {results.markDistance}", line up mark with arrow on bender, make 90° bend.</div>
-              </div>
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title="How to Bend">
+            <div style={{ fontSize: '0.8125rem' }}>
+              Measure from end of conduit, mark at {results.markDistance}", line up mark with arrow on bender, make 90° bend.
             </div>
-          </div>
+          </InfoBox>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            fontSize: '0.875rem',
-            color: colors.labelText
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-              Stub-Up Tips:
-            </div>
-            <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Stub-Up Tips">
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
               <li>Deduction accounts for the radius of the bend</li>
               <li>Larger conduit = larger deduction</li>
               <li>Always check your bender - deductions vary by manufacturer</li>
             </ul>
-          </div>
+          </InfoBox>
         </>
       )}
     </div>
   );
 };
 
-const SaddleBendCalculator = ({ saddleData, setSaddleData, colors }) => {
+// 3-Point Saddle Calculator
+const SaddleBendCalculator = ({ saddleData, setSaddleData, isDarkMode }) => {
   const calculateSaddle = () => {
     if (!saddleData.obstacleHeight) return null;
     const height = parseFloat(saddleData.obstacleHeight);
@@ -334,145 +253,96 @@ const SaddleBendCalculator = ({ saddleData, setSaddleData, colors }) => {
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Obstacle Height (inches)
-          </label>
-          <input
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: '0.75rem',
+        marginBottom: '0.75rem'
+      }}>
+        <InputGroup label="Obstacle Height" isDarkMode={isDarkMode}>
+          <Input
             type="number"
             value={saddleData.obstacleHeight}
             onChange={(e) => setSaddleData(prev => ({...prev, obstacleHeight: e.target.value}))}
             placeholder="Enter height"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
+            isDarkMode={isDarkMode}
+            unit="in"
           />
-        </div>
+        </InputGroup>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Obstacle Width <br/> (Optional)
-          </label>
-          <input
+        <InputGroup 
+          label="Obstacle Width" 
+          helpText="Optional - defaults to 4x height"
+          isDarkMode={isDarkMode}
+        >
+          <Input
             type="number"
             value={saddleData.obstacleWidth}
             onChange={(e) => setSaddleData(prev => ({...prev, obstacleWidth: e.target.value}))}
             placeholder="Auto: 4x height"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
+            isDarkMode={isDarkMode}
+            unit="in"
           />
-        </div>
+        </InputGroup>
       </div>
 
       {results && (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{
-              background: '#dbeafe',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                Center Bend
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                {results.centerBend}°
-              </div>
-            </div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', 
+            gap: '0.75rem',
+            marginBottom: '0.75rem'
+          }}>
+            <ResultCard
+              label="Center Bend"
+              value={`${results.centerBend}°`}
+              unit=""
+              color="#3b82f6"
+              isDarkMode={isDarkMode}
+            />
             
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Outer Bends
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.outerBends}°
-              </div>
-            </div>
+            <ResultCard
+              label="Outer Bends"
+              value={`${results.outerBends}°`}
+              unit=""
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
 
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Distance to Outer
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.distanceToOuter}"
-              </div>
-            </div>
+            <ResultCard
+              label="Distance to Outer"
+              value={`${results.distanceToOuter}"`}
+              unit=""
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
           </div>
 
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Bending Sequence
-                </div>
-                <ol style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                  <li>Mark center of obstacle on conduit</li>
-                  <li>Make 45° center bend at mark</li>
-                  <li>Measure {results.distanceToOuter}" from center each direction</li>
-                  <li>Make 22.5° bends on each side (opposite direction)</li>
-                </ol>
-              </div>
-            </div>
-          </div>
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title="Bending Sequence">
+            <ol style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
+              <li>Mark center of obstacle on conduit</li>
+              <li>Make 45° center bend at mark</li>
+              <li>Measure {results.distanceToOuter}" from center each direction</li>
+              <li>Make 22.5° bends on each side (opposite direction)</li>
+            </ol>
+          </InfoBox>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            fontSize: '0.875rem',
-            color: colors.labelText
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-              3-Point Saddle Tips:
-            </div>
-            <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="3-Point Saddle Tips">
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
               <li>Center bend goes up, outer bends go down</li>
               <li>Most common for going over pipes or other conduits</li>
               <li>Mark all three bend locations before starting</li>
             </ul>
-          </div>
+          </InfoBox>
         </>
       )}
     </div>
   );
 };
 
-const FourPointSaddleCalculator = ({ fourPointData, setFourPointData, colors }) => {
+// 4-Point Saddle Calculator
+const FourPointSaddleCalculator = ({ fourPointData, setFourPointData, isDarkMode }) => {
   const calculateFourPointSaddle = () => {
     if (!fourPointData.obstacleHeight || !fourPointData.obstacleWidth) return null;
     
@@ -495,138 +365,84 @@ const FourPointSaddleCalculator = ({ fourPointData, setFourPointData, colors }) 
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Obstacle Height <br/> (inches)
-          </label>
-          <input
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: '0.75rem',
+        marginBottom: '0.75rem'
+      }}>
+        <InputGroup label="Obstacle Height" isDarkMode={isDarkMode}>
+          <Input
             type="number"
             value={fourPointData.obstacleHeight}
             onChange={(e) => setFourPointData(prev => ({...prev, obstacleHeight: e.target.value}))}
             placeholder="Enter height"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
+            isDarkMode={isDarkMode}
+            unit="in"
           />
-        </div>
+        </InputGroup>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.labelText, marginBottom: '0.5rem' }}>
-            Obstacle Width <br/> (inches)
-          </label>
-          <input
+        <InputGroup label="Obstacle Width" isDarkMode={isDarkMode}>
+          <Input
             type="number"
             value={fourPointData.obstacleWidth}
             onChange={(e) => setFourPointData(prev => ({...prev, obstacleWidth: e.target.value}))}
             placeholder="Enter width"
-            style={{
-              width: '100%',
-              padding: '0.625rem',
-              fontSize: '0.9375rem',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: '8px',
-              backgroundColor: colors.inputBg,
-              color: colors.cardText,
-              boxSizing: 'border-box'
-            }}
+            isDarkMode={isDarkMode}
+            unit="in"
           />
-        </div>
+        </InputGroup>
       </div>
 
       {results && (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{
-              background: '#dbeafe',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                All Bends
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                {results.bendAngle}°
-              </div>
-            </div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', 
+            gap: '0.75rem',
+            marginBottom: '0.75rem'
+          }}>
+            <ResultCard
+              label="All Bends"
+              value={`${results.bendAngle}°`}
+              unit=""
+              color="#3b82f6"
+              isDarkMode={isDarkMode}
+            />
             
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Outer Distance
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.distanceToOuter}"
-              </div>
-            </div>
+            <ResultCard
+              label="Outer Distance"
+              value={`${results.distanceToOuter}"`}
+              unit=""
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
 
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Inner Spacing
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.innerSpacing}"
-              </div>
-            </div>
+            <ResultCard
+              label="Inner Spacing"
+              value={`${results.innerSpacing}"`}
+              unit=""
+              variant="subtle"
+              isDarkMode={isDarkMode}
+            />
           </div>
 
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Bending Sequence
-                </div>
-                <ol style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                  <li>Mark center of obstacle on conduit</li>
-                  <li>Measure {results.distanceToOuter}" from center (outer bends)</li>
-                  <li>Measure {results.innerSpacing}" from center (inner bends)</li>
-                  <li>Make all four 22.5° bends: outer up, inner down</li>
-                </ol>
-              </div>
-            </div>
-          </div>
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title="Bending Sequence">
+            <ol style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
+              <li>Mark center of obstacle on conduit</li>
+              <li>Measure {results.distanceToOuter}" from center (outer bends)</li>
+              <li>Measure {results.innerSpacing}" from center (inner bends)</li>
+              <li>Make all four 22.5° bends: outer up, inner down</li>
+            </ol>
+          </InfoBox>
 
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            border: `1px solid ${colors.cardBorder}`,
-            fontSize: '0.875rem',
-            color: colors.labelText
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-              4-Point Saddle Tips:
-            </div>
-            <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="4-Point Saddle Tips">
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
               <li>Used for larger obstacles where 3-point won't work</li>
               <li>Outer bends go up, inner bends go down</li>
               <li>Creates a flatter top for better clearance</li>
             </ul>
-          </div>
+          </InfoBox>
         </>
       )}
     </div>
@@ -657,17 +473,12 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
     obstacleWidth: ''
   });
 
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
-  };
+  const tabs = [
+    { id: 'offset', label: 'Offset', icon: TrendingUp },
+    { id: 'stubup', label: '90° Stub', icon: CornerUpRight },
+    { id: 'saddle', label: '3-Point', icon: Layers },
+    { id: 'fourpoint', label: '4-Point', icon: Grid3X3 }
+  ];
 
   // Expose exportPDF function to parent via ref
   useImperativeHandle(ref, () => ({
@@ -827,67 +638,102 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
     }
   }));
 
-  const tabComponents = {
-    offset: <OffsetBendCalculator offsetData={offsetData} setOffsetData={setOffsetData} colors={colors} />,
-    stubup: <StubUpCalculator stubUpData={stubUpData} setStubUpData={setStubUpData} colors={colors} />,
-    saddle: <SaddleBendCalculator saddleData={saddleData} setSaddleData={setSaddleData} colors={colors} />,
-    fourpoint: <FourPointSaddleCalculator fourPointData={fourPointData} setFourPointData={setFourPointData} colors={colors} />
-  };
-
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      {/* Tab Navigation */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        display: 'flex',
-        gap: '0.5rem',
-        flexWrap: 'wrap'
-      }}>
-        {[
-          { id: 'offset', label: 'Offset Bends' },
-          { id: 'stubup', label: '90° Stub-Up' },
-          { id: 'saddle', label: '3-Point Saddle' },
-          { id: 'fourpoint', label: '4-Point Saddle' }
-        ].map(tab => (
-          <button 
-            className={styles.btn}
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              flex: '1 1 auto',
-              minWidth: '120px',
-              padding: '0.625rem 1rem',
-              background: activeTab === tab.id ? '#3b82f6' : colors.sectionBg,
-              color: activeTab === tab.id ? 'white' : colors.labelText,
-              border: `1px solid ${activeTab === tab.id ? '#3b82f6' : colors.cardBorder}`,
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Tab Navigation */}
+        <Section isDarkMode={isDarkMode} style={{ padding: '0.75rem' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '0.5rem'
+          }}>
+            {tabs.map(tab => {
+              const isActive = activeTab === tab.id;
+              const TabIcon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    padding: '0.75rem 0.25rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    background: isActive ? '#3b82f6' : isDarkMode ? '#1a1a1a' : '#f3f4f6',
+                    color: isActive ? '#ffffff' : isDarkMode ? '#e0e0e0' : '#111827',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.25rem',
+                    minHeight: '60px'
+                  }}
+                >
+                  <TabIcon size={18} />
+                  <span style={{ 
+                    fontSize: '0.6875rem',
+                    lineHeight: '1.2',
+                    textAlign: 'center'
+                  }}>
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </Section>
 
-      {/* Active Tab Content */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        {tabComponents[activeTab]}
-      </div>
+        {/* Active Tab Content */}
+        <Section 
+          title={
+            activeTab === 'offset' ? 'Offset Bends' :
+            activeTab === 'stubup' ? '90° Stub-Up' :
+            activeTab === 'saddle' ? '3-Point Saddle' :
+            '4-Point Saddle'
+          }
+          icon={
+            activeTab === 'offset' ? TrendingUp :
+            activeTab === 'stubup' ? CornerUpRight :
+            activeTab === 'saddle' ? Layers :
+            Grid3X3
+          }
+          color="#3b82f6"
+          isDarkMode={isDarkMode}
+        >
+          {activeTab === 'offset' && (
+            <OffsetBendCalculator 
+              offsetData={offsetData} 
+              setOffsetData={setOffsetData} 
+              isDarkMode={isDarkMode} 
+            />
+          )}
+          {activeTab === 'stubup' && (
+            <StubUpCalculator 
+              stubUpData={stubUpData} 
+              setStubUpData={setStubUpData} 
+              isDarkMode={isDarkMode} 
+            />
+          )}
+          {activeTab === 'saddle' && (
+            <SaddleBendCalculator 
+              saddleData={saddleData} 
+              setSaddleData={setSaddleData} 
+              isDarkMode={isDarkMode} 
+            />
+          )}
+          {activeTab === 'fourpoint' && (
+            <FourPointSaddleCalculator 
+              fourPointData={fourPointData} 
+              setFourPointData={setFourPointData} 
+              isDarkMode={isDarkMode} 
+            />
+          )}
+        </Section>
+      </CalculatorLayout>
     </div>
   );
 });

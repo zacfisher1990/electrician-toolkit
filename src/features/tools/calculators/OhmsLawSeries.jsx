@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
-import { Info, Plus, Trash2, Calculator, FileDown, Briefcase } from 'lucide-react';
+import { Info, Plus, Trash2, Calculator, FileDown, Briefcase, GitBranch } from 'lucide-react';
 import { getUserJobs, addCalculationToJob } from '../../jobs/jobsService';
-import styles from './Calculator.module.css';
+import { getColors } from '../../../theme';
+import { 
+  Section, 
+  InputGroup, 
+  ResultCard, 
+  InfoBox,
+  Button
+} from './CalculatorLayout';
 
-const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
+const OhmsLawSeries = ({ isDarkMode, onExport }) => {
+  const colors = getColors(isDarkMode);
   const [seriesComponents, setSeriesComponents] = useState([
     { id: 1, R: '', V: '', I: '', P: '' }
   ]);
@@ -11,10 +19,6 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
   const [showJobSelector, setShowJobSelector] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [loadingJobs, setLoadingJobs] = useState(false);
-
-  const getTotalFieldsCount = (totals) => {
-    return Object.values(totals).filter(val => val && val !== '').length;
-  };
 
   const isTotalFieldDisabled = (totals, fieldName) => {
     const filledFields = Object.entries(totals)
@@ -283,47 +287,25 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
   return (
     <div>
       {/* Info Box */}
-      <div style={{
-        background: '#dbeafe',
-        border: '1px solid #3b82f6',
-        borderRadius: '8px',
-        padding: '1rem',
-        marginBottom: '1rem'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-          <Info size={20} color="#1e40af" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-          <p style={{ 
-            margin: 0, 
-            fontSize: '0.875rem', 
-            color: '#1e40af',
-            lineHeight: '1.5'
-          }}>
-            Series Circuit: Current is constant across all components
-          </p>
+      <InfoBox type="info" icon={Info} isDarkMode={isDarkMode}>
+        <div style={{ fontSize: '0.875rem' }}>
+          Series Circuit: Current is constant across all components
         </div>
-      </div>
+      </InfoBox>
 
       {/* Circuit Totals */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
+      <Section 
+        title="Circuit Totals (Optional)" 
+        icon={GitBranch} 
+        color="#f59e0b" 
+        isDarkMode={isDarkMode}
+      >
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(2, 1fr)', 
+          gap: '0.75rem', 
+          marginBottom: '0.5rem' 
         }}>
-          Circuit Totals (Optional)
-        </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', marginBottom: '0.5rem' }}>
           {['V', 'I', 'R', 'P'].map(field => {
             const labels = {
               'R': 'Ohms (R)',
@@ -331,339 +313,303 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
               'I': 'Amps (I)',
               'P': 'Watts (P)'
             };
+            const disabled = isTotalFieldDisabled(seriesTotals, field);
             
             return (
-              <div key={field}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.8125rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText, 
-                  marginBottom: '0.5rem' 
-                }}>
-                  {labels[field]}
-                </label>
+              <InputGroup key={field} label={labels[field]} isDarkMode={isDarkMode}>
                 <input
                   type="number"
                   value={seriesTotals[field]}
                   onChange={(e) => setSeriesTotals({...seriesTotals, [field]: e.target.value})}
                   placeholder="Optional"
-                  disabled={isTotalFieldDisabled(seriesTotals, field)}
+                  disabled={disabled}
                   style={{ 
                     width: '100%', 
-                    padding: '0.625rem',
+                    padding: '0.75rem',
                     fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`, 
-                    borderRadius: '8px',
-                    backgroundColor: isTotalFieldDisabled(seriesTotals, field) ? colors.sectionBg : colors.inputBg,
-                    color: colors.cardText,
+                    border: `1px solid ${colors.border}`, 
+                    borderRadius: '0.5rem',
+                    backgroundColor: disabled ? colors.inputBg : colors.cardBg,
+                    color: colors.text,
                     boxSizing: 'border-box',
-                    cursor: isTotalFieldDisabled(seriesTotals, field) ? 'not-allowed' : 'text'
+                    cursor: disabled ? 'not-allowed' : 'text',
+                    opacity: disabled ? 0.6 : 1
                   }}
                 />
-              </div>
+              </InputGroup>
             );
           })}
         </div>
         <p style={{ 
           fontSize: '0.8125rem', 
-          color: colors.subtleText, 
+          color: colors.subtext, 
           margin: 0,
           fontStyle: 'italic'
         }}>
           Enter known total values to help solve the circuit. Current is constant in series.
         </p>
-      </div>
+      </Section>
 
       {/* Components */}
-      {seriesComponents.map((comp, index) => (
-        <div key={comp.id} style={{ 
-          background: colors.sectionBg,
-          padding: '1rem',
-          borderRadius: '8px',
-          marginBottom: '0.75rem',
-          border: `1px solid ${colors.cardBorder}`
-        }}>
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: '1fr auto',
-            alignItems: 'center',
-            marginBottom: '0.75rem',
-            gap: '0.5rem'
-          }}>
-            <h4 style={{ 
-              fontWeight: '600', 
-              color: colors.labelText, 
-              margin: 0, 
-              fontSize: '0.875rem'
-            }}>
-              Component {index + 1}
-            </h4>
-            {seriesComponents.length > 1 && (
-              <button
-                onClick={() => removeSeriesComponent(comp.id)}
-                style={{ 
-                  color: '#dc2626', 
-                  background: 'none', 
-                  border: 'none', 
-                  cursor: 'pointer', 
-                  padding: '0.5rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <Trash2 size={18} />
-              </button>
-            )}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-            {[
-              { field: 'V', label: 'Volts (E)' },
-              { field: 'I', label: 'Amps (I)' },
-              { field: 'R', label: 'Ohms (R)' },
-              { field: 'P', label: 'Watts (P)' }
-            ].map(({ field, label }) => (
-              <div key={field}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.75rem', 
-                  fontWeight: '500', 
-                  color: colors.subtleText, 
-                  marginBottom: '0.25rem' 
-                }}>
-                  {label}
-                </label>
-                <input
-                  type="number"
-                  value={comp[field]}
-                  onChange={(e) => updateSeriesComponent(comp.id, field, e.target.value)}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.5rem',
-                    fontSize: '0.875rem',
-                    border: `1px solid ${colors.inputBorder}`, 
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-
-      <button
-        onClick={addSeriesComponent}
-        style={{
-          width: '100%',
-          background: '#3b82f6',
-          color: 'white',
-          fontWeight: '600',
-          padding: '0.75rem',
-          borderRadius: '8px',
-          border: 'none',
-          cursor: 'pointer',
-          fontSize: '0.875rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.5rem',
-          marginBottom: '1rem'
-        }}
+      <Section 
+        title="Components" 
+        icon={Calculator} 
+        color="#3b82f6" 
+        isDarkMode={isDarkMode}
       >
-        <Plus size={16} />
-        Add Component
-      </button>
+        {seriesComponents.map((comp, index) => (
+          <div key={comp.id} style={{ 
+            background: colors.inputBg,
+            padding: '1rem',
+            borderRadius: '0.5rem',
+            marginBottom: '0.75rem',
+            border: `1px solid ${colors.border}`
+          }}>
+            <div style={{ 
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '0.75rem'
+            }}>
+              <h4 style={{ 
+                fontWeight: '600', 
+                color: colors.text, 
+                margin: 0, 
+                fontSize: '0.875rem'
+              }}>
+                Component {index + 1}
+              </h4>
+              {seriesComponents.length > 1 && (
+                <button
+                  onClick={() => removeSeriesComponent(comp.id)}
+                  style={{ 
+                    color: '#dc2626', 
+                    background: 'none', 
+                    border: 'none', 
+                    cursor: 'pointer', 
+                    padding: '0.5rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Trash2 size={18} />
+                </button>
+              )}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+              {[
+                { field: 'V', label: 'E' },
+                { field: 'I', label: 'I' },
+                { field: 'R', label: 'R' },
+                { field: 'P', label: 'P' }
+              ].map(({ field, label }) => (
+                <div key={field}>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '0.6875rem', 
+                    fontWeight: '500', 
+                    color: colors.subtext, 
+                    marginBottom: '0.25rem',
+                    textAlign: 'center'
+                  }}>
+                    {label}
+                  </label>
+                  <input
+                    type="number"
+                    value={comp[field]}
+                    onChange={(e) => updateSeriesComponent(comp.id, field, e.target.value)}
+                    style={{ 
+                      width: '100%', 
+                      padding: '0.5rem',
+                      fontSize: '0.875rem',
+                      border: `1px solid ${colors.border}`, 
+                      borderRadius: '0.5rem',
+                      backgroundColor: colors.cardBg,
+                      color: colors.text,
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
         <button
-          onClick={calculateSeries}
+          onClick={addSeriesComponent}
           style={{
-            flex: 1,
+            width: '100%',
             background: '#3b82f6',
             color: 'white',
             fontWeight: '600',
             padding: '0.75rem',
-            borderRadius: '8px',
+            borderRadius: '0.5rem',
             border: 'none',
             cursor: 'pointer',
             fontSize: '0.875rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.5rem'
+            gap: '0.5rem',
+            marginBottom: '0.75rem'
           }}
         >
-          <Calculator size={20} />
-          Calculate
+          <Plus size={16} />
+          Add Component
         </button>
-        <button
-          onClick={clearSeries}
-          style={{
-            flex: 1,
-            background: '#6b7280',
-            color: 'white',
-            fontWeight: '600',
-            padding: '0.75rem',
-            borderRadius: '8px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.875rem'
-          }}
-        >
-          Clear All
-        </button>
-      </div>
 
-      {/* Results */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem'
-        }}>
-          Circuit Totals
-        </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-              Voltage
-            </div>
-            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
-              {getTotalsSeries().totalV.toFixed(1)}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-              E
-            </div>
-          </div>
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-              Amperage
-            </div>
-            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
-              {getTotalsSeries().totalI.toFixed(1)}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-              I
-            </div>
-          </div>
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-              Resistance
-            </div>
-            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
-              {getTotalsSeries().totalR.toFixed(1)}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-              R
-            </div>
-          </div>
-          <div style={{
-            background: colors.sectionBg,
-            padding: '1rem',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-              Wattage
-            </div>
-            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.cardText }}>
-              {getTotalsSeries().totalP.toFixed(1)}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-              P
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      {hasResults && (
-        <div style={{
-          display: 'flex',
-          gap: '0.5rem',
-          marginTop: '1rem'
-        }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
           <button
-            onClick={handleExport}
+            onClick={calculateSeries}
             style={{
-              flex: 1,
-              padding: '0.875rem',
-              background: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '0.9375rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              transition: 'background 0.2s',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.background = '#2563eb'}
-            onMouseOut={(e) => e.currentTarget.style.background = '#3b82f6'}
-          >
-            <FileDown size={18} />
-            Export to PDF
-          </button>
-          
-          <button
-            onClick={handleOpenJobSelector}
-            style={{
-              flex: 1,
-              padding: '0.875rem',
               background: '#10b981',
               color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '0.9375rem',
               fontWeight: '600',
+              padding: '0.75rem',
+              borderRadius: '0.5rem',
+              border: 'none',
               cursor: 'pointer',
+              fontSize: '0.875rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0.5rem',
-              transition: 'background 0.2s',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+              gap: '0.5rem'
             }}
-            onMouseOver={(e) => e.currentTarget.style.background = '#059669'}
-            onMouseOut={(e) => e.currentTarget.style.background = '#10b981'}
           >
-            <Briefcase size={18} />
-            Attach to Job
+            <Calculator size={16} />
+            Calculate
+          </button>
+          <button
+            onClick={clearSeries}
+            style={{
+              background: '#6b7280',
+              color: 'white',
+              fontWeight: '600',
+              padding: '0.75rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '0.875rem'
+            }}
+          >
+            Clear All
           </button>
         </div>
-      )}
+      </Section>
+
+      {/* Results */}
+      <Section 
+        title="Circuit Totals" 
+        icon={GitBranch} 
+        color="#10b981" 
+        isDarkMode={isDarkMode}
+      >
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(2, 1fr)', 
+          gap: '0.75rem',
+          marginBottom: '0.75rem'
+        }}>
+          <ResultCard
+            label="Voltage"
+            value={getTotalsSeries().totalV.toFixed(1)}
+            unit="V"
+            variant="subtle"
+            isDarkMode={isDarkMode}
+          />
+          <ResultCard
+            label="Current"
+            value={getTotalsSeries().totalI.toFixed(1)}
+            unit="A"
+            variant="subtle"
+            isDarkMode={isDarkMode}
+          />
+          <ResultCard
+            label="Resistance"
+            value={getTotalsSeries().totalR.toFixed(1)}
+            unit="Ω"
+            variant="subtle"
+            isDarkMode={isDarkMode}
+          />
+          <ResultCard
+            label="Power"
+            value={getTotalsSeries().totalP.toFixed(1)}
+            unit="W"
+            variant="subtle"
+            isDarkMode={isDarkMode}
+          />
+        </div>
+
+        {/* Action Buttons */}
+        {hasResults && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '0.75rem'
+          }}>
+            <button
+              onClick={handleExport}
+              style={{
+                padding: '0.75rem',
+                background: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#2563eb';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#3b82f6';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <FileDown size={16} />
+              Export PDF
+            </button>
+            
+            <button
+              onClick={handleOpenJobSelector}
+              style={{
+                padding: '0.75rem',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#059669';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#10b981';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <Briefcase size={16} />
+              Attach to Job
+            </button>
+          </div>
+        )}
+      </Section>
 
       {/* Job Selector Modal */}
       {showJobSelector && (
@@ -682,7 +628,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
         }}>
           <div style={{
             background: colors.cardBg,
-            borderRadius: '12px',
+            borderRadius: '0.75rem',
             padding: '1.5rem',
             maxWidth: '400px',
             width: '100%',
@@ -692,7 +638,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
             <h3 style={{ 
               marginTop: 0, 
               marginBottom: '1rem',
-              color: colors.cardText,
+              color: colors.text,
               fontSize: '1.125rem',
               fontWeight: '600'
             }}>
@@ -704,7 +650,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
                 <div style={{ 
                   textAlign: 'center', 
                   padding: '2rem', 
-                  color: colors.labelText 
+                  color: colors.subtext 
                 }}>
                   Loading jobs...
                 </div>
@@ -715,11 +661,11 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
                     onClick={() => handleAttachToJob(job.id)}
                     style={{
                       padding: '1rem',
-                      background: colors.sectionBg,
-                      borderRadius: '8px',
+                      background: colors.inputBg,
+                      borderRadius: '0.5rem',
                       marginBottom: '0.5rem',
                       cursor: 'pointer',
-                      border: `1px solid ${colors.cardBorder}`,
+                      border: `1px solid ${colors.border}`,
                       transition: 'all 0.2s'
                     }}
                     onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -727,14 +673,14 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
                   >
                     <div style={{ 
                       fontWeight: '600', 
-                      color: colors.cardText,
+                      color: colors.text,
                       marginBottom: '0.25rem'
                     }}>
                       {job.name}
                     </div>
                     <div style={{ 
                       fontSize: '0.875rem', 
-                      color: colors.labelText 
+                      color: colors.subtext 
                     }}>
                       {job.location || 'No location'}
                     </div>
@@ -744,7 +690,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
                 <div style={{ 
                   textAlign: 'center', 
                   padding: '2rem', 
-                  color: colors.labelText 
+                  color: colors.subtext 
                 }}>
                   <p>No jobs found. Create a job first.</p>
                 </div>
@@ -759,7 +705,7 @@ const OhmsLawSeries = ({ isDarkMode, colors, onExport }) => {
                 background: '#6b7280',
                 color: 'white',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '0.5rem',
                 fontSize: '0.875rem',
                 fontWeight: '600',
                 cursor: 'pointer',
