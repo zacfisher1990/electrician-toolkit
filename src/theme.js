@@ -23,7 +23,7 @@ export const lightTheme = {
   blue: '#3b82f6',          // Primary blue
   green: '#10b981',         // Success/completed green
   amber: '#f59e0b',         // Warning/in-progress amber
-  red: '#ef4444',           // Error/danger red
+  red: '#9f1239',           // Error/danger red
   purple: '#8b5cf6',        // Accent purple
   
   // Semantic colors for job statuses
@@ -88,7 +88,7 @@ export const darkTheme = {
   blue: '#3b82f6',
   green: '#10b981',
   amber: '#f59e0b',
-  red: '#ef4444',
+  red: '#9f1239',
   purple: '#8b5cf6',
   
   // Semantic colors for job statuses (adjusted for dark mode)

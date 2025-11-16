@@ -200,7 +200,7 @@ function App() {
       if (metaThemeColor) {
         // Match the exact colors used in Header.jsx
         const headerColor = clockedInJob 
-          ? '#ef4444' // Red when clocked in
+          ? '#9f1239' // Red when clocked in
           : (isDarkMode ? '#1a1a1a' : '#2563eb'); // Dark gray or blue
         metaThemeColor.setAttribute('content', headerColor);
       }
