@@ -7,18 +7,18 @@ const StatusTabs = ({
   statusCounts, 
   colors 
 }) => {
-  // Match Tools tab colors exactly
+  // Match the status badge colors from JobCard
   const statusConfig = {
     'scheduled': { 
-      color: '#3b82f6',  // Blue like Tables
+      color: '#3b82f6',  // Blue
       icon: Clock
     },
     'in-progress': { 
-      color: '#8b5cf6',  // Purple like... wait
+      color: '#f59e0b',  // Amber/Yellow - MATCHES the job card badge
       icon: AlertCircle
     },
     'completed': { 
-      color: '#10b981',  // Green like Code
+      color: '#10b981',  // Green
       icon: CheckCircle
     }
   };
@@ -30,7 +30,7 @@ const StatusTabs = ({
       gap: '0.375rem',
       marginBottom: '1rem'
     }}>
-      {/* All Tab - Matches Estimates tab exactly */}
+      {/* All Tab */}
       <button
         onClick={() => setActiveStatusTab('all')}
         style={{
@@ -66,7 +66,7 @@ const StatusTabs = ({
         </span>
       </button>
 
-      {/* Scheduled Tab - Matches Tables tab (Blue) */}
+      {/* Scheduled Tab - Blue */}
       <button
         onClick={() => setActiveStatusTab('scheduled')}
         style={{
@@ -104,16 +104,16 @@ const StatusTabs = ({
         <span style={{ fontSize: '0.65rem' }}>Scheduled</span>
       </button>
 
-      {/* In Progress Tab - Matches Schematics tab (Pink) */}
+      {/* In Progress Tab - Amber/Yellow (FIXED to match job card badge) */}
       <button
         onClick={() => setActiveStatusTab('in-progress')}
         style={{
           height: '46px',
           padding: '0.5rem 0.25rem',
           borderRadius: '0.5rem',
-          border: `1px solid ${activeStatusTab === 'in-progress' ? '#ec4899' : colors.border}`,
-          background: activeStatusTab === 'in-progress' ? '#ec489920' : 'transparent',
-          color: activeStatusTab === 'in-progress' ? '#ec4899' : colors.text,
+          border: `1px solid ${activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.border}`,
+          background: activeStatusTab === 'in-progress' ? `${statusConfig['in-progress'].color}20` : 'transparent',
+          color: activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.text,
           fontSize: '0.7rem',
           fontWeight: '600',
           cursor: 'pointer',
@@ -127,7 +127,7 @@ const StatusTabs = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           <AlertCircle size={12} />
           <span style={{
-            background: activeStatusTab === 'in-progress' ? '#ec4899' : colors.cardBg,
+            background: activeStatusTab === 'in-progress' ? statusConfig['in-progress'].color : colors.cardBg,
             color: activeStatusTab === 'in-progress' ? 'white' : colors.subtext,
             padding: '0.125rem 0.3rem',
             borderRadius: '1rem',
@@ -142,7 +142,7 @@ const StatusTabs = ({
         <span style={{ fontSize: '0.65rem' }}>In Progress</span>
       </button>
 
-      {/* Completed Tab - Matches Code tab (Green) */}
+      {/* Completed Tab - Green */}
       <button
         onClick={() => setActiveStatusTab('completed')}
         style={{

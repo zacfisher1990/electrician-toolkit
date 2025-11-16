@@ -7,7 +7,7 @@ import {
   serverTimestamp,
   getDoc 
 } from 'firebase/firestore';
-import { db, auth } from '../../../firebase/firebase'; // Import BOTH db and auth
+import { db, auth } from '../../../firebase/firebase';
 import { uploadMultipleJobPhotos, deleteMultipleJobPhotos } from '../photoStorageUtils';
 import { createInvoiceHandlers } from './invoiceHandlers';
 
@@ -24,7 +24,6 @@ export const createJobHandlers = ({
    * Handle adding a new job with photo uploads
    */
   const handleAddJob = async (clearEstimateModals) => {
-    // Get userId from Firebase Auth
     const userId = auth.currentUser?.uid;
     
     if (!userId) {
@@ -33,18 +32,15 @@ export const createJobHandlers = ({
     }
 
     try {
-      // Validate required fields
       if (!formData.title?.trim() || !formData.client?.trim()) {
         alert('Please fill in all required fields (Job Title and Client Name)');
         return;
       }
 
-      // Prepare photos array (filter out any that are still uploading)
       const photosToUpload = (formData.photos || []).filter(photo => photo.file);
       
-      // Create optimistic job object with temporary ID for instant UI feedback
       const optimisticJob = {
-        id: `temp-${Date.now()}`, // Temporary ID
+        id: `temp-${Date.now()}`,
         title: formData.title.trim(),
         client: formData.client.trim(),
         location: formData.location?.trim() || '',
@@ -54,29 +50,25 @@ export const createJobHandlers = ({
         status: formData.status || 'scheduled',
         notes: formData.notes?.trim() || '',
         estimateIds: formData.estimateIds || [],
-        photos: [], // Photos will load after upload
+        photos: [],
         userId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        _isOptimistic: true, // Flag to show loading state
-        _photosUploading: photosToUpload.length // Track photo count
+        _isOptimistic: true,
+        _photosUploading: photosToUpload.length
       };
 
-      // Close modal immediately for better UX
       resetForm(clearEstimateModals);
       console.log('📊 Modal closed immediately (optimistic UI)');
 
-      // Add optimistic job to cache
       const { getJobs, saveJobs } = await import('../../../utils/localStorageUtils');
       const currentJobs = getJobs() || [];
       const updatedJobsWithOptimistic = [optimisticJob, ...currentJobs];
       saveJobs(updatedJobsWithOptimistic);
       
-      // Update state directly for INSTANT UI feedback
       setJobs(updatedJobsWithOptimistic);
       console.log('💾 Optimistic job added to state immediately');
 
-      // Now create the real job in Firebase in the background
       const jobData = {
         title: formData.title.trim(),
         client: formData.client.trim(),
@@ -98,7 +90,6 @@ export const createJobHandlers = ({
 
       console.log('✅ Job created in Firebase:', jobId);
 
-      // 🎯 AUTO-CREATE INVOICE if job has a cost
       let invoiceId = null;
       const hasEstimates = formData.estimateIds && formData.estimateIds.length > 0;
       const hasEstimatedCost = formData.estimatedCost && parseFloat(formData.estimatedCost) > 0;
@@ -109,8 +100,8 @@ export const createJobHandlers = ({
           const invoiceHandlers = createInvoiceHandlers({
             estimates,
             jobs: [],
-            loadJobs: () => {}, // Not needed for creation
-            setViewingInvoice: () => {} // Not needed for creation
+            loadJobs: () => {},
+            setViewingInvoice: () => {}
           });
           
           invoiceId = await invoiceHandlers.createInvoiceForJob({
@@ -121,7 +112,6 @@ export const createJobHandlers = ({
           
           if (invoiceId) {
             console.log('✅ Invoice auto-created:', invoiceId);
-            // Update job with invoiceId
             await updateDoc(doc(db, 'users', userId, 'jobs', jobId), {
               invoiceId: invoiceId,
               updatedAt: serverTimestamp()
@@ -130,11 +120,9 @@ export const createJobHandlers = ({
           }
         } catch (error) {
           console.error('⚠️ Failed to auto-create invoice:', error);
-          // Don't fail the whole job creation if invoice fails
         }
       }
 
-      // Upload photos if any
       let uploadedPhotos = [];
       if (photosToUpload.length > 0) {
         console.log(`📸 Uploading ${photosToUpload.length} photos...`);
@@ -154,14 +142,12 @@ export const createJobHandlers = ({
         console.log('✅ Photos uploaded successfully');
       }
 
-      // Reload to get the real job with real ID and photos
       console.log('📊 Reloading with real job data');
       await loadJobs(true);
 
     } catch (error) {
       console.error('❌ Error adding job:', error);
       alert('Failed to add job. Please try again.');
-      // Reload to remove optimistic job if it failed
       await loadJobs(true);
     }
   };
@@ -172,7 +158,6 @@ export const createJobHandlers = ({
   const handleEditJob = async (clearEstimateModals) => {
     if (!editingJob) return;
 
-    // Get userId from Firebase Auth
     const userId = auth.currentUser?.uid;
     
     if (!userId) {
@@ -181,26 +166,21 @@ export const createJobHandlers = ({
     }
 
     try {
-      // Validate required fields
       if (!formData.title?.trim() || !formData.client?.trim()) {
         alert('Please fill in all required fields (Job Title and Client Name)');
         return;
       }
 
-      // Get existing photos from Firestore - FIXED PATH
       const jobDoc = await getDoc(doc(db, 'users', userId, 'jobs', editingJob.id));
       const existingPhotos = jobDoc.data()?.photos || [];
 
-      // Separate new photos (with file) from existing photos (with url)
       const newPhotosToUpload = (formData.photos || []).filter(photo => photo.file);
       const existingKeptPhotos = (formData.photos || []).filter(photo => photo.url);
 
-      // Find photos that were removed (in existing but not in current form)
       const removedPhotos = existingPhotos.filter(
         existingPhoto => !existingKeptPhotos.find(kept => kept.url === existingPhoto.url)
       );
 
-      // Delete removed photos from Firebase Storage
       if (removedPhotos.length > 0) {
         const photoPaths = removedPhotos.map(photo => photo.path).filter(Boolean);
         if (photoPaths.length > 0) {
@@ -209,7 +189,6 @@ export const createJobHandlers = ({
         }
       }
 
-      // Upload new photos
       let newUploadedPhotos = [];
       if (newPhotosToUpload.length > 0) {
         newUploadedPhotos = await uploadMultipleJobPhotos(
@@ -222,10 +201,8 @@ export const createJobHandlers = ({
         );
       }
 
-      // Combine existing kept photos with newly uploaded photos
       const allPhotos = [...existingKeptPhotos, ...newUploadedPhotos];
 
-      // Update job document
       const jobData = {
         title: formData.title.trim(),
         client: formData.client.trim(),
@@ -240,12 +217,10 @@ export const createJobHandlers = ({
         updatedAt: serverTimestamp()
       };
 
-      // FIXED PATH
       await updateDoc(doc(db, 'users', userId, 'jobs', editingJob.id), jobData);
 
       console.log('✅ Job updated successfully');
       
-      // 🎯 AUTO-CREATE INVOICE if job has a cost but no invoice yet
       const hasEstimates = formData.estimateIds && formData.estimateIds.length > 0;
       const hasEstimatedCost = formData.estimatedCost && parseFloat(formData.estimatedCost) > 0;
       
@@ -276,14 +251,11 @@ export const createJobHandlers = ({
           }
         } catch (error) {
           console.error('⚠️ Failed to auto-create invoice:', error);
-          // Don't fail the whole update if invoice fails
         }
       }
       
-      // Reload jobs with skipCache to get fresh data immediately
       await loadJobs(true);
       
-      // Give React time to fully process state updates and re-render
       setTimeout(() => {
         console.log('📊 Closing modal after render cycle');
         resetForm(clearEstimateModals);
@@ -303,7 +275,6 @@ export const createJobHandlers = ({
       return;
     }
 
-    // Get userId from Firebase Auth
     const userId = auth.currentUser?.uid;
     
     if (!userId) {
@@ -312,11 +283,9 @@ export const createJobHandlers = ({
     }
 
     try {
-      // Get job document to find photos - FIXED PATH
       const jobDoc = await getDoc(doc(db, 'users', userId, 'jobs', jobId));
       const jobData = jobDoc.data();
       
-      // Delete all photos from storage if they exist
       if (jobData?.photos && jobData.photos.length > 0) {
         const photoPaths = jobData.photos.map(photo => photo.path).filter(Boolean);
         if (photoPaths.length > 0) {
@@ -325,13 +294,10 @@ export const createJobHandlers = ({
         }
       }
 
-      // Delete job document - FIXED PATH
       await deleteDoc(doc(db, 'users', userId, 'jobs', jobId));
 
-      // Close the modal immediately
       resetForm();
 
-      // Reload jobs to update the list
       await loadJobs(true);
 
       console.log('✅ Job deleted successfully');
@@ -345,20 +311,17 @@ export const createJobHandlers = ({
    * Handle updating job status (no photo changes)
    */
   const handleUpdateStatus = async (jobId, newStatus, jobs) => {
-    // Get userId from Firebase Auth
     const userId = auth.currentUser?.uid;
     
     if (!userId) return;
 
     try {
-      // FIXED PATH
       const jobRef = doc(db, 'users', userId, 'jobs', jobId);
       await updateDoc(jobRef, {
         status: newStatus,
         updatedAt: serverTimestamp()
       });
 
-      // Force fresh reload from Firebase (skip cache)
       await loadJobs(true);
     } catch (error) {
       console.error('Error updating status:', error);
@@ -367,59 +330,100 @@ export const createJobHandlers = ({
   };
 
   /**
-   * Handle clock in/out (no photo changes)
+   * Handle clock in/out with OPTIMISTIC UI updates for instant responsiveness
    */
   const handleClockInOut = async (jobId, clockIn, jobs, setJobs) => {
-    // Get userId from Firebase Auth
     const userId = auth.currentUser?.uid;
     
     if (!userId) return;
 
     try {
       const job = jobs.find(j => j.id === jobId);
-      // FIXED PATH
-      const jobRef = doc(db, 'users', userId, 'jobs', jobId);
+      if (!job) return;
 
+      // Check if another job is already clocked in (only when clocking IN)
       if (clockIn) {
-        // Check if another job is already clocked in
         const clockedInJob = jobs.find(j => j.clockedIn && j.id !== jobId);
         if (clockedInJob) {
           alert('Please clock out of the current job before clocking into a new one.');
           return;
         }
+      }
 
-        // Clock in
+      // ⚡ OPTIMISTIC UPDATE - Update UI immediately for instant feedback
+      const now = new Date();
+      let optimisticJob;
+
+      if (clockIn) {
+        // Clocking IN
+        optimisticJob = {
+          ...job,
+          clockedIn: true,
+          currentSessionStart: now.toISOString(),
+          updatedAt: now.toISOString()
+        };
+      } else {
+        // Clocking OUT
+        const currentSessionStart = new Date(job.currentSessionStart);
+        const sessionDuration = (now - currentSessionStart) / 1000; // in seconds
+
+        const workSessions = job.workSessions || [];
+        const newSession = {
+          startTime: job.currentSessionStart,
+          endTime: now.toISOString(),
+          duration: sessionDuration
+        };
+
+        optimisticJob = {
+          ...job,
+          clockedIn: false,
+          currentSessionStart: null,
+          workSessions: [...workSessions, newSession],
+          updatedAt: now.toISOString()
+        };
+      }
+
+      // Update state INSTANTLY - this gives immediate visual feedback
+      const optimisticJobs = jobs.map(j => j.id === jobId ? optimisticJob : j);
+      setJobs(optimisticJobs);
+      
+      // Update localStorage cache immediately too
+      const { saveJobs } = await import('../../../utils/localStorageUtils');
+      saveJobs(optimisticJobs);
+
+      console.log(`⚡ Optimistic ${clockIn ? 'clock in' : 'clock out'} - UI updated instantly`);
+
+      // 🔄 BACKGROUND SYNC - Update Firebase in the background
+      const jobRef = doc(db, 'users', userId, 'jobs', jobId);
+
+      if (clockIn) {
         await updateDoc(jobRef, {
           clockedIn: true,
-          currentSessionStart: new Date().toISOString(),
+          currentSessionStart: now.toISOString(),
           updatedAt: serverTimestamp()
         });
       } else {
-        // Clock out
-        const currentSessionStart = new Date(job.currentSessionStart);
-        const currentSessionEnd = new Date();
-        const sessionDuration = (currentSessionEnd - currentSessionStart) / 1000; // in seconds
-
-        const workSessions = job.workSessions || [];
-        workSessions.push({
-          startTime: job.currentSessionStart,
-          endTime: currentSessionEnd.toISOString(),
-          duration: sessionDuration
-        });
-
         await updateDoc(jobRef, {
           clockedIn: false,
           currentSessionStart: null,
-          workSessions,
+          workSessions: optimisticJob.workSessions,
           updatedAt: serverTimestamp()
         });
       }
 
-      // Force fresh reload from Firebase (skip cache)
-      await loadJobs(true);
+      console.log(`✅ Firebase synced for ${clockIn ? 'clock in' : 'clock out'}`);
+
+      // Optional: Reload in background to ensure consistency (non-blocking)
+      loadJobs(true).catch(err => {
+        console.warn('Background reload failed, keeping optimistic state:', err);
+      });
+
     } catch (error) {
       console.error('Error toggling clock:', error);
       alert('Failed to update clock status. Please try again.');
+      
+      // On error, reload to restore correct state
+      await loadJobs(true);
     }
   };
 

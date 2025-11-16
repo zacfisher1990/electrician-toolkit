@@ -1,5 +1,6 @@
 import React from 'react';
 import { Menu, User } from 'lucide-react';
+import { getColors } from '../theme';  // ADDED: Import theme colors
 
 function Header({ 
   headerInfo, 
@@ -9,9 +10,10 @@ function Header({
   setShowMenu, 
   onNavigate, 
   setIsDarkMode,
-  clockedInJob // NEW: Pass the clocked-in job
+  clockedInJob
 }) {
   const HeaderIcon = headerInfo.icon;
+  const themeColors = getColors(isDarkMode);  // ADDED: Get theme colors
 
   const colors = {
     headerBg: isDarkMode ? '#1a1a1a' : '#ffffff',
@@ -22,14 +24,14 @@ function Header({
     cardText: isDarkMode ? '#ffffff' : '#111827',
   };
 
-  // Use red when clocked in, blue when not
+  // Use red when clocked in, theme blue when not
   const headerBgColor = clockedInJob 
     ? '#ef4444' // Red when clocked in
-    : (isDarkMode ? '#1a1a1a' : '#2563eb'); // Normal blue/dark
+    : (isDarkMode ? '#1a1a1a' : themeColors.blue); // UPDATED: Use theme blue
 
   const notchColor = clockedInJob
     ? '#ef4444' // Red notch when clocked in
-    : (isDarkMode ? '#1a1a1a' : '#2563eb'); // Normal
+    : (isDarkMode ? '#1a1a1a' : themeColors.blue); // UPDATED: Use theme blue
 
   return (
     <>

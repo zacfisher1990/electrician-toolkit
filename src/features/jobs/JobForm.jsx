@@ -7,7 +7,7 @@ const JobForm = ({
   formData,
   setFormData,
   linkedEstimate,
-  linkedEstimates = [], // Array of linked estimates
+  linkedEstimates = [],
   estimates,
   showEstimateMenu,
   setShowEstimateMenu,
@@ -15,7 +15,7 @@ const JobForm = ({
   onCreateNewEstimate,
   onViewEstimate,
   onRemoveEstimate,
-  onAddAdditionalEstimate, // New prop for adding additional estimates
+  onAddAdditionalEstimate,
   onViewAllEstimates,
   estimateMenuRef,
   isDarkMode,
@@ -32,13 +32,14 @@ const JobForm = ({
 
   const totalFromEstimates = calculateTotalFromEstimates();
 
-  // Label style
+  // Label style - LEFT ALIGNED
   const labelStyle = {
     display: 'block',
     fontSize: '0.875rem',
     fontWeight: '600',
     color: colors.text,
-    marginBottom: '0.375rem'
+    marginBottom: '0.375rem',
+    textAlign: 'left'  // ADDED: Left align labels
   };
 
   // Input style
@@ -50,7 +51,8 @@ const JobForm = ({
     fontSize: '0.9375rem',
     background: colors.inputBg,
     color: colors.text,
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    textAlign: 'left'  // ADDED: Left align input text
   };
 
   return (
@@ -145,18 +147,20 @@ const JobForm = ({
                   alignItems: 'center'
                 }}
               >
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, textAlign: 'left' }}>
                   <div style={{
                     fontSize: '0.875rem',
                     fontWeight: '600',
                     color: colors.text,
-                    marginBottom: '0.25rem'
+                    marginBottom: '0.25rem',
+                    textAlign: 'left'
                   }}>
                     {estimate.title || estimate.name || 'Untitled Estimate'}
                   </div>
                   <div style={{
                     fontSize: '0.8125rem',
-                    color: colors.subtext
+                    color: colors.subtext,
+                    textAlign: 'left'
                   }}>
                     ${Number(estimate.total || estimate.estimatedCost || 0).toLocaleString()}
                   </div>
@@ -213,7 +217,8 @@ const JobForm = ({
                 <div style={{
                   fontSize: '0.875rem',
                   fontWeight: '600',
-                  color: colors.text
+                  color: colors.text,
+                  textAlign: 'left'
                 }}>
                   Total from Estimates
                 </div>
@@ -331,7 +336,8 @@ const JobForm = ({
           color: colors.subtext,
           marginTop: '-0.5rem',
           marginBottom: '0.75rem',
-          fontStyle: 'italic'
+          fontStyle: 'italic',
+          textAlign: 'left'  // ADDED: Left align helper text
         }}>
           Cost is automatically calculated from linked estimates (${totalFromEstimates.toLocaleString()})
         </div>
@@ -351,7 +357,7 @@ const JobForm = ({
         </select>
       </div>
 
-      {/* Photo Upload Section - NEW! */}
+      {/* Photo Upload Section */}
       <div style={{ marginBottom: '0.75rem' }}>
         <PhotoUploader
           photos={formData.photos || []}
@@ -374,7 +380,8 @@ const JobForm = ({
           rows="3"
           style={{
             ...inputStyle,
-            resize: 'vertical'
+            resize: 'vertical',
+            textAlign: 'left'  // ADDED: Left align textarea
           }}
         />
       </div>

@@ -38,6 +38,16 @@ const JobCard = ({
   // Check if job has photos
   const hasPhotos = job.photos && job.photos.length > 0;
 
+  // ⚡ PRELOAD IMAGES as soon as component mounts (before user expands)
+  useEffect(() => {
+    if (hasPhotos) {
+      job.photos.forEach(photo => {
+        const img = new Image();
+        img.src = photo.url || photo.preview;
+      });
+    }
+  }, [job.photos, hasPhotos]);
+
   // Update timer every second when clocked in
   useEffect(() => {
     if (job.clockedIn) {
@@ -254,31 +264,21 @@ const JobCard = ({
                         }}
                         style={{
                           width: '100%',
-                          padding: '0.625rem 0.75rem',
-                          background: job.status === key ? `${config.color}20` : 'transparent',
-                          border: 'none',
-                          cursor: 'pointer',
+                          padding: '0.5rem 0.75rem',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '0.5rem',
+                          background: job.status === key ? `${config.color}15` : 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
                           color: config.color,
                           fontSize: '0.875rem',
                           fontWeight: job.status === key ? '600' : '500',
-                          transition: 'background 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (job.status !== key) {
-                            e.target.style.background = isDarkMode ? '#2a2a2a' : '#f3f4f6';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (job.status !== key) {
-                            e.target.style.background = 'transparent';
-                          }
+                          textAlign: 'left'
                         }}
                       >
-                        <OptionIcon size={16} />
-                        <span>{config.label}</span>
+                        <OptionIcon size={14} />
+                        {config.label}
                       </button>
                     );
                   })}
@@ -404,7 +404,9 @@ const JobCard = ({
                 borderRadius: '0.5rem',
                 color: colors.text,
                 fontSize: '0.875rem',
-                lineHeight: '1.5'
+                lineHeight: '1.5',
+                textAlign: 'left',
+                whiteSpace: 'pre-wrap'  // ADDED: Preserves line breaks and spacing
               }}>
                 {job.notes}
               </p>
@@ -413,8 +415,14 @@ const JobCard = ({
         </div>
       )}
 
-      {/* Four Action Buttons */}
-      <div className={styles.actionButtons}>
+      {/* Four Action Buttons - Unified Bar Style */}
+      <div style={{
+        display: 'flex',
+        borderRadius: '0.5rem',
+        overflow: 'hidden',
+        border: `1px solid ${colors.border}`,
+        marginTop: '0.5rem'
+      }}>
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -423,20 +431,24 @@ const JobCard = ({
           }}
           title={job.clockedIn ? "Clock Out" : "Clock In"}
           style={{
-            background: job.clockedIn ? '#ef4444' : '#10b981',
+            flex: 1,
+            background: job.clockedIn ? '#ef4444' : colors.blue,
             border: 'none',
-            borderRadius: '0.5rem',
+            borderRight: `1px solid ${job.clockedIn ? '#dc2626' : '#2563eb'}`,
+            borderRadius: 0,
             color: 'white',
             cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            fontWeight: '600'
+            fontWeight: '600',
+            padding: '0.375rem 0.25rem',
+            gap: '0.125rem'
           }}
         >
-          {job.clockedIn ? <Square size={16} /> : <Play size={16} />}
-          <span style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
+          {job.clockedIn ? <Square size={12} /> : <Play size={12} />}
+          <span style={{ fontSize: '0.5625rem' }}>
             {job.clockedIn ? 'Clock Out' : 'Clock In'}
           </span>
         </button>
@@ -449,45 +461,52 @@ const JobCard = ({
           }}
           title="Edit Job"
           style={{
-            background: '#2563eb',
+            flex: 1,
+            background: colors.blue,
             border: 'none',
-            borderRadius: '0.5rem',
+            borderRight: `1px solid #2563eb`,
+            borderRadius: 0,
             color: 'white',
             cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            fontWeight: '600' 
+            fontWeight: '600',
+            padding: '0.375rem 0.25rem',
+            gap: '0.125rem'
           }}
         >
-          <Edit size={16} />
-          <span style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Edit</span>
+          <Edit size={12} />
+          <span style={{ fontSize: '0.5625rem' }}>Edit</span>
         </button>
 
         <button
           onClick={handleEstimateClick}
           title={linkedEstimate ? "View Estimate" : "No estimate linked"}
           style={{
-            background: linkedEstimate ? '#f97316' : colors.border,
+            flex: 1,
+            background: linkedEstimate ? colors.blue : colors.border,
             border: 'none',
-            borderRadius: '0.5rem',
-            color: 'white',
+            borderRight: `1px solid ${linkedEstimate ? '#2563eb' : colors.border}`,
+            borderRadius: 0,
+            color: linkedEstimate ? 'white' : colors.subtext,
             cursor: linkedEstimate ? 'pointer' : 'not-allowed',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             fontWeight: '600',
+            padding: '0.375rem 0.25rem',
+            gap: '0.125rem',
             opacity: linkedEstimate ? 1 : 0.5
           }}
           disabled={linkedEstimates.length === 0}
         >
-          <FileText size={16} />
-          <span style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Estimate</span>
+          <FileText size={12} />
+          <span style={{ fontSize: '0.5625rem' }}>Estimate</span>
         </button>
 
-        {/* Invoice Button - FIXED to work with estimatedCost OR estimates */}
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -499,21 +518,20 @@ const JobCard = ({
           }
           style={{
             flex: 1,
-            padding: '0.625rem 1rem',
             background: (job.invoiceId || job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0))
-              ? '#10b981'  // Green if has invoice, estimate, or cost
-              : colors.border,  // Gray if none
+              ? colors.blue
+              : colors.border,
             color: (job.invoiceId || job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0)) ? 'white' : colors.subtext,
             border: 'none',
-            borderRadius: '0.5rem',
-            fontSize: '0.8125rem',
+            borderRadius: 0,
             fontWeight: '600',
             cursor: (job.invoiceId || job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0)) ? 'pointer' : 'not-allowed',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.375rem',
+            padding: '0.375rem 0.25rem',
+            gap: '0.125rem',
             opacity: (!job.invoiceId && !job.estimateIds?.length && (!job.estimatedCost || parseFloat(job.estimatedCost) === 0)) ? 0.5 : 1
           }}
           title={
@@ -524,10 +542,9 @@ const JobCard = ({
                 : "Add an estimate or cost first"
           }
         >
-          <Receipt size={16} />
-          Invoice
+          <Receipt size={12} />
+          <span style={{ fontSize: '0.5625rem' }}>Invoice</span>
         </button>
-        
       </div>
 
       
