@@ -90,7 +90,13 @@ const JobCard = ({
     e.stopPropagation();
     e.preventDefault();
     if (onClockInOut) {
-      onClockInOut(job.id, !job.clockedIn);
+      // Add confirmation dialog
+      const action = job.clockedIn ? 'clock out of' : 'clock into';
+      const jobName = job.title || job.name;
+      
+      if (window.confirm(`Are you sure you want to ${action} "${jobName}"?`)) {
+        onClockInOut(job.id, !job.clockedIn);
+      }
     }
   };
 
@@ -432,11 +438,11 @@ const JobCard = ({
           title={job.clockedIn ? "Clock Out" : "Clock In"}
           style={{
             flex: 1,
-            background: job.clockedIn ? '#ef4444' : colors.blue,
+            background: job.clockedIn ? '#9f1239' : (isDarkMode ? '#374151' : '#f3f4f6'),
             border: 'none',
-            borderRight: `1px solid ${job.clockedIn ? '#dc2626' : '#2563eb'}`,
+            borderRight: `1px solid ${colors.border}`,
             borderRadius: 0,
-            color: 'white',
+            color: job.clockedIn ? 'white' : colors.text,
             cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
@@ -462,11 +468,11 @@ const JobCard = ({
           title="Edit Job"
           style={{
             flex: 1,
-            background: colors.blue,
+            background: isDarkMode ? '#374151' : '#f3f4f6',
             border: 'none',
-            borderRight: `1px solid #2563eb`,
+            borderRight: `1px solid ${colors.border}`,
             borderRadius: 0,
-            color: 'white',
+            color: colors.text,
             cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
@@ -486,11 +492,11 @@ const JobCard = ({
           title={linkedEstimate ? "View Estimate" : "No estimate linked"}
           style={{
             flex: 1,
-            background: linkedEstimate ? colors.blue : colors.border,
+            background: isDarkMode ? '#374151' : '#f3f4f6',
             border: 'none',
-            borderRight: `1px solid ${linkedEstimate ? '#2563eb' : colors.border}`,
+            borderRight: `1px solid ${colors.border}`,
             borderRadius: 0,
-            color: linkedEstimate ? 'white' : colors.subtext,
+            color: linkedEstimate ? colors.text : colors.subtext,
             cursor: linkedEstimate ? 'pointer' : 'not-allowed',
             display: 'flex',
             flexDirection: 'column',
@@ -518,10 +524,8 @@ const JobCard = ({
           }
           style={{
             flex: 1,
-            background: (job.invoiceId || job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0))
-              ? colors.blue
-              : colors.border,
-            color: (job.invoiceId || job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0)) ? 'white' : colors.subtext,
+            background: isDarkMode ? '#374151' : '#f3f4f6',
+            color: (job.invoiceId || job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0)) ? colors.text : colors.subtext,
             border: 'none',
             borderRadius: 0,
             fontWeight: '600',

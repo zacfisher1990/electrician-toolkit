@@ -44,6 +44,7 @@ import { getColors } from './theme';
 import { auth } from './firebase/firebase';
 import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import './App.css';
+import { useThemeColor } from './hooks/useThemeColor';
 
 function App() {
   const [activeView, setActiveView] = useState(() => {
@@ -126,6 +127,9 @@ function App() {
     localStorage.setItem('isDarkMode', isDarkMode);
   }, [isDarkMode]);
 
+   // Sync Android status bar color with app theme
+  useThemeColor(isDarkMode, clockedInJob);
+
   // Scroll to top whenever the view changes
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -201,7 +205,8 @@ function App() {
         metaThemeColor.setAttribute('content', headerColor);
       }
     };
-
+    
+    
     // Update immediately
     updateThemeColor();
 
@@ -397,7 +402,7 @@ function App() {
       return { title: 'Account', icon: User };
     }
     if (activeView === 'jobs') {
-      return { title: 'Job Log', icon: Briefcase };
+      return { title: 'Jobs', icon: Briefcase };
     }
     if (activeView === 'estimates') {
       return { title: 'Estimates', icon: FileText };

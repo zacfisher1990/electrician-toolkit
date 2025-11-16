@@ -24,13 +24,13 @@ function Header({
     cardText: isDarkMode ? '#ffffff' : '#111827',
   };
 
-  // Use red when clocked in, theme blue when not
+  // Use maroon when clocked in, theme blue when not
   const headerBgColor = clockedInJob 
-    ? '#ef4444' // Red when clocked in
+    ? '#9f1239' // Maroon when clocked in (easier on eyes)
     : (isDarkMode ? '#1a1a1a' : themeColors.blue); // UPDATED: Use theme blue
 
   const notchColor = clockedInJob
-    ? '#ef4444' // Red notch when clocked in
+    ? '#9f1239' // Maroon notch when clocked in
     : (isDarkMode ? '#1a1a1a' : themeColors.blue); // UPDATED: Use theme blue
 
   return (
