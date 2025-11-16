@@ -5,6 +5,7 @@ import { TbCircuitGround, TbCircuitMotor, TbCircuitInductor } from 'react-icons/
 import { FaCircleHalfStroke } from 'react-icons/fa6';
 import { FiDivideCircle } from 'react-icons/fi';
 import { GiClamp } from 'react-icons/gi';
+import { RiWirelessChargingLine } from 'react-icons/ri';
 import { getColors } from '../../../theme';
 import styles from './Calculator.module.css';
 
@@ -56,7 +57,7 @@ function CalculatorMenu({ onSelectCalculator, isDarkMode, searchQuery }) {
       name: 'Equipment',
       calculators: [
         { id: 'motor-calculations', name: 'Motors', icon: TbCircuitMotor, keywords: 'motor flc protection starter 430' },
-        { id: 'transformer-sizing', name: 'Transformers', icon: TbCircuitInductor, keywords: 'transformer kva sizing current primary secondary 450' },
+        { id: 'transformer-sizing', name: 'Transformers', icon: RiWirelessChargingLine, keywords: 'transformer kva sizing current primary secondary 450' },
         { id: 'solar-pv', name: 'Solar PV', icon: PiSolarPanel, keywords: 'solar pv photovoltaic 690 panel array inverter string conductor ocpd renewable' },
         { id: 'ev-charging', name: 'EV Charging', icon: PiChargingStation, keywords: 'ev charging electric vehicle evse 625 charger station load continuous diversity feeder branch circuit nec' }
       ]

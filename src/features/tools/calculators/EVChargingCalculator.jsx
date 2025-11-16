@@ -1,27 +1,27 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { Plus, Trash2, CheckCircle, AlertTriangle, Info } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, AlertTriangle, Info, Zap, Settings, Battery } from 'lucide-react';
 import { exportToPDF } from '../../../utils/pdfExport';
+import CalculatorLayout, { 
+  Section, 
+  InputGroup, 
+  Input, 
+  Select, 
+  ResultCard, 
+  InfoBox,
+  Button
+} from './CalculatorLayout';
+import { getColors } from '../../../theme';
 
 const EVChargingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) => {
+  const colors = getColors(isDarkMode);
+  
   // State for EVSE inputs
   const [evseList, setEvseList] = useState([
     { name: 'EVSE 1', ratingAmps: '', voltage: '240', count: '1' }
   ]);
-  const [loadType, setLoadType] = useState('continuous'); // continuous or fastcharge
+  const [loadType, setLoadType] = useState('continuous');
   const [diversityFactor, setDiversityFactor] = useState('100');
   const [useDiversityTable] = useState(false);
-
-  // Dark mode colors
-  const colors = {
-    cardBg: isDarkMode ? '#374151' : '#ffffff',
-    cardBorder: isDarkMode ? '#4b5563' : '#e5e7eb',
-    cardText: isDarkMode ? '#f9fafb' : '#111827',
-    labelText: isDarkMode ? '#d1d5db' : '#374151',
-    inputBg: isDarkMode ? '#1f2937' : '#ffffff',
-    inputBorder: isDarkMode ? '#4b5563' : '#d1d5db',
-    sectionBg: isDarkMode ? '#1f2937' : '#f9fafb',
-    subtleText: isDarkMode ? '#9ca3af' : '#6b7280'
-  };
 
   const addEVSE = () => {
     const nextNum = evseList.length + 1;
@@ -45,7 +45,7 @@ const EVChargingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) =>
     setEvseList(newEvseList);
   };
 
-  // NEC 625.42 Diversity Table (informational - for reference)
+  // NEC 625.42 Diversity Table
   const getDiversityFromTable = (numberOfEVSE) => {
     if (numberOfEVSE === 1) return 100;
     if (numberOfEVSE === 2) return 100;
@@ -70,11 +70,10 @@ const EVChargingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) =>
       const voltage = parseFloat(evse.voltage) || 240;
       const count = parseInt(evse.count) || 0;
       
-      // NEC 625.41: Continuous load factor (125% for continuous)
       const loadFactor = loadType === 'continuous' ? 1.25 : 1.0;
       const loadPerUnit = rating * loadFactor;
       const totalUnitLoad = loadPerUnit * count;
-      const powerPerUnit = (rating * voltage) / 1000; // kW
+      const powerPerUnit = (rating * voltage) / 1000;
       
       totalLoad += totalUnitLoad;
       totalEVSECount += count;
@@ -91,23 +90,16 @@ const EVChargingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) =>
       };
     });
 
-    // Apply diversity if enabled
     let diversityPercent = parseFloat(diversityFactor) || 100;
     if (useDiversityTable) {
       diversityPercent = getDiversityFromTable(totalEVSECount);
     }
     
     const calculatedLoad = totalLoad * (diversityPercent / 100);
-    
-    // Calculate conductor and OCPD sizing
-    // NEC 625.41: Feeder/branch circuit must be sized at 125% of continuous load
     const feederLoad = calculatedLoad;
     
-    // Suggest standard OCPD sizes
     const standardBreakers = [15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 110, 125, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500, 600, 700, 800, 1000, 1200];
     const minOCPD = standardBreakers.find(size => size >= feederLoad) || Math.ceil(feederLoad);
-    
-    // Conductor sizing: 125% of OCPD (NEC 310.15 adjustment)
     const minConductorAmpacity = minOCPD;
 
     return {
@@ -134,7 +126,6 @@ const EVChargingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) =>
         return;
       }
 
-      // Build EVSE breakdown
       const evseBreakdown = results.evseDetails
         .map(detail => 
           `${detail.name}: ${detail.rating}A @ ${detail.voltage}V × ${detail.count} = ${detail.totalUnitLoad}A (with ${loadType === 'continuous' ? '125%' : '100%'} factor)`
@@ -182,456 +173,255 @@ const EVChargingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) =>
   const results = calculateEVCharging();
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ margin: '0 -1rem' }}>
+      <CalculatorLayout isDarkMode={isDarkMode}>
+        {/* Load Configuration */}
+        <Section 
+          title="Load Configuration" 
+          icon={Settings} 
+          color="#3b82f6" 
+          isDarkMode={isDarkMode}
+        >
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+            gap: '0.75rem' 
+          }}>
+            <InputGroup label="Load Type" isDarkMode={isDarkMode}>
+              <Select 
+                value={loadType} 
+                onChange={(e) => setLoadType(e.target.value)}
+                isDarkMode={isDarkMode}
+                options={[
+                  { value: 'continuous', label: 'Continuous (125%)' },
+                  { value: 'fastcharge', label: 'Fast Charge (100%)' }
+                ]}
+              />
+            </InputGroup>
 
-      {/* Load Configuration */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          Load Configuration
-        </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          {/* Load Type */}
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Load Type
-            </label>
-            <select 
-              value={loadType} 
-              onChange={(e) => setLoadType(e.target.value)}
+            <InputGroup 
+              label="Diversity Factor" 
+              helpText="100% = no diversity"
+              isDarkMode={isDarkMode}
+            >
+              <Input
+                type="number"
+                value={diversityFactor}
+                onChange={(e) => setDiversityFactor(e.target.value)}
+                min="1"
+                max="100"
+                unit="%"
+                isDarkMode={isDarkMode}
+              />
+            </InputGroup>
+          </div>
+
+          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode}>
+            <div style={{ fontSize: '0.8125rem' }}>
+              <strong>Continuous Load:</strong> Maximum current expected to continue for 3+ hours. 
+              NEC 625.41 requires 125% sizing for continuous EV charging loads.
+            </div>
+          </InfoBox>
+        </Section>
+
+        {/* EVSE Equipment */}
+        <Section 
+          title="EVSE Equipment" 
+          icon={Battery} 
+          color="#f59e0b" 
+          isDarkMode={isDarkMode}
+        >
+          {evseList.map((evse, index) => (
+            <div 
+              key={index} 
               style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
+                background: colors.inputBg,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem',
+                marginBottom: '0.75rem'
               }}
             >
-              <option value="continuous">Continuous (125% factor)</option>
-              <option value="fastcharge">Fast Charge (100%)</option>
-            </select>
-          </div>
-
-          {/* Diversity Factor */}
-          <div>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '0.875rem', 
-              fontWeight: '500', 
-              color: colors.labelText,
-              marginBottom: '0.5rem' 
-            }}>
-              Diversity Factor (%)
-            </label>
-            <input 
-              type="number" 
-              value={diversityFactor} 
-              onChange={(e) => setDiversityFactor(e.target.value)}
-              placeholder="100"
-              min="1"
-              max="100"
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                fontSize: '0.9375rem',
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: '8px',
-                backgroundColor: colors.inputBg,
-                color: colors.cardText,
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Info box about continuous loads */}
-        <div style={{
-          marginTop: '1rem',
-          padding: '0.75rem',
-          background: '#dbeafe',
-          border: '1px solid #93c5fd',
-          borderRadius: '8px',
-          fontSize: '0.8125rem',
-          color: '#1e40af',
-          display: 'flex',
-          gap: '0.5rem',
-          alignItems: 'start'
-        }}>
-          <Info size={16} style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-          <div>
-            <strong>NEC 625.41:</strong> EV charging is considered a continuous load. Conductors and overcurrent protection must be sized at 125% of the maximum load for continuous charging equipment.
-          </div>
-        </div>
-      </div>
-
-      {/* EVSE List */}
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.cardBorder}`,
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ 
-          fontSize: '1rem', 
-          fontWeight: '600', 
-          color: colors.cardText,
-          marginTop: 0,
-          marginBottom: '1rem',
-          borderBottom: `1px solid ${colors.cardBorder}`,
-          paddingBottom: '0.5rem'
-        }}>
-          EVSE Equipment
-        </h3>
-        
-        {evseList.map((evse, index) => (
-          <div key={index} style={{ marginBottom: '1rem' }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              marginBottom: '0.75rem'
-            }}>
-              <input 
-                type="text"
-                value={evse.name}
-                onChange={(e) => updateEVSE(index, 'name', e.target.value)}
-                placeholder="EVSE Name"
-                style={{
-                  flex: 1,
-                  padding: '0.5rem',
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
-                  border: `1px solid ${colors.inputBorder}`,
-                  borderRadius: '6px',
-                  backgroundColor: colors.inputBg,
-                  color: colors.cardText,
-                  marginRight: '0.5rem'
-                }}
-              />
-              {evseList.length > 1 && (
-                <button 
-                  onClick={() => removeEVSE(index)}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '0.75rem'
+              }}>
+                <input
+                  type="text"
+                  value={evse.name}
+                  onChange={(e) => updateEVSE(index, 'name', e.target.value)}
                   style={{
-                    background: '#ef4444',
-                    color: 'white',
+                    background: 'transparent',
                     border: 'none',
-                    borderRadius: '6px',
-                    width: '32px',
-                    height: '32px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
+                    fontSize: '0.9375rem',
+                    fontWeight: '600',
+                    color: colors.text,
+                    outline: 'none',
+                    padding: '0.25rem 0'
                   }}
-                >
-                  <Trash2 size={16} />
-                </button>
-              )}
+                />
+                {evseList.length > 1 && (
+                  <button
+                    onClick={() => removeEVSE(index)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#ef4444',
+                      cursor: 'pointer',
+                      padding: '0.25rem',
+                      borderRadius: '0.25rem',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
+
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', 
+                gap: '0.5rem' 
+              }}>
+                <InputGroup label="Rating (A)" isDarkMode={isDarkMode}>
+                  <Input
+                    type="number"
+                    value={evse.ratingAmps}
+                    onChange={(e) => updateEVSE(index, 'ratingAmps', e.target.value)}
+                    placeholder="32"
+                    isDarkMode={isDarkMode}
+                  />
+                </InputGroup>
+
+                <InputGroup label="Voltage" isDarkMode={isDarkMode}>
+                  <Select
+                    value={evse.voltage}
+                    onChange={(e) => updateEVSE(index, 'voltage', e.target.value)}
+                    isDarkMode={isDarkMode}
+                    options={[
+                      { value: '120', label: '120V' },
+                      { value: '208', label: '208V' },
+                      { value: '240', label: '240V' },
+                      { value: '480', label: '480V' }
+                    ]}
+                  />
+                </InputGroup>
+
+                <InputGroup label="Quantity" isDarkMode={isDarkMode}>
+                  <Input
+                    type="number"
+                    value={evse.count}
+                    onChange={(e) => updateEVSE(index, 'count', e.target.value)}
+                    min="0"
+                    isDarkMode={isDarkMode}
+                  />
+                </InputGroup>
+              </div>
             </div>
-            
+          ))}
+
+          <Button 
+            onClick={addEVSE}
+            variant="outline"
+            size="medium"
+            fullWidth
+            isDarkMode={isDarkMode}
+          >
+            <Plus size={16} />
+            Add EVSE
+          </Button>
+        </Section>
+
+        {/* Results */}
+        {results && results.hasLoad && (
+          <Section 
+            title="Load Calculation Results" 
+            icon={CheckCircle} 
+            color="#10b981" 
+            isDarkMode={isDarkMode}
+          >
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: '2fr 1.5fr 1fr', 
-              gap: '0.75rem'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', 
+              gap: '0.75rem',
+              marginBottom: '0.75rem'
             }}>
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.75rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText,
-                  marginBottom: '0.25rem' 
-                }}>
-                  Rating (Amps)
-                </label>
-                <input 
-                  type="number" 
-                  value={evse.ratingAmps} 
-                  onChange={(e) => updateEVSE(index, 'ratingAmps', e.target.value)}
-                  placeholder="e.g., 32"
-                  min="0"
-                  step="1"
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.75rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText,
-                  marginBottom: '0.25rem' 
-                }}>
-                  Voltage
-                </label>
-                <select 
-                  value={evse.voltage} 
-                  onChange={(e) => updateEVSE(index, 'voltage', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <option value="120">120V</option>
-                  <option value="240">240V</option>
-                  <option value="208">208V</option>
-                  <option value="480">480V</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '0.75rem', 
-                  fontWeight: '500', 
-                  color: colors.labelText,
-                  marginBottom: '0.25rem' 
-                }}>
-                  Quantity
-                </label>
-                <input 
-                  type="number" 
-                  value={evse.count} 
-                  onChange={(e) => updateEVSE(index, 'count', e.target.value)}
-                  placeholder="1"
-                  min="1"
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem',
-                    fontSize: '0.9375rem',
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: '8px',
-                    backgroundColor: colors.inputBg,
-                    color: colors.cardText,
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        ))}
-        
-        <button 
-          onClick={addEVSE}
-          style={{ 
-            width: '100%',
-            background: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '0.75rem',
-            fontSize: '0.875rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem'
-          }}
-        >
-          <Plus size={16} />
-          Add EVSE
-        </button>
-      </div>
-
-      {/* Results */}
-      {results && results.hasLoad && (
-        <div style={{
-          background: colors.cardBg,
-          border: `1px solid ${colors.cardBorder}`,
-          borderRadius: '12px',
-          padding: '1.5rem',
-          marginBottom: '1rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ 
-            fontSize: '1.125rem', 
-            fontWeight: '600', 
-            color: colors.cardText,
-            marginTop: 0,
-            marginBottom: '1rem'
-          }}>
-            Results
-          </h3>
-          
-          {/* Main metrics */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Total Connected Load
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.totalConnectedLoad}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                Amps
-              </div>
-            </div>
-            
-            <div style={{
-              background: colors.sectionBg,
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginBottom: '0.25rem' }}>
-                Calculated Load
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: colors.cardText }}>
-                {results.calculatedLoad}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: colors.labelText, marginTop: '0.25rem' }}>
-                Amps ({results.diversityPercent}% diversity)
-              </div>
-            </div>
-            
-            <div style={{
-              background: '#dbeafe',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginBottom: '0.25rem' }}>
-                Total EVSE
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
-                {results.totalEVSECount}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#1e40af', marginTop: '0.25rem' }}>
-                Units
-              </div>
-            </div>
-          </div>
-
-          {/* Circuit sizing results */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{
-              background: '#dcfce7',
-              border: '1px solid #86efac',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: '#166534', marginBottom: '0.25rem' }}>
-                Minimum OCPD
-              </div>
-              <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#166534' }}>
-                {results.minOCPD}A
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#166534', marginTop: '0.25rem' }}>
-                Breaker/Fuse Size
-              </div>
+              <ResultCard
+                label="Total Connected Load"
+                value={results.totalConnectedLoad}
+                unit="Amps"
+                variant="subtle"
+                isDarkMode={isDarkMode}
+              />
+              
+              <ResultCard
+                label="Calculated Load"
+                value={results.calculatedLoad}
+                unit={`Amps (${results.diversityPercent}%)`}
+                variant="subtle"
+                isDarkMode={isDarkMode}
+              />
+              
+              <ResultCard
+                label="Total EVSE"
+                value={results.totalEVSECount}
+                unit="Units"
+                color="#3b82f6"
+                isDarkMode={isDarkMode}
+              />
             </div>
 
-            <div style={{
-              background: '#fef3c7',
-              border: '1px solid #fcd34d',
-              padding: '1rem',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.75rem', color: '#92400e', marginBottom: '0.25rem' }}>
-                Min. Conductor Ampacity
-              </div>
-              <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#92400e' }}>
-                {results.minConductorAmpacity}A
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#92400e', marginTop: '0.25rem' }}>
-                Before derating
-              </div>
-            </div>
-          </div>
-
-          {/* EVSE Breakdown */}
-          {results.evseDetails.length > 0 && (
             <div style={{ 
-              background: colors.sectionBg,
-              padding: '1rem', 
-              borderRadius: '8px',
-              marginBottom: '1rem',
-              border: `1px solid ${colors.cardBorder}`
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+              gap: '0.75rem',
+              marginBottom: '0.75rem'
             }}>
-              <strong style={{ color: colors.cardText, display: 'block', marginBottom: '0.75rem', fontSize: '0.875rem' }}>
-                EVSE Breakdown:
-              </strong>
-              {results.evseDetails.map((detail, index) => (
-                <div key={index} style={{ 
-                  marginTop: index > 0 ? '0.75rem' : 0,
-                  paddingTop: index > 0 ? '0.75rem' : 0,
-                  borderTop: index > 0 ? `1px solid ${colors.cardBorder}` : 'none',
-                  fontSize: '0.875rem',
-                  color: colors.labelText
-                }}>
-                  <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
-                    {detail.name} - {detail.rating}A @ {detail.voltage}V × {detail.count}
-                  </div>
-                  <div style={{ fontSize: '0.8125rem', color: colors.subtleText }}>
-                    {detail.powerPerUnit} kW per unit • Load per unit: {detail.loadPerUnit}A • Total: {detail.totalUnitLoad}A
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+              <ResultCard
+                label="Minimum OCPD"
+                value={results.minOCPD}
+                unit="Amps (Breaker/Fuse)"
+                color="#10b981"
+                isDarkMode={isDarkMode}
+              />
 
-          {/* Compliance notice */}
-          <div style={{
-            background: '#d1fae5',
-            border: '1px solid #6ee7b7',
-            borderRadius: '8px',
-            padding: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="#059669" style={{ flexShrink: 0, marginTop: '0.125rem' }} />
-              <div style={{ fontSize: '0.875rem', color: '#047857', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+              <ResultCard
+                label="Min. Conductor Ampacity"
+                value={results.minConductorAmpacity}
+                unit="Amps (Before Derating)"
+                color="#f59e0b"
+                isDarkMode={isDarkMode}
+              />
+            </div>
+
+            {/* EVSE Breakdown */}
+            {results.evseDetails.length > 0 && (
+              <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="EVSE Breakdown">
+                <div style={{ fontSize: '0.8125rem' }}>
+                  {results.evseDetails.map((detail, index) => (
+                    <div key={index} style={{ 
+                      marginTop: index > 0 ? '0.5rem' : 0,
+                      paddingTop: index > 0 ? '0.5rem' : 0,
+                      borderTop: index > 0 ? `1px solid ${colors.border}` : 'none'
+                    }}>
+                      <div style={{ fontWeight: '600', marginBottom: '0.125rem' }}>
+                        {detail.name} - {detail.rating}A @ {detail.voltage}V × {detail.count}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                        {detail.powerPerUnit} kW/unit • Load: {detail.loadPerUnit}A/unit • Total: {detail.totalUnitLoad}A
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </InfoBox>
+            )}
+
+            <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode}>
+              <div style={{ fontSize: '0.8125rem' }}>
+                <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
                   Calculation Complete
                 </div>
                 <div>
@@ -646,33 +436,30 @@ const EVChargingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref) =>
                   </div>
                 )}
               </div>
+            </InfoBox>
+          </Section>
+        )}
+
+        {/* NEC Reference */}
+        <Section 
+          title="NEC Article 625 Reference" 
+          icon={Info} 
+          color="#8b5cf6" 
+          isDarkMode={isDarkMode}
+        >
+          <div style={{ fontSize: '0.8125rem', color: colors.subtext, lineHeight: '1.6' }}>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong style={{ color: colors.text }}>625.41 Rating:</strong> EV load computed at 125% of max load for continuous charging
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong style={{ color: colors.text }}>625.42 Feeder/Service:</strong> Diversity factors permitted for multiple EVSE
+            </div>
+            <div>
+              <strong style={{ color: colors.text }}>625.43 OCPD:</strong> Overcurrent protection shall be sized for calculated loads
             </div>
           </div>
-        </div>
-      )}
-
-      {/* NEC Reference */}
-      <div style={{
-        background: colors.sectionBg,
-        padding: '1rem',
-        borderRadius: '8px',
-        border: `1px solid ${colors.cardBorder}`,
-        fontSize: '0.8125rem',
-        color: colors.labelText
-      }}>
-        <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: colors.cardText }}>
-          NEC Article 625 - Electric Vehicle Charging:
-        </div>
-        <div style={{ marginBottom: '0.25rem' }}>
-          <strong>625.41:</strong> Rating - EV load computed at 125% of max load for continuous charging
-        </div>
-        <div style={{ marginBottom: '0.25rem' }}>
-          <strong>625.42:</strong> Feeder/Service calculations - Diversity factors permitted
-        </div>
-        <div>
-          <strong>625.43:</strong> Overcurrent protection shall be sized for calculated loads
-        </div>
-      </div>
+        </Section>
+      </CalculatorLayout>
     </div>
   );
 });

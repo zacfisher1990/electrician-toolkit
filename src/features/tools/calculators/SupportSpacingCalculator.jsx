@@ -49,32 +49,56 @@ const SupportSpacingCalculator = ({ isDarkMode = false, onBack }) => {
     const spacing = requirements.spacing;
     const termination = requirements.termination / 12; // Convert inches to feet
 
-    // First support must be within termination distance
-    let remainingLength = length - termination;
+    // First support must be within termination distance from first box
+    // Last support must be within termination distance from second box
     
-    if (remainingLength <= 0) {
-      // Run is shorter than termination distance - only need supports at ends
-      return {
-        supportsNeeded: 2,
-        totalWithEnds: 2,
-        intermediateSupports: 0,
-        firstSupport: Math.min(length / 2, termination),
-        lastSupport: length - Math.min(length / 2, termination),
-        spacing: spacing,
-        terminationDistance: requirements.termination
-      };
+    if (length <= termination * 2) {
+      // Run is very short - might only need 1-2 supports
+      if (length <= termination) {
+        // Single support can satisfy both terminations
+        return {
+          totalSupports: 1,
+          intermediateSupports: 0,
+          firstSupport: length / 2,
+          lastSupport: length / 2,
+          spacing: 0,
+          maxSpacing: spacing,
+          terminationDistance: requirements.termination
+        };
+      } else {
+        // Need support near each end
+        return {
+          totalSupports: 2,
+          intermediateSupports: 0,
+          firstSupport: termination,
+          lastSupport: length - termination,
+          spacing: length - (termination * 2),
+          maxSpacing: spacing,
+          terminationDistance: requirements.termination
+        };
+      }
     }
 
-    // Calculate intermediate supports
-    const intermediateSupports = Math.ceil(remainingLength / spacing);
-    const actualSpacing = remainingLength / intermediateSupports;
+    // Calculate the distance between first and last supports
+    const firstSupportPos = termination;
+    const lastSupportPos = length - termination;
+    const distanceBetweenEndSupports = lastSupportPos - firstSupportPos;
+
+    // Calculate how many intermediate supports needed between first and last
+    // We need enough supports so spacing doesn't exceed max
+    const spansNeeded = Math.ceil(distanceBetweenEndSupports / spacing);
+    const actualSpacing = distanceBetweenEndSupports / spansNeeded;
+    
+    // Total supports = first support + intermediate supports + last support
+    // But intermediate supports = spansNeeded - 1 (since spansNeeded includes the span to last support)
+    const intermediateSupports = spansNeeded - 1;
+    const totalSupports = 1 + intermediateSupports + 1; // first + intermediate + last
 
     return {
-      supportsNeeded: intermediateSupports + 1, // +1 for the first support near termination
-      totalWithEnds: intermediateSupports + 2, // +2 including both ends
+      totalSupports: totalSupports,
       intermediateSupports: intermediateSupports,
-      firstSupport: termination,
-      lastSupport: length - termination,
+      firstSupport: firstSupportPos,
+      lastSupport: lastSupportPos,
       spacing: actualSpacing,
       maxSpacing: spacing,
       terminationDistance: requirements.termination
@@ -202,6 +226,54 @@ const SupportSpacingCalculator = ({ isDarkMode = false, onBack }) => {
           </InputGroup>
         </Section>
 
+        {/* Support Calculation Results - Show right after run length input */}
+        {supportCalc && requirements && (
+          <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title={`Support Layout for ${runLength}' Run:`}>
+            <div style={{ fontSize: '0.8125rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                <span>First support from box:</span>
+                <span style={{ fontWeight: '600' }}>{supportCalc.firstSupport.toFixed(2)}' ({(supportCalc.firstSupport * 12).toFixed(1)}")</span>
+              </div>
+              
+              {supportCalc.intermediateSupports > 0 && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                    <span>Intermediate supports:</span>
+                    <span style={{ fontWeight: '600' }}>{supportCalc.intermediateSupports}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                    <span>Spacing between supports:</span>
+                    <span style={{ fontWeight: '600' }}>{supportCalc.spacing.toFixed(2)}' (max {supportCalc.maxSpacing}')</span>
+                  </div>
+                </>
+              )}
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                <span>Last support from box:</span>
+                <span style={{ fontWeight: '600' }}>{(parseFloat(runLength) - supportCalc.lastSupport).toFixed(2)}' ({((parseFloat(runLength) - supportCalc.lastSupport) * 12).toFixed(1)}")</span>
+              </div>
+              
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                paddingTop: '0.5rem',
+                borderTop: '1px solid currentColor',
+                marginTop: '0.5rem',
+                opacity: 0.3
+              }}>
+              </div>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                marginTop: '0.25rem'
+              }}>
+                <span style={{ fontWeight: '600' }}>Total supports needed:</span>
+                <span style={{ fontWeight: '700', fontSize: '1rem' }}>{supportCalc.totalSupports}</span>
+              </div>
+            </div>
+          </InfoBox>
+        )}
+
         {/* Requirements Display */}
         {requirements && (
           <Section isDarkMode={isDarkMode}>
@@ -235,58 +307,6 @@ const SupportSpacingCalculator = ({ isDarkMode = false, onBack }) => {
                 {requirements.notes}
               </div>
             </InfoBox>
-
-            {/* Support Calculation Results */}
-            {supportCalc && (
-              <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title={`Support Layout for ${runLength}' Run:`}>
-                <div style={{ fontSize: '0.8125rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                    <span>First support from termination:</span>
-                    <span style={{ fontWeight: '600' }}>{supportCalc.firstSupport.toFixed(2)}' ({(supportCalc.firstSupport * 12).toFixed(1)}")</span>
-                  </div>
-                  
-                  {supportCalc.intermediateSupports > 0 && (
-                    <>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                        <span>Intermediate supports needed:</span>
-                        <span style={{ fontWeight: '600' }}>{supportCalc.intermediateSupports}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                        <span>Spacing between supports:</span>
-                        <span style={{ fontWeight: '600' }}>{supportCalc.spacing.toFixed(2)}' (max {supportCalc.maxSpacing}')</span>
-                      </div>
-                    </>
-                  )}
-                  
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    paddingTop: '0.5rem',
-                    borderTop: '1px solid currentColor',
-                    marginTop: '0.5rem',
-                    opacity: 0.3
-                  }}>
-                  </div>
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    marginTop: '0.25rem'
-                  }}>
-                    <span style={{ fontWeight: '600' }}>Total supports needed:</span>
-                    <span style={{ fontWeight: '700', fontSize: '1rem' }}>{supportCalc.totalWithEnds}</span>
-                  </div>
-                  
-                  <div style={{ 
-                    fontSize: '0.75rem',
-                    marginTop: '0.5rem',
-                    fontStyle: 'italic',
-                    opacity: 0.8
-                  }}>
-                    (Includes supports at both termination points)
-                  </div>
-                </div>
-              </InfoBox>
-            )}
           </Section>
         )}
 

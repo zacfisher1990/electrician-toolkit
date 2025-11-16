@@ -1,5 +1,5 @@
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { TrendingUp, CheckCircle, Info, CornerRightDown, CornerUpRight, Layers, Grid3X3 } from 'lucide-react';
+import { TrendingUp, CheckCircle, CornerRightDown, CornerUpRight, Layers, Grid3X3 } from 'lucide-react';
 import { exportToPDF } from '../../../utils/pdfExport';
 import CalculatorLayout, { 
   Section, 
@@ -107,14 +107,6 @@ const OffsetBendCalculator = ({ offsetData, setOffsetData, isDarkMode }) => {
               Mark first bend, measure {results.distanceBetweenBends}" from center of first bend, then make second bend at {results.angle}°.
             </div>
           </InfoBox>
-
-          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Offset Bend Tips">
-            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
-              <li>30° bends are most common for typical offsets</li>
-              <li>45° bends create shorter, steeper offsets</li>
-              <li>Always account for shrinkage in measurements</li>
-            </ul>
-          </InfoBox>
         </>
       )}
     </div>
@@ -182,7 +174,7 @@ const StubUpCalculator = ({ stubUpData, setStubUpData, isDarkMode }) => {
         <>
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', 
+            gridTemplateColumns: 'repeat(2, 1fr)', 
             gap: '0.75rem',
             marginBottom: '0.75rem'
           }}>
@@ -201,28 +193,12 @@ const StubUpCalculator = ({ stubUpData, setStubUpData, isDarkMode }) => {
               variant="subtle"
               isDarkMode={isDarkMode}
             />
-
-            <ResultCard
-              label="Conduit Size"
-              value={`${stubUpData.conduitSize}"`}
-              unit=""
-              variant="subtle"
-              isDarkMode={isDarkMode}
-            />
           </div>
 
           <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title="How to Bend">
             <div style={{ fontSize: '0.8125rem' }}>
               Measure from end of conduit, mark at {results.markDistance}", line up mark with arrow on bender, make 90° bend.
             </div>
-          </InfoBox>
-
-          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="Stub-Up Tips">
-            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
-              <li>Deduction accounts for the radius of the bend</li>
-              <li>Larger conduit = larger deduction</li>
-              <li>Always check your bender - deductions vary by manufacturer</li>
-            </ul>
           </InfoBox>
         </>
       )}
@@ -322,18 +298,10 @@ const SaddleBendCalculator = ({ saddleData, setSaddleData, isDarkMode }) => {
           <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title="Bending Sequence">
             <ol style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
               <li>Mark center of obstacle on conduit</li>
-              <li>Make 45° center bend at mark</li>
-              <li>Measure {results.distanceToOuter}" from center each direction</li>
-              <li>Make 22.5° bends on each side (opposite direction)</li>
+              <li>Align center mark with notch on bender, make 45° bend</li>
+              <li>Measure {results.distanceToOuter}" from center mark each direction</li>
+              <li>Make 22.5° bends at outer marks (opposite direction from center)</li>
             </ol>
-          </InfoBox>
-
-          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="3-Point Saddle Tips">
-            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
-              <li>Center bend goes up, outer bends go down</li>
-              <li>Most common for going over pipes or other conduits</li>
-              <li>Mark all three bend locations before starting</li>
-            </ul>
           </InfoBox>
         </>
       )}
@@ -343,21 +311,34 @@ const SaddleBendCalculator = ({ saddleData, setSaddleData, isDarkMode }) => {
 
 // 4-Point Saddle Calculator
 const FourPointSaddleCalculator = ({ fourPointData, setFourPointData, isDarkMode }) => {
+  const multipliers = {
+    '10': { distance: 6.0, shrink: 0.01 },
+    '22.5': { distance: 2.6, shrink: 0.06 },
+    '30': { distance: 2.0, shrink: 0.25 },
+    '45': { distance: 1.4, shrink: 0.41 },
+    '60': { distance: 1.2, shrink: 0.58 }
+  };
+
   const calculateFourPointSaddle = () => {
     if (!fourPointData.obstacleHeight || !fourPointData.obstacleWidth) return null;
     
     const height = parseFloat(fourPointData.obstacleHeight);
     const width = parseFloat(fourPointData.obstacleWidth);
+    const mult = multipliers[fourPointData.bendAngle || '30'];
     
-    const distanceToOuter = width / 2;
-    const innerSpacing = width / 4;
-    const shrinkage = height * 0.15;
+    // Distance between 1st-2nd and 3rd-4th marks (the offset portions)
+    const offsetDistance = height * mult.distance;
+    // Distance between 2nd-3rd marks (the flat top over obstacle)
+    const topDistance = width;
+    // Total shrinkage from both offsets
+    const shrinkage = height * mult.shrink * 2;
 
     return {
-      bendAngle: 22.5,
-      distanceToOuter: distanceToOuter.toFixed(2),
-      innerSpacing: innerSpacing.toFixed(2),
-      shrinkage: shrinkage.toFixed(2)
+      bendAngle: fourPointData.bendAngle || '30',
+      offsetDistance: offsetDistance.toFixed(2),
+      topDistance: topDistance.toFixed(2),
+      shrinkage: shrinkage.toFixed(2),
+      totalDegrees: (parseFloat(fourPointData.bendAngle || '30') * 4).toFixed(0)
     };
   };
 
@@ -394,54 +375,66 @@ const FourPointSaddleCalculator = ({ fourPointData, setFourPointData, isDarkMode
         </InputGroup>
       </div>
 
+      <InputGroup 
+        label="Bend Angle" 
+        helpText="30° is standard for most saddles"
+        isDarkMode={isDarkMode}
+      >
+        <Select
+          value={fourPointData.bendAngle || '30'}
+          onChange={(e) => setFourPointData(prev => ({...prev, bendAngle: e.target.value}))}
+          isDarkMode={isDarkMode}
+          options={[
+            { value: '10', label: '10°' },
+            { value: '22.5', label: '22.5°' },
+            { value: '30', label: '30°' },
+            { value: '45', label: '45°' },
+            { value: '60', label: '60°' }
+          ]}
+        />
+      </InputGroup>
+
       {results && (
         <>
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', 
+            gridTemplateColumns: 'repeat(2, 1fr)', 
             gap: '0.75rem',
-            marginBottom: '0.75rem'
+            marginBottom: '0.75rem',
+            marginTop: '0.75rem'
           }}>
             <ResultCard
-              label="All Bends"
-              value={`${results.bendAngle}°`}
+              label="Offset Distance"
+              value={`${results.offsetDistance}"`}
               unit=""
               color="#3b82f6"
               isDarkMode={isDarkMode}
             />
             
             <ResultCard
-              label="Outer Distance"
-              value={`${results.distanceToOuter}"`}
+              label="Top Distance"
+              value={`${results.topDistance}"`}
               unit=""
-              variant="subtle"
-              isDarkMode={isDarkMode}
-            />
-
-            <ResultCard
-              label="Inner Spacing"
-              value={`${results.innerSpacing}"`}
-              unit=""
-              variant="subtle"
+              color="#3b82f6"
               isDarkMode={isDarkMode}
             />
           </div>
 
           <InfoBox type="success" icon={CheckCircle} isDarkMode={isDarkMode} title="Bending Sequence">
             <ol style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
-              <li>Mark center of obstacle on conduit</li>
-              <li>Measure {results.distanceToOuter}" from center (outer bends)</li>
-              <li>Measure {results.innerSpacing}" from center (inner bends)</li>
-              <li>Make all four 22.5° bends: outer up, inner down</li>
+              <li>Make first mark on conduit</li>
+              <li>Measure {results.offsetDistance}" → second mark</li>
+              <li>Measure {results.topDistance}" → third mark</li>
+              <li>Measure {results.offsetDistance}" → fourth mark</li>
+              <li>Make all four {results.bendAngle}° bends on arrow, working from one end</li>
             </ol>
-          </InfoBox>
-
-          <InfoBox type="info" icon={Info} isDarkMode={isDarkMode} title="4-Point Saddle Tips">
-            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
-              <li>Used for larger obstacles where 3-point won't work</li>
-              <li>Outer bends go up, inner bends go down</li>
-              <li>Creates a flatter top for better clearance</li>
-            </ul>
+            <div style={{ 
+              marginTop: '0.5rem', 
+              fontSize: '0.75rem', 
+              opacity: 0.8 
+            }}>
+              Total bend degrees: {results.totalDegrees}° | Shrinkage: {results.shrinkage}"
+            </div>
           </InfoBox>
         </>
       )}
@@ -470,7 +463,8 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
 
   const [fourPointData, setFourPointData] = useState({
     obstacleHeight: '',
-    obstacleWidth: ''
+    obstacleWidth: '',
+    bendAngle: '30'
   });
 
   const tabs = [
@@ -604,27 +598,38 @@ const ConduitBendingCalculator = forwardRef(({ isDarkMode = false, onBack }, ref
           return;
         }
 
+        const multipliers = {
+          '10': { distance: 6.0, shrink: 0.01 },
+          '22.5': { distance: 2.6, shrink: 0.06 },
+          '30': { distance: 2.0, shrink: 0.25 },
+          '45': { distance: 1.4, shrink: 0.41 },
+          '60': { distance: 1.2, shrink: 0.58 }
+        };
+
         const height = parseFloat(fourPointData.obstacleHeight);
         const width = parseFloat(fourPointData.obstacleWidth);
-        const distanceToOuter = (width / 2).toFixed(2);
-        const innerSpacing = (width / 4).toFixed(2);
-        const shrinkage = (height * 0.15).toFixed(2);
+        const bendAngle = fourPointData.bendAngle || '30';
+        const mult = multipliers[bendAngle];
+        const offsetDistance = (height * mult.distance).toFixed(2);
+        const shrinkage = (height * mult.shrink * 2).toFixed(2);
+        const totalDegrees = parseFloat(bendAngle) * 4;
 
         pdfData = {
           calculatorName: 'Conduit Bending - 4-Point Saddle',
           inputs: {
             obstacleHeight: `${fourPointData.obstacleHeight} inches`,
-            obstacleWidth: `${fourPointData.obstacleWidth} inches`
+            obstacleWidth: `${fourPointData.obstacleWidth} inches`,
+            bendAngle: `${bendAngle}°`
           },
           results: {
-            allBends: '22.5°',
-            outerDistance: `${distanceToOuter} inches`,
-            innerSpacing: `${innerSpacing} inches`,
+            offsetDistance: `${offsetDistance} inches`,
+            topDistance: `${width} inches`,
+            totalDegrees: `${totalDegrees}°`,
             shrinkage: `${shrinkage} inches`
           },
           additionalInfo: {
-            bendingSequence: `1) Mark center of obstacle on conduit 2) Measure ${distanceToOuter}" from center (outer bends) 3) Measure ${innerSpacing}" from center (inner bends) 4) Make all four 22.5° bends: outer up, inner down`,
-            tip: 'Used for larger obstacles where 3-point saddle will not work'
+            bendingSequence: `1) Make first mark 2) Measure ${offsetDistance}" → second mark 3) Measure ${width}" → third mark 4) Measure ${offsetDistance}" → fourth mark 5) Make all four ${bendAngle}° bends on arrow, working from one end`,
+            tip: 'Two back-to-back offsets: first goes up, second comes back down'
           },
           necReferences: [
             'NEC Article 358 - Electrical Metallic Tubing (EMT)',

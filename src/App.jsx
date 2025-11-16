@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, FileDown, Omega, Wrench, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap, TriangleRight, Palette } from 'lucide-react';
 import { PiInvoice, PiShovel, PiNumberCircleThree, PiPipe } from 'react-icons/pi';
+import { RiWirelessChargingLine } from 'react-icons/ri';
 import { TbCircuitGround, TbCircuitMotor, TbCircuitInductor } from 'react-icons/tb';
 import { FaCircleHalfStroke } from 'react-icons/fa6';
 import { FiDivideCircle } from 'react-icons/fi';
@@ -415,7 +416,7 @@ function App() {
       'ampacity': { title: 'Ampacity', icon: Cable },
       'motor-calculations': { title: 'Motors', icon: TbCircuitMotor },
       'load-calculations': { title: 'Load Calculations', icon: BarChart3 },
-      'transformer-sizing': { title: 'Transformers', icon: TbCircuitInductor },
+      'transformer-sizing': { title: 'Transformers', icon: RiWirelessChargingLine },
       'service-entrance': { title: 'Service Entrance Sizing', icon: Building },
       'grounding-bonding': { title: 'Grounding & Bonding', icon: TbCircuitGround },
       'conduit-bending': { title: 'Conduit Bending', icon: PiPipe },

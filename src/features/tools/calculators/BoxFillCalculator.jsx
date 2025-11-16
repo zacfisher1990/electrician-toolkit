@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, CheckCircle, AlertTriangle, Box, Zap, Info } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, AlertTriangle, Box, Zap, Info, Cable } from 'lucide-react';
 import { 
   boxCapacities, 
   wireVolumeAllowances, 
@@ -193,7 +193,7 @@ const BoxFillCalculator = ({ isDarkMode = false }) => {
       {/* Conductors */}
       <Section 
         title="Conductors" 
-        icon={Zap} 
+        icon={Cable} 
         color="#10b981" 
         isDarkMode={isDarkMode}
       >

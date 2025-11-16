@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Zap, Info, AlertTriangle, Calculator as CalcIcon, Gauge } from 'lucide-react';
 import { TbCircuitInductor } from 'react-icons/tb';
+import { RiWirelessChargingLine } from 'react-icons/ri';
 import CalculatorLayout, { 
   Section, 
   InputGroup, 
@@ -93,7 +94,7 @@ const TransformerSizingCalculator = ({ isDarkMode = false }) => {
   const currentResults = calculateCurrents();
 
   const tabs = [
-    { id: 'sizing', label: 'Transformer Sizing', icon: TbCircuitInductor },
+    { id: 'sizing', label: 'Transformer Sizing', icon: RiWirelessChargingLine },
     { id: 'currents', label: 'Current Calculations', icon: Gauge }
   ];
 

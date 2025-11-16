@@ -70,7 +70,7 @@ export const conduitTypes = {
       '4': 10
     },
     vertical: 10,
-    termination: 3,
+    termination: 36,
     notes: 'Secured within 3 feet of box/enclosure and every 10 feet thereafter'
   },
   'rigid-metal': {
@@ -91,7 +91,7 @@ export const conduitTypes = {
       '6': 20
     },
     vertical: 20,
-    termination: 3,
+    termination: 36,
     notes: 'Secured within 3 feet of box/enclosure and at intervals per NEC Table 344.30(B)(2)'
   },
   'imc': {
@@ -112,7 +112,7 @@ export const conduitTypes = {
       '6': 20
     },
     vertical: 20,
-    termination: 3,
+    termination: 36,
     notes: 'Secured within 3 feet of box/enclosure and at intervals per NEC Table 342.30(B)(2)'
   },
   'pvc-schedule-40': {
@@ -133,7 +133,7 @@ export const conduitTypes = {
       '6': 6
     },
     vertical: 6,
-    termination: 3,
+    termination: 36,
     notes: 'Secured within 3 feet of box/enclosure and at intervals per NEC Table 352.30(B)'
   },
   'pvc-schedule-80': {
@@ -154,7 +154,7 @@ export const conduitTypes = {
       '6': 8
     },
     vertical: 6,
-    termination: 3,
+    termination: 36,
     notes: 'Secured within 3 feet of box/enclosure and at intervals per NEC Table 352.30(B)'
   },
   'flexible-metal': {
