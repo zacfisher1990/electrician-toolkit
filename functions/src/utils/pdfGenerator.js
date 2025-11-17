@@ -158,28 +158,9 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       yPos += 10;
       doc.moveTo(50, yPos).lineTo(doc.page.width - 50, yPos).stroke(borderGray);
 
-      // Totals
+      // Totals - Just show TOTAL, no subtotal/tax needed for electrical invoices
       yPos += 20;
       const totalLabelX = doc.page.width - 200;
-      const totalValueX = doc.page.width - 80;
-
-      if (invoice.subtotal) {
-        doc.fontSize(10)
-           .font('Helvetica')
-           .fillColor(lightGray)
-           .text('Subtotal:', totalLabelX, yPos)
-           .fillColor(darkGray)
-           .text(`$${parseFloat(invoice.subtotal).toFixed(2)}`, totalValueX, yPos, { align: 'right' });
-        yPos += 20;
-      }
-
-      if (invoice.tax) {
-        doc.fillColor(lightGray)
-           .text('Tax:', totalLabelX, yPos)
-           .fillColor(darkGray)
-           .text(`$${parseFloat(invoice.tax).toFixed(2)}`, totalValueX, yPos, { align: 'right' });
-        yPos += 20;
-      }
 
       // Total line
       doc.moveTo(totalLabelX - 10, yPos).lineTo(doc.page.width - 50, yPos).lineWidth(2).stroke(darkGray);

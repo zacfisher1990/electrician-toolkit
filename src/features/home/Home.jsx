@@ -7,6 +7,7 @@ import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import styles from './Home.module.css';
 import { getAllAnalytics } from './analyticsService';
+import { getTheme } from '../../theme';
 
 // Components
 import AnalyticsDashboard from './components/AnalyticsDashboard';
@@ -27,26 +28,28 @@ const Home = ({ isDarkMode, onAddJobClick }) => {
   const [jobAssignments, setJobAssignments] = useState([]);
   const [analytics, setAnalytics] = useState(null);
 
-  // Colors
+  // Get theme colors from centralized theme
+  const theme = getTheme(isDarkMode);
+  
   const colors = {
-    bg: isDarkMode ? '#000000' : '#f9fafb',
-    cardBg: isDarkMode ? '#1a1a1a' : '#ffffff',
-    text: isDarkMode ? '#ffffff' : '#111827',
-    subtext: isDarkMode ? '#999999' : '#6b7280',
-    border: isDarkMode ? '#2a2a2a' : '#e5e7eb',
-    calendarBg: isDarkMode ? '#1a1a1a' : '#ffffff',
-    calendarBorder: isDarkMode ? '#2a2a2a' : '#e5e7eb',
-    dayNameText: isDarkMode ? '#999999' : '#6b7280',
-    selectedDay: '#3b82f6',
-    todayBg: isDarkMode ? '#262626' : '#f3f4f6',
-    emptyDay: isDarkMode ? '#0a0a0a' : 'transparent',
-    jobCardBg: isDarkMode ? '#0f0f0f' : '#f9fafb',
+    bg: theme.mainBg,
+    cardBg: theme.cardBg,
+    text: theme.text,
+    subtext: theme.subtext,
+    border: theme.border,
+    calendarBg: theme.cardBg,
+    calendarBorder: theme.border,
+    dayNameText: theme.subtext,
+    selectedDay: theme.blue,
+    todayBg: theme.hover,
+    emptyDay: isDarkMode ? theme.inputBg : 'transparent',
+    jobCardBg: theme.inputBg,
   };
 
   const statusColors = {
-    'scheduled': '#3b82f6',
-    'in-progress': '#f59e0b',
-    'completed': '#10b981'
+    'scheduled': theme.blue,
+    'in-progress': theme.amber,
+    'completed': theme.green
   };
 
   // Load jobs and assignments

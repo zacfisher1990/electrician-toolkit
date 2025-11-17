@@ -23,15 +23,13 @@ export const generateInvoicePDF = (invoice, userInfo = {}) => {
     const darkGray = [31, 41, 55];
     const lightGray = [107, 114, 128];
 
-    // Helper function to add text - FINAL FIXED VERSION
+    // Helper function to add text
     const addText = (text, x, y, options = {}) => {
-      // Handle arrays (from splitTextToSize)
       if (Array.isArray(text)) {
         text.forEach((line, index) => {
           const lineStr = line !== undefined && line !== null ? String(line) : '';
           if (lineStr) {
             doc.setFontSize(options.size || 10);
-            // FIX: Spread the color array properly
             if (options.color && Array.isArray(options.color)) {
               doc.setTextColor(...options.color);
             } else {
@@ -44,11 +42,9 @@ export const generateInvoicePDF = (invoice, userInfo = {}) => {
         return;
       }
       
-      // Convert text to string and handle undefined/null
       const textStr = text !== undefined && text !== null ? String(text) : '';
       
       doc.setFontSize(options.size || 10);
-      // FIX: Spread the color array properly
       if (options.color && Array.isArray(options.color)) {
         doc.setTextColor(...options.color);
       } else {
@@ -56,7 +52,6 @@ export const generateInvoicePDF = (invoice, userInfo = {}) => {
       }
       doc.setFont(options.font || 'helvetica', options.style || 'normal');
       
-      // Only render if we have text
       if (textStr || textStr === '') {
         doc.text(textStr, x, y, options.align ? { align: options.align } : undefined);
       }
@@ -271,93 +266,47 @@ export const generateInvoicePDF = (invoice, userInfo = {}) => {
       }
     });
 
-   // EXACT REPLACEMENT for generateInvoicePDF.js lines 227-287
-// This fixes the $0.00 subtotal and total issue
+    yPosition += 10;
 
-  yPosition += 10;
-
-  // Totals section
-  const totalsX = pageWidth - margin - 60;
-  
-  // Calculate subtotal from line items if not provided
-  const calculateSubtotal = () => {
-    // First, try to use provided subtotal
-    if (invoice.subtotal) return invoice.subtotal;
+    // Totals section - Clean and simple, just show TOTAL
+    const totalsLabelX = pageWidth - margin - 80;
+    const totalsValueX = pageWidth - margin;
     
-    // Otherwise, calculate from line items
-    if (invoice.lineItems && invoice.lineItems.length > 0) {
-      return invoice.lineItems.reduce((sum, item) => {
-        return sum + ((item.quantity || 1) * (item.rate || 0));
-      }, 0);
-    }
+    // Calculate total from line items
+    const calculateTotal = () => {
+      if (invoice.total) return invoice.total;
+      if (invoice.amount) return invoice.amount;
+      
+      if (invoice.lineItems && invoice.lineItems.length > 0) {
+        return invoice.lineItems.reduce((sum, item) => {
+          return sum + ((item.quantity || 1) * (item.rate || 0));
+        }, 0);
+      }
+      
+      return 0;
+    };
     
-    // Fallback to amount or total
-    return invoice.amount || invoice.total || 0;
-  };
-  
-  const subtotal = calculateSubtotal();
-  const tax = parseFloat(invoice.tax || 0);
-  const discount = parseFloat(invoice.discount || 0);
-  const finalTotal = invoice.total || invoice.amount || (subtotal + tax - discount);
-  
-  // Subtotal
-  addText('Subtotal:', totalsX, yPosition, {
-    size: 10,
-    color: lightGray
-  });
-  addText(`$${parseFloat(subtotal).toFixed(2)}`, pageWidth - margin, yPosition, {
-    size: 10,
-    align: 'right'
-  });
+    const finalTotal = calculateTotal();
 
-  yPosition += 7;
+    // Line before total
+    doc.setDrawColor(...darkGray);
+    doc.setLineWidth(0.5);
+    doc.line(totalsLabelX, yPosition, pageWidth - margin, yPosition);
+    yPosition += 7;
 
-  // Tax (if applicable)
-  if (tax > 0) {
-    addText(`Tax (${invoice.taxRate || 0}%):`, totalsX, yPosition, {
-      size: 10,
-      color: lightGray
+    // Total
+    addText('TOTAL:', totalsLabelX, yPosition, {
+      size: 12,
+      style: 'bold'
     });
-    addText(`$${tax.toFixed(2)}`, pageWidth - margin, yPosition, {
-      size: 10,
+    addText(`$${parseFloat(finalTotal).toFixed(2)}`, totalsValueX, yPosition, {
+      size: 14,
+      style: 'bold',
+      color: primaryColor,
       align: 'right'
     });
-    yPosition += 7;
-  }
 
-  // Discount (if applicable)
-  if (discount > 0) {
-    addText('Discount:', totalsX, yPosition, {
-      size: 10,
-      color: lightGray
-    });
-    addText(`-$${discount.toFixed(2)}`, pageWidth - margin, yPosition, {
-      size: 10,
-      color: [239, 68, 68],
-      align: 'right'
-    });
-    yPosition += 7;
-  }
-
-  // Line before total
-  doc.setDrawColor(...darkGray);
-  doc.setLineWidth(0.5);
-  doc.line(totalsX, yPosition, pageWidth - margin, yPosition);
-  yPosition += 7;
-
-  // Total
-  addText('TOTAL:', totalsX, yPosition, {
-    size: 12,
-    style: 'bold'
-  });
-  addText(`$${parseFloat(finalTotal).toFixed(2)}`, pageWidth - margin, yPosition, {
-    size: 14,
-    style: 'bold',
-    color: primaryColor,
-    align: 'right'
-  });
-
-  yPosition += 15;
+    yPosition += 15;
 
     // Notes section (if applicable)
     if (invoice.notes) {
@@ -372,7 +321,6 @@ export const generateInvoicePDF = (invoice, userInfo = {}) => {
       });
       yPosition += 7;
       
-      // Ensure notes is a string before splitting
       const notesText = String(invoice.notes || '');
       if (notesText) {
         const notesLines = doc.splitTextToSize(notesText, pageWidth - (2 * margin));
@@ -399,7 +347,6 @@ export const generateInvoicePDF = (invoice, userInfo = {}) => {
       });
       yPosition += 7;
       
-      // Ensure instructions is a string before splitting
       const instructions = String(invoice.paymentInstructions || userInfo.paymentInstructions || '');
       if (instructions) {
         const instructionLines = doc.splitTextToSize(instructions, pageWidth - (2 * margin));
