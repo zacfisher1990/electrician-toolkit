@@ -17,7 +17,8 @@ const JobsList = ({
   onClockInOut,
   estimates,
   isDarkMode,
-  colors
+  colors,
+  onShowToast // ADD THIS PROP
 }) => {
   if (filteredJobs.length === 0) {
     return (
@@ -56,6 +57,7 @@ const JobsList = ({
           isDarkMode={isDarkMode}
           colors={colors}
           estimates={estimates}
+          onShowToast={onShowToast} // PASS IT DOWN
         />
       ))}
     </>

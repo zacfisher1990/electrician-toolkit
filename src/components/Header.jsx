@@ -1,6 +1,6 @@
 import React from 'react';
-import { Menu, User } from 'lucide-react';
-import { getColors } from '../theme';  // ADDED: Import theme colors
+import { Menu, User, Clock } from 'lucide-react';
+import { getColors } from '../theme';
 
 function Header({ 
   headerInfo, 
@@ -13,7 +13,7 @@ function Header({
   clockedInJob
 }) {
   const HeaderIcon = headerInfo.icon;
-  const themeColors = getColors(isDarkMode);  // ADDED: Get theme colors
+  const themeColors = getColors(isDarkMode);
 
   const colors = {
     headerBg: isDarkMode ? '#1a1a1a' : '#ffffff',
@@ -24,18 +24,17 @@ function Header({
     cardText: isDarkMode ? '#ffffff' : '#111827',
   };
 
-  // Use maroon when clocked in, theme blue when not
   const headerBgColor = clockedInJob 
-    ? '#9f1239' // Maroon when clocked in (easier on eyes)
-    : (isDarkMode ? '#1a1a1a' : themeColors.blue); // UPDATED: Use theme blue
+    ? '#9f1239'
+    : (isDarkMode ? '#1a1a1a' : themeColors.blue);
 
   const notchColor = clockedInJob
-    ? '#9f1239' // Maroon notch when clocked in
-    : (isDarkMode ? '#1a1a1a' : themeColors.blue); // UPDATED: Use theme blue
+    ? '#9f1239'
+    : (isDarkMode ? '#1a1a1a' : themeColors.blue);
 
   return (
     <>
-      {/* Notch Area Cover - Always Visible */}
+      {/* Notch Area Cover */}
       <div style={{
         position: 'fixed',
         top: 0,
@@ -92,7 +91,6 @@ function Header({
               {headerInfo.title}
             </h1>
             
-            {/* Clocked-in job indicator */}
             {clockedInJob && (
               <>
                 <span style={{ 
@@ -210,6 +208,32 @@ function Header({
                   >
                     <User size={16} />
                     <span>Account</span>
+                  </button>
+
+                  {/* Time Card Button */}
+                  <button
+                    onClick={() => {
+                      onNavigate('timecard');
+                      setShowMenu(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      color: colors.cardText,
+                      fontSize: '0.875rem',
+                      fontWeight: '500'
+                    }}
+                    onMouseEnter={(e) => e.target.style.background = isDarkMode ? '#374151' : '#f3f4f6'}
+                    onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                  >
+                    <Clock size={16} />
+                    <span>Time Card</span>
                   </button>
 
                   <div style={{

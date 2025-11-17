@@ -2,12 +2,11 @@ import React from 'react';
 import { FileText, DollarSign, CheckCircle } from 'lucide-react';
 
 const InvoiceStatusTabs = ({ 
-  statusFilter,  // Fixed: was activeStatusTab
-  setStatusFilter,  // Fixed: was setActiveStatusTab
+  statusFilter,
+  setStatusFilter,
   statusCounts, 
   colors 
 }) => {
-  // Status configuration matching InvoiceCard
   const statusConfig = {
     'Draft': { 
       color: '#6b7280',
@@ -23,161 +22,161 @@ const InvoiceStatusTabs = ({
     }
   };
 
+  const buttonBaseStyle = {
+    flex: 1,
+    border: 'none',
+    borderRadius: 0,
+    cursor: 'pointer',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: '600',
+    padding: '0.5rem 0.25rem',
+    gap: '0.25rem',
+    transition: 'all 0.2s'
+  };
+
   return (
     <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(4, 1fr)',
-      gap: '0.375rem',
+      display: 'flex',
+      borderRadius: '0.5rem',
+      overflow: 'hidden',
+      border: `1px solid ${colors.border}`,
       marginBottom: '1rem'
     }}>
       {/* All Tab */}
       <button
         onClick={() => setStatusFilter('all')}
         style={{
-          height: '46px',
-          padding: '0.5rem 0.25rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${statusFilter === 'all' ? colors.text : colors.border}`,
-          background: statusFilter === 'all' ? colors.text : 'transparent',
-          color: statusFilter === 'all' ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') : colors.text,
-          fontSize: '0.75rem',
-          fontWeight: '600',
-          cursor: 'pointer',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.375rem',
-          transition: 'all 0.2s'
+          ...buttonBaseStyle,
+          background: statusFilter === 'all' 
+            ? colors.text 
+            : (colors.text === '#e0e0e0' ? '#374151' : '#f3f4f6'),
+          color: statusFilter === 'all' 
+            ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') 
+            : colors.text,
+          borderRight: `1px solid ${colors.border}`
         }}
       >
-        <span>All</span>
-        <span style={{
-          background: statusFilter === 'all' ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') : colors.cardBg,
-          color: statusFilter === 'all' ? colors.text : colors.subtext,
-          padding: '0.125rem 0.375rem',
-          borderRadius: '1rem',
-          fontSize: '0.7rem',
-          fontWeight: '700',
-          minWidth: '1.25rem',
-          textAlign: 'center'
-        }}>
-          {statusCounts.all}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+          <span style={{ fontSize: '0.75rem' }}>All</span>
+          <span style={{
+            background: statusFilter === 'all' 
+              ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') 
+              : colors.cardBg,
+            color: statusFilter === 'all' ? colors.text : colors.subtext,
+            padding: '0.125rem 0.375rem',
+            borderRadius: '1rem',
+            fontSize: '0.65rem',
+            fontWeight: '700',
+            minWidth: '1.25rem',
+            textAlign: 'center'
+          }}>
+            {statusCounts.all}
+          </span>
+        </div>
       </button>
 
       {/* Draft Tab */}
       <button
         onClick={() => setStatusFilter('Draft')}
         style={{
-          height: '46px',
-          padding: '0.5rem 0.25rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${statusFilter === 'Draft' ? statusConfig.Draft.color : colors.border}`,
-          background: statusFilter === 'Draft' ? `${statusConfig.Draft.color}20` : 'transparent',
-          color: statusFilter === 'Draft' ? statusConfig.Draft.color : colors.text,
-          fontSize: '0.7rem',
-          fontWeight: '600',
-          cursor: 'pointer',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.125rem',
-          transition: 'all 0.2s'
+          ...buttonBaseStyle,
+          background: statusFilter === 'Draft' 
+            ? `${statusConfig.Draft.color}20` 
+            : (colors.text === '#e0e0e0' ? '#374151' : '#f3f4f6'),
+          color: statusFilter === 'Draft' 
+            ? statusConfig.Draft.color 
+            : colors.text,
+          borderRight: `1px solid ${colors.border}`
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           <FileText size={12} />
           <span style={{
-            background: statusFilter === 'Draft' ? statusConfig.Draft.color : colors.cardBg,
+            background: statusFilter === 'Draft' 
+              ? statusConfig.Draft.color 
+              : colors.cardBg,
             color: statusFilter === 'Draft' ? 'white' : colors.subtext,
             padding: '0.125rem 0.3rem',
             borderRadius: '1rem',
-            fontSize: '0.65rem',
+            fontSize: '0.6rem',
             fontWeight: '700',
-            minWidth: '1.25rem',
+            minWidth: '1.1rem',
             textAlign: 'center'
           }}>
             {statusCounts.Draft}
           </span>
         </div>
-        <span style={{ fontSize: '0.65rem' }}>Draft</span>
+        <span style={{ fontSize: '0.625rem' }}>Draft</span>
       </button>
 
       {/* Pending Tab */}
       <button
         onClick={() => setStatusFilter('Pending')}
         style={{
-          height: '46px',
-          padding: '0.5rem 0.25rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${statusFilter === 'Pending' ? statusConfig.Pending.color : colors.border}`,
-          background: statusFilter === 'Pending' ? `${statusConfig.Pending.color}20` : 'transparent',
-          color: statusFilter === 'Pending' ? statusConfig.Pending.color : colors.text,
-          fontSize: '0.7rem',
-          fontWeight: '600',
-          cursor: 'pointer',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.125rem',
-          transition: 'all 0.2s'
+          ...buttonBaseStyle,
+          background: statusFilter === 'Pending' 
+            ? `${statusConfig.Pending.color}20` 
+            : (colors.text === '#e0e0e0' ? '#374151' : '#f3f4f6'),
+          color: statusFilter === 'Pending' 
+            ? statusConfig.Pending.color 
+            : colors.text,
+          borderRight: `1px solid ${colors.border}`
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           <DollarSign size={12} />
           <span style={{
-            background: statusFilter === 'Pending' ? statusConfig.Pending.color : colors.cardBg,
+            background: statusFilter === 'Pending' 
+              ? statusConfig.Pending.color 
+              : colors.cardBg,
             color: statusFilter === 'Pending' ? 'white' : colors.subtext,
             padding: '0.125rem 0.3rem',
             borderRadius: '1rem',
-            fontSize: '0.65rem',
+            fontSize: '0.6rem',
             fontWeight: '700',
-            minWidth: '1.25rem',
+            minWidth: '1.1rem',
             textAlign: 'center'
           }}>
             {statusCounts.Pending}
           </span>
         </div>
-        <span style={{ fontSize: '0.65rem' }}>Pending</span>
+        <span style={{ fontSize: '0.625rem' }}>Pending</span>
       </button>
 
       {/* Paid Tab */}
       <button
         onClick={() => setStatusFilter('Paid')}
         style={{
-          height: '46px',
-          padding: '0.5rem 0.25rem',
-          borderRadius: '0.5rem',
-          border: `1px solid ${statusFilter === 'Paid' ? statusConfig.Paid.color : colors.border}`,
-          background: statusFilter === 'Paid' ? `${statusConfig.Paid.color}20` : 'transparent',
-          color: statusFilter === 'Paid' ? statusConfig.Paid.color : colors.text,
-          fontSize: '0.7rem',
-          fontWeight: '600',
-          cursor: 'pointer',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.125rem',
-          transition: 'all 0.2s'
+          ...buttonBaseStyle,
+          background: statusFilter === 'Paid' 
+            ? `${statusConfig.Paid.color}20` 
+            : (colors.text === '#e0e0e0' ? '#374151' : '#f3f4f6'),
+          color: statusFilter === 'Paid' 
+            ? statusConfig.Paid.color 
+            : colors.text
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           <CheckCircle size={12} />
           <span style={{
-            background: statusFilter === 'Paid' ? statusConfig.Paid.color : colors.cardBg,
+            background: statusFilter === 'Paid' 
+              ? statusConfig.Paid.color 
+              : colors.cardBg,
             color: statusFilter === 'Paid' ? 'white' : colors.subtext,
             padding: '0.125rem 0.3rem',
             borderRadius: '1rem',
-            fontSize: '0.65rem',
+            fontSize: '0.6rem',
             fontWeight: '700',
-            minWidth: '1.25rem',
+            minWidth: '1.1rem',
             textAlign: 'center'
           }}>
             {statusCounts.Paid}
           </span>
         </div>
-        <span style={{ fontSize: '0.65rem' }}>Paid</span>
+        <span style={{ fontSize: '0.625rem' }}>Paid</span>
       </button>
     </div>
   );

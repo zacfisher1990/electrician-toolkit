@@ -8,6 +8,7 @@ import AddJobSection from './AddJobSection';
 import JobsList from './JobsList';
 import ModalsContainer from './ModalsContainer';
 import VerificationRequiredModal from '../../components/VerificationRequiredModal';
+import Toast from '../../components/Toast'; // ADD THIS IMPORT
 
 // Custom Hooks
 import { useJobsState } from './hooks/useJobsState';
@@ -71,9 +72,15 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStatusTab, setActiveStatusTab] = useState('all');
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [toast, setToast] = useState(null); // ADD TOAST STATE
   
   // Ref to track if we've already handled this navigation to prevent infinite loop
   const handledNavigationRef = useRef(null);
+
+  // Toast helper function
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
 
   // Create a function to clear estimate modals
   const clearEstimateModals = () => {
@@ -351,6 +358,16 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
 
   return (
     <div className="jobs-container">
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+          isDarkMode={isDarkMode}
+        />
+      )}
+
       {/* Verification Modal */}
       <VerificationRequiredModal
         isOpen={showVerificationModal}
@@ -441,6 +458,7 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
             estimates={estimates}
             isDarkMode={isDarkMode}
             colors={colors}
+            onShowToast={showToast} // PASS THE TOAST FUNCTION
           />
         </div>
       </div>

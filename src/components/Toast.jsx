@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Info, Clock, Square } from 'lucide-react';
 
 const Toast = ({ 
   message, 
@@ -19,6 +19,20 @@ const Toast = ({
 
   const getToastStyles = () => {
     switch (type) {
+      case 'clock-in':
+        return {
+          bg: isDarkMode ? '#065f46' : '#d1fae5',
+          border: isDarkMode ? '#047857' : '#10b981',
+          text: isDarkMode ? '#d1fae5' : '#065f46',
+          icon: Clock
+        };
+      case 'clock-out':
+        return {
+          bg: isDarkMode ? '#7f1d1d' : '#fee2e2',
+          border: isDarkMode ? '#991b1b' : '#ef4444',
+          text: isDarkMode ? '#fecaca' : '#7f1d1d',
+          icon: Square
+        };
       case 'success':
         return {
           bg: isDarkMode ? '#065f46' : '#d1fae5',

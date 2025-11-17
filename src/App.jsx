@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, FileDown, Omega, Wrench, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap, TriangleRight, Palette } from 'lucide-react';
-import { PiInvoice, PiShovel, PiNumberCircleThree, PiPipe } from 'react-icons/pi';
+import { Menu, FileDown, Omega, Wrench, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap, TriangleRight, Palette, Clock } from 'lucide-react';import { PiInvoice, PiShovel, PiNumberCircleThree, PiPipe } from 'react-icons/pi';
 import { RiWirelessChargingLine } from 'react-icons/ri';
 import { TbCircuitGround, TbCircuitMotor, TbCircuitInductor } from 'react-icons/tb';
 import { FaCircleHalfStroke } from 'react-icons/fa6';
@@ -40,6 +39,7 @@ import Jobs from './features/jobs/Jobs.jsx';
 import Estimates from './features/estimates/Estimates.jsx';
 import Invoices from './features/invoices/Invoices.jsx';
 import Header from './components/Header.jsx';
+import TimeCard from './components/TimeCard.jsx';
 import { getColors } from './theme';
 import { auth } from './firebase/firebase';
 import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
@@ -378,6 +378,8 @@ function App() {
               navigationData={navigationData}
             />
         );
+      case 'timecard':
+        return <TimeCard isDarkMode={isDarkMode} />;
       case 'home':
         return <Home 
           isDarkMode={isDarkMode}
@@ -410,6 +412,10 @@ function App() {
     if (activeView === 'invoices') {
       return { title: 'Invoices', icon: PiInvoice };
     }
+    if (activeView === 'timecard') {
+      return { title: 'Time Card', icon: Clock };
+    }
+
     
     const headerMap = {
       'voltage-drop': { title: 'Voltage Drop', icon: TrendingDown },
@@ -472,9 +478,9 @@ function App() {
                 ) : (
                   <div style={{ 
                     minHeight: 'calc(100vh - 3.5rem)', 
-                    paddingTop: activeView === 'calculators' || activeView === 'jobs' || activeView === 'profile' || activeView === 'estimates' || activeView === 'invoices' || activeView === 'home' || !activeView ? '0' : '1rem',
-                    paddingRight: activeView === 'calculators' || activeView === 'jobs' || activeView === 'profile' || activeView === 'estimates' || activeView === 'invoices' || activeView === 'home' || !activeView ? '0' : '1rem',
-                    paddingLeft: activeView === 'calculators' || activeView === 'jobs' || activeView === 'profile' || activeView === 'estimates' || activeView === 'invoices' || activeView === 'home' || !activeView ? '0' : '1rem',
+                    paddingTop: activeView === 'calculators' || activeView === 'jobs' || activeView === 'profile' || activeView === 'estimates' || activeView === 'invoices' || activeView === 'timecard' || activeView === 'home' || !activeView ? '0' : '1rem',
+                    paddingRight: activeView === 'calculators' || activeView === 'jobs' || activeView === 'profile' || activeView === 'estimates' || activeView === 'invoices' || activeView === 'timecard' || activeView === 'home' || !activeView ? '0' : '1rem',
+                    paddingLeft: activeView === 'calculators' || activeView === 'jobs' || activeView === 'profile' || activeView === 'estimates' || activeView === 'invoices' || activeView === 'timecard' || activeView === 'home' || !activeView ? '0' : '1rem',
                     paddingBottom: '0'
                   }}>
                     {renderView()}

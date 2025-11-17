@@ -16,7 +16,8 @@ const JobCard = ({
   onClockInOut,
   isDarkMode,
   colors,
-  estimates = []
+  estimates = [],
+  onShowToast // NEW: callback to show toast notification
 }) => {
   const statusDropdownRef = useRef(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -86,16 +87,33 @@ const JobCard = ({
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   };
 
+  // Format time for toast message
+  const formatTimeForToast = () => {
+    return new Date().toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  };
+
   const handleClockInOut = (e) => {
     e.stopPropagation();
     e.preventDefault();
     if (onClockInOut) {
-      // Add confirmation dialog
-      const action = job.clockedIn ? 'clock out of' : 'clock into';
       const jobName = job.title || job.name;
+      const isClockingIn = !job.clockedIn;
       
-      if (window.confirm(`Are you sure you want to ${action} "${jobName}"?`)) {
-        onClockInOut(job.id, !job.clockedIn);
+      // Perform the clock action immediately (no confirmation)
+      onClockInOut(job.id, isClockingIn);
+      
+      // Show toast notification
+      if (onShowToast) {
+        if (isClockingIn) {
+          onShowToast(`Clocked into ${jobName} at ${formatTimeForToast()}`, 'clock-in');
+        } else {
+          const sessionDuration = formatDuration(getCurrentSessionDuration());
+          onShowToast(`Clocked out of ${jobName} - Session: ${sessionDuration}`, 'clock-out');
+        }
       }
     }
   };
@@ -254,56 +272,52 @@ const JobCard = ({
                   background: colors.cardBg,
                   border: `1px solid ${colors.border}`,
                   borderRadius: '0.5rem',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                   zIndex: 100,
-                  minWidth: '140px',
-                  overflow: 'hidden'
+                  minWidth: '140px'
                 }}>
-                  {Object.entries(statusConfig).map(([key, config]) => {
-                    const OptionIcon = config.icon;
-                    return (
-                      <button
-                        key={key}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onUpdateStatus(job.id, key);
-                        }}
-                        style={{
-                          width: '100%',
-                          padding: '0.5rem 0.75rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          background: job.status === key ? `${config.color}15` : 'transparent',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: config.color,
-                          fontSize: '0.875rem',
-                          fontWeight: job.status === key ? '600' : '500',
-                          textAlign: 'left'
-                        }}
-                      >
-                        <OptionIcon size={14} />
-                        {config.label}
-                      </button>
-                    );
-                  })}
+                  {Object.entries(statusConfig).map(([status, config]) => (
+                    <button
+                      key={status}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUpdateStatus(job.id, status);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem 0.75rem',
+                        border: 'none',
+                        background: job.status === status ? `${config.color}15` : 'transparent',
+                        color: config.color,
+                        fontSize: '0.75rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <config.icon size={14} />
+                      {config.label}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Timer */}
+            {/* Timer display */}
             {(job.clockedIn || totalHours > 0) && (
               <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                color: job.clockedIn ? '#dc2626' : colors.subtext,
                 fontSize: '0.75rem',
-                color: colors.subtext,
-                textAlign: 'right'
+                fontWeight: '600'
               }}>
                 {job.clockedIn && (
                   <div style={{
-                    color: colors.text,
-                    fontWeight: '600',
-                    fontSize: '0.875rem',
                     fontVariantNumeric: 'tabular-nums'
                   }}>
                     {formatDuration(currentSessionSeconds)}
@@ -453,8 +467,8 @@ const JobCard = ({
             gap: '0.125rem'
           }}
         >
-          {job.clockedIn ? <Square size={12} /> : <Play size={12} />}
-          <span style={{ fontSize: '0.5625rem' }}>
+          {job.clockedIn ? <Square size={14} /> : <Play size={14} />}
+          <span style={{ fontSize: '0.625rem' }}>
             {job.clockedIn ? 'Clock Out' : 'Clock In'}
           </span>
         </button>
@@ -483,8 +497,8 @@ const JobCard = ({
             gap: '0.125rem'
           }}
         >
-          <Edit size={12} />
-          <span style={{ fontSize: '0.5625rem' }}>Edit</span>
+          <Edit size={14} />
+          <span style={{ fontSize: '0.625rem' }}>Edit</span>
         </button>
 
         <button
@@ -509,8 +523,8 @@ const JobCard = ({
           }}
           disabled={linkedEstimates.length === 0}
         >
-          <FileText size={12} />
-          <span style={{ fontSize: '0.5625rem' }}>Estimate</span>
+          <FileText size={14} />
+          <span style={{ fontSize: '0.625rem' }}>Estimate</span>
         </button>
 
         <button
@@ -546,8 +560,8 @@ const JobCard = ({
                 : "Add an estimate or cost first"
           }
         >
-          <Receipt size={12} />
-          <span style={{ fontSize: '0.5625rem' }}>Invoice</span>
+          <Receipt size={14} />
+          <span style={{ fontSize: '0.625rem' }}>Invoice</span>
         </button>
       </div>
 
