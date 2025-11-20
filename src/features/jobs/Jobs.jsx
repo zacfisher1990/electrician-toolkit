@@ -187,7 +187,6 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
       if (handledNavigationRef.current === navigationKey) {
         return;
       }
-      useSharedJobSync(jobs, handleJobUpdate);
 
       const jobToOpen = jobs.find(j => j.id === navigationData.openJobId);
       
@@ -201,6 +200,18 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
       handledNavigationRef.current = null;
     }
   }, [jobs, estimates, navigationData?.openJobId, navigationData?.newEstimateId]);
+
+  // Debug logging
+useEffect(() => {
+  console.log('🔍 [Jobs.jsx] Jobs state updated:', jobs.length, 'jobs');
+  jobs.forEach(job => {
+    console.log(`  - ${job.id}: ${job.title}, isSharedJob:`, job.isSharedJob);
+  });
+}, [jobs]);
+
+// Set up real-time sync for shared jobs (must be at top level, not inside other useEffect)
+useSharedJobSync(jobs, handleJobUpdate);
+
 
   // Create handlers
   const jobHandlers = createJobHandlers({

@@ -8,40 +8,31 @@ import { subscribeToSharedJob } from '../invitationService';
  */
 export const useSharedJobSync = (jobs, onJobUpdate) => {
   const unsubscribesRef = useRef({});
+  const onJobUpdateRef = useRef(onJobUpdate);
+
+  // Keep the callback ref up to date
+  useEffect(() => {
+    onJobUpdateRef.current = onJobUpdate;
+  }, [onJobUpdate]);
 
   useEffect(() => {
-    console.log('🔍 [useSharedJobSync] Hook running');
-    console.log('🔍 [useSharedJobSync] Total jobs:', jobs?.length);
-    console.log('🔍 [useSharedJobSync] Jobs:', jobs);
-    
     if (!jobs || jobs.length === 0) {
-      console.log('⚠️ [useSharedJobSync] No jobs to sync');
       return;
     }
 
     // Find all shared jobs
-    const sharedJobs = jobs.filter(job => {
-      console.log(`🔍 [useSharedJobSync] Checking job ${job.id}:`, {
-        isSharedJob: job.isSharedJob,
-        hasOriginalJobId: !!job.originalJobId,
-        hasOriginalOwnerId: !!job.originalOwnerId
-      });
-      return job.isSharedJob === true;
-    });
+    const sharedJobs = jobs.filter(job => job.isSharedJob === true);
     
-    console.log('🔍 [useSharedJobSync] Found shared jobs:', sharedJobs.length);
-    console.log('🔍 [useSharedJobSync] Shared jobs data:', sharedJobs);
-
     if (sharedJobs.length === 0) {
-      console.log('⚠️ [useSharedJobSync] No shared jobs found');
       return;
     }
+
+    console.log(`🔍 [useSharedJobSync] Found ${sharedJobs.length} shared jobs`);
 
     // Set up listeners for new shared jobs
     sharedJobs.forEach(async (job) => {
       // Skip if already subscribed
       if (unsubscribesRef.current[job.id]) {
-        console.log(`⏭️ [useSharedJobSync] Already subscribed to ${job.id}`);
         return;
       }
 
@@ -49,24 +40,24 @@ export const useSharedJobSync = (jobs, onJobUpdate) => {
       
       try {
         const unsubscribe = await subscribeToSharedJob(job.id, (updatedJob) => {
-          console.log(`✅ Received update for shared job ${job.id}`);
-          console.log('📥 Updated job data:', updatedJob);
-          if (onJobUpdate) {
-            onJobUpdate(updatedJob);
+          console.log(`🔄 Synced shared job ${job.id} from original`);
+          // Use the ref to avoid dependency issues
+          if (onJobUpdateRef.current) {
+            onJobUpdateRef.current(updatedJob);
           }
         });
 
         unsubscribesRef.current[job.id] = unsubscribe;
-        console.log(`✅ [useSharedJobSync] Successfully subscribed to ${job.id}`);
+        console.log(`✅ Successfully subscribed to ${job.id}`);
       } catch (error) {
-        console.error(`❌ [useSharedJobSync] Error subscribing to shared job ${job.id}:`, error);
+        console.error(`❌ Error subscribing to shared job ${job.id}:`, error);
       }
     });
 
     // Clean up listeners for jobs that no longer exist
+    const currentJobIds = sharedJobs.map(j => j.id);
     Object.keys(unsubscribesRef.current).forEach(jobId => {
-      const stillExists = jobs.some(job => job.id === jobId && job.isSharedJob);
-      if (!stillExists && unsubscribesRef.current[jobId]) {
+      if (!currentJobIds.includes(jobId)) {
         console.log(`🔌 Unsubscribing from removed shared job: ${jobId}`);
         if (typeof unsubscribesRef.current[jobId] === 'function') {
           unsubscribesRef.current[jobId]();
@@ -77,13 +68,12 @@ export const useSharedJobSync = (jobs, onJobUpdate) => {
 
     // Cleanup on unmount
     return () => {
-      console.log('🧹 [useSharedJobSync] Cleaning up subscriptions');
       Object.values(unsubscribesRef.current).forEach(unsubscribe => {
-        if (typeof unsubscribe === 'function') {
+        if (typeof unsubscribesRef.current === 'function') {
           unsubscribe();
         }
       });
       unsubscribesRef.current = {};
     };
-  }, [jobs, onJobUpdate]);
+  }, [jobs.length, jobs.map(j => j.id).join(',')]); // Only re-run when job count or IDs change
 };

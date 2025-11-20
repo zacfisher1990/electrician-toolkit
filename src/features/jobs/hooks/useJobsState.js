@@ -1,19 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../../firebase/firebase';
-import { getUserJobs, createJob, deleteJob as deleteJobFromFirebase } from './../jobsService';
+import { getUserJobs, subscribeToJobs } from './../jobsService';
 import { getUserEstimates } from '../../estimates/estimatesService';
 import { saveJobs, getJobs, clearJobsCache } from '../../../utils/localStorageUtils';
 import { saveEstimates, getEstimates, clearEstimatesCache } from '../../../utils/localStorageUtils';
 
 /**
  * Custom hook to manage all jobs-related state and data fetching
+ * NOW WITH REAL-TIME SYNC!
  */
 export const useJobsState = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [estimates, setEstimates] = useState([]);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const unsubscribeRef = useRef(null);
   
   const loadJobs = async (skipCache = false) => {
     try {
@@ -79,17 +81,49 @@ export const useJobsState = () => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setIsUserLoggedIn(true);
-        loadJobs();
+        
+        // Initial load from cache for instant display
+        const cachedJobs = getJobs();
+        if (cachedJobs) {
+          setJobs(cachedJobs);
+          setLoading(false);
+        }
+        
+        // Set up real-time listener for jobs
+        console.log('📡 Setting up real-time job listener');
+        unsubscribeRef.current = subscribeToJobs(user.uid, (updatedJobs) => {
+          console.log('🔄 Jobs updated from Firestore:', updatedJobs.length);
+          setJobs([...updatedJobs]);
+          saveJobs(updatedJobs);
+          setLoading(false);
+        });
+        
+        // Load estimates
         loadEstimatesWithCache();
       } else {
         setIsUserLoggedIn(false);
         setLoading(false);
+        setJobs([]);
+        
+        // Unsubscribe from real-time listener
+        if (unsubscribeRef.current) {
+          console.log('🔌 Unsubscribing from job listener');
+          unsubscribeRef.current();
+          unsubscribeRef.current = null;
+        }
+        
         // Clear cache on logout
         clearJobsCache();
         clearEstimatesCache();
       }
     });
-    return () => unsubscribe();
+    
+    return () => {
+      unsubscribe();
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
   }, []);
 
   return {
