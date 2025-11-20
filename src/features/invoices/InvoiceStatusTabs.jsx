@@ -8,6 +8,10 @@ const InvoiceStatusTabs = ({
   colors 
 }) => {
   const statusConfig = {
+    'all': {
+      color: '#3b82f6',
+      icon: null
+    },
     'Draft': { 
       color: '#6b7280',
       icon: FileText
@@ -51,10 +55,10 @@ const InvoiceStatusTabs = ({
         style={{
           ...buttonBaseStyle,
           background: statusFilter === 'all' 
-            ? colors.text 
+            ? `${statusConfig.all.color}20` 
             : (colors.text === '#e0e0e0' ? '#374151' : '#f3f4f6'),
           color: statusFilter === 'all' 
-            ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') 
+            ? statusConfig.all.color 
             : colors.text,
           borderRight: `1px solid ${colors.border}`
         }}
@@ -63,9 +67,9 @@ const InvoiceStatusTabs = ({
           <span style={{ fontSize: '0.75rem' }}>All</span>
           <span style={{
             background: statusFilter === 'all' 
-              ? (colors.text === '#e0e0e0' ? '#111827' : '#ffffff') 
+              ? statusConfig.all.color 
               : colors.cardBg,
-            color: statusFilter === 'all' ? colors.text : colors.subtext,
+            color: statusFilter === 'all' ? 'white' : colors.subtext,
             padding: '0.125rem 0.375rem',
             borderRadius: '1rem',
             fontSize: '0.65rem',

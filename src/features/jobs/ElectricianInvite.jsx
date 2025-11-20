@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserPlus, X, Mail, Check, Clock, XCircle, Users } from 'lucide-react';
+import { Mail, X, Users } from 'lucide-react';
 
 const ElectricianInvite = ({
   invitedElectricians = [],
@@ -10,28 +10,32 @@ const ElectricianInvite = ({
   disabled = false
 }) => {
   const [email, setEmail] = useState('');
-  const [error, setError] = useState(null);
-  const [isAdding, setIsAdding] = useState(false);
+  const [error, setError] = useState('');
+
+  const MAX_TEAM_MEMBERS = 30;
 
   const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
   };
 
-  const handleAddElectrician = async () => {
+  const handleAddClick = () => {
+    setError('');
+
+    // Validate email
     if (!email.trim()) {
       setError('Please enter an email address');
       return;
     }
 
-    if (!validateEmail(email.trim())) {
+    if (!validateEmail(email)) {
       setError('Please enter a valid email address');
       return;
     }
 
     // Check if already invited
     const alreadyInvited = invitedElectricians.some(
-      inv => inv.email.toLowerCase() === email.trim().toLowerCase()
+      inv => inv.email.toLowerCase() === email.toLowerCase()
     );
 
     if (alreadyInvited) {
@@ -39,220 +43,216 @@ const ElectricianInvite = ({
       return;
     }
 
-    setIsAdding(true);
-    setError(null);
+    // Check limit
+    if (invitedElectricians.length >= MAX_TEAM_MEMBERS) {
+      setError(`Maximum of ${MAX_TEAM_MEMBERS} team members reached`);
+      return;
+    }
 
-    try {
-      await onAddElectrician(email.trim().toLowerCase());
+    // Add the electrician
+    if (onAddElectrician) {
+      onAddElectrician(email.trim());
       setEmail('');
-    } catch (err) {
-      setError(err.message || 'Failed to add electrician');
-    } finally {
-      setIsAdding(false);
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'accepted':
-        return <Check size={14} style={{ color: '#10b981' }} />;
-      case 'rejected':
-        return <XCircle size={14} style={{ color: '#ef4444' }} />;
-      case 'pending':
-      default:
-        return <Clock size={14} style={{ color: '#f59e0b' }} />;
+  const handleRemoveClick = (emailToRemove) => {
+    if (onRemoveElectrician) {
+      onRemoveElectrician(emailToRemove);
     }
   };
 
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'accepted':
-        return 'Accepted';
-      case 'rejected':
-        return 'Declined';
-      case 'pending':
-      default:
-        return 'Pending';
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddClick();
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'accepted':
-        return '#10b981';
-      case 'rejected':
-        return '#ef4444';
-      case 'pending':
-      default:
-        return '#f59e0b';
-    }
+  // Determine counter color based on how full it is
+  const getCounterColor = () => {
+    const count = invitedElectricians.length;
+    if (count >= MAX_TEAM_MEMBERS) return '#ef4444'; // Red when full
+    if (count >= 25) return '#f59e0b'; // Orange when close
+    return colors.subtext; // Normal color
   };
 
   return (
     <div style={{ marginBottom: '0.75rem' }}>
-      <label style={{
-        display: 'block',
-        fontSize: '0.875rem',
-        fontWeight: '600',
-        color: colors.text,
-        marginBottom: '0.375rem',
-        textAlign: 'left'
+      {/* Header with counter */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '0.5rem'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <label style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '0.875rem',
+          fontWeight: '600',
+          color: colors.text,
+          textAlign: 'left'
+        }}>
           <Users size={16} />
           Team Members
+        </label>
+        
+        <span style={{
+          fontSize: '0.75rem',
+          fontWeight: '600',
+          color: getCounterColor(),
+          padding: '0.125rem 0.5rem',
+          background: invitedElectricians.length >= 25 
+            ? (invitedElectricians.length >= MAX_TEAM_MEMBERS ? '#fee2e2' : '#fef3c7')
+            : colors.bg,
+          borderRadius: '0.25rem'
+        }}>
+          {invitedElectricians.length}/{MAX_TEAM_MEMBERS}
+        </span>
+      </div>
+
+      {/* Input field */}
+      <div style={{
+        display: 'flex',
+        gap: '0.5rem',
+        marginBottom: '0.5rem'
+      }}>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <Mail 
+            size={16} 
+            style={{
+              position: 'absolute',
+              left: '0.75rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: colors.subtext,
+              pointerEvents: 'none'
+            }}
+          />
+          <input
+            type="email"
+            placeholder="Enter electrician's email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError('');
+            }}
+            onKeyPress={handleKeyPress}
+            disabled={disabled || invitedElectricians.length >= MAX_TEAM_MEMBERS}
+            style={{
+              width: '100%',
+              padding: '0.75rem 0.75rem 0.75rem 2.5rem',
+              border: `1px solid ${error ? '#ef4444' : colors.border}`,
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem',
+              background: colors.inputBg,
+              color: colors.text,
+              boxSizing: 'border-box',
+              opacity: disabled || invitedElectricians.length >= MAX_TEAM_MEMBERS ? 0.5 : 1
+            }}
+          />
         </div>
-      </label>
+        <button
+          type="button"
+          onClick={handleAddClick}
+          disabled={disabled || invitedElectricians.length >= MAX_TEAM_MEMBERS}
+          style={{
+            padding: '0.75rem 1.25rem',
+            background: invitedElectricians.length >= MAX_TEAM_MEMBERS 
+              ? colors.border 
+              : '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.5rem',
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            cursor: disabled || invitedElectricians.length >= MAX_TEAM_MEMBERS 
+              ? 'not-allowed' 
+              : 'pointer',
+            opacity: disabled || invitedElectricians.length >= MAX_TEAM_MEMBERS ? 0.5 : 1,
+            whiteSpace: 'nowrap'
+          }}
+        >
+          Invite
+        </button>
+      </div>
 
-      {/* Add Electrician Input */}
-      {!disabled && (
-        <div style={{ marginBottom: '0.75rem' }}>
-          <div style={{
-            display: 'flex',
-            gap: '0.5rem',
-            marginBottom: '0.5rem'
-          }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <Mail 
-                size={16} 
-                style={{
-                  position: 'absolute',
-                  left: '0.75rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: colors.subtext,
-                  pointerEvents: 'none'
-                }}
-              />
-              <input
-                type="email"
-                placeholder="Enter electrician's email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setError(null);
-                }}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddElectrician();
-                  }
-                }}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  paddingLeft: '2.5rem',
-                  border: `1px solid ${error ? '#ef4444' : colors.border}`,
-                  borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
-                  background: colors.inputBg,
-                  color: colors.text,
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleAddElectrician}
-              disabled={isAdding || !email.trim()}
-              style={{
-                padding: '0.75rem',
-                background: isAdding || !email.trim() ? colors.border : '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.5rem',
-                cursor: isAdding || !email.trim() ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                opacity: isAdding || !email.trim() ? 0.5 : 1
-              }}
-            >
-              {isAdding ? (
-                <div style={{
-                  width: '16px',
-                  height: '16px',
-                  border: '2px solid white',
-                  borderTopColor: 'transparent',
-                  borderRadius: '50%',
-                  animation: 'spin 0.8s linear infinite'
-                }} />
-              ) : (
-                <UserPlus size={16} />
-              )}
-            </button>
-          </div>
-
-          {error && (
-            <div style={{
-              fontSize: '0.75rem',
-              color: '#ef4444',
-              marginBottom: '0.5rem',
-              textAlign: 'left'
-            }}>
-              {error}
-            </div>
-          )}
-
-          <p style={{
-            fontSize: '0.75rem',
-            color: colors.subtext,
-            margin: 0,
-            fontStyle: 'italic',
-            textAlign: 'left'
-          }}>
-            Invited electricians can clock in/out and view job details, but won't see costs or invoices
-          </p>
+      {/* Error message */}
+      {error && (
+        <div style={{
+          padding: '0.5rem',
+          background: '#fee2e2',
+          color: '#991b1b',
+          borderRadius: '0.375rem',
+          fontSize: '0.75rem',
+          marginBottom: '0.5rem',
+          textAlign: 'left'
+        }}>
+          {error}
         </div>
       )}
 
-      {/* Invited Electricians List */}
+      {/* Helper text */}
+      <div style={{
+        fontSize: '0.75rem',
+        color: colors.subtext,
+        fontStyle: 'italic',
+        marginBottom: '0.75rem',
+        textAlign: 'left'
+      }}>
+        Invited electricians can clock in/out and view job details, but won't have access to costs, estimates, or invoices.
+      </div>
+
+      {/* List of invited electricians */}
       {invitedElectricians.length > 0 && (
         <div style={{
-          background: colors.bg,
           border: `1px solid ${colors.border}`,
           borderRadius: '0.5rem',
           overflow: 'hidden'
         }}>
-          {invitedElectricians.map((electrician, index) => (
+          {invitedElectricians.map((invitation, index) => (
             <div
-              key={electrician.email || index}
+              key={invitation.email || index}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
                 padding: '0.75rem',
+                background: colors.cardBg,
                 borderBottom: index < invitedElectricians.length - 1 
                   ? `1px solid ${colors.border}` 
-                  : 'none'
+                  : 'none',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}
             >
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, textAlign: 'left' }}>
                 <div style={{
                   fontSize: '0.875rem',
                   color: colors.text,
-                  fontWeight: '500',
-                  marginBottom: '0.25rem',
-                  textAlign: 'left'
+                  fontWeight: '500'
                 }}>
-                  {electrician.email}
+                  {invitation.email}
                 </div>
                 <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.375rem',
                   fontSize: '0.75rem',
-                  color: getStatusColor(electrician.status)
+                  color: invitation.status === 'accepted' ? '#10b981' :
+                         invitation.status === 'rejected' ? '#ef4444' :
+                         '#f59e0b',
+                  fontWeight: '500',
+                  marginTop: '0.125rem'
                 }}>
-                  {getStatusIcon(electrician.status)}
-                  <span>{getStatusLabel(electrician.status)}</span>
+                  {invitation.status === 'accepted' && '✓ Accepted'}
+                  {invitation.status === 'rejected' && '✗ Declined'}
+                  {invitation.status === 'pending' && '⏳ Pending'}
                 </div>
               </div>
-
-              {!disabled && electrician.status !== 'accepted' && (
+              
+              {/* Only show remove button for pending invitations */}
+              {invitation.status === 'pending' && !disabled && (
                 <button
                   type="button"
-                  onClick={() => onRemoveElectrician(electrician.email)}
+                  onClick={() => handleRemoveClick(invitation.email)}
                   style={{
                     padding: '0.375rem',
                     background: 'transparent',
@@ -261,7 +261,8 @@ const ElectricianInvite = ({
                     color: '#ef4444',
                     cursor: 'pointer',
                     display: 'flex',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                   title="Remove invitation"
                 >
@@ -272,28 +273,6 @@ const ElectricianInvite = ({
           ))}
         </div>
       )}
-
-      {invitedElectricians.length === 0 && !disabled && (
-        <div style={{
-          padding: '1rem',
-          background: colors.bg,
-          border: `1px dashed ${colors.border}`,
-          borderRadius: '0.5rem',
-          textAlign: 'center',
-          color: colors.subtext,
-          fontSize: '0.875rem'
-        }}>
-          No team members added yet
-        </div>
-      )}
-
-      <style>
-        {`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}
-      </style>
     </div>
   );
 };

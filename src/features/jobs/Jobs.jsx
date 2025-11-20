@@ -275,8 +275,16 @@ useSharedJobSync(jobs, handleJobUpdate);
     }
   };
 
-  // NEW: Invitation handlers for the form
+// NEW: Invitation handlers for the form
 const handleAddElectricianToJob = async (email) => {
+  const currentInvites = formData.invitedElectricians || [];
+  
+  // Hard limit: 30 team members per job
+  if (currentInvites.length >= 30) {
+    alert('Maximum of 30 team members per job reached. If you need to add more, please contact support.');
+    return;
+  }
+  
   const newInvitation = {
     email: email.toLowerCase(),
     status: 'pending',

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, X, Calculator, Table, FileCode, Code } from 'lucide-react';
 import { getColors } from '../../theme';
+import ToolsTabs from './ToolsTabs';
 import CalculatorMenu from './calculators/CalculatorMenu';
 import TablesContent from './tables/TablesContent';
 import SchematicsContent from './schematics/SchematicsContent';
@@ -19,113 +20,12 @@ const Tools = ({ isDarkMode = false, onNavigate }) => {  // ✅ Changed from onS
       paddingBottom: '5rem'
     }}>
       <div style={{ padding: '1rem 0.25rem' }}>
-        {/* Tabs - Inlined */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '0.375rem',
-          marginBottom: '1rem'
-        }}>
-          {/* Calculators Tab */}
-          <button
-            onClick={() => setActiveTab('Calculators')}
-            style={{
-              height: '46px',
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${activeTab === 'Calculators' ? '#3b82f6' : colors.border}`,
-              background: activeTab === 'Calculators' ? '#3b82f620' : 'transparent',
-              color: activeTab === 'Calculators' ? '#3b82f6' : colors.text,
-              fontSize: '0.7rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.125rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <Calculator size={14} />
-            <span style={{ fontSize: '0.65rem' }}>Calculators</span>
-          </button>
-
-          {/* Tables Tab */}
-          <button
-            onClick={() => setActiveTab('Tables')}
-            style={{
-              height: '46px',
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${activeTab === 'Tables' ? '#8b5cf6' : colors.border}`,
-              background: activeTab === 'Tables' ? '#8b5cf620' : 'transparent',
-              color: activeTab === 'Tables' ? '#8b5cf6' : colors.text,
-              fontSize: '0.7rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.125rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <Table size={14} />
-            <span style={{ fontSize: '0.65rem' }}>Tables</span>
-          </button>
-
-          {/* Schematics Tab */}
-          <button
-            onClick={() => setActiveTab('Schematics')}
-            style={{
-              height: '46px',
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${activeTab === 'Schematics' ? '#ec4899' : colors.border}`,
-              background: activeTab === 'Schematics' ? '#ec489920' : 'transparent',
-              color: activeTab === 'Schematics' ? '#ec4899' : colors.text,
-              fontSize: '0.7rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.125rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <FileCode size={14} />
-            <span style={{ fontSize: '0.65rem' }}>Schematics</span>
-          </button>
-
-          {/* Code Tab */}
-          <button
-            onClick={() => setActiveTab('Code')}
-            style={{
-              height: '46px',
-              padding: '0.5rem 0.25rem',
-              borderRadius: '0.5rem',
-              border: `1px solid ${activeTab === 'Code' ? '#10b981' : colors.border}`,
-              background: activeTab === 'Code' ? '#10b98120' : 'transparent',
-              color: activeTab === 'Code' ? '#10b981' : colors.text,
-              fontSize: '0.7rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.125rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            <Code size={14} />
-            <span style={{ fontSize: '0.65rem' }}>Code</span>
-          </button>
-        </div>
+        {/* Tabs Component */}
+        <ToolsTabs 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          colors={colors}
+        />
 
         {/* Search Bar */}
         <div style={{ marginBottom: '1rem', position: 'relative' }}>
