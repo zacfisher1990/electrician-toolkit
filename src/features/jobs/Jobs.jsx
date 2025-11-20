@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { getColors } from '../../theme'; // Import theme
 import styles from './Jobs.module.css';
@@ -8,7 +8,10 @@ import AddJobSection from './AddJobSection';
 import JobsList from './JobsList';
 import ModalsContainer from './ModalsContainer';
 import VerificationRequiredModal from '../../components/VerificationRequiredModal';
-import Toast from '../../components/Toast'; // ADD THIS IMPORT
+import Toast from '../../components/Toast';
+// import { useSharedJobSync } from './hooks/useSharedJobSync';
+import { useSharedJobSync } from './hooks/useSharedJobSync';
+
 
 // Custom Hooks
 import { useJobsState } from './hooks/useJobsState';
@@ -81,6 +84,15 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
   };
+
+  const handleJobUpdate = useCallback((updatedJob) => {
+  console.log('📥 Handling job update:', updatedJob.id);
+  setJobs(prevJobs => 
+    prevJobs.map(job => 
+      job.id === updatedJob.id ? updatedJob : job
+    )
+  );
+}, [setJobs]);
 
   // Create a function to clear estimate modals
   const clearEstimateModals = () => {
@@ -175,7 +187,8 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
       if (handledNavigationRef.current === navigationKey) {
         return;
       }
-      
+      useSharedJobSync(jobs, handleJobUpdate);
+
       const jobToOpen = jobs.find(j => j.id === navigationData.openJobId);
       
       // Check if this job actually has the new estimate ID

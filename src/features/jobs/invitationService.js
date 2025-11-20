@@ -12,7 +12,8 @@ import {
   serverTimestamp,
   arrayUnion,
   arrayRemove,
-  writeBatch
+  writeBatch,
+  onSnapshot
 } from 'firebase/firestore';
 
 // ============================================
@@ -445,5 +446,97 @@ export const syncSharedJob = async (sharedJobId) => {
   } catch (error) {
     console.error('Error syncing shared job:', error);
     throw error;
+  }
+};
+
+/**
+ * Set up real-time listener for a shared job to auto-sync with original
+ * @param {string} sharedJobId - The shared job ID
+ * @param {Function} onUpdate - Callback when job updates (receives updated job data)
+ * @returns {Function} Unsubscribe function
+ */
+export const subscribeToSharedJob = async (sharedJobId, onUpdate) => {
+  const userId = auth.currentUser?.uid;
+  if (!userId) {
+    console.error('User not authenticated for shared job subscription');
+    return () => {};
+  }
+
+  try {
+    const sharedJobRef = doc(db, 'users', userId, 'jobs', sharedJobId);
+    const sharedJobDoc = await getDoc(sharedJobRef);
+    
+    if (!sharedJobDoc.exists() || !sharedJobDoc.data().isSharedJob) {
+      console.log('Not a shared job, skipping sync subscription');
+      return () => {};
+    }
+
+    const sharedJobData = sharedJobDoc.data();
+    const originalJobRef = doc(
+      db,
+      'users',
+      sharedJobData.originalOwnerId,
+      'jobs',
+      sharedJobData.originalJobId
+    );
+
+    // Subscribe to original job changes
+    const unsubscribe = onSnapshot(
+      originalJobRef, 
+      async (originalDoc) => {
+        try {
+          if (!originalDoc.exists()) {
+            // Original job deleted
+            console.log('Original job deleted, updating shared job');
+            await updateDoc(sharedJobRef, {
+              status: 'archived',
+              notes: 'Original job was deleted by owner',
+              updatedAt: serverTimestamp()
+            });
+            
+            // Notify with updated data
+            const updated = await getDoc(sharedJobRef);
+            if (updated.exists() && onUpdate) {
+              onUpdate({ id: sharedJobId, ...updated.data() });
+            }
+            return;
+          }
+
+          const originalData = originalDoc.data();
+
+          // Update shared job with allowed fields
+          const updates = {
+            title: originalData.title || originalData.name,
+            client: originalData.client,
+            location: originalData.location || '',
+            date: originalData.date || '',
+            time: originalData.time || '',
+            status: originalData.status || 'scheduled',
+            notes: originalData.notes || '',
+            photos: originalData.photos || [],
+            updatedAt: serverTimestamp()
+          };
+
+          await updateDoc(sharedJobRef, updates);
+          console.log(`🔄 Synced shared job ${sharedJobId} from original`);
+
+          // Notify with updated data
+          const updated = await getDoc(sharedJobRef);
+          if (updated.exists() && onUpdate) {
+            onUpdate({ id: sharedJobId, ...updated.data() });
+          }
+        } catch (error) {
+          console.error('Error processing shared job update:', error);
+        }
+      },
+      (error) => {
+        console.error('Error in shared job subscription:', error);
+      }
+    );
+
+    return unsubscribe;
+  } catch (error) {
+    console.error('Error setting up shared job subscription:', error);
+    return () => {};
   }
 };
