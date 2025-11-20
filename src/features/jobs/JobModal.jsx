@@ -23,13 +23,19 @@ const JobModal = ({
   onDelete,
   isDarkMode,
   colors,
-  isNewJob = false
+  isNewJob = false,
+  // NEW: Electrician invitation handlers
+  onAddElectrician,
+  onRemoveElectrician
 }) => {
   // Only render if we're creating a new job OR viewing an existing job
   if (!isNewJob && !viewingJob) return null;
 
   const modalTitle = isNewJob ? 'New Job' : 'Job Details';
   const saveButtonText = isNewJob ? 'Add Job' : 'Save Changes';
+
+  // Check if this is a shared job (team member view)
+  const isSharedJob = viewingJob?.isSharedJob === true;
 
   return (
     <div style={{
@@ -105,48 +111,75 @@ const JobModal = ({
             estimateMenuRef={estimateMenuRef}
             isDarkMode={isDarkMode}
             colors={colors}
+            // NEW: Pass invitation handlers
+            onAddElectrician={onAddElectrician}
+            onRemoveElectrician={onRemoveElectrician}
+            isSharedJob={isSharedJob}
           />
 
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {/* Action Buttons - Hide for shared jobs */}
+          {!isSharedJob && (
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={onSave}
+                disabled={!formData.title || !formData.client}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  background: (!formData.title || !formData.client) ? colors.border : '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.9375rem',
+                  fontWeight: '600',
+                  cursor: (!formData.title || !formData.client) ? 'not-allowed' : 'pointer',
+                  opacity: (!formData.title || !formData.client) ? 0.5 : 1
+                }}
+              >
+                {saveButtonText}
+              </button>
+              {!isNewJob && onDelete && viewingJob && (
+                <button
+                  onClick={() => onDelete(viewingJob.id, viewingJob.title || viewingJob.name)}
+                  style={{
+                    padding: '0.75rem',
+                    background: 'transparent',
+                    color: '#ef4444',
+                    border: `1px solid #ef4444`,
+                    borderRadius: '0.5rem',
+                    fontSize: '0.9375rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
+                  }}
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Close button for shared jobs (view only) */}
+          {isSharedJob && (
             <button
-              onClick={onSave}
-              disabled={!formData.title || !formData.client}
+              onClick={onClose}
               style={{
-                flex: 1,
+                width: '100%',
                 padding: '0.75rem',
-                background: (!formData.title || !formData.client) ? colors.border : '#2563eb',
-                color: 'white',
+                background: colors.border,
+                color: colors.text,
                 border: 'none',
                 borderRadius: '0.5rem',
                 fontSize: '0.9375rem',
                 fontWeight: '600',
-                cursor: (!formData.title || !formData.client) ? 'not-allowed' : 'pointer',
-                opacity: (!formData.title || !formData.client) ? 0.5 : 1
+                cursor: 'pointer'
               }}
             >
-              {saveButtonText}
+              Close
             </button>
-            {!isNewJob && onDelete && viewingJob && (
-              <button
-                onClick={() => onDelete(viewingJob.id, viewingJob.title || viewingJob.name)}
-                style={{
-                  padding: '0.75rem',
-                  background: 'transparent',
-                  color: '#ef4444',
-                  border: `1px solid #ef4444`,
-                  borderRadius: '0.5rem',
-                  fontSize: '0.9375rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem'
-                }}
-              >
-                <Trash2 size={16} />
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </div>
     </div>

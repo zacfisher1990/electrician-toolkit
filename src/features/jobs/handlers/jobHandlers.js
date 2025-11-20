@@ -10,6 +10,7 @@ import {
 import { db, auth } from '../../../firebase/firebase';
 import { uploadMultipleJobPhotos, deleteMultipleJobPhotos } from '../photoStorageUtils';
 import { createInvoiceHandlers } from './invoiceHandlers';
+import { sendJobInvitation } from '../invitationService'; // NEW
 
 export const createJobHandlers = ({
   formData,
@@ -21,23 +22,55 @@ export const createJobHandlers = ({
   setJobs
 }) => {
   /**
-   * Handle adding a new job with photo uploads
+   * NEW: Process pending invitations after job is created
+   */
+  const processInvitations = async (jobId, jobData, invitations) => {
+    if (!invitations || invitations.length === 0) return [];
+    
+    const processedInvitations = [];
+    const errors = [];
+
+    for (const invitation of invitations) {
+      try {
+        const invitationId = await sendJobInvitation(jobId, invitation.email, jobData);
+        processedInvitations.push({
+          ...invitation,
+          invitationId,
+          status: 'pending'
+        });
+      } catch (error) {
+        console.error(`Failed to send invitation to ${invitation.email}:`, error);
+        errors.push({ email: invitation.email, error: error.message });
+      }
+    }
+
+    if (errors.length > 0) {
+      console.warn('Some invitations failed:', errors);
+    }
+
+    return processedInvitations;
+  };
+
+  /**
+   * Handle adding a new job with photo uploads and invitations
+   * UPDATED: Now processes team member invitations
    */
   const handleAddJob = async (clearEstimateModals) => {
     const userId = auth.currentUser?.uid;
     
     if (!userId) {
       alert('You must be logged in to add a job');
-      return;
+      return null; // Return null so caller knows it failed
     }
 
     try {
       if (!formData.title?.trim() || !formData.client?.trim()) {
         alert('Please fill in all required fields (Job Title and Client Name)');
-        return;
+        return null;
       }
 
       const photosToUpload = (formData.photos || []).filter(photo => photo.file);
+      const pendingInvitations = formData.invitedElectricians || []; // NEW
       
       const optimisticJob = {
         id: `temp-${Date.now()}`,
@@ -51,6 +84,7 @@ export const createJobHandlers = ({
         notes: formData.notes?.trim() || '',
         estimateIds: formData.estimateIds || [],
         photos: [],
+        invitedElectricians: pendingInvitations, // NEW
         userId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -82,13 +116,35 @@ export const createJobHandlers = ({
         userId,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        photos: []
+        photos: [],
+        invitedElectricians: [] // Will be updated after processing invitations
       };
 
       const jobRef = await addDoc(collection(db, 'users', userId, 'jobs'), jobData);
       const jobId = jobRef.id;
 
       console.log('✅ Job created in Firebase:', jobId);
+
+      // NEW: Process pending invitations
+      let processedInvitations = [];
+      if (pendingInvitations.length > 0) {
+        console.log('📧 Processing', pendingInvitations.length, 'team member invitations...');
+        processedInvitations = await processInvitations(jobId, {
+          title: formData.title.trim(),
+          client: formData.client.trim(),
+          location: formData.location?.trim() || '',
+          date: formData.date || ''
+        }, pendingInvitations);
+        
+        // Update job with processed invitations
+        if (processedInvitations.length > 0) {
+          await updateDoc(doc(db, 'users', userId, 'jobs', jobId), {
+            invitedElectricians: processedInvitations,
+            updatedAt: serverTimestamp()
+          });
+          console.log('✅ Job updated with', processedInvitations.length, 'invitations');
+        }
+      }
 
       let invoiceId = null;
       const hasEstimates = formData.estimateIds && formData.estimateIds.length > 0;
@@ -145,15 +201,19 @@ export const createJobHandlers = ({
       console.log('📊 Reloading with real job data');
       await loadJobs(true);
 
+      return jobId; // NEW: Return job ID so caller can use it
+
     } catch (error) {
       console.error('❌ Error adding job:', error);
       alert('Failed to add job. Please try again.');
       await loadJobs(true);
+      return null;
     }
   };
 
   /**
    * Handle editing an existing job with photo management
+   * UPDATED: Now handles team member invitation updates
    */
   const handleEditJob = async (clearEstimateModals) => {
     if (!editingJob) return;
@@ -172,7 +232,9 @@ export const createJobHandlers = ({
       }
 
       const jobDoc = await getDoc(doc(db, 'users', userId, 'jobs', editingJob.id));
-      const existingPhotos = jobDoc.data()?.photos || [];
+      const existingJobData = jobDoc.data();
+      const existingPhotos = existingJobData?.photos || [];
+      const existingInvitations = existingJobData?.invitedElectricians || [];
 
       const newPhotosToUpload = (formData.photos || []).filter(photo => photo.file);
       const existingKeptPhotos = (formData.photos || []).filter(photo => photo.url);
@@ -203,6 +265,25 @@ export const createJobHandlers = ({
 
       const allPhotos = [...existingKeptPhotos, ...newUploadedPhotos];
 
+      // NEW: Process any new invitations (those without invitationId)
+      const currentInvitations = formData.invitedElectricians || [];
+      const newInvitations = currentInvitations.filter(inv => !inv.invitationId);
+      
+      let processedNewInvitations = [];
+      if (newInvitations.length > 0) {
+        console.log('📧 Processing', newInvitations.length, 'new invitations...');
+        processedNewInvitations = await processInvitations(editingJob.id, {
+          title: formData.title.trim(),
+          client: formData.client.trim(),
+          location: formData.location?.trim() || '',
+          date: formData.date || ''
+        }, newInvitations);
+      }
+
+      // Merge existing invitations with newly processed ones
+      const existingProcessedInvitations = currentInvitations.filter(inv => inv.invitationId);
+      const allInvitations = [...existingProcessedInvitations, ...processedNewInvitations];
+
       const jobData = {
         title: formData.title.trim(),
         client: formData.client.trim(),
@@ -214,6 +295,7 @@ export const createJobHandlers = ({
         notes: formData.notes?.trim() || '',
         estimateIds: formData.estimateIds || [],
         photos: allPhotos,
+        invitedElectricians: allInvitations, // NEW
         updatedAt: serverTimestamp()
       };
 
@@ -269,6 +351,8 @@ export const createJobHandlers = ({
 
   /**
    * Handle deleting a job with all associated photos
+   * Note: Invitations are not automatically cleaned up here
+   * The Cloud Function cleanup will handle orphaned invitations
    */
   const handleDeleteJob = async (jobId) => {
     if (!window.confirm('Are you sure you want to delete this job? This action cannot be undone.')) {
@@ -293,6 +377,9 @@ export const createJobHandlers = ({
           console.log('🗑️ Deleted', photoPaths.length, 'photos from storage');
         }
       }
+
+      // Note: Invitations in jobInvitations collection will be orphaned
+      // but the cleanup Cloud Function handles this periodically
 
       await deleteDoc(doc(db, 'users', userId, 'jobs', jobId));
 
@@ -331,6 +418,7 @@ export const createJobHandlers = ({
 
   /**
    * Handle clock in/out with OPTIMISTIC UI updates for instant responsiveness
+   * Works for both owned jobs and shared jobs
    */
   const handleClockInOut = async (jobId, clockIn, jobs, setJobs) => {
     const userId = auth.currentUser?.uid;

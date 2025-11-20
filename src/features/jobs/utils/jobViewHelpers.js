@@ -1,5 +1,6 @@
 /**
  * Helper functions for job view operations
+ * UPDATED: Now includes invitedElectricians handling
  */
 
 export const openJobView = ({
@@ -23,7 +24,8 @@ export const openJobView = ({
     duration: job.duration || '',
     notes: job.notes || '',
     estimateIds: job.estimateIds || [],
-    photos: job.photos || [] // ADD THIS LINE
+    photos: job.photos || [],
+    invitedElectricians: job.invitedElectricians || [] // NEW: Load team members
   });
   
   // Load linked estimates based on estimateIds array
@@ -76,4 +78,29 @@ export const handleViewEstimateFromCard = ({
       setViewingSingleEstimate(estimate);
     }
   }
+};
+
+/**
+ * NEW: Open shared job view (for team members with limited permissions)
+ */
+export const openSharedJobView = ({
+  job,
+  setViewingJob,
+  setFormData
+}) => {
+  setViewingJob(job);
+  // For shared jobs, we don't set editingJob since they can't edit
+  setFormData({
+    title: job.title || job.name,
+    client: job.client,
+    location: job.location || '',
+    status: job.status,
+    date: job.date || '',
+    time: job.time || '',
+    estimatedCost: '', // Hidden for shared jobs
+    notes: job.notes || '',
+    estimateIds: [], // Hidden for shared jobs
+    photos: job.photos || [],
+    invitedElectricians: [] // Not relevant for shared job view
+  });
 };

@@ -1,8 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { MapPin, Calendar, Edit, FileText, Receipt, DollarSign, ChevronDown, ChevronUp, Play, Square, Trash2, Camera } from 'lucide-react';
+import { 
+  MapPin, Calendar, Edit, FileText, Receipt, DollarSign, 
+  ChevronDown, ChevronUp, Play, Square, Camera, Users, Share2 
+} from 'lucide-react';
 import PhotoGallery from './PhotoGallery';
 import styles from './JobCard.module.css';
-
 
 const JobCard = ({ 
   job, 
@@ -17,7 +19,7 @@ const JobCard = ({
   isDarkMode,
   colors,
   estimates = [],
-  onShowToast // NEW: callback to show toast notification
+  onShowToast
 }) => {
   const statusDropdownRef = useRef(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -27,17 +29,28 @@ const JobCard = ({
   const isOptimistic = job._isOptimistic === true;
   const photosUploading = job._photosUploading || 0;
   
-  const StatusIcon = statusConfig[job.status].icon;
+  // NEW: Check if this is a shared job (user is team member, not owner)
+  const isSharedJob = job.isSharedJob === true;
+  const permissions = job.permissions || {};
+  
+  const StatusIcon = statusConfig[job.status]?.icon;
   const jobTitle = job.title || job.name;
   
   // FIXED: Check for estimates in the estimateIds array (not singular estimateId)
-  const linkedEstimates = estimates.filter(est => 
-    job.estimateIds && job.estimateIds.includes(est.id)
-  );
+  // For shared jobs, don't show estimates
+  const linkedEstimates = !isSharedJob 
+    ? estimates.filter(est => job.estimateIds && job.estimateIds.includes(est.id))
+    : [];
   const linkedEstimate = linkedEstimates.length > 0 ? linkedEstimates[0] : null;
 
   // Check if job has photos
   const hasPhotos = job.photos && job.photos.length > 0;
+
+  // Check if job has team members
+  const hasTeamMembers = job.invitedElectricians && job.invitedElectricians.length > 0;
+  const acceptedTeamMembers = hasTeamMembers 
+    ? job.invitedElectricians.filter(inv => inv.status === 'accepted')
+    : [];
 
   // ⚡ PRELOAD IMAGES as soon as component mounts (before user expands)
   useEffect(() => {
@@ -119,22 +132,35 @@ const JobCard = ({
   };
 
   const handleEstimateClick = (e) => {
-  e.stopPropagation();
-  e.preventDefault();
-  
-  if (linkedEstimates.length > 0 && onViewEstimate) {
-    onViewEstimate(job);
-  }
-};
+    e.stopPropagation();
+    e.preventDefault();
+    
+    // Don't allow estimate viewing for shared jobs
+    if (isSharedJob) return;
+    
+    if (linkedEstimates.length > 0 && onViewEstimate) {
+      onViewEstimate(job);
+    }
+  };
 
   const totalHours = calculateTotalHours();
   const currentSessionSeconds = getCurrentSessionDuration();
+
+  // Determine if buttons should be enabled based on permissions
+  const canViewEstimate = !isSharedJob && linkedEstimates.length > 0;
+  const canViewInvoice = !isSharedJob && (
+    job.invoiceId || 
+    job.estimateIds?.length > 0 || 
+    (job.estimatedCost && parseFloat(job.estimatedCost) > 0)
+  );
+  const canEditJob = !isSharedJob || permissions.canEditJob;
+  const canClockInOut = !isSharedJob || permissions.canClockInOut !== false;
 
   return (
     <div
       style={{
         background: colors.cardBg,
-        border: `1px solid ${colors.border}`,
+        border: `1px solid ${isSharedJob ? '#3b82f6' : colors.border}`,
         borderRadius: '0.75rem',
         padding: '1rem',
         marginBottom: '0.75rem',
@@ -145,6 +171,27 @@ const JobCard = ({
         opacity: isOptimistic ? 0.7 : 1
       }}
     >
+      {/* Shared Job Badge */}
+      {isSharedJob && (
+        <div style={{
+          position: 'absolute',
+          top: '-8px',
+          left: '12px',
+          background: '#3b82f6',
+          color: 'white',
+          padding: '0.125rem 0.5rem',
+          borderRadius: '0.25rem',
+          fontSize: '0.625rem',
+          fontWeight: '600',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.25rem'
+        }}>
+          <Share2 size={10} />
+          SHARED JOB
+        </div>
+      )}
+
       {/* Loading overlay for optimistic jobs */}
       {isOptimistic && (
         <div style={{
@@ -210,6 +257,19 @@ const JobCard = ({
                 }} 
               />
             )}
+            {/* Team Members Indicator */}
+            {hasTeamMembers && !isSharedJob && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                color: '#3b82f6',
+                fontSize: '0.75rem'
+              }}>
+                <Users size={14} />
+                <span>{acceptedTeamMembers.length}</span>
+              </div>
+            )}
             {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </h3>
           <p style={{
@@ -223,133 +283,131 @@ const JobCard = ({
       
 
         {/* Status Badge with Timer - right side */}
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'flex-end', 
-            gap: '0.25rem',
-            alignSelf: 'flex-start'
-          }}>
-            <div style={{ position: 'relative' }} ref={statusDropdownOpen === job.id ? statusDropdownRef : null}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'flex-end', 
+          gap: '0.25rem',
+          alignSelf: 'flex-start'
+        }}>
+          <div style={{ position: 'relative' }} ref={statusDropdownOpen === job.id ? statusDropdownRef : null}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isSharedJob) {
                   setStatusDropdownOpen(statusDropdownOpen === job.id ? null : job.id);
-                }}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.25rem',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  background: `${statusConfig[job.status].color}20`,
-                  color: statusConfig[job.status].color,
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  whiteSpace: 'nowrap',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  lineHeight: '1',
-                  minHeight: 'unset',
-                  minWidth: 'unset',
-                  height: 'fit-content',
-                  width: 'fit-content',
-                  boxSizing: 'border-box'
-                }}
-              >
-                <StatusIcon size={12} />
-                <span>{statusConfig[job.status].label}</span>
-              </button>
+                }
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.25rem',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                background: `${statusConfig[job.status]?.color || '#6b7280'}20`,
+                color: statusConfig[job.status]?.color || '#6b7280',
+                fontSize: '11px',
+                fontWeight: '600',
+                whiteSpace: 'nowrap',
+                border: 'none',
+                cursor: isSharedJob ? 'default' : 'pointer',
+                transition: 'all 0.2s',
+                lineHeight: '1'
+              }}
+            >
+              {StatusIcon && <StatusIcon size={12} />}
+              <span>{statusConfig[job.status]?.label || job.status}</span>
+              {!isSharedJob && <ChevronDown size={10} />}
+            </button>
 
-              {statusDropdownOpen === job.id && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  right: 0,
-                  marginTop: '0.5rem',
-                  background: colors.cardBg,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '0.5rem',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  zIndex: 100,
-                  minWidth: '140px'
-                }}>
-                  {Object.entries(statusConfig).map(([status, config]) => (
-                    <button
-                      key={status}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onUpdateStatus(job.id, status);
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '0.5rem 0.75rem',
-                        border: 'none',
-                        background: job.status === status ? `${config.color}15` : 'transparent',
-                        color: config.color,
-                        fontSize: '0.75rem',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        textAlign: 'left'
-                      }}
-                    >
-                      <config.icon size={14} />
-                      {config.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Timer display */}
-            {(job.clockedIn || totalHours > 0) && (
+            {/* Status Dropdown */}
+            {statusDropdownOpen === job.id && !isSharedJob && (
               <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-end',
-                color: job.clockedIn ? '#dc2626' : colors.subtext,
-                fontSize: '0.75rem',
-                fontWeight: '600'
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: '0.25rem',
+                background: colors.cardBg,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                zIndex: 100,
+                minWidth: '120px'
               }}>
-                {job.clockedIn && (
-                  <div style={{
-                    fontVariantNumeric: 'tabular-nums'
-                  }}>
-                    {formatDuration(currentSessionSeconds)}
-                  </div>
-                )}
-                {totalHours > 0 && (
-                  <div style={{
-                    fontSize: '0.7rem'
-                  }}>
-                    Total: {totalHours.toFixed(2)}h
-                  </div>
-                )}
+                {Object.entries(statusConfig).map(([status, config]) => (
+                  <button
+                    key={status}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onUpdateStatus(job.id, status);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      background: job.status === status ? `${config.color}15` : 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      color: config.color,
+                      fontSize: '0.75rem',
+                      fontWeight: '500'
+                    }}
+                  >
+                    <config.icon size={12} />
+                    {config.label}
+                  </button>
+                ))}
               </div>
             )}
           </div>
-          </div>
+
+          {/* Clock Timer Display */}
+          {(job.clockedIn || totalHours > 0) && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              color: job.clockedIn ? '#dc2626' : colors.subtext
+            }}>
+              {job.clockedIn && (
+                <div style={{
+                  fontSize: '0.875rem',
+                  fontWeight: '700',
+                  fontVariantNumeric: 'tabular-nums'
+                }}>
+                  {formatDuration(currentSessionSeconds)}
+                </div>
+              )}
+              {totalHours > 0 && (
+                <div style={{
+                  fontSize: '0.7rem'
+                }}>
+                  Total: {totalHours.toFixed(2)}h
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Location and Date on same line */}
-          {(job.location || job.date) && (
-            <div 
-              onClick={() => setIsExpanded(!isExpanded)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '0.5rem',
-                color: colors.subtext,
-                fontSize: '0.875rem',
-                gap: '1rem',
-                cursor: 'pointer'
-              }}
-            >
+      {(job.location || job.date) && (
+        <div 
+          onClick={() => setIsExpanded(!isExpanded)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '0.5rem',
+            color: colors.subtext,
+            fontSize: '0.875rem',
+            gap: '1rem',
+            cursor: 'pointer'
+          }}
+        >
           {job.location && (
             <div style={{
               display: 'flex',
@@ -372,7 +430,6 @@ const JobCard = ({
               <span>
                 {new Date(job.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 {job.time && ` (${job.time})`}
-                {job.duration && ` ${job.duration}`}
               </span>
             </div>
           )}
@@ -386,7 +443,8 @@ const JobCard = ({
           paddingTop: '0.75rem',
           borderTop: `1px solid ${colors.border}`
         }}>
-          {job.estimatedCost && (
+          {/* Cost - ONLY for job owners */}
+          {!isSharedJob && job.estimatedCost && (
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -397,6 +455,64 @@ const JobCard = ({
             }}>
               <DollarSign size={16} />
               <span>${Number(job.estimatedCost).toLocaleString()}</span>
+            </div>
+          )}
+
+          {/* Team Members List - for job owners */}
+          {hasTeamMembers && !isSharedJob && (
+            <div style={{
+              marginBottom: '0.75rem',
+              padding: '0.5rem',
+              background: colors.bg,
+              borderRadius: '0.375rem'
+            }}>
+              <div style={{
+                fontSize: '0.75rem',
+                fontWeight: '600',
+                color: colors.text,
+                marginBottom: '0.375rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.375rem'
+              }}>
+                <Users size={14} />
+                Team Members
+              </div>
+              {job.invitedElectricians.map((member, idx) => (
+                <div
+                  key={member.email || idx}
+                  style={{
+                    fontSize: '0.75rem',
+                    color: colors.subtext,
+                    padding: '0.25rem 0',
+                    display: 'flex',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <span>{member.email}</span>
+                  <span style={{
+                    color: member.status === 'accepted' ? '#10b981' : 
+                           member.status === 'rejected' ? '#ef4444' : '#f59e0b',
+                    fontWeight: '500'
+                  }}>
+                    {member.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Shared Job Info - for team members */}
+          {isSharedJob && job.originalOwnerEmail && (
+            <div style={{
+              marginBottom: '0.75rem',
+              padding: '0.5rem',
+              background: '#eff6ff',
+              borderRadius: '0.375rem',
+              fontSize: '0.75rem',
+              color: '#1e40af'
+            }}>
+              <strong>Job Owner:</strong> {job.originalOwnerEmail}
             </div>
           )}
 
@@ -426,7 +542,7 @@ const JobCard = ({
                 fontSize: '0.875rem',
                 lineHeight: '1.5',
                 textAlign: 'left',
-                whiteSpace: 'pre-wrap'  // ADDED: Preserves line breaks and spacing
+                whiteSpace: 'pre-wrap'
               }}>
                 {job.notes}
               </p>
@@ -443,13 +559,11 @@ const JobCard = ({
         border: `1px solid ${colors.border}`,
         marginTop: '0.5rem'
       }}>
+        {/* Clock In/Out - Always available for shared jobs */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            handleClockInOut(e);
-          }}
+          onClick={canClockInOut ? handleClockInOut : undefined}
           title={job.clockedIn ? "Clock Out" : "Clock In"}
+          disabled={!canClockInOut}
           style={{
             flex: 1,
             background: job.clockedIn ? '#9f1239' : (isDarkMode ? '#374151' : '#f3f4f6'),
@@ -457,14 +571,15 @@ const JobCard = ({
             borderRight: `1px solid ${colors.border}`,
             borderRadius: 0,
             color: job.clockedIn ? 'white' : colors.text,
-            cursor: 'pointer',
+            cursor: canClockInOut ? 'pointer' : 'not-allowed',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             fontWeight: '600',
             padding: '0.375rem 0.25rem',
-            gap: '0.125rem'
+            gap: '0.125rem',
+            opacity: canClockInOut ? 1 : 0.5
           }}
         >
           {job.clockedIn ? <Square size={14} /> : <Play size={14} />}
@@ -473,45 +588,23 @@ const JobCard = ({
           </span>
         </button>
 
+        {/* Edit - Disabled for shared jobs */}
         <button
-          onClick={(e) => {
+          onClick={canEditJob ? (e) => {
             e.stopPropagation();
             e.preventDefault();
             onViewJob(job);
-          }}
-          title="Edit Job"
+          } : undefined}
+          title={isSharedJob ? "View Only" : "Edit Job"}
+          disabled={!canEditJob}
           style={{
             flex: 1,
             background: isDarkMode ? '#374151' : '#f3f4f6',
             border: 'none',
             borderRight: `1px solid ${colors.border}`,
             borderRadius: 0,
-            color: colors.text,
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: '600',
-            padding: '0.375rem 0.25rem',
-            gap: '0.125rem'
-          }}
-        >
-          <Edit size={14} />
-          <span style={{ fontSize: '0.625rem' }}>Edit</span>
-        </button>
-
-        <button
-          onClick={handleEstimateClick}
-          title={linkedEstimate ? "View Estimate" : "No estimate linked"}
-          style={{
-            flex: 1,
-            background: isDarkMode ? '#374151' : '#f3f4f6',
-            border: 'none',
-            borderRight: `1px solid ${colors.border}`,
-            borderRadius: 0,
-            color: linkedEstimate ? colors.text : colors.subtext,
-            cursor: linkedEstimate ? 'pointer' : 'not-allowed',
+            color: canEditJob ? colors.text : colors.subtext,
+            cursor: canEditJob ? 'pointer' : 'not-allowed',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -519,53 +612,85 @@ const JobCard = ({
             fontWeight: '600',
             padding: '0.375rem 0.25rem',
             gap: '0.125rem',
-            opacity: linkedEstimate ? 1 : 0.5
+            opacity: canEditJob ? 1 : 0.5
           }}
-          disabled={linkedEstimates.length === 0}
+        >
+          <Edit size={14} />
+          <span style={{ fontSize: '0.625rem' }}>
+            {isSharedJob ? 'View' : 'Edit'}
+          </span>
+        </button>
+
+        {/* Estimate - Hidden/Disabled for shared jobs */}
+        <button
+          onClick={canViewEstimate ? handleEstimateClick : undefined}
+          title={
+            isSharedJob 
+              ? "Not available for shared jobs" 
+              : linkedEstimate 
+                ? "View Estimate" 
+                : "No estimate linked"
+          }
+          disabled={!canViewEstimate}
+          style={{
+            flex: 1,
+            background: isDarkMode ? '#374151' : '#f3f4f6',
+            border: 'none',
+            borderRight: `1px solid ${colors.border}`,
+            borderRadius: 0,
+            color: canViewEstimate ? colors.text : colors.subtext,
+            cursor: canViewEstimate ? 'pointer' : 'not-allowed',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: '600',
+            padding: '0.375rem 0.25rem',
+            gap: '0.125rem',
+            opacity: canViewEstimate ? 1 : 0.3
+          }}
         >
           <FileText size={14} />
           <span style={{ fontSize: '0.625rem' }}>Estimate</span>
         </button>
 
+        {/* Invoice - Hidden/Disabled for shared jobs */}
         <button
-          onClick={(e) => {
+          onClick={canViewInvoice ? (e) => {
             e.stopPropagation();
             onViewInvoice(job);
-          }}
-          disabled={
-            !job.invoiceId && 
-            !(job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0))
-          }
+          } : undefined}
+          disabled={!canViewInvoice}
           style={{
             flex: 1,
             background: isDarkMode ? '#374151' : '#f3f4f6',
-            color: (job.invoiceId || job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0)) ? colors.text : colors.subtext,
+            color: canViewInvoice ? colors.text : colors.subtext,
             border: 'none',
             borderRadius: 0,
             fontWeight: '600',
-            cursor: (job.invoiceId || job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0)) ? 'pointer' : 'not-allowed',
+            cursor: canViewInvoice ? 'pointer' : 'not-allowed',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             padding: '0.375rem 0.25rem',
             gap: '0.125rem',
-            opacity: (!job.invoiceId && !job.estimateIds?.length && (!job.estimatedCost || parseFloat(job.estimatedCost) === 0)) ? 0.5 : 1
+            opacity: canViewInvoice ? 1 : 0.3
           }}
           title={
-            job.invoiceId 
-              ? "View Invoice" 
-              : (job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0))
-                ? "Create Invoice"
-                : "Add an estimate or cost first"
+            isSharedJob
+              ? "Not available for shared jobs"
+              : job.invoiceId 
+                ? "View Invoice" 
+                : (job.estimateIds?.length > 0 || (job.estimatedCost && parseFloat(job.estimatedCost) > 0))
+                  ? "Create Invoice"
+                  : "Add an estimate or cost first"
           }
         >
           <Receipt size={14} />
           <span style={{ fontSize: '0.625rem' }}>Invoice</span>
         </button>
       </div>
-
-      
     </div>
   );
 };

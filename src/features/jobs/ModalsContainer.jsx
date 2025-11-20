@@ -50,6 +50,10 @@ const ModalsContainer = ({
   handleSaveInvoice,
   onNavigateToInvoices,
   
+  // NEW: Electrician invitation handlers
+  onAddElectrician,
+  onRemoveElectrician,
+  
   isDarkMode,
   colors
 }) => {
@@ -89,6 +93,9 @@ const ModalsContainer = ({
           isDarkMode={isDarkMode}
           colors={colors}
           isNewJob={true}
+          // NEW: Pass invitation handlers
+          onAddElectrician={onAddElectrician}
+          onRemoveElectrician={onRemoveElectrician}
         />
       )}
 
@@ -116,6 +123,9 @@ const ModalsContainer = ({
           isDarkMode={isDarkMode}
           colors={colors}
           isNewJob={false}
+          // NEW: Pass invitation handlers (will be disabled for shared jobs)
+          onAddElectrician={onAddElectrician}
+          onRemoveElectrician={onRemoveElectrician}
         />
       )}
 

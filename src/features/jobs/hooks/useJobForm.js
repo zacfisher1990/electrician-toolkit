@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 
 /**
  * Custom hook to manage job form state and related UI states
+ * UPDATED: Now includes invitedElectricians for team member management
  */
 export const useJobForm = () => {
   const [formData, setFormData] = useState({
@@ -14,7 +15,8 @@ export const useJobForm = () => {
     estimatedCost: '',
     notes: '',
     estimateIds: [],
-    photos: [] // ADD THIS LINE
+    photos: [],
+    invitedElectricians: [] // NEW: Track team members
   });
   
   const [showAddForm, setShowAddForm] = useState(false);
@@ -26,28 +28,29 @@ export const useJobForm = () => {
   const lastSyncedJobId = useRef(null);
 
   const resetForm = (clearModals) => {
-  setFormData({
-    title: '',
-    client: '',
-    location: '',
-    status: 'scheduled',
-    date: '',
-    time: '',
-    estimatedCost: '',
-    notes: '',
-    estimateIds: [],
-    photos: []
-  });
-  setShowAddForm(false);
-  setEditingJob(null);
-  setViewingJob(null);
-  setLinkedEstimates([]);
-  
-  // Clear estimate-related modals if callback provided
-  if (clearModals && typeof clearModals === 'function') {
-    clearModals();
-  }
-};
+    setFormData({
+      title: '',
+      client: '',
+      location: '',
+      status: 'scheduled',
+      date: '',
+      time: '',
+      estimatedCost: '',
+      notes: '',
+      estimateIds: [],
+      photos: [],
+      invitedElectricians: [] // NEW: Reset team members
+    });
+    setShowAddForm(false);
+    setEditingJob(null);
+    setViewingJob(null);
+    setLinkedEstimates([]);
+    
+    // Clear estimate-related modals if callback provided
+    if (clearModals && typeof clearModals === 'function') {
+      clearModals();
+    }
+  };
 
   // Handle click outside estimate menu
   useEffect(() => {

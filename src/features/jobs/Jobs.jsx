@@ -138,7 +138,8 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
         estimatedCost: '',
         notes: '',
         estimateIds: [],
-        photos: []
+        photos: [],
+        invitedElectricians: []
       });
       setLinkedEstimates([]);
     } else if (prefilledDate && isUserLoggedIn && !isEmailVerified) {
@@ -243,11 +244,35 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
         estimatedCost: '',
         notes: '',
         estimateIds: [],
-        photos: []
+        photos: [],
+        invitedElectricians: []
       });
       setLinkedEstimates([]);
     }
   };
+
+  // NEW: Invitation handlers for the form
+const handleAddElectricianToJob = async (email) => {
+  const newInvitation = {
+    email: email.toLowerCase(),
+    status: 'pending',
+    invitedAt: new Date().toISOString()
+  };
+  
+  setFormData(prev => ({
+    ...prev,
+    invitedElectricians: [...(prev.invitedElectricians || []), newInvitation]
+  }));
+};
+
+const handleRemoveElectricianFromJob = async (email) => {
+  setFormData(prev => ({
+    ...prev,
+    invitedElectricians: (prev.invitedElectricians || []).filter(
+      inv => inv.email !== email.toLowerCase()
+    )
+  }));
+};
 
   const handleUpdateStatusWrapper = (jobId, newStatus) => {
     jobHandlers.handleUpdateStatus(jobId, newStatus, jobs);
@@ -412,6 +437,8 @@ const Jobs = ({ isDarkMode, onNavigateToEstimates, onClockedInJobChange, prefill
         onNavigateToInvoices={handleNavigateToInvoices}
         isDarkMode={isDarkMode}
         colors={colors}
+        onAddElectrician={handleAddElectricianToJob}
+        onRemoveElectrician={handleRemoveElectricianFromJob}
       />
 
       <div style={{ 
