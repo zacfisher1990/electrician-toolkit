@@ -26,6 +26,28 @@ import {
  * @param {Object} jobData - Basic job info for the invitation
  * @returns {Promise<string>} Invitation ID
  */
+
+// Helper to wait for auth to be ready
+const waitForAuth = () => {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    const checkAuth = () => {
+      attempts++;
+      if (auth.currentUser?.uid && auth.currentUser?.email) {
+        resolve(auth.currentUser);
+      } else if (attempts >= maxAttempts) {
+        reject(new Error('User not authenticated'));
+      } else {
+        setTimeout(checkAuth, 100);
+      }
+    };
+    
+    checkAuth();
+  });
+};
+
 export const sendJobInvitation = async (jobId, email, jobData) => {
   try {
     const userId = auth.currentUser?.uid;
@@ -159,9 +181,10 @@ export const getMyPendingInvitations = async () => {
  */
 export const acceptJobInvitation = async (invitationId) => {
   try {
-    const userId = auth.currentUser?.uid;
-    const userEmail = auth.currentUser?.email;
-    if (!userId || !userEmail) throw new Error('User not authenticated');
+    // Wait for auth to be ready
+    const user = await waitForAuth();
+    const userId = user.uid;
+    const userEmail = user.email;
 
     // Get the invitation
     const invitationRef = doc(db, 'jobInvitations', invitationId);
