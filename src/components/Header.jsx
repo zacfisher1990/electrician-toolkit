@@ -1,6 +1,7 @@
-import React from 'react';
-import { Menu, User, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Menu, User, Clock, Mail } from 'lucide-react';
 import { getColors } from '../theme';
+import { getPendingInvitationCount } from '../features/jobs/invitationService';
 
 function Header({ 
   headerInfo, 
@@ -12,6 +13,7 @@ function Header({
   setIsDarkMode,
   clockedInJob
 }) {
+  const [invitationCount, setInvitationCount] = useState(0);
   const HeaderIcon = headerInfo.icon;
   const themeColors = getColors(isDarkMode);
 
@@ -31,6 +33,24 @@ function Header({
   const notchColor = clockedInJob
     ? '#9f1239'
     : (isDarkMode ? '#1a1a1a' : themeColors.blue);
+
+  // Load invitation count
+  useEffect(() => {
+    const loadInvitationCount = async () => {
+      try {
+        const count = await getPendingInvitationCount();
+        setInvitationCount(count);
+      } catch (error) {
+        console.error('Error loading invitation count:', error);
+      }
+    };
+
+    loadInvitationCount();
+    
+    // Refresh count every 30 seconds
+    const interval = setInterval(loadInvitationCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
@@ -134,7 +154,7 @@ function Header({
           </div>
         </div>
         
-        {/* Menu Button */}
+        {/* Menu Button with Badge */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <button 
             onClick={() => setShowMenu(!showMenu)}
@@ -148,10 +168,33 @@ function Header({
               justifyContent: 'center',
               minWidth: '40px',
               minHeight: '40px',
-              lineHeight: 1
+              lineHeight: 1,
+              position: 'relative'
             }}
           >
             <Menu size={24} color="white" style={{ display: 'block', flexShrink: 0 }} />
+            
+            {/* Invitation Badge */}
+            {invitationCount > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '0.25rem',
+                right: '0.25rem',
+                background: '#ef4444',
+                color: 'white',
+                borderRadius: '50%',
+                width: '18px',
+                height: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.625rem',
+                fontWeight: '700',
+                border: '2px solid white'
+              }}>
+                {invitationCount > 9 ? '9+' : invitationCount}
+              </div>
+            )}
           </button>
 
           {/* Dropdown Menu */}
@@ -208,6 +251,46 @@ function Header({
                   >
                     <User size={16} />
                     <span>Account</span>
+                  </button>
+
+                  {/* Invitations Button with Badge */}
+                  <button
+                    onClick={() => {
+                      onNavigate('invitations');
+                      setShowMenu(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      color: colors.cardText,
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      position: 'relative'
+                    }}
+                    onMouseEnter={(e) => e.target.style.background = isDarkMode ? '#374151' : '#f3f4f6'}
+                    onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                  >
+                    <Mail size={16} />
+                    <span>Invitations</span>
+                    {invitationCount > 0 && (
+                      <span style={{
+                        marginLeft: 'auto',
+                        background: '#ef4444',
+                        color: 'white',
+                        borderRadius: '1rem',
+                        padding: '0.125rem 0.5rem',
+                        fontSize: '0.75rem',
+                        fontWeight: '700'
+                      }}>
+                        {invitationCount}
+                      </span>
+                    )}
                   </button>
 
                   {/* Time Card Button */}

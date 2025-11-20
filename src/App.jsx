@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, FileDown, Omega, Wrench, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap, TriangleRight, Palette, Clock } from 'lucide-react';import { PiInvoice, PiShovel, PiNumberCircleThree, PiPipe } from 'react-icons/pi';
+import { Menu, FileDown, Omega, Wrench, Ruler, Plug, Package, TrendingDown, SquareDivide, Circle, Target, Tally3, Cable, Globe, CornerDownRight, AlertTriangle, Settings, BarChart3, Radio, Building, Shield, Maximize2, Lightbulb, Gauge, Waves, Activity, Calculator, User, Briefcase, Triangle, Home as HomeIcon, FileText, Receipt, Box, ArrowDown, ArrowUp, Minus, Sun, Zap, TriangleRight, Palette, Clock, Mail } from 'lucide-react';import { PiInvoice, PiShovel, PiNumberCircleThree, PiPipe } from 'react-icons/pi';
 import { RiWirelessChargingLine } from 'react-icons/ri';
 import { TbCircuitGround, TbCircuitMotor, TbCircuitInductor } from 'react-icons/tb';
 import { FaCircleHalfStroke } from 'react-icons/fa6';
@@ -40,6 +40,7 @@ import Estimates from './features/estimates/Estimates.jsx';
 import Invoices from './features/invoices/Invoices.jsx';
 import Header from './components/Header.jsx';
 import TimeCard from './components/TimeCard.jsx';
+import Invitations from './features/jobs/Invitations.jsx'
 import { getColors } from './theme';
 import { auth } from './firebase/firebase';
 import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
@@ -385,6 +386,20 @@ function App() {
           isDarkMode={isDarkMode}
           onAddJobClick={handleAddJobFromCalendar}
         />;
+        case 'invitations':
+  return (
+    <Invitations
+      isDarkMode={isDarkMode}
+      colors={getColors(isDarkMode)}
+      onInvitationAccepted={() => {
+        // Refresh jobs when an invitation is accepted
+        handleNavigate('jobs');
+      }}
+      onRefresh={() => {
+        // Optionally reload any data
+      }}
+    />
+  );
       default:
         return <Home 
           isDarkMode={isDarkMode}
@@ -415,6 +430,9 @@ function App() {
     if (activeView === 'timecard') {
       return { title: 'Time Card', icon: Clock };
     }
+    if (activeView === 'invitations') {
+  return { title: 'Invitations', icon: Mail };
+}
 
     
     const headerMap = {

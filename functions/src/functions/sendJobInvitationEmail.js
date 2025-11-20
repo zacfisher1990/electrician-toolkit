@@ -3,7 +3,6 @@
  * Sends email notifications for job invitations and acceptance
  */
 
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { onDocumentCreated, onDocumentUpdated } = require('firebase-functions/v2/firestore');
 const { defineString } = require('firebase-functions/params');
 const { Resend } = require('resend');
@@ -17,85 +16,78 @@ const {
 const resendApiKey = defineString('RESEND_API_KEY');
 
 /**
- * Cloud Function to send job invitation email
- * Called when a job owner invites an electrician to a job
+ * Firestore Trigger: Auto-send email when invitation is created
+ * This eliminates the need to call a separate function from the frontend
  */
-const sendJobInvitationEmail = onCall(
-  { cors: true },
-  async (request) => {
-    // Get API key
+const sendJobInvitationEmail = onDocumentCreated(
+  'jobInvitations/{invitationId}',
+  async (event) => {
+    const invitationData = event.data.data();
+    
     const apiKey = resendApiKey.value();
     
     if (!apiKey) {
-      throw new HttpsError(
-        'failed-precondition',
-        'Resend API key is not configured. Please set RESEND_API_KEY environment variable.'
-      );
+      console.error('Resend API key not configured, skipping invitation email');
+      return null;
     }
 
-    // Initialize Resend
     const resend = new Resend(apiKey);
-    
-    // Verify user is authenticated
-    if (!request.auth) {
-      throw new HttpsError(
-        'unauthenticated',
-        'User must be authenticated to send invitations.'
-      );
-    }
-
-    const { 
-      inviteeEmail, 
-      jobTitle, 
-      jobClient, 
-      jobLocation, 
-      jobDate,
-      inviterName,
-      inviterEmail,
-      inviterBusinessName
-    } = request.data;
-
-    if (!inviteeEmail || !jobTitle) {
-      throw new HttpsError(
-        'invalid-argument',
-        'Invitee email and job title are required.'
-      );
-    }
 
     try {
-      console.log('Sending job invitation email to:', inviteeEmail);
+      // Get the inviter's user info for business name
+      const db = admin.firestore();
+      let inviterBusinessName = 'ProXTrades';
+      let inviterName = invitationData.jobOwnerEmail;
+      
+      if (invitationData.jobOwnerId) {
+        const inviterDoc = await db.collection('users').doc(invitationData.jobOwnerId).get();
+        if (inviterDoc.exists) {
+          const inviterData = inviterDoc.data();
+          inviterBusinessName = inviterData.businessName || 'ProXTrades';
+          inviterName = inviterData.name || inviterData.businessName || invitationData.jobOwnerEmail;
+        }
+      }
+
+      console.log('Sending job invitation email to:', invitationData.invitedEmail);
 
       const emailData = await resend.emails.send({
-        from: `${inviterBusinessName || 'ProXTrades'} <invitations@proxtrades.com>`,
-        replyTo: inviterEmail,
-        to: inviteeEmail,
-        subject: `⚡ You're Invited to Join a Job - ${jobTitle}`,
+        from: `${inviterBusinessName} <invitations@proxtrades.com>`,
+        replyTo: invitationData.jobOwnerEmail,
+        to: invitationData.invitedEmail,
+        subject: `⚡ You're Invited to Join a Job - ${invitationData.jobTitle}`,
         html: generateJobInvitationEmailHTML({
-          inviteeEmail,
-          jobTitle,
-          jobClient,
-          jobLocation,
-          jobDate,
+          inviteeEmail: invitationData.invitedEmail,
+          jobTitle: invitationData.jobTitle,
+          jobClient: invitationData.jobClient,
+          jobLocation: invitationData.jobLocation,
+          jobDate: invitationData.jobDate,
           inviterName,
-          inviterEmail,
+          inviterEmail: invitationData.jobOwnerEmail,
           inviterBusinessName
         })
       });
 
       console.log('Invitation email sent successfully:', emailData.id);
 
-      return {
-        success: true,
-        messageId: emailData.id,
-        message: 'Invitation email sent successfully!'
-      };
+      // Update the invitation document to mark email as sent
+      await event.data.ref.update({
+        emailSent: true,
+        emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        emailId: emailData.id
+      });
+
+      return { success: true, emailId: emailData.id };
 
     } catch (error) {
       console.error('Error sending invitation email:', error);
-      throw new HttpsError(
-        'internal',
-        `Failed to send invitation email: ${error.message}`
-      );
+      
+      // Update the invitation to mark email as failed
+      await event.data.ref.update({
+        emailSent: false,
+        emailError: error.message
+      });
+      
+      return { success: false, error: error.message };
     }
   }
 );
