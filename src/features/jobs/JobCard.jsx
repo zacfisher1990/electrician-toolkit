@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { 
   MapPin, Calendar, Edit, FileText, Receipt, DollarSign, 
-  ChevronDown, ChevronUp, Play, Square, Camera, Users, Share2 
+  ChevronDown, ChevronUp, Play, Square, Camera, Users, Share2, Clock 
 } from 'lucide-react';
 import PhotoGallery from './PhotoGallery';
 import styles from './JobCard.module.css';
+import { subscribeToLaborHours } from './laborHoursService';
 
 const JobCard = ({ 
   job, 
@@ -24,6 +25,12 @@ const JobCard = ({
   const statusDropdownRef = useRef(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
+  const [laborHours, setLaborHours] = useState({
+    totalHours: 0,
+    myHours: 0,
+    teamHours: 0,
+    breakdown: []
+  });
   
   // Check if this is an optimistic (loading) job
   const isOptimistic = job._isOptimistic === true;
@@ -71,6 +78,35 @@ const JobCard = ({
       return () => clearInterval(interval);
     }
   }, [job.clockedIn]);
+
+  // Subscribe to labor hours updates (for job owners with team members)
+  useEffect(() => {
+    let unsubscribe = () => {};
+    
+    const setupLaborHoursSubscription = async () => {
+      if (!job.isSharedJob) {
+        // Only job owners need the subscription
+        unsubscribe = await subscribeToLaborHours(job, (updatedLaborData) => {
+          setLaborHours(updatedLaborData);
+        });
+      } else {
+        // For shared jobs, just calculate own hours
+        const myHours = calculateTotalHours();
+        setLaborHours({
+          totalHours: myHours,
+          myHours: myHours,
+          teamHours: 0,
+          breakdown: []
+        });
+      }
+    };
+
+    setupLaborHoursSubscription();
+
+    return () => {
+      unsubscribe();
+    };
+  }, [job.id, job.isSharedJob, job.workSessions, job.invitedElectricians]);
 
   // Calculate total hours from all work sessions
   const calculateTotalHours = () => {
@@ -499,6 +535,73 @@ const JobCard = ({
                   </span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Total Labor Hours - for job owners with team members */}
+          {!isSharedJob && acceptedTeamMembers.length > 0 && (
+            <div style={{
+              marginBottom: '0.75rem',
+              padding: '0.5rem',
+              background: colors.bg,
+              borderRadius: '0.375rem',
+              border: `1px solid ${colors.border}`
+            }}>
+              <div style={{
+                fontSize: '0.75rem',
+                fontWeight: '600',
+                color: colors.text,
+                marginBottom: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.375rem'
+              }}>
+                <Clock size={14} />
+                Total Labor Hours
+              </div>
+              
+              {/* Total Summary */}
+              <div style={{
+                fontSize: '0.875rem',
+                color: colors.text,
+                fontWeight: '600',
+                padding: '0.375rem',
+                background: isDarkMode ? '#1f2937' : '#f9fafb',
+                borderRadius: '0.25rem',
+                marginBottom: '0.5rem',
+                display: 'flex',
+                justifyContent: 'space-between'
+              }}>
+                <span>Total:</span>
+                <span>{laborHours.totalHours.toFixed(2)} hrs</span>
+              </div>
+
+              {/* Breakdown by team member */}
+              {laborHours.breakdown && laborHours.breakdown.length > 0 && (
+                <div style={{ fontSize: '0.7rem', color: colors.subtext }}>
+                  {laborHours.breakdown.map((member, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        padding: '0.25rem 0.375rem',
+                        borderBottom: idx < laborHours.breakdown.length - 1 ? `1px solid ${colors.border}` : 'none'
+                      }}
+                    >
+                      <span style={{ 
+                        fontWeight: member.isOwner ? '600' : '400',
+                        color: member.isOwner ? colors.text : colors.subtext 
+                      }}>
+                        {member.isOwner ? '👤 You' : `👷 ${member.email}`}
+                      </span>
+                      <span style={{ fontWeight: '500' }}>
+                        {member.hours.toFixed(2)} hrs
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
