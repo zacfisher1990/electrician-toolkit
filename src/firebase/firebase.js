@@ -2,7 +2,8 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
-import { getStorage } from "firebase/storage"; // ✅ ADD THIS LINE
+import { getStorage } from "firebase/storage";
+import { getFunctions } from "firebase/functions"; // ← ADD THIS LINE
 
 // Your web app's Firebase configuration - using environment variables
 const firebaseConfig = {
@@ -24,8 +25,11 @@ const auth = getAuth(app);
 // Initialize Firestore and get a reference to the service
 const db = getFirestore(app);
 
-// ✅ ADD THIS - Initialize Firebase Storage
+// Initialize Firebase Storage
 const storage = getStorage(app);
+
+// Initialize Firebase Functions
+const functions = getFunctions(app); // ← ADD THIS LINE
 
 // Initialize Firebase offline persistence directly here
 // This enables IndexedDB caching for offline support
@@ -43,6 +47,6 @@ enableIndexedDbPersistence(db)
     }
   });
 
-// Export auth, db, and storage as named exports
-export { auth, db, storage }; // ✅ ADD storage HERE
+// Export auth, db, storage, and functions as named exports
+export { auth, db, storage, functions }; // ← ADD functions HERE
 export default app;

@@ -1,13 +1,26 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Clock, ChevronRight, Calendar, Briefcase, ArrowLeft } from 'lucide-react';
+import { Clock, ChevronRight, Calendar, Briefcase, ArrowLeft, Download, Mail } from 'lucide-react';
 import { getColors } from '../theme';
 import { auth } from '../firebase/firebase';
 import { getUserJobs } from '../features/jobs/jobsService';
+import { 
+  generateTimeCardPDF, 
+  downloadTimeCardPDF, 
+  getTimeCardPDFBase64, 
+  generateTimeCardFilename 
+} from './services/timeCardPdfService';
+import { sendTimeCardEmail, isValidEmail } from './services/timeCardEmailService';
+import Toast from './Toast';
 
 const TimeCard = ({ isDarkMode, onNavigateBack }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState(null);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailAddress, setEmailAddress] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [toast, setToast] = useState(null);
   const colors = getColors(isDarkMode);
 
   // Load all jobs to extract work sessions
@@ -175,6 +188,103 @@ const TimeCard = ({ isDarkMode, onNavigateBack }) => {
     return `${h}h ${m}m`;
   };
 
+  // Toast helper
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  // Handle download PDF
+  const handleDownloadPDF = () => {
+    try {
+      const dailyBreakdown = getWeekDetails(selectedWeek);
+      
+      // Get user info
+      const userInfo = {
+        name: auth.currentUser?.displayName || '',
+        email: auth.currentUser?.email || '',
+        companyName: 'Electrician Pro X'
+      };
+
+      // Generate PDF
+      const pdf = generateTimeCardPDF(selectedWeek, dailyBreakdown, userInfo);
+      
+      // Generate filename
+      const filename = generateTimeCardFilename(
+        selectedWeek.weekStart,
+        userInfo.name || 'TimeCard'
+      );
+
+      // Download
+      downloadTimeCardPDF(pdf, filename);
+      
+      showToast('Time card downloaded successfully!', 'success');
+    } catch (error) {
+      console.error('Error downloading time card:', error);
+      showToast('Failed to download time card. Please try again.', 'error');
+    }
+  };
+
+  // Handle open email modal
+  const handleOpenEmailModal = () => {
+    setEmailAddress(auth.currentUser?.email || '');
+    setEmailError('');
+    setShowEmailModal(true);
+  };
+
+  // Handle send email
+  const handleSendEmail = async () => {
+    if (!emailAddress.trim()) {
+      setEmailError('Please enter an email address');
+      return;
+    }
+
+    if (!isValidEmail(emailAddress)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    setSendingEmail(true);
+    setEmailError('');
+
+    try {
+      const dailyBreakdown = getWeekDetails(selectedWeek);
+      
+      const userInfo = {
+        name: auth.currentUser?.displayName || '',
+        email: auth.currentUser?.email || '',
+        companyName: 'Electrician Pro X'
+      };
+
+      const pdf = generateTimeCardPDF(selectedWeek, dailyBreakdown, userInfo);
+      const pdfBase64 = getTimeCardPDFBase64(pdf);
+      const filename = generateTimeCardFilename(
+        selectedWeek.weekStart,
+        userInfo.name || 'TimeCard'
+      );
+
+      const weekRange = formatWeekRange(selectedWeek.weekStart);
+
+      await sendTimeCardEmail({
+        recipientEmail: emailAddress,
+        recipientName: '',
+        weekRange,
+        pdfBase64,
+        fileName: filename,
+        senderName: userInfo.name,
+        senderEmail: userInfo.email
+      });
+
+      setShowEmailModal(false);
+      showToast(`Time card sent to ${emailAddress}`, 'success');
+    } catch (error) {
+      console.error('Error sending time card:', error);
+      setEmailError('Failed to send email. Please try again.');
+      showToast('Failed to send time card. Please try again.', 'error');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -265,6 +375,57 @@ const TimeCard = ({ isDarkMode, onNavigateBack }) => {
             </div>
           </div>
 
+          {/* Action Buttons */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '0.75rem',
+            marginBottom: '1rem'
+          }}>
+            <button
+              onClick={handleDownloadPDF}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                background: colors.blue,
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                padding: '0.875rem',
+                fontSize: '0.9375rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Download size={18} />
+              Download PDF
+            </button>
+            <button
+              onClick={handleOpenEmailModal}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                background: isDarkMode ? '#374151' : '#f3f4f6',
+                color: colors.text,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                padding: '0.875rem',
+                fontSize: '0.9375rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Mail size={18} />
+              Email PDF
+            </button>
+          </div>
+
           {/* Daily Breakdown */}
           {Object.entries(dailyBreakdown).map(([dayIndex, dayData]) => (
             <div
@@ -352,6 +513,169 @@ const TimeCard = ({ isDarkMode, onNavigateBack }) => {
             </div>
           ))}
         </div>
+
+        {/* Email Modal */}
+        {showEmailModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem'
+          }}>
+            <div style={{
+              background: colors.cardBg,
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              maxWidth: '400px',
+              width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+            }}>
+              <h3 style={{
+                margin: '0 0 1rem 0',
+                color: colors.text,
+                fontSize: '1.125rem',
+                fontWeight: '600'
+              }}>
+                Email Time Card
+              </h3>
+              
+              <p style={{
+                margin: '0 0 1rem 0',
+                color: colors.subtext,
+                fontSize: '0.875rem'
+              }}>
+                Send the PDF time card for {formatWeekRange(selectedWeek.weekStart)} to your email.
+              </p>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  color: colors.text,
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}>
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={emailAddress}
+                  onChange={(e) => {
+                    setEmailAddress(e.target.value);
+                    setEmailError('');
+                  }}
+                  placeholder="your@email.com"
+                  disabled={sendingEmail}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    background: colors.bg,
+                    border: `1px solid ${emailError ? '#ef4444' : colors.border}`,
+                    borderRadius: '0.5rem',
+                    color: colors.text,
+                    fontSize: '0.9375rem',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                {emailError && (
+                  <p style={{
+                    margin: '0.5rem 0 0 0',
+                    color: '#ef4444',
+                    fontSize: '0.8125rem'
+                  }}>
+                    {emailError}
+                  </p>
+                )}
+              </div>
+
+              <div style={{
+                display: 'flex',
+                gap: '0.75rem'
+              }}>
+                <button
+                  onClick={() => setShowEmailModal(false)}
+                  disabled={sendingEmail}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    background: isDarkMode ? '#374151' : '#f3f4f6',
+                    color: colors.text,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '0.5rem',
+                    fontSize: '0.9375rem',
+                    fontWeight: '600',
+                    cursor: sendingEmail ? 'not-allowed' : 'pointer',
+                    opacity: sendingEmail ? 0.5 : 1
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSendEmail}
+                  disabled={sendingEmail}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    background: colors.blue,
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.9375rem',
+                    fontWeight: '600',
+                    cursor: sendingEmail ? 'not-allowed' : 'pointer',
+                    opacity: sendingEmail ? 0.7 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  {sendingEmail ? (
+                    <>
+                      <div style={{
+                        width: '14px',
+                        height: '14px',
+                        border: '2px solid white',
+                        borderTopColor: 'transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 0.8s linear infinite'
+                      }} />
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Email'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Toast Notification */}
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+            isDarkMode={isDarkMode}
+          />
+        )}
+
+        <style>
+          {`
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+          `}
+        </style>
       </div>
     );
   }
