@@ -7,7 +7,7 @@ import TablesContent from './tables/TablesContent';
 import SchematicsContent from './schematics/SchematicsContent';
 import CodeContent from './code/CodeContent';
 
-const Tools = ({ isDarkMode = false, onNavigate }) => {  // ✅ Changed from onSelectCalculator to onNavigate
+const Tools = ({ isDarkMode = false, onNavigate }) => {
   const [activeTab, setActiveTab] = useState('Calculators');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -80,36 +80,29 @@ const Tools = ({ isDarkMode = false, onNavigate }) => {  // ✅ Changed from onS
           )}
         </div>
 
-        {/* Calculators Tab - Shows your existing CalculatorMenu */}
+        {/* Calculators Tab */}
         {activeTab === 'Calculators' && (
           <CalculatorMenu 
             isDarkMode={isDarkMode}
             searchQuery={searchQuery}
-            onSelectCalculator={onNavigate}  // ✅ Pass onNavigate as onSelectCalculator
+            onSelectCalculator={onNavigate}
           />
         )}
 
         {/* Tables Tab */}
-          {activeTab === 'Tables' && (
-            <TablesContent 
-              colors={colors}
-              onSelectTable={(tableId) => {
-                // Handle table selection - you can navigate to a table viewer
-                console.log('Selected table:', tableId);
-                // For now, just log it. Later you can create table viewer components
-              }}
-            />
-          )}
+        {activeTab === 'Tables' && (
+          <TablesContent 
+            colors={colors}
+            isDarkMode={isDarkMode}
+          />
+        )}
 
-        {/* Schematics Tab */}
         {/* Schematics Tab */}
         {activeTab === 'Schematics' && (
           <SchematicsContent 
             colors={colors}
             onSelectSchematic={(schematicId) => {
-              // Handle schematic selection
               console.log('Selected schematic:', schematicId);
-              // Later you can create schematic viewer components
             }}
           />
         )}
@@ -119,9 +112,7 @@ const Tools = ({ isDarkMode = false, onNavigate }) => {  // ✅ Changed from onS
           <CodeContent 
             colors={colors}
             onSelectCode={(codeId) => {
-              // Handle code reference selection
               console.log('Selected code reference:', codeId);
-              // Later you can create detail views for each reference
             }}
           />
         )}

@@ -1,210 +1,181 @@
 import React, { useState } from 'react';
-import { Table, Zap, Box, Cable, Circle, Ruler, Globe } from 'lucide-react';
-import Table310_16 from './Table310_16';
-import Table314_16 from './Table314_16';
-import Table314_28 from './Table314_28';
-import Chapter9 from './Chapter9';
-import Table250_66 from './Table250_66';
-import Table250_122 from './Table250_122';
+import { Cable, Grid, Box, Zap, Globe } from 'lucide-react';
+import TableViewer from '../TableViewer';
+import { table31016Data } from './table31016Data';
+import { table31416BData } from './table31416BData';
+import { table31416AData } from './table31416AData';
 
 const TablesContent = ({ colors, isDarkMode }) => {
-  const [activeTable, setActiveTable] = useState(null);
+  const [selectedTable, setSelectedTable] = useState(null);
 
-  const necTables = [
+  const tables = [
     {
-      name: 'NEC Tables',
-      tables: [
-        { 
-          id: 'table-310-16', 
-          name: 'Table 310.16', 
-          description: 'Ampacity',
-          icon: Cable,
-          color: '#3b82f6',
-          component: Table310_16
-        },
-        { 
-          id: 'table-314-16', 
-          name: 'Table 314.16', 
-          description: 'Box Fill',
-          icon: Box,
-          color: '#8b5cf6',
-          component: Table314_16
-        },
-        { 
-          id: 'table-314-28', 
-          name: 'Table 314.28', 
-          description: 'Pull Box',
-          icon: Ruler,
-          color: '#8b5cf6',
-          component: Table314_28
-        },
-        { 
-          id: 'chapter-9', 
-          name: 'Chapter 9', 
-          description: 'Conduit Fill',
-          icon: Circle,
-          color: '#10b981',
-          component: Chapter9
-        },
-        { 
-          id: 'table-250-66', 
-          name: 'Table 250.66', 
-          description: 'Grounding Electrode',
-          icon: Globe,
-          color: '#f59e0b',
-          component: Table250_66
-        },
-        { 
-          id: 'table-250-122', 
-          name: 'Table 250.122', 
-          description: 'Equipment Grounding',
-          icon: Globe,
-          color: '#f59e0b',
-          component: Table250_122
-        }
-      ]
+      id: 'table-310-16',
+      title: 'Table 310.16',
+      subtitle: 'Ampacity',
+      icon: Cable,
+      color: '#3b82f6',
+      data: table31016Data
+    },
+    {
+      id: 'table-314-16-a',
+      title: 'Table 314.16(A)',
+      subtitle: 'Metal Boxes',
+      icon: Box,
+      color: '#8b5cf6',
+      data: table31416AData
+    },
+    {
+      id: 'table-314-16-b',
+      title: 'Table 314.16(B)',
+      subtitle: 'Box Fill Volume',
+      icon: Grid,
+      color: '#a855f7',
+      data: table31416BData
+    },
+    {
+      id: 'table-314-28',
+      title: 'Table 314.28',
+      subtitle: 'Pull Box',
+      icon: Grid,
+      color: '#ec4899',
+      data: null // To be implemented
+    },
+    {
+      id: 'chapter-9',
+      title: 'Chapter 9',
+      subtitle: 'Conduit Fill',
+      icon: Globe,
+      color: '#06b6d4',
+      data: null // To be implemented
+    },
+    {
+      id: 'table-250-66',
+      title: 'Table 250.66',
+      subtitle: 'Grounding Electrode',
+      icon: Zap,
+      color: '#f59e0b',
+      data: null // To be implemented
+    },
+    {
+      id: 'table-250-122',
+      title: 'Table 250.122',
+      subtitle: 'Equipment Grounding',
+      icon: Zap,
+      color: '#f59e0b',
+      data: null // To be implemented
     }
   ];
 
-  // If a table is selected, render its component
-  if (activeTable) {
-    const table = necTables[0].tables.find(t => t.id === activeTable);
-    if (table && table.component) {
-      const TableComponent = table.component;
-      return (
-        <TableComponent 
-          isDarkMode={isDarkMode} 
-          onBack={() => setActiveTable(null)}
-        />
-      );
-    }
+  // If a table is selected, show the TableViewer
+  if (selectedTable) {
+    return (
+      <TableViewer
+        tableData={selectedTable.data}
+        isDarkMode={isDarkMode}
+        onBack={() => setSelectedTable(null)}
+      />
+    );
   }
 
-  const TableCard = ({ table }) => {
-    const Icon = table.icon;
-    const isAvailable = table.component !== null;
-    
-    return (
-      <button
-        onClick={() => isAvailable && setActiveTable(table.id)}
-        disabled={!isAvailable}
-        style={{
-          background: colors.cardBg,
-          border: `1px solid ${colors.border}`,
-          borderRadius: '0.75rem',
-          padding: '0.75rem',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.5rem',
-          cursor: isAvailable ? 'pointer' : 'not-allowed',
-          transition: 'all 0.2s',
-          textAlign: 'center',
-          opacity: isAvailable ? 1 : 0.5,
-          position: 'relative'
-        }}
-        onMouseEnter={(e) => {
-          if (isAvailable) {
-            e.currentTarget.style.borderColor = table.color;
-            e.currentTarget.style.transform = 'translateY(-2px)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (isAvailable) {
-            e.currentTarget.style.borderColor = colors.border;
-            e.currentTarget.style.transform = 'translateY(0)';
-          }
-        }}
-      >
-        {!isAvailable && (
-          <div style={{
-            position: 'absolute',
-            top: '0.5rem',
-            right: '0.5rem',
-            background: colors.subtext,
-            color: colors.cardBg,
-            fontSize: '0.625rem',
-            padding: '0.125rem 0.375rem',
-            borderRadius: '0.25rem',
-            fontWeight: '600'
-          }}>
-            Soon
-          </div>
-        )}
-        <div style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '0.75rem',
-          background: `${table.color}15`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <Icon size={20} color={table.color} />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
-          <span style={{
-            fontSize: '0.8125rem',
-            fontWeight: '600',
-            color: colors.text,
-            lineHeight: '1.2'
-          }}>
-            {table.name}
-          </span>
-          <span style={{
-            fontSize: '0.75rem',
-            fontWeight: '400',
-            color: colors.subtext,
-            lineHeight: '1.2'
-          }}>
-            {table.description}
-          </span>
-        </div>
-      </button>
-    );
-  };
-
-  // Default table grid view
+  // Otherwise show the table selection grid
   return (
     <div>
-      {necTables.map((category, index) => (
-        <div key={category.name} style={{ marginBottom: '1.5rem' }}>
-          {/* Category Header */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginBottom: '0.75rem',
-            paddingLeft: '0.25rem'
-          }}>
-            <div style={{
-              width: '3px',
-              height: '1.25rem',
-              background: '#8b5cf6',
-              borderRadius: '2px'
-            }} />
-            <h3 style={{ 
-              margin: 0, 
-              color: colors.text,
-              fontSize: '1rem',
-              fontWeight: '600'
-            }}>
-              {category.name}
-            </h3>
-          </div>
+      <div style={{
+        fontSize: '1rem',
+        fontWeight: '600',
+        color: colors.text,
+        marginBottom: '1rem',
+        paddingLeft: '0.5rem',
+        borderLeft: `3px solid ${colors.primary}`,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem'
+      }}>
+        NEC Tables
+      </div>
 
-          {/* Tables Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '0.75rem'
-          }}>
-            {category.tables.map(table => (
-              <TableCard key={table.id} table={table} />
-            ))}
-          </div>
-        </div>
-      ))}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+        gap: '1rem'
+      }}>
+        {tables.map((table) => {
+          const Icon = table.icon;
+          const isAvailable = table.data !== null;
+
+          return (
+            <button
+              key={table.id}
+              onClick={() => {
+                if (isAvailable) {
+                  setSelectedTable(table);
+                }
+              }}
+              disabled={!isAvailable}
+              style={{
+                background: colors.cardBg,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.75rem',
+                padding: '1.25rem 1rem',
+                cursor: isAvailable ? 'pointer' : 'not-allowed',
+                textAlign: 'center',
+                transition: 'all 0.2s',
+                opacity: isAvailable ? 1 : 0.5
+              }}
+              onMouseEnter={(e) => {
+                if (isAvailable) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (isAvailable) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
+              }}
+            >
+              <div style={{
+                width: '3rem',
+                height: '3rem',
+                borderRadius: '0.75rem',
+                background: `${table.color}15`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 0.75rem'
+              }}>
+                <Icon size={24} color={table.color} />
+              </div>
+              <div style={{
+                fontSize: '0.9375rem',
+                fontWeight: '600',
+                color: colors.text,
+                marginBottom: '0.25rem'
+              }}>
+                {table.title}
+              </div>
+              <div style={{
+                fontSize: '0.8125rem',
+                color: colors.subtext
+              }}>
+                {table.subtitle}
+              </div>
+              {!isAvailable && (
+                <div style={{
+                  fontSize: '0.75rem',
+                  color: colors.subtext,
+                  marginTop: '0.5rem',
+                  fontStyle: 'italic'
+                }}>
+                  Coming Soon
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
