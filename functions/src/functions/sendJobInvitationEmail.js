@@ -36,14 +36,14 @@ const sendJobInvitationEmail = onDocumentCreated(
     try {
       // Get the inviter's user info for business name
       const db = admin.firestore();
-      let inviterBusinessName = 'ProXTrades';
+      let inviterBusinessName = 'Electrician Pro X';
       let inviterName = invitationData.jobOwnerEmail;
       
       if (invitationData.jobOwnerId) {
         const inviterDoc = await db.collection('users').doc(invitationData.jobOwnerId).get();
         if (inviterDoc.exists) {
           const inviterData = inviterDoc.data();
-          inviterBusinessName = inviterData.businessName || 'ProXTrades';
+          inviterBusinessName = inviterData.businessName || 'Electrician Pro X';
           inviterName = inviterData.name || inviterData.businessName || invitationData.jobOwnerEmail;
         }
       }
@@ -133,7 +133,7 @@ const notifyInvitationAccepted = onDocumentUpdated(
       }
 
       await resend.emails.send({
-        from: 'ProXTrades <notifications@proxtrades.com>',
+        from: 'Electrician Pro X <notifications@proxtrades.com>',
         to: afterData.jobOwnerEmail,
         subject: `✅ ${inviteeName} Accepted Your Job Invitation`,
         html: generateInvitationAcceptedEmailHTML({

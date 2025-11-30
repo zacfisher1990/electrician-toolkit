@@ -130,9 +130,9 @@ const deleteUserAccount = onCall(async (request) => {
           const resend = new Resend(apiKey);
           
           await resend.emails.send({
-            from: 'ProXTrades <account@proxtrades.com>',
+            from: 'Electrician Pro X <account@proxtrades.com>',
             to: userEmail,
-            subject: 'Account Deleted - ProXTrades',
+            subject: 'Account Deleted - Electrician Pro X',
             html: generateAccountDeletionHTML(userEmail, userName)
           });
           

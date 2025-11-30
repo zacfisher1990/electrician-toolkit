@@ -61,11 +61,11 @@ const sendEstimateEmail = onCall(
 
       // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
-        from: `${userInfo.businessName || 'ProXTrades'} <estimates@proxtrades.com>`,
+        from: `${userInfo.businessName || 'Electrician Pro X'} <estimates@proxtrades.com>`,
         replyTo: userInfo.email, // Client replies go to the user!
         to: recipientEmail,
         bcc: userInfo.email, // BCC the sender so they get a copy
-        subject: `Estimate: ${estimate.name || 'Untitled'} from ${userInfo.businessName || 'ProxTrades'}`,
+        subject: `Estimate: ${estimate.name || 'Untitled'} from ${userInfo.businessName || 'Electrician Pro X'}`,
         html: generateEstimateEmailHTML(estimate, message, userInfo),
         attachments: [
           {

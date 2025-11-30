@@ -43,9 +43,9 @@ const sendVerificationEmail = onCall(
       console.log('Sending verification email to:', email);
 
       const emailData = await resend.emails.send({
-        from: 'ProXTrades <verify@proxtrades.com>',
+        from: 'Electrician Pro X <verify@proxtrades.com>',
         to: email,
-        subject: '⚡ Verify Your Email - ProXTrades',
+        subject: '⚡ Verify Your Email - Electrician Pro X',
         html: generateVerificationEmailHTML(email, verificationLink)
       });
 
