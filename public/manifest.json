@@ -1,6 +1,6 @@
 {
-  "name": "Electrician's Toolkit",
-  "short_name": "ElecTool",
+  "name": "Electrician Pro X",
+  "short_name": "Pro X",
   "description": "Electrical calculators, job tracking, and estimation tools for electricians",
   "start_url": "/electrician-toolkit/",
   "scope": "/electrician-toolkit/",

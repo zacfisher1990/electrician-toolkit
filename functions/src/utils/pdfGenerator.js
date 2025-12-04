@@ -42,7 +42,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       doc.fillColor('#ffffff')
          .fontSize(24)
          .font('Helvetica-Bold')
-         .text(userInfo.businessName || 'Electrician Toolkit', logoX, 30);
+         .text(userInfo.businessName || userInfo.company || 'Your Business Name', logoX, 30);
 
       // Company Contact Info
       doc.fontSize(10)
@@ -251,7 +251,7 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
       doc.fillColor('#ffffff')
          .fontSize(24)
          .font('Helvetica-Bold')
-         .text(userInfo.businessName || 'Electrician Toolkit', logoX, 30);
+         .text(userInfo.businessName || userInfo.company || 'Your Business Name', logoX, 30);
 
       // Company Contact Info
       doc.fontSize(10)
