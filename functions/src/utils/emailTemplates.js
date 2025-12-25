@@ -26,7 +26,7 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo) {
                   ${userInfo.companyLogo ? `
                     <img src="${userInfo.companyLogo}" alt="${userInfo.businessName || 'Company Logo'}" style="max-width: 120px; max-height: 120px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px;" />
                   ` : ''}
-                  <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Toolkit'}</h1>
+                  <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Pro X'}</h1>
                   <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px;">${userInfo.email || ''}</p>
                 </td>
               </tr>
@@ -103,7 +103,7 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
                   ${userInfo.companyLogo ? `
                     <img src="${userInfo.companyLogo}" alt="${userInfo.businessName || 'Company Logo'}" style="max-width: 120px; max-height: 120px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px;" />
                   ` : ''}
-                  <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Toolkit'}</h1>
+                  <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Pro X'}</h1>
                   <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px;">${userInfo.email || ''}</p>
                 </td>
               </tr>
