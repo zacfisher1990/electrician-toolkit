@@ -306,57 +306,119 @@ function generateWelcomeHTML(email) {
             <td align="center">
               <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                 
+                <!-- Header -->
                 <tr>
                   <td style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 30px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
-                    <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">Professional Electrical Business Management</p>
+                    <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">Built by an electrician, for electricians</p>
                   </td>
                 </tr>
                 
+                <!-- Welcome Message -->
                 <tr>
-                  <td style="padding: 40px 30px;">
-                    <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 24px; font-weight: 600;">
-                      Welcome to Electrician Pro X! 🎉
+                  <td style="padding: 40px 30px 20px;">
+                    <h2 style="margin: 0 0 15px 0; color: #111827; font-size: 24px; font-weight: 600;">
+                      Welcome to the team! 🎉
                     </h2>
                     
                     <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 16px; line-height: 1.6;">
-                      Thanks for signing up! You now have access to a complete toolkit designed by electricians, for electricians.
+                      You just got access to the only app that combines <strong>NEC code calculators</strong> with full <strong>business management</strong> — no more juggling spreadsheets, paper estimates, and five different apps.
                     </p>
+                  </td>
+                </tr>
 
-                    <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
-                      <p style="margin: 0; color: #1e40af; font-size: 14px; line-height: 1.6;">
-                        <strong>🔧 Free NEC Calculators</strong><br>
-                        Access our suite of professional electrical calculators — wire sizing, box fill, conduit fill, voltage drop, and more.
-                      </p>
-                    </div>
-                    
-                    <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e5e7eb;">
-                      <h4 style="margin: 0 0 15px 0; color: #111827; font-size: 16px; font-weight: 600;">
-                        What You Can Do:
-                      </h4>
-                      <ul style="margin: 0; padding-left: 20px; color: #6b7280; font-size: 14px; line-height: 1.8;">
-                        <li><strong>NEC Calculators</strong> — Wire sizing, box fill, conduit fill, voltage drop & more</li>
-                        <li><strong>Job Tracking</strong> — Manage jobs, clock in/out, and track your time</li>
-                        <li><strong>Estimates</strong> — Create professional estimates for your clients</li>
-                        <li><strong>Invoices</strong> — Generate and send invoices directly from the app</li>
-                        <li><strong>Team Management</strong> — Invite electricians to collaborate on jobs</li>
+                <!-- App Screenshots -->
+                <tr>
+                  <td style="padding: 0 30px 20px; text-align: center;">
+                    <img src="https://proxtrades.com/images/email/jobs-screenshot.png" alt="Job Management" style="max-width: 100%; border-radius: 8px;" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 30px 30px; text-align: center;">
+                    <img src="https://proxtrades.com/images/email/estimates-invoices-screenshot.png" alt="Estimates & Invoices" style="max-width: 100%; border-radius: 8px;" />
+                  </td>
+                </tr>
+
+                <!-- Free Features -->
+                <tr>
+                  <td style="padding: 0 30px 30px;">
+                    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 24px;">
+                      <h3 style="margin: 0 0 15px 0; color: #166534; font-size: 18px; font-weight: 600;">
+                        ✅ Free Forever
+                      </h3>
+                      <ul style="margin: 0; padding-left: 20px; color: #15803d; font-size: 14px; line-height: 1.8;">
+                        <li>Wire sizing calculator (NEC 310)</li>
+                        <li>Box fill calculator (NEC 314)</li>
+                        <li>Conduit fill calculator (NEC Chapter 9)</li>
+                        <li>Voltage drop calculator</li>
+                        <li>Dwelling load calculator</li>
+                        <li>And 10+ more NEC calculators</li>
                       </ul>
                     </div>
+                  </td>
+                </tr>
 
-                    <div style="text-align: center; margin: 30px 0 0;">
-                      <a href="https://apps.apple.com/app/electrician-pro-x/id6740127498" style="display: inline-block; background-color: #3b82f6; color: #ffffff; padding: 14px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px;">
-                        Open the App
-                      </a>
+                <!-- Pro Features -->
+                <tr>
+                  <td style="padding: 0 30px 30px;">
+                    <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 12px; padding: 24px;">
+                      <h3 style="margin: 0 0 5px 0; color: #92400e; font-size: 18px; font-weight: 600;">
+                        ⭐ Pro Subscription
+                      </h3>
+                      <p style="margin: 0 0 15px 0; color: #a16207; font-size: 14px;">
+                        For electricians who mean business
+                      </p>
+                      <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #92400e; font-size: 14px; line-height: 1.8;">
+                        <li><strong>Job Tracking</strong> — Schedule, manage, and track all your jobs</li>
+                        <li><strong>Time Tracking</strong> — Clock in/out with GPS, track hours per job</li>
+                        <li><strong>Professional Estimates</strong> — Create & send estimates in minutes</li>
+                        <li><strong>Invoicing</strong> — Generate invoices, get paid faster</li>
+                        <li><strong>Team Management</strong> — Invite crew members to jobs</li>
+                        <li><strong>Photo Documentation</strong> — Attach photos to jobs</li>
+                        <li><strong>Analytics Dashboard</strong> — See your business performance</li>
+                      </ul>
+                      <div style="text-align: center;">
+                        <p style="margin: 0 0 10px 0; color: #92400e; font-size: 24px; font-weight: 700;">
+                          $12.99<span style="font-size: 14px; font-weight: 500;">/month</span>
+                        </p>
+                        <p style="margin: 0 0 15px 0; color: #a16207; font-size: 13px;">
+                          Less than the cost of one hour of work
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- CTA Button -->
+                <tr>
+                  <td style="padding: 0 30px 30px; text-align: center;">
+                    <a href="https://apps.apple.com/app/electrician-pro-x/id6740127498" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; padding: 16px 40px; font-size: 18px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);">
+                      Open the App →
+                    </a>
+                  </td>
+                </tr>
+
+                <!-- Testimonial/Trust Builder -->
+                <tr>
+                  <td style="padding: 0 30px 30px;">
+                    <div style="background-color: #f9fafb; border-radius: 12px; padding: 24px; text-align: center;">
+                      <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px; font-style: italic; line-height: 1.6;">
+                        "I built this app because I was tired of using a calculator for box fill, a spreadsheet for estimates, and sticky notes for job tracking. Now it's all in one place."
+                      </p>
+                      <p style="margin: 0; color: #9ca3af; font-size: 13px;">
+                        — Zac, Electrician & Founder
+                      </p>
                     </div>
                   </td>
                 </tr>
                 
+                <!-- Footer -->
                 <tr>
-                  <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                  <td style="background-color: #1f2937; padding: 30px; text-align: center;">
                     <p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 14px;">
                       © ${new Date().getFullYear()} Electrician Pro X. All rights reserved.
                     </p>
-                    <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                    <p style="margin: 0; color: #6b7280; font-size: 12px;">
                       Questions? Reply to this email or contact support@proxtrades.com
                     </p>
                   </td>
