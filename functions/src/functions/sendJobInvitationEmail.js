@@ -36,21 +36,21 @@ const sendJobInvitationEmail = onDocumentCreated(
     try {
       // Get the inviter's user info for business name
       const db = admin.firestore();
-      let inviterBusinessName = 'Electrician Pro X';
+      let inviterBusinessName = 'ProXTrades';
       let inviterName = invitationData.jobOwnerEmail;
       
       if (invitationData.jobOwnerId) {
         const inviterDoc = await db.collection('users').doc(invitationData.jobOwnerId).get();
         if (inviterDoc.exists) {
           const inviterData = inviterDoc.data();
-          inviterBusinessName = inviterData.businessName || 'Electrician Pro X';
+          inviterBusinessName = inviterData.businessName || 'ProXTrades';
           inviterName = inviterData.name || inviterData.businessName || invitationData.jobOwnerEmail;
         }
       }
 
       console.log('Sending job invitation email to:', invitationData.invitedEmail);
 
-      const emailData = await resend.emails.send({
+      const { data: emailData, error: emailError } = await resend.emails.send({
         from: `${inviterBusinessName} <invitations@proxtrades.com>`,
         replyTo: invitationData.jobOwnerEmail,
         to: invitationData.invitedEmail,
@@ -67,16 +67,20 @@ const sendJobInvitationEmail = onDocumentCreated(
         })
       });
 
-      console.log('Invitation email sent successfully:', emailData.id);
+      if (emailError) {
+        throw new Error(emailError.message || 'Failed to send email');
+      }
+
+      console.log('Invitation email sent successfully:', emailData?.id);
 
       // Update the invitation document to mark email as sent
       await event.data.ref.update({
         emailSent: true,
         emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
-        emailId: emailData.id
+        emailId: emailData?.id || null
       });
 
-      return { success: true, emailId: emailData.id };
+      return { success: true, emailId: emailData?.id };
 
     } catch (error) {
       console.error('Error sending invitation email:', error);
@@ -133,7 +137,7 @@ const notifyInvitationAccepted = onDocumentUpdated(
       }
 
       await resend.emails.send({
-        from: 'Electrician Pro X <notifications@proxtrades.com>',
+        from: 'ProXTrades <notifications@proxtrades.com>',
         to: afterData.jobOwnerEmail,
         subject: `✅ ${inviteeName} Accepted Your Job Invitation`,
         html: generateInvitationAcceptedEmailHTML({
