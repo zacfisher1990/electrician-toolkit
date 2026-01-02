@@ -347,12 +347,14 @@ function generateWelcomeHTML(email) {
                         ✅ Free Forever
                       </h3>
                       <ul style="margin: 0; padding-left: 20px; color: #15803d; font-size: 14px; line-height: 1.8;">
-                        <li>Wire sizing calculator (NEC 310)</li>
-                        <li>Box fill calculator (NEC 314)</li>
-                        <li>Conduit fill calculator (NEC Chapter 9)</li>
-                        <li>Voltage drop calculator</li>
-                        <li>Dwelling load calculator</li>
-                        <li>And 10+ more NEC calculators</li>
+                        <li>20+ NEC compliant electrical calculators</li>
+                        <li>NEC reference tables</li>
+                        <li>Log up to 3 jobs per month</li>
+                        <li>Create up to 3 estimates per month</li>
+                        <li>Create up to 3 invoices per month</li>
+                        <li>Track job hours</li>
+                        <li>Track work hours and revenue</li>
+                        <li>Receive job invitations & invite others to jobs</li>
                       </ul>
                     </div>
                   </td>
@@ -363,26 +365,28 @@ function generateWelcomeHTML(email) {
                   <td style="padding: 0 30px 30px;">
                     <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 12px; padding: 24px;">
                       <h3 style="margin: 0 0 5px 0; color: #92400e; font-size: 18px; font-weight: 600;">
-                        ⭐ Pro Subscription
+                        ⭐ Upgrade to Pro
                       </h3>
                       <p style="margin: 0 0 15px 0; color: #a16207; font-size: 14px;">
                         For electricians who mean business
                       </p>
                       <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #92400e; font-size: 14px; line-height: 1.8;">
-                        <li><strong>Job Tracking</strong> — Schedule, manage, and track all your jobs</li>
-                        <li><strong>Time Tracking</strong> — Clock in/out with GPS, track hours per job</li>
-                        <li><strong>Professional Estimates</strong> — Create & send estimates in minutes</li>
-                        <li><strong>Invoicing</strong> — Generate invoices, get paid faster</li>
-                        <li><strong>Team Management</strong> — Invite crew members to jobs</li>
-                        <li><strong>Photo Documentation</strong> — Attach photos to jobs</li>
-                        <li><strong>Analytics Dashboard</strong> — See your business performance</li>
+                        <li><strong>Unlimited job logging</strong></li>
+                        <li><strong>Unlimited estimates</strong></li>
+                        <li><strong>Unlimited invoices</strong></li>
                       </ul>
-                      <div style="text-align: center;">
-                        <p style="margin: 0 0 10px 0; color: #92400e; font-size: 24px; font-weight: 700;">
-                          $12.99<span style="font-size: 14px; font-weight: 500;">/month</span>
+                      <div style="text-align: center; border-top: 1px solid #f59e0b; padding-top: 20px;">
+                        <p style="margin: 0 0 5px 0; color: #92400e; font-size: 14px;">
+                          <strong>Lifetime Access</strong>
                         </p>
-                        <p style="margin: 0 0 15px 0; color: #a16207; font-size: 13px;">
-                          Less than the cost of one hour of work
+                        <p style="margin: 0 0 15px 0; color: #92400e; font-size: 28px; font-weight: 700;">
+                          $119.99 <span style="font-size: 14px; font-weight: 500;">one-time</span>
+                        </p>
+                        <p style="margin: 0 0 5px 0; color: #a16207; font-size: 13px;">
+                          — or —
+                        </p>
+                        <p style="margin: 0; color: #92400e; font-size: 20px; font-weight: 600;">
+                          $9.99<span style="font-size: 14px; font-weight: 500;">/month</span>
                         </p>
                       </div>
                     </div>
@@ -398,20 +402,6 @@ function generateWelcomeHTML(email) {
                   </td>
                 </tr>
 
-                <!-- Testimonial/Trust Builder -->
-                <tr>
-                  <td style="padding: 0 30px 30px;">
-                    <div style="background-color: #f9fafb; border-radius: 12px; padding: 24px; text-align: center;">
-                      <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px; font-style: italic; line-height: 1.6;">
-                        "I built this app because I was tired of using a calculator for box fill, a spreadsheet for estimates, and sticky notes for job tracking. Now it's all in one place."
-                      </p>
-                      <p style="margin: 0; color: #9ca3af; font-size: 13px;">
-                        — Zac, Electrician & Founder
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-                
                 <!-- Footer -->
                 <tr>
                   <td style="background-color: #1f2937; padding: 30px; text-align: center;">
