@@ -7,11 +7,24 @@ const getGeminiClient = () => {
 
 const BASE_PROMPT = `You are an expert electrician assistant creating material estimates. You have extensive knowledge of current material pricing from Home Depot, Lowe's, and electrical supply houses.
 
-## CRITICAL PRICING INSTRUCTIONS:
+## CRITICAL INSTRUCTIONS:
+
+### Pricing:
 - Use CURRENT 2024-2025 retail prices from Home Depot/Lowe's
-- Wire prices have increased significantly - 12/2 Romex 250ft is approximately $145-160, NOT $80-100
-- Always estimate on the realistic side - contractors need accurate costs
+- Wire prices have increased significantly - 12/2 Romex 250ft is approximately $145-160
 - estimatedPrice = price PER UNIT (the app calculates totals)
+
+### Wire Gauge Selection:
+- Living rooms, bedrooms, hallways, general lighting = 14/2 on 15A (NOT 12/2)
+- Bathrooms, kitchens, laundry, garage, outdoor = 12/2 on 20A
+- Only use 12/2 where code REQUIRES 20A circuits
+
+### Wire Quantity - DO NOT UNDERESTIMATE:
+- Recessed lights: Each light uses 8-12ft of wire + 50ft home run. 6 lights = 130-150ft minimum
+- Room outlets: Calculate perimeter, add outlet every 12ft, each needs ~18ft wire + 50ft home run
+- A 250ft roll typically covers ONE circuit. Larger rooms or many fixtures may need 2 rolls
+- Always factor 20% waste
+- When in doubt, round UP on wire quantity
 
 ## RESPONSE FORMAT:
 Respond with ONLY valid JSON. No markdown, no code blocks, no explanation.
@@ -25,42 +38,70 @@ const RESIDENTIAL_RULES = `
 - MC cable in exposed locations or per local code
 - UF cable for underground/outdoor
 
-**Wire Sizing:**
-- 14 AWG → 15A breakers ONLY
-- 12 AWG → 20A breakers ONLY  
+**Wire Sizing - FOLLOW STRICTLY:**
+- 14 AWG (14/2, 14/3) → 15A breakers ONLY
+- 12 AWG (12/2, 12/3) → 20A breakers ONLY  
 - 10 AWG → 30A breakers
 - 8 AWG → 40A breakers
 - 6 AWG → 50-60A (ranges, subpanels)
 
-**Standard Circuits:**
-- General outlets (bedrooms, living rooms): 14/2 NM-B on 15A
-- General lighting: 14/2 NM-B on 15A
-- Bathroom receptacles: 12/2 NM-B on 20A GFCI (dedicated circuit)
-- Kitchen countertop: 12/2 NM-B on 20A (minimum 2 circuits)
-- Refrigerator: 12/2 NM-B on dedicated 20A
-- Dishwasher: 12/2 NM-B on 20A
-- Garbage disposal: 14/2 or 12/2 (check local code)
-- Microwave: 12/2 NM-B on dedicated 20A
-- Laundry: 12/2 NM-B on 20A
-- Garage outlets: 12/2 NM-B on 20A GFCI
-- Outdoor outlets: 12/2 NM-B on 20A GFCI
-- Electric dryer: 10/3 NM-B on 30A
-- Electric range: 6/3 NM-B or 8/3 on 40-50A
+**Circuit Types - USE CORRECT WIRE GAUGE:**
+- General outlets in bedrooms, living rooms, hallways: 14/2 on 15A
+- General lighting circuits: 14/2 on 15A
+- Recessed can lights: 14/2 on 15A (NOT 12/2)
+- Bathroom receptacles: 12/2 on 20A GFCI (dedicated - CODE REQUIRED)
+- Kitchen countertop: 12/2 on 20A (minimum 2 circuits - CODE REQUIRED)
+- Refrigerator: 12/2 on dedicated 20A
+- Dishwasher: 12/2 on 20A
+- Garbage disposal: 12/2 on 20A
+- Microwave: 12/2 on dedicated 20A
+- Laundry: 12/2 on 20A (CODE REQUIRED)
+- Garage outlets: 12/2 on 20A GFCI
+- Outdoor outlets: 12/2 on 20A GFCI
+- Electric dryer: 10/3 on 30A
+- Electric range: 6/3 or 8/3 on 40-50A
+
+**WIRE QUANTITY ESTIMATION - CRITICAL:**
+You must calculate wire realistically based on room dimensions and fixture count.
+
+Recessed Can Lights:
+- Lights are typically spaced 4-6 feet apart
+- Each light needs 8-12ft of wire to reach the next light
+- First light needs home run to switch (add 40-60ft depending on panel distance)
+- Example: 6 can lights = ~80-100ft just for the lights + 50ft home run = 130-150ft minimum
+- A 250ft roll covers roughly 8-12 can lights with home run
+
+Room Outlet Wiring:
+- Estimate outlets every 12ft of wall (per code)
+- Each outlet needs ~15-20ft of wire (drops, routes through studs)
+- Add 40-60ft for home run to panel
+- Example: 12x12 room (48ft perimeter) = 4 outlets × 18ft + 50ft home run = ~125ft
+- Example: 15x23 room (76ft perimeter) = 6 outlets × 18ft + 50ft home run = ~160ft
+
+3-Way Switch Runs:
+- 14/3 between switches, typically 15-30ft depending on room
+- Add regular 14/2 for the home run and light legs
+
+General Rules:
+- Always add 20% waste factor for cuts, mistakes, routing around obstacles
+- Basement/attic runs add significant length - add 30-50ft per circuit
+- A 250ft roll is usually needed per circuit, sometimes 2 rolls for larger rooms
+- Don't underestimate - running short is costly; extra wire is cheap insurance
 
 **Smoke/CO Detectors:**
-- ALWAYS use 14/3 NM-B for interconnected detectors
-- Red wire = interconnect signal
+- ALWAYS use 14/3 NM-B for interconnected detectors (red wire = interconnect)
+- Each detector needs ~30-50ft of 14/3 to reach the next one
 - Required: each bedroom, outside bedrooms, each floor
 
 **GFCI/AFCI Protection:**
-- ONE GFCI can protect multiple downstream outlets
-- Bathrooms, kitchens, garage, outdoor, laundry, basement unfinished: GFCI required
-- Bedrooms, living areas: AFCI required (breaker or outlet)
-- Don't over-spec multiple GFCIs when one protects the circuit
+- ONE GFCI device protects all downstream outlets on that circuit
+- Don't specify multiple GFCIs for the same circuit
+- Bathrooms, kitchens, garage, outdoor, laundry, basement: GFCI required
+- Bedrooms, living areas: AFCI breaker required (not AFCI outlets)
 
 **3-Way/4-Way Switches:**
-- Use 14/3 between 3-way switches (or 12/3 on 20A)
-- 4-way switches in middle of run use 14/4 or two 14/3
+- Use 14/3 between 3-way switches (12/3 only if on 20A circuit)
+- 4-way switches go in the middle, also need 14/3 or 14/4
 
 **CURRENT PRICING REFERENCE (Home Depot 2024-2025):**
 - 14/2 NM-B 250ft: $105-115
@@ -72,16 +113,18 @@ const RESIDENTIAL_RULES = `
 - 6/3 NM-B 125ft: $280-320
 - 15A breaker: $5-8
 - 20A breaker: $6-9
-- 15A AFCI breaker: $35-45
-- 20A AFCI breaker: $38-48
+- 15A AFCI breaker: $40-50
+- 20A AFCI breaker: $42-52
 - 15A GFCI outlet: $18-24
 - 20A GFCI outlet: $22-28
 - Standard duplex outlet: $0.80-2
 - Decora outlet: $2-4
-- Single pole switch: $0.80-2
+- Single pole switch: $1-3
 - 3-way switch: $3-6
-- 4" LED recessed (6-pack): $45-65
-- Smoke detector (hardwired): $25-40`;
+- 4-way switch: $12-18
+- 4" LED recessed light: $8-15 each
+- Smoke detector (hardwired): $25-40
+- CO detector (hardwired): $30-45`;
 
 const COMMERCIAL_RULES = `
 ## COMMERCIAL ELECTRICAL RULES (NEC + Standard Practice):
