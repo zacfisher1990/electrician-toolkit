@@ -5,11 +5,14 @@ const getGeminiClient = () => {
   return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 };
 
-const BASE_PROMPT = `You are an expert electrician assistant creating material estimates. You have extensive knowledge of current material pricing from Home Depot, Lowe's, and electrical supply houses.
+const BASE_PROMPT = `You are an expert electrician assistant creating comprehensive job estimates. You have extensive knowledge of:
+- Current material pricing from Home Depot, Lowe's, and electrical supply houses
+- Realistic labor times for electrical work
+- Regional labor rates for electricians
 
 ## CRITICAL INSTRUCTIONS:
 
-### Pricing:
+### Materials Pricing:
 - Use CURRENT 2024-2025 retail prices from Home Depot/Lowe's
 - Wire prices have increased significantly - 12/2 Romex 250ft is approximately $145-160
 - estimatedPrice = price PER UNIT (the app calculates totals)
@@ -33,9 +36,42 @@ const BASE_PROMPT = `You are an expert electrician assistant creating material e
 - Always factor 20% waste
 - When in doubt, round UP on wire quantity
 
+### Labor Hours Estimation:
+Estimate realistic labor hours based on job complexity. Provide THREE values:
+- low: Best case - experienced electrician, easy access, new construction
+- mid: Standard case - typical conditions, some obstacles
+- high: Complex case - remodel, difficult access, older home, troubleshooting
+
+Labor time guidelines per task (adjust based on conditions):
+- Rough-in outlet: 15-30 min
+- Rough-in switch (single pole): 15-25 min
+- Rough-in 3-way switch pair: 30-45 min
+- Recessed light rough-in: 20-40 min each
+- Panel work (add circuit): 30-60 min
+- GFCI installation: 20-30 min
+- Smoke detector: 20-35 min
+- Home run (per circuit): 30-60 min
+- Troubleshooting: add 1-2 hrs for remodel/old work
+
+### Labor Rate Suggestions:
+Base rates vary by job type and region. Provide a suggested rate with range.
+
 ## RESPONSE FORMAT:
 Respond with ONLY valid JSON. No markdown, no code blocks, no explanation.
-{"materials":[{"name":"Item description","quantity":1,"estimatedPrice":10.00,"notes":"Optional note"}]}`;
+{
+  "materials": [{"name": "Item description", "quantity": 1, "estimatedPrice": 10.00, "notes": "Optional note"}],
+  "laborEstimate": {
+    "low": 4,
+    "mid": 6,
+    "high": 8,
+    "reasoning": "Brief explanation of estimate"
+  },
+  "suggestedRate": {
+    "rate": 85,
+    "range": {"low": 65, "high": 125},
+    "reasoning": "Brief explanation"
+  }
+}`;
 
 const RESIDENTIAL_RULES = `
 ## RESIDENTIAL ELECTRICAL RULES (NEC + Standard Practice):
@@ -136,7 +172,20 @@ General Rules:
 - 4-way switch: $12-18
 - 4" LED recessed light: $8-15 each
 - Smoke detector (hardwired): $25-40
-- CO detector (hardwired): $30-45`;
+- CO detector (hardwired): $30-45
+
+**RESIDENTIAL LABOR RATES (2024-2025):**
+- Economy/handyman rate: $50-65/hr
+- Standard licensed electrician: $75-95/hr  
+- Master electrician/premium: $100-150/hr
+- Most residential work: $75-100/hr typical
+
+**RESIDENTIAL LABOR TIME FACTORS:**
+- New construction: Use base times (easier access)
+- Finished basement: Add 25-50% (working overhead, existing structure)
+- Remodel/old work: Add 50-100% (fishing wires, patching, surprises)
+- Attic work: Add 25% (heat, access, working conditions)
+- Crawl space: Add 25-50% (access, comfort)`;
 
 const COMMERCIAL_RULES = `
 ## COMMERCIAL ELECTRICAL RULES (NEC + Standard Practice):
@@ -187,7 +236,19 @@ const COMMERCIAL_RULES = `
 - EMT connectors/couplings: $0.50-2 each
 - 4" square box: $3-6
 - LED troffer 2x4: $45-80
-- Exit sign LED: $25-50`;
+- Exit sign LED: $25-50
+
+**COMMERCIAL LABOR RATES (2024-2025):**
+- Standard commercial electrician: $85-110/hr
+- Prevailing wage/union: $120-175/hr
+- Service/emergency: $125-200/hr
+- Most commercial TI work: $90-120/hr typical
+
+**COMMERCIAL LABOR TIME FACTORS:**
+- New construction: Base times
+- Tenant improvement: Add 25% (working around existing)
+- Occupied space: Add 50% (after hours, working around people)
+- High ceiling work: Add 25-50% (lifts, scaffolding)`;
 
 const INDUSTRIAL_RULES = `
 ## INDUSTRIAL ELECTRICAL RULES (NEC + Standard Practice):
@@ -235,7 +296,19 @@ const INDUSTRIAL_RULES = `
 - Motor starter 10HP: $250-500
 - VFD 5HP: $500-1000
 - 400A panel 3-phase: $1000-1800
-- LED high bay 150W: $120-200`;
+- LED high bay 150W: $120-200
+
+**INDUSTRIAL LABOR RATES (2024-2025):**
+- Standard industrial electrician: $95-130/hr
+- Prevailing wage/union: $140-200/hr
+- Shutdown/turnaround work: $150-250/hr
+- Most industrial maintenance: $100-140/hr typical
+
+**INDUSTRIAL LABOR TIME FACTORS:**
+- Normal operations: Base times
+- Live plant/production: Add 50% (safety, coordination)
+- Shutdown work: Can be faster but premium rates
+- Hazardous areas: Add 25-50% (permits, safety)`;
 
 const JOB_TYPE_PROMPTS = {
   residential: RESIDENTIAL_RULES,
@@ -243,11 +316,11 @@ const JOB_TYPE_PROMPTS = {
   industrial: INDUSTRIAL_RULES,
 };
 
-exports.generateMaterials = onCall(
+exports.generateEstimate = onCall(
   {
     secrets: ["GEMINI_API_KEY"],
-    timeoutSeconds: 60,
-    memory: "256MiB",
+    timeoutSeconds: 90,
+    memory: "512MiB",
   },
   async (request) => {
     if (!request.auth) {
@@ -266,10 +339,10 @@ exports.generateMaterials = onCall(
       );
     }
 
-    if (jobDescription.length > 1500) {
+    if (jobDescription.length > 2000) {
       throw new HttpsError(
         "invalid-argument",
-        "Job description is too long. Please keep it under 1500 characters."
+        "Job description is too long. Please keep it under 2000 characters."
       );
     }
 
@@ -284,7 +357,7 @@ exports.generateMaterials = onCall(
         model: "gemini-2.0-flash",
         generationConfig: {
           temperature: 0.3,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 6000,
         },
       });
 
@@ -292,21 +365,26 @@ exports.generateMaterials = onCall(
       
       const prompt = `${systemPrompt}
 
-Generate a materials list for this ${jobTypeLabel} electrical job. Use CURRENT retail pricing. JSON only:
+Generate a COMPLETE estimate for this ${jobTypeLabel} electrical job including:
+1. Materials list with current retail pricing
+2. Labor hour estimate (low/mid/high range with reasoning)
+3. Suggested hourly rate with range
 
-${jobDescription}`;
+Job Description:
+${jobDescription}
+
+Remember: JSON only, no markdown.`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const responseText = response.text();
 
-      console.log(`[${selectedJobType}] Raw AI response length:`, responseText.length);
+      console.log(`[generateEstimate][${selectedJobType}] Raw AI response length:`, responseText.length);
 
       let parsedResponse;
       try {
         let cleanJson = responseText.trim();
         
-        // Remove markdown code blocks if present
         if (cleanJson.startsWith("```json")) {
           cleanJson = cleanJson.slice(7);
         } else if (cleanJson.startsWith("```")) {
@@ -317,7 +395,6 @@ ${jobDescription}`;
         }
         cleanJson = cleanJson.trim();
         
-        // Extract JSON object
         const firstBrace = cleanJson.indexOf("{");
         const lastBrace = cleanJson.lastIndexOf("}");
         if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
@@ -327,49 +404,91 @@ ${jobDescription}`;
         parsedResponse = JSON.parse(cleanJson);
       } catch (parseError) {
         console.error("JSON Parse Error:", parseError.message);
-        console.error("Response:", responseText.substring(0, 1000));
+        console.error("Response:", responseText.substring(0, 1500));
         throw new HttpsError(
           "internal",
           "Failed to parse AI response. Please try again."
         );
       }
 
-      if (!parsedResponse.materials || !Array.isArray(parsedResponse.materials)) {
-        throw new HttpsError(
-          "internal",
-          "Invalid AI response format. Please try again."
-        );
-      }
-
-      // Flag threshold based on job type
+      // Process materials
       const flagThreshold = selectedJobType === 'industrial' ? 1500 : 
                            selectedJobType === 'commercial' ? 800 : 500;
 
-      const materials = parsedResponse.materials
-        .filter((mat) => mat.name && typeof mat.estimatedPrice === "number")
-        .map((mat) => {
-          let price = Number(mat.estimatedPrice) || 0;
-          let flagged = price > flagThreshold;
-          
-          if (flagged) {
-            console.warn(`High price flagged: ${mat.name} at $${price}`);
-          }
-          
-          return {
-            name: String(mat.name).substring(0, 200),
-            quantity: Math.max(1, Math.round(Number(mat.quantity) || 1)),
-            estimatedPrice: Math.max(0, Number(price.toFixed(2))),
-            notes: mat.notes ? String(mat.notes).substring(0, 200) : null,
-            flagged: flagged,
-          };
-        })
-        .slice(0, 50);
+      let materials = [];
+      if (parsedResponse.materials && Array.isArray(parsedResponse.materials)) {
+        materials = parsedResponse.materials
+          .filter((mat) => mat.name && typeof mat.estimatedPrice === "number")
+          .map((mat) => {
+            let price = Number(mat.estimatedPrice) || 0;
+            let flagged = price > flagThreshold;
+            
+            return {
+              name: String(mat.name).substring(0, 200),
+              quantity: Math.max(1, Math.round(Number(mat.quantity) || 1)),
+              estimatedPrice: Math.max(0, Number(price.toFixed(2))),
+              notes: mat.notes ? String(mat.notes).substring(0, 200) : null,
+              flagged: flagged,
+            };
+          })
+          .slice(0, 50);
+      }
 
-      console.log(`[${selectedJobType}] Successfully parsed`, materials.length, "materials");
+      // Process labor estimate
+      let laborEstimate = null;
+      if (parsedResponse.laborEstimate) {
+        const le = parsedResponse.laborEstimate;
+        laborEstimate = {
+          low: Math.max(0.5, Math.round(Number(le.low) * 2) / 2) || 2,
+          mid: Math.max(1, Math.round(Number(le.mid) * 2) / 2) || 4,
+          high: Math.max(1.5, Math.round(Number(le.high) * 2) / 2) || 8,
+          reasoning: le.reasoning ? String(le.reasoning).substring(0, 300) : null,
+        };
+        
+        // Ensure low < mid < high
+        if (laborEstimate.low >= laborEstimate.mid) {
+          laborEstimate.low = laborEstimate.mid * 0.7;
+        }
+        if (laborEstimate.mid >= laborEstimate.high) {
+          laborEstimate.high = laborEstimate.mid * 1.4;
+        }
+      }
 
-      return { materials };
+      // Process suggested rate
+      let suggestedRate = null;
+      if (parsedResponse.suggestedRate) {
+        const sr = parsedResponse.suggestedRate;
+        suggestedRate = {
+          rate: Math.round(Number(sr.rate)) || 85,
+          range: {
+            low: Math.round(Number(sr.range?.low)) || 65,
+            high: Math.round(Number(sr.range?.high)) || 125,
+          },
+          reasoning: sr.reasoning ? String(sr.reasoning).substring(0, 200) : null,
+        };
+        
+        // Ensure rate is within range
+        if (suggestedRate.rate < suggestedRate.range.low) {
+          suggestedRate.rate = suggestedRate.range.low;
+        }
+        if (suggestedRate.rate > suggestedRate.range.high) {
+          suggestedRate.rate = suggestedRate.range.high;
+        }
+      }
+
+      console.log(`[generateEstimate][${selectedJobType}] Parsed:`, {
+        materials: materials.length,
+        laborEstimate: laborEstimate ? `${laborEstimate.low}/${laborEstimate.mid}/${laborEstimate.high}` : 'none',
+        suggestedRate: suggestedRate ? `$${suggestedRate.rate}/hr` : 'none',
+      });
+
+      return { 
+        materials, 
+        laborEstimate, 
+        suggestedRate 
+      };
     } catch (error) {
-      console.error("AI Materials Generation Error:", error);
+      console.error("AI Estimate Generation Error:", error);
 
       if (error instanceof HttpsError) {
         throw error;
@@ -384,7 +503,7 @@ ${jobDescription}`;
 
       throw new HttpsError(
         "internal",
-        "Failed to generate materials. Please try again."
+        "Failed to generate estimate. Please try again."
       );
     }
   }
