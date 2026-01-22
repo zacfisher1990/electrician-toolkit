@@ -24,6 +24,7 @@ const { sendTimeCardEmail } = require('./src/functions/sendTimeCardEmail');
 const { sendWelcomeEmail } = require('./src/functions/sendWelcomeEmail');
 const { generateMaterials } = require('./src/functions/generateMaterials');
 const { generateEstimate } = require('./src/functions/generateEstimate');
+const { scanReceipt } = require('./src/functions/scanReceipt');
 
 // Export all functions
 exports.sendInvoiceEmail = sendInvoiceEmail;
@@ -35,3 +36,4 @@ exports.sendTimeCardEmail = sendTimeCardEmail;
 exports.sendWelcomeEmail = sendWelcomeEmail;
 exports.generateMaterials = generateMaterials;
 exports.generateEstimate = generateEstimate;
+exports.scanReceipt = scanReceipt;
