@@ -8,7 +8,7 @@ const getGeminiClient = () => {
 const BASE_PROMPT = `You are an expert electrician assistant creating comprehensive job estimates. You have extensive knowledge of:
 - Current material pricing from Home Depot, Lowe's, and electrical supply houses
 - Realistic labor times for electrical work
-- Regional labor rates for electricians
+- Regional labor rates for electricians across the United States
 
 ## CRITICAL INSTRUCTIONS:
 
@@ -53,8 +53,48 @@ Labor time guidelines per task (adjust based on conditions):
 - Home run (per circuit): 30-60 min
 - Troubleshooting: add 1-2 hrs for remodel/old work
 
-### Labor Rate Suggestions:
-Base rates vary by job type and region. Provide a suggested rate with range.
+### Labor Rate Suggestions - LOCATION AWARE:
+Electrician labor rates vary SIGNIFICANTLY by region. When a location is provided, adjust rates accordingly:
+
+**HIGH COST REGIONS ($100-175/hr typical):**
+- San Francisco Bay Area, Silicon Valley
+- New York City, Long Island, Westchester
+- Los Angeles, Orange County
+- Seattle, Bellevue
+- Boston metro area
+- Washington DC metro
+- Chicago downtown
+- Hawaii
+
+**ABOVE AVERAGE REGIONS ($85-130/hr typical):**
+- Denver, Colorado Springs
+- Portland, OR
+- San Diego
+- Phoenix metro
+- Minneapolis/St. Paul
+- Austin, Dallas
+- Atlanta metro
+- Most of New Jersey, Connecticut
+
+**AVERAGE REGIONS ($70-100/hr typical):**
+- Most mid-sized cities
+- Suburbs of major metros
+- Florida (except Miami)
+- North Carolina, Virginia
+- Ohio, Michigan, Indiana cities
+
+**LOWER COST REGIONS ($55-85/hr typical):**
+- Rural areas nationwide
+- Small towns
+- Mississippi, Arkansas, West Virginia
+- Parts of the South and Midwest
+- New Mexico (except Santa Fe/Albuquerque)
+
+When suggesting rates, factor in:
+1. The specific city/region provided
+2. Cost of living in that area
+3. Local market rates for licensed electricians
+4. Job type (commercial/industrial typically pays more)
 
 ## RESPONSE FORMAT:
 Respond with ONLY valid JSON. No markdown, no code blocks, no explanation.
@@ -69,7 +109,7 @@ Respond with ONLY valid JSON. No markdown, no code blocks, no explanation.
   "suggestedRate": {
     "rate": 85,
     "range": {"low": 65, "high": 125},
-    "reasoning": "Brief explanation"
+    "reasoning": "Brief explanation including location factor"
   }
 }`;
 
@@ -174,7 +214,8 @@ General Rules:
 - Smoke detector (hardwired): $25-40
 - CO detector (hardwired): $30-45
 
-**RESIDENTIAL LABOR RATES (2024-2025):**
+**RESIDENTIAL LABOR RATES (2024-2025) - USE LOCATION TO ADJUST:**
+Base rates (adjust based on provided location):
 - Economy/handyman rate: $50-65/hr
 - Standard licensed electrician: $75-95/hr  
 - Master electrician/premium: $100-150/hr
@@ -229,55 +270,56 @@ const COMMERCIAL_RULES = `
 - 1" EMT 10ft: $12-16
 - #12 THHN 500ft: $95-120
 - #10 THHN 500ft: $140-170
-- 12/2 MC cable 250ft: $200-250
-- 12/3 MC cable 250ft: $270-320
-- 20A commercial spec outlet: $3-5
-- 20A commercial GFCI: $25-35
-- EMT connectors/couplings: $0.50-2 each
-- 4" square box: $3-6
-- LED troffer 2x4: $45-80
-- Exit sign LED: $25-50
+- MC 12/2 250ft: $180-220
+- MC 12/3 250ft: $250-300
+- 20A commercial spec outlet: $8-15
+- 277V ballast: $40-80
+- 2x4 LED troffer: $80-150
+- Exit sign LED: $35-60
+- Emergency light combo: $60-100
+- Commercial panel 200A: $400-700
 
-**COMMERCIAL LABOR RATES (2024-2025):**
-- Standard commercial electrician: $85-110/hr
-- Prevailing wage/union: $120-175/hr
-- Service/emergency: $125-200/hr
+**COMMERCIAL LABOR RATES (2024-2025) - USE LOCATION TO ADJUST:**
+Base rates (adjust based on provided location):
+- Standard commercial electrician: $85-115/hr
+- Union/prevailing wage: $120-180/hr
+- After hours/weekend: Add 25-50%
 - Most commercial TI work: $90-120/hr typical
 
 **COMMERCIAL LABOR TIME FACTORS:**
-- New construction: Base times
-- Tenant improvement: Add 25% (working around existing)
-- Occupied space: Add 50% (after hours, working around people)
-- High ceiling work: Add 25-50% (lifts, scaffolding)`;
+- Tenant improvement (TI): Base times
+- Occupied building: Add 25% (working around tenants)
+- High ceiling work: Add 25-50% (lifts, scaffolding)
+- After hours requirement: Consider premium`;
 
 const INDUSTRIAL_RULES = `
 ## INDUSTRIAL ELECTRICAL RULES (NEC + Standard Practice):
 
 **Wiring Methods:**
-- Rigid Metal Conduit (RMC) for durability
-- IMC (Intermediate) where permitted
-- PVC conduit in corrosive environments
-- MC/AC cable in some applications
-- Cable tray systems for large runs
+- Rigid metal conduit (RMC/GRC) - heavy duty
+- IMC (Intermediate Metal Conduit) - standard
+- Tray cable in cable trays
+- LFMC for motor connections (flexible)
+- Hazardous location: explosion-proof fittings required
 
 **Wire Types:**
-- THHN/THWN standard
+- THHN/THWN in conduit (most common)
 - XHHW for wet locations
-- MTW for machine tool wiring
-- Larger conductors: 500 MCM, 750 MCM common
+- MTW (Machine Tool Wire) for equipment
+- Tray-rated cable for cable tray installations
 
 **Voltage Systems:**
-- 480V 3-phase for motors/machinery
-- 277V for HID/LED high-bay lighting
-- 120/208V for convenience outlets
-- Control circuits: 24V, 120V
+- 480V 3-phase (primary distribution)
+- 277V lighting (derived from 480V)
+- 208V 3-phase (equipment)
+- 120V for receptacles/controls
+- Control voltage: 24V DC, 120V AC
 
 **Motor Circuits:**
-- Size wire at 125% of motor FLA
-- Starter/contactor rated for motor HP
-- Overload protection required
-- Disconnect within sight of motor
-- VFDs for variable speed applications
+- Full Load Amps (FLA) determines wire size
+- 125% of FLA for branch circuit sizing
+- Starter/VFD sizing matches motor HP
+- Overload protection: 115-125% of FLA
 
 **Disconnects:**
 - Required within sight of all motors
@@ -298,7 +340,8 @@ const INDUSTRIAL_RULES = `
 - 400A panel 3-phase: $1000-1800
 - LED high bay 150W: $120-200
 
-**INDUSTRIAL LABOR RATES (2024-2025):**
+**INDUSTRIAL LABOR RATES (2024-2025) - USE LOCATION TO ADJUST:**
+Base rates (adjust based on provided location):
 - Standard industrial electrician: $95-130/hr
 - Prevailing wage/union: $140-200/hr
 - Shutdown/turnaround work: $150-250/hr
@@ -330,7 +373,7 @@ exports.generateEstimate = onCall(
       );
     }
 
-    const { jobDescription, jobType = 'residential' } = request.data;
+    const { jobDescription, jobType = 'residential', jobLocation } = request.data;
 
     if (!jobDescription || typeof jobDescription !== "string") {
       throw new HttpsError(
@@ -363,12 +406,18 @@ exports.generateEstimate = onCall(
 
       const jobTypeLabel = selectedJobType.charAt(0).toUpperCase() + selectedJobType.slice(1);
       
+      // Build location context for the prompt
+      const locationContext = jobLocation && jobLocation.trim() 
+        ? `\n\nJob Location: ${jobLocation.trim()}\n(Use this location to provide accurate regional labor rate estimates. Factor in local cost of living and market rates for this specific area.)`
+        : '\n\n(No specific location provided - use national average rates for labor estimates.)';
+      
       const prompt = `${systemPrompt}
 
 Generate a COMPLETE estimate for this ${jobTypeLabel} electrical job including:
 1. Materials list with current retail pricing
 2. Labor hour estimate (low/mid/high range with reasoning)
-3. Suggested hourly rate with range
+3. Suggested hourly rate with range (IMPORTANT: Adjust based on the job location if provided)
+${locationContext}
 
 Job Description:
 ${jobDescription}
@@ -379,7 +428,7 @@ Remember: JSON only, no markdown.`;
       const response = await result.response;
       const responseText = response.text();
 
-      console.log(`[generateEstimate][${selectedJobType}] Raw AI response length:`, responseText.length);
+      console.log(`[generateEstimate][${selectedJobType}][${jobLocation || 'no-location'}] Raw AI response length:`, responseText.length);
 
       let parsedResponse;
       try {
@@ -476,7 +525,7 @@ Remember: JSON only, no markdown.`;
         }
       }
 
-      console.log(`[generateEstimate][${selectedJobType}] Parsed:`, {
+      console.log(`[generateEstimate][${selectedJobType}][${jobLocation || 'no-location'}] Parsed:`, {
         materials: materials.length,
         laborEstimate: laborEstimate ? `${laborEstimate.low}/${laborEstimate.mid}/${laborEstimate.high}` : 'none',
         suggestedRate: suggestedRate ? `$${suggestedRate.rate}/hr` : 'none',
