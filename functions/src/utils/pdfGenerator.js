@@ -42,7 +42,7 @@ async function fetchImageBuffer(url) {
 
 /**
  * Generate PDF buffer for the invoice using PDFKit
- * Design matches the in-app preview with white card style
+ * Design matches the in-app preview with clean white style
  */
 async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
   // Fetch logo if available
@@ -65,30 +65,16 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       doc.on('error', reject);
 
       // Colors matching in-app preview
-      const primaryYellow = '#F7C600';
       const darkGray = '#1f2937';
       const mediumGray = '#4b5563';
       const lightGray = '#6b7280';
       const borderGray = '#e5e7eb';
       const bgGray = '#f9fafb';
 
-      // Page background
-      doc.rect(0, 0, doc.page.width, doc.page.height).fill('#f3f4f6');
-
-      // White card area
-      const cardX = 40;
-      const cardY = 40;
-      const cardWidth = doc.page.width - 80;
-      const cardHeight = doc.page.height - 80;
-      
-      // Card shadow effect (subtle)
-      doc.rect(cardX + 2, cardY + 2, cardWidth, cardHeight).fill('#e5e7eb');
-      doc.rect(cardX, cardY, cardWidth, cardHeight).fill('#ffffff');
-
-      let yPos = cardY + 30;
-      const leftMargin = cardX + 30;
-      const rightMargin = cardX + cardWidth - 30;
-      const contentWidth = cardWidth - 60;
+      let yPos = 50;
+      const leftMargin = 50;
+      const rightMargin = doc.page.width - 50;
+      const contentWidth = doc.page.width - 100;
 
       // Header section - Logo and Company Info
       if (logoBuffer) {
@@ -263,7 +249,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       const totalAmount = `$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`;
       doc.fontSize(18)
          .font('Helvetica-Bold')
-         .fillColor(primaryYellow)
+         .fillColor(darkGray)
          .text(totalAmount, leftMargin, yPos - 3, { width: contentWidth, align: 'right' });
 
       // Notes
@@ -283,7 +269,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       }
 
       // Footer
-      const footerY = cardY + cardHeight - 40;
+      const footerY = doc.page.height - 50;
       doc.fontSize(10)
          .font('Helvetica')
          .fillColor(lightGray)
@@ -301,7 +287,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
 
 /**
  * Generate PDF buffer for the estimate using PDFKit
- * Design matches the in-app preview with white card style
+ * Design matches the in-app preview with clean white style
  */
 async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
   // Fetch logo if available
@@ -324,30 +310,16 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
       doc.on('error', reject);
 
       // Colors matching in-app preview
-      const primaryYellow = '#F7C600';
       const darkGray = '#1f2937';
       const mediumGray = '#4b5563';
       const lightGray = '#6b7280';
       const borderGray = '#e5e7eb';
       const bgGray = '#f9fafb';
 
-      // Page background
-      doc.rect(0, 0, doc.page.width, doc.page.height).fill('#f3f4f6');
-
-      // White card area
-      const cardX = 40;
-      const cardY = 40;
-      const cardWidth = doc.page.width - 80;
-      const cardHeight = doc.page.height - 80;
-      
-      // Card shadow effect (subtle)
-      doc.rect(cardX + 2, cardY + 2, cardWidth, cardHeight).fill('#e5e7eb');
-      doc.rect(cardX, cardY, cardWidth, cardHeight).fill('#ffffff');
-
-      let yPos = cardY + 30;
-      const leftMargin = cardX + 30;
-      const rightMargin = cardX + cardWidth - 30;
-      const contentWidth = cardWidth - 60;
+      let yPos = 50;
+      const leftMargin = 50;
+      const rightMargin = doc.page.width - 50;
+      const contentWidth = doc.page.width - 100;
 
       // Header section - Logo and Company Info
       if (logoBuffer) {
@@ -524,9 +496,6 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
         estimate.materials.forEach((material, index) => {
           if (yPos > doc.page.height - 150) {
             doc.addPage();
-            // Redraw card background on new page
-            doc.rect(0, 0, doc.page.width, doc.page.height).fill('#f3f4f6');
-            doc.rect(cardX, 20, cardWidth, doc.page.height - 40).fill('#ffffff');
             yPos = 50;
           }
 
@@ -561,8 +530,6 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
         estimate.additionalItems.forEach((item) => {
           if (yPos > doc.page.height - 150) {
             doc.addPage();
-            doc.rect(0, 0, doc.page.width, doc.page.height).fill('#f3f4f6');
-            doc.rect(cardX, 20, cardWidth, doc.page.height - 40).fill('#ffffff');
             yPos = 50;
           }
 
@@ -594,7 +561,7 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
       const totalAmount = `$${parseFloat(estimate.total || 0).toFixed(2)}`;
       doc.fontSize(18)
          .font('Helvetica-Bold')
-         .fillColor(primaryYellow)
+         .fillColor(darkGray)
          .text(totalAmount, leftMargin, yPos - 3, { width: contentWidth, align: 'right' });
 
       // Notes
@@ -603,8 +570,6 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
         
         if (yPos > doc.page.height - 100) {
           doc.addPage();
-          doc.rect(0, 0, doc.page.width, doc.page.height).fill('#f3f4f6');
-          doc.rect(cardX, 20, cardWidth, doc.page.height - 40).fill('#ffffff');
           yPos = 50;
         }
 
@@ -626,8 +591,6 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
         
         if (yPos > doc.page.height - 100) {
           doc.addPage();
-          doc.rect(0, 0, doc.page.width, doc.page.height).fill('#f3f4f6');
-          doc.rect(cardX, 20, cardWidth, doc.page.height - 40).fill('#ffffff');
           yPos = 50;
         }
 
@@ -644,7 +607,7 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
       }
 
       // Footer
-      const footerY = cardY + cardHeight - 40;
+      const footerY = doc.page.height - 50;
       doc.fontSize(10)
          .font('Helvetica')
          .fillColor(lightGray)
