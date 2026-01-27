@@ -5,11 +5,22 @@ const getGeminiClient = () => {
   return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 };
 
-const BASE_PROMPT = `You are an expert electrician assistant creating material estimates. You have extensive knowledge of current material pricing from Home Depot, Lowe's, and electrical supply houses.
+const BASE_PROMPT = `You are an expert electrician assistant creating comprehensive job estimates. You have extensive knowledge of:
+- Current material pricing from Home Depot, Lowe's, and electrical supply houses
+- Realistic labor times for electrical work
+- Regional labor rates for electricians across the United States
 
 ## CRITICAL INSTRUCTIONS:
 
-### Pricing:
+### User's Materials Database - PRIORITY:
+When the user has provided their own materials database:
+- **ALWAYS prefer materials from the user's database** when they match what's needed for the job
+- Match by function/purpose, not exact name (e.g., user's "200A Main Panel" matches need for "200 amp panel")
+- Use the EXACT name and price from the user's database for matched items
+- Only suggest new materials if nothing in the user's database fits the need
+- If user has a material that's close but not exact, use theirs and add a note if needed
+
+### Materials Pricing (for items NOT in user's database):
 - Use CURRENT 2024-2025 retail prices from Home Depot/Lowe's
 - Wire prices have increased significantly - 12/2 Romex 250ft is approximately $145-160
 - estimatedPrice = price PER UNIT (the app calculates totals)
@@ -33,9 +44,84 @@ const BASE_PROMPT = `You are an expert electrician assistant creating material e
 - Always factor 20% waste
 - When in doubt, round UP on wire quantity
 
+### Labor Hours Estimation:
+Estimate realistic labor hours based on job complexity. Provide THREE values:
+- low: Best case - experienced electrician, easy access, new construction
+- mid: Standard case - typical conditions, some obstacles
+- high: Complex case - remodel, difficult access, older home, troubleshooting
+
+Labor time guidelines per task (adjust based on conditions):
+- Rough-in outlet: 15-30 min
+- Rough-in switch (single pole): 15-25 min
+- Rough-in 3-way switch pair: 30-45 min
+- Recessed light rough-in: 20-40 min each
+- Panel work (add circuit): 30-60 min
+- GFCI installation: 20-30 min
+- Smoke detector: 20-35 min
+- Home run (per circuit): 30-60 min
+- Troubleshooting: add 1-2 hrs for remodel/old work
+
+### Labor Rate Suggestions - LOCATION AWARE:
+Electrician labor rates vary SIGNIFICANTLY by region. When a location is provided, adjust rates accordingly:
+
+**HIGH COST REGIONS ($100-175/hr typical):**
+- San Francisco Bay Area, Silicon Valley
+- New York City, Long Island, Westchester
+- Los Angeles, Orange County
+- Seattle, Bellevue
+- Boston metro area
+- Washington DC metro
+- Chicago downtown
+- Hawaii
+
+**ABOVE AVERAGE REGIONS ($85-130/hr typical):**
+- Denver, Colorado Springs
+- Portland, OR
+- San Diego
+- Phoenix metro
+- Minneapolis/St. Paul
+- Austin, Dallas
+- Atlanta metro
+- Most of New Jersey, Connecticut
+
+**AVERAGE REGIONS ($70-100/hr typical):**
+- Most mid-sized cities
+- Suburbs of major metros
+- Florida (except Miami)
+- North Carolina, Virginia
+- Ohio, Michigan, Indiana cities
+
+**LOWER COST REGIONS ($55-85/hr typical):**
+- Rural areas nationwide
+- Small towns
+- Mississippi, Arkansas, West Virginia
+- Parts of the South and Midwest
+- New Mexico (except Santa Fe/Albuquerque)
+
+When suggesting rates, factor in:
+1. The specific city/region provided
+2. Cost of living in that area
+3. Local market rates for licensed electricians
+4. Job type (commercial/industrial typically pays more)
+
 ## RESPONSE FORMAT:
 Respond with ONLY valid JSON. No markdown, no code blocks, no explanation.
-{"materials":[{"name":"Item description","quantity":1,"estimatedPrice":10.00,"notes":"Optional note"}]}`;
+{
+  "materials": [{"name": "Item description", "quantity": 1, "estimatedPrice": 10.00, "notes": "Optional note", "fromUserDatabase": true}],
+  "laborEstimate": {
+    "low": 4,
+    "mid": 6,
+    "high": 8,
+    "reasoning": "Brief explanation of estimate"
+  },
+  "suggestedRate": {
+    "rate": 85,
+    "range": {"low": 65, "high": 125},
+    "reasoning": "Brief explanation including location factor"
+  }
+}
+
+IMPORTANT: Set "fromUserDatabase": true for materials taken from the user's database, false for new suggestions.`;
 
 const RESIDENTIAL_RULES = `
 ## RESIDENTIAL ELECTRICAL RULES (NEC + Standard Practice):
@@ -115,7 +201,7 @@ General Rules:
 - Use 14/3 between 3-way switches (12/3 only if on 20A circuit)
 - 4-way switches go in the middle, also need 14/3 or 14/4
 
-**CURRENT PRICING REFERENCE (Home Depot 2024-2025):**
+**CURRENT PRICING REFERENCE (Home Depot 2026):**
 - 14/2 NM-B 250ft: $105-115
 - 12/2 NM-B 250ft: $145-160
 - 14/3 NM-B 250ft: $140-155
@@ -136,106 +222,106 @@ General Rules:
 - 4-way switch: $12-18
 - 4" LED recessed light: $8-15 each
 - Smoke detector (hardwired): $25-40
-- CO detector (hardwired): $30-45`;
+- CO detector (hardwired): $30-45
+
+**RESIDENTIAL LABOR RATES (2026) - USE LOCATION TO ADJUST:**
+Base rates (adjust based on provided location):
+- Economy/handyman rate: $50-65/hr
+- Standard licensed electrician: $75-95/hr  
+- Master electrician/premium: $100-150/hr
+- Most residential work: $75-100/hr typical
+
+**RESIDENTIAL LABOR TIME FACTORS:**
+- New construction (open walls): Base times
+- Finished walls (fish wire): Add 50-100%
+- Attic access available: Add 25%
+- No attic (2nd floor): Add 50-75%
+- Older home (unknown conditions): Add 25-50%`;
 
 const COMMERCIAL_RULES = `
-## COMMERCIAL ELECTRICAL RULES (NEC + Standard Practice):
+## COMMERCIAL ELECTRICAL RULES:
 
 **Wiring Methods:**
 - EMT (Electrical Metallic Tubing) is standard
-- MC (Metal Clad) cable common for branch circuits
-- Rigid conduit for exposed/outdoor
-- NO Romex (NM-B) in commercial - not permitted
+- MC cable where permitted
+- Rigid conduit for exposed/hazardous
+- Wire in conduit, not NM-B
 
-**Wire Types:**
-- THHN/THWN in conduit
-- MC cable with THHN conductors
+**Common Commercial Materials:**
+- EMT conduit (1/2" to 4")
+- THHN/THWN wire
+- Commercial grade devices
+- LED troffers/panels
+- Exit signs, emergency lights
+- Fire alarm integration
 
-**Voltage Systems:**
-- 120/208V 3-phase (most common)
-- 277/480V 3-phase (larger buildings)
-- 277V for fluorescent/LED lighting
-- 120V for receptacles
+**COMMERCIAL PRICING REFERENCE (2026):**
+- 1/2" EMT 10ft: $4-6
+- 3/4" EMT 10ft: $6-9
+- 1" EMT 10ft: $10-14
+- #12 THHN 500ft: $80-100
+- #10 THHN 500ft: $120-150
+- 2x4 LED troffer: $80-150
+- Exit sign LED: $30-60
+- Emergency light combo: $60-120
+- Commercial duplex: $3-8
+- Commercial switch: $5-12
+- 100A 3-phase panel: $400-700
+- 200A 3-phase panel: $600-1000
 
-**Standard Circuits:**
-- General receptacles: 12 AWG THHN on 20A (commercial = 20A minimum)
-- Lighting (277V): 12 AWG THHN on 20A
-- Lighting (120V): 12 AWG THHN on 20A
-- Copy rooms/break rooms: multiple 20A circuits
-- Data/IT rooms: dedicated circuits, isolated grounds
+**COMMERCIAL LABOR RATES (2026) - USE LOCATION TO ADJUST:**
+Base rates (adjust based on provided location):
+- Standard commercial electrician: $85-120/hr
+- Prevailing wage/union: $120-180/hr
+- After hours/weekend: Add 50%
+- Most commercial work: $90-130/hr typical
 
-**Conduit Fill:**
-- 1/2" EMT: 4-5 #12 THHN max (40% fill)
-- 3/4" EMT: 6-9 #12 THHN max
-- Calculate conduit size based on wire count
-
-**Commercial GFCI Requirements:**
-- Bathrooms, kitchens, rooftops, outdoors
-- Within 6' of sinks
-- Vending machine outlets
-
-**CURRENT PRICING REFERENCE (2024-2025):**
-- 1/2" EMT 10ft: $5-7
-- 3/4" EMT 10ft: $8-11
-- 1" EMT 10ft: $12-16
-- #12 THHN 500ft: $95-120
-- #10 THHN 500ft: $140-170
-- 12/2 MC cable 250ft: $200-250
-- 12/3 MC cable 250ft: $270-320
-- 20A commercial spec outlet: $3-5
-- 20A commercial GFCI: $25-35
-- EMT connectors/couplings: $0.50-2 each
-- 4" square box: $3-6
-- LED troffer 2x4: $45-80
-- Exit sign LED: $25-50`;
+**COMMERCIAL LABOR TIME FACTORS:**
+- Open ceiling (drop tile): Base times
+- Hard lid ceiling: Add 25-50%
+- Occupied space: Add 25% (work around people)
+- After hours required: Premium rates apply`;
 
 const INDUSTRIAL_RULES = `
-## INDUSTRIAL ELECTRICAL RULES (NEC + Standard Practice):
+## INDUSTRIAL ELECTRICAL RULES:
 
 **Wiring Methods:**
-- Rigid Metal Conduit (RMC) for durability
-- IMC (Intermediate) where permitted
-- PVC conduit in corrosive environments
-- MC/AC cable in some applications
-- Cable tray systems for large runs
+- Rigid conduit standard
+- MC-HL for hazardous locations
+- Cable tray systems
+- High voltage considerations
 
-**Wire Types:**
-- THHN/THWN standard
-- XHHW for wet locations
-- MTW for machine tool wiring
-- Larger conductors: 500 MCM, 750 MCM common
+**Common Industrial Materials:**
+- Rigid conduit
+- Large gauge wire (4/0, 500MCM)
+- Motor controls, VFDs
+- Disconnects, safety switches
+- Industrial lighting
+- Cable tray
 
-**Voltage Systems:**
-- 480V 3-phase for motors/machinery
-- 277V for HID/LED high-bay lighting
-- 120/208V for convenience outlets
-- Control circuits: 24V, 120V
-
-**Motor Circuits:**
-- Size wire at 125% of motor FLA
-- Starter/contactor rated for motor HP
-- Overload protection required
-- Disconnect within sight of motor
-- VFDs for variable speed applications
-
-**Disconnects:**
-- Required within sight of all motors
-- Lockable disconnects for safety
-- Fused vs non-fused based on design
-
-**CURRENT PRICING REFERENCE (2024-2025):**
-- 1" Rigid conduit 10ft: $30-40
-- 1-1/2" Rigid conduit 10ft: $50-65
-- 2" Rigid conduit 10ft: $70-90
-- #6 THHN 500ft: $300-380
-- #4 THHN 500ft: $450-550
-- #2 THHN 500ft: $600-750
-- 3-phase disconnect 60A: $100-180
+**INDUSTRIAL PRICING REFERENCE (2026):**
+- 2" Rigid conduit 10ft: $40-60
+- 3" Rigid conduit 10ft: $70-100
+- 500MCM THHN per ft: $8-12
+- 4/0 THHN per ft: $4-6
 - 3-phase disconnect 100A: $180-300
 - Motor starter 10HP: $250-500
 - VFD 5HP: $500-1000
 - 400A panel 3-phase: $1000-1800
-- LED high bay 150W: $120-200`;
+- LED high bay 150W: $120-200
+
+**INDUSTRIAL LABOR RATES (2024-2025) - USE LOCATION TO ADJUST:**
+Base rates (adjust based on provided location):
+- Standard industrial electrician: $95-130/hr
+- Prevailing wage/union: $140-200/hr
+- Shutdown/turnaround work: $150-250/hr
+- Most industrial maintenance: $100-140/hr typical
+
+**INDUSTRIAL LABOR TIME FACTORS:**
+- Normal operations: Base times
+- Live plant/production: Add 50% (safety, coordination)
+- Shutdown work: Can be faster but premium rates
+- Hazardous areas: Add 25-50% (permits, safety)`;
 
 const JOB_TYPE_PROMPTS = {
   residential: RESIDENTIAL_RULES,
@@ -243,11 +329,40 @@ const JOB_TYPE_PROMPTS = {
   industrial: INDUSTRIAL_RULES,
 };
 
-exports.generateMaterials = onCall(
+/**
+ * Format user materials for the AI prompt
+ * Limits to 100 materials to avoid token overflow
+ */
+function formatUserMaterials(userMaterials) {
+  if (!userMaterials || !Array.isArray(userMaterials) || userMaterials.length === 0) {
+    return null;
+  }
+
+  // Limit to 100 materials, prioritize by most recently used or alphabetically
+  const limitedMaterials = userMaterials.slice(0, 100);
+
+  const formattedList = limitedMaterials.map(mat => {
+    const name = mat.name || mat.description || 'Unknown';
+    const price = mat.cost || mat.unitCost || mat.price || 0;
+    const unit = mat.unit || 'each';
+    const category = mat.category || '';
+    return `- "${name}" @ $${parseFloat(price).toFixed(2)}/${unit}${category ? ` [${category}]` : ''}`;
+  }).join('\n');
+
+  return `
+## USER'S MATERIALS DATABASE (${limitedMaterials.length} items):
+Use these materials when they match what's needed. Use the EXACT name and price shown.
+
+${formattedList}
+
+Remember: PRIORITIZE materials from this list. Only suggest new materials if nothing here fits.`;
+}
+
+exports.generateEstimate = onCall(
   {
     secrets: ["GEMINI_API_KEY"],
-    timeoutSeconds: 60,
-    memory: "256MiB",
+    timeoutSeconds: 90,
+    memory: "512MiB",
   },
   async (request) => {
     if (!request.auth) {
@@ -257,7 +372,7 @@ exports.generateMaterials = onCall(
       );
     }
 
-    const { jobDescription, jobType = 'residential' } = request.data;
+    const { jobDescription, jobType = 'residential', jobLocation, userMaterials = [] } = request.data;
 
     if (!jobDescription || typeof jobDescription !== "string") {
       throw new HttpsError(
@@ -266,10 +381,10 @@ exports.generateMaterials = onCall(
       );
     }
 
-    if (jobDescription.length > 1500) {
+    if (jobDescription.length > 2000) {
       throw new HttpsError(
         "invalid-argument",
-        "Job description is too long. Please keep it under 1500 characters."
+        "Job description is too long. Please keep it under 2000 characters."
       );
     }
 
@@ -284,29 +399,46 @@ exports.generateMaterials = onCall(
         model: "gemini-2.0-flash",
         generationConfig: {
           temperature: 0.3,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 6000,
         },
       });
 
       const jobTypeLabel = selectedJobType.charAt(0).toUpperCase() + selectedJobType.slice(1);
       
+      // Build location context for the prompt
+      const locationContext = jobLocation && jobLocation.trim() 
+        ? `\n\nJob Location: ${jobLocation.trim()}\n(Use this location to provide accurate regional labor rate estimates. Factor in local cost of living and market rates for this specific area.)`
+        : '\n\n(No specific location provided - use national average rates for labor estimates.)';
+      
+      // Build user materials context
+      const userMaterialsContext = formatUserMaterials(userMaterials);
+      const materialsInstruction = userMaterialsContext 
+        ? `\n${userMaterialsContext}\n`
+        : '\n(No user materials database provided - use standard retail pricing.)';
+
       const prompt = `${systemPrompt}
+${materialsInstruction}
+Generate a COMPLETE estimate for this ${jobTypeLabel} electrical job including:
+1. Materials list - USE MATERIALS FROM USER'S DATABASE when they match (use exact names and prices)
+2. Labor hour estimate (low/mid/high range with reasoning)
+3. Suggested hourly rate with range (IMPORTANT: Adjust based on the job location if provided)
+${locationContext}
 
-Generate a materials list for this ${jobTypeLabel} electrical job. Use CURRENT retail pricing. JSON only:
+Job Description:
+${jobDescription}
 
-${jobDescription}`;
+Remember: JSON only, no markdown. Set "fromUserDatabase": true for materials from the user's list.`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const responseText = response.text();
 
-      console.log(`[${selectedJobType}] Raw AI response length:`, responseText.length);
+      console.log(`[generateEstimate][${selectedJobType}][${jobLocation || 'no-location'}][userMaterials: ${userMaterials?.length || 0}] Raw AI response length:`, responseText.length);
 
       let parsedResponse;
       try {
         let cleanJson = responseText.trim();
         
-        // Remove markdown code blocks if present
         if (cleanJson.startsWith("```json")) {
           cleanJson = cleanJson.slice(7);
         } else if (cleanJson.startsWith("```")) {
@@ -317,7 +449,6 @@ ${jobDescription}`;
         }
         cleanJson = cleanJson.trim();
         
-        // Extract JSON object
         const firstBrace = cleanJson.indexOf("{");
         const lastBrace = cleanJson.lastIndexOf("}");
         if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
@@ -327,49 +458,96 @@ ${jobDescription}`;
         parsedResponse = JSON.parse(cleanJson);
       } catch (parseError) {
         console.error("JSON Parse Error:", parseError.message);
-        console.error("Response:", responseText.substring(0, 1000));
+        console.error("Response:", responseText.substring(0, 1500));
         throw new HttpsError(
           "internal",
           "Failed to parse AI response. Please try again."
         );
       }
 
-      if (!parsedResponse.materials || !Array.isArray(parsedResponse.materials)) {
-        throw new HttpsError(
-          "internal",
-          "Invalid AI response format. Please try again."
-        );
-      }
-
-      // Flag threshold based on job type
+      // Process materials
       const flagThreshold = selectedJobType === 'industrial' ? 1500 : 
                            selectedJobType === 'commercial' ? 800 : 500;
 
-      const materials = parsedResponse.materials
-        .filter((mat) => mat.name && typeof mat.estimatedPrice === "number")
-        .map((mat) => {
-          let price = Number(mat.estimatedPrice) || 0;
-          let flagged = price > flagThreshold;
-          
-          if (flagged) {
-            console.warn(`High price flagged: ${mat.name} at $${price}`);
-          }
-          
-          return {
-            name: String(mat.name).substring(0, 200),
-            quantity: Math.max(1, Math.round(Number(mat.quantity) || 1)),
-            estimatedPrice: Math.max(0, Number(price.toFixed(2))),
-            notes: mat.notes ? String(mat.notes).substring(0, 200) : null,
-            flagged: flagged,
-          };
-        })
-        .slice(0, 50);
+      let materials = [];
+      if (parsedResponse.materials && Array.isArray(parsedResponse.materials)) {
+        materials = parsedResponse.materials
+          .filter((mat) => mat.name && typeof mat.estimatedPrice === "number")
+          .map((mat) => {
+            let price = Number(mat.estimatedPrice) || 0;
+            let flagged = price > flagThreshold;
+            
+            return {
+              name: String(mat.name).substring(0, 200),
+              quantity: Math.max(1, Math.round(Number(mat.quantity) || 1)),
+              estimatedPrice: Math.max(0, Number(price.toFixed(2))),
+              notes: mat.notes ? String(mat.notes).substring(0, 200) : null,
+              flagged: flagged,
+              fromUserDatabase: Boolean(mat.fromUserDatabase),
+            };
+          })
+          .slice(0, 50);
+      }
 
-      console.log(`[${selectedJobType}] Successfully parsed`, materials.length, "materials");
+      // Process labor estimate
+      let laborEstimate = null;
+      if (parsedResponse.laborEstimate) {
+        const le = parsedResponse.laborEstimate;
+        laborEstimate = {
+          low: Math.max(0.5, Math.round(Number(le.low) * 2) / 2) || 2,
+          mid: Math.max(1, Math.round(Number(le.mid) * 2) / 2) || 4,
+          high: Math.max(1.5, Math.round(Number(le.high) * 2) / 2) || 8,
+          reasoning: le.reasoning ? String(le.reasoning).substring(0, 300) : null,
+        };
+        
+        // Ensure low < mid < high
+        if (laborEstimate.low >= laborEstimate.mid) {
+          laborEstimate.low = laborEstimate.mid * 0.7;
+        }
+        if (laborEstimate.mid >= laborEstimate.high) {
+          laborEstimate.high = laborEstimate.mid * 1.4;
+        }
+      }
 
-      return { materials };
+      // Process suggested rate
+      let suggestedRate = null;
+      if (parsedResponse.suggestedRate) {
+        const sr = parsedResponse.suggestedRate;
+        suggestedRate = {
+          rate: Math.round(Number(sr.rate)) || 85,
+          range: {
+            low: Math.round(Number(sr.range?.low)) || 65,
+            high: Math.round(Number(sr.range?.high)) || 125,
+          },
+          reasoning: sr.reasoning ? String(sr.reasoning).substring(0, 200) : null,
+        };
+        
+        // Ensure rate is within range
+        if (suggestedRate.rate < suggestedRate.range.low) {
+          suggestedRate.rate = suggestedRate.range.low;
+        }
+        if (suggestedRate.rate > suggestedRate.range.high) {
+          suggestedRate.rate = suggestedRate.range.high;
+        }
+      }
+
+      // Count how many materials came from user's database
+      const fromUserDbCount = materials.filter(m => m.fromUserDatabase).length;
+
+      console.log(`[generateEstimate][${selectedJobType}][${jobLocation || 'no-location'}] Parsed:`, {
+        materials: materials.length,
+        fromUserDatabase: fromUserDbCount,
+        laborEstimate: laborEstimate ? `${laborEstimate.low}/${laborEstimate.mid}/${laborEstimate.high}` : 'none',
+        suggestedRate: suggestedRate ? `$${suggestedRate.rate}/hr` : 'none',
+      });
+
+      return { 
+        materials, 
+        laborEstimate, 
+        suggestedRate 
+      };
     } catch (error) {
-      console.error("AI Materials Generation Error:", error);
+      console.error("AI Estimate Generation Error:", error);
 
       if (error instanceof HttpsError) {
         throw error;
@@ -384,7 +562,7 @@ ${jobDescription}`;
 
       throw new HttpsError(
         "internal",
-        "Failed to generate materials. Please try again."
+        "Failed to generate estimate. Please try again."
       );
     }
   }
