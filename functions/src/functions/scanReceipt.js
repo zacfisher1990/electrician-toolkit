@@ -130,7 +130,7 @@ exports.scanReceipt = onCall(
         return {
           success: false,
           error: parsedResponse.error,
-          items: [],
+          lineItems: [],
         };
       }
 
@@ -153,13 +153,13 @@ exports.scanReceipt = onCall(
         return {
           success: false,
           error: "No items found in receipt. Please try a clearer photo.",
-          items: [],
+          lineItems: [],
         };
       }
 
       return {
         success: true,
-        items,
+        lineItems: items,
         itemCount: items.length,
       };
     } catch (error) {
