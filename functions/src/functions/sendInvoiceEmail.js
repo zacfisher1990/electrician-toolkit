@@ -39,7 +39,7 @@ const sendInvoiceEmail = onCall(
       );
     }
 
-    const { invoice, recipientEmail, message, userInfo } = request.data;
+    const { invoice, recipientEmail, message, userInfo, paymentLinkUrl } = request.data;
 
     if (!invoice || !recipientEmail) {
       throw new HttpsError(
@@ -50,6 +50,7 @@ const sendInvoiceEmail = onCall(
 
     try {
       console.log('Generating PDF for invoice:', invoice.invoiceNumber);
+      console.log('Payment link included:', !!paymentLinkUrl);
       
       // Generate PDF
       const pdfBuffer = await generateInvoicePDFBuffer(invoice, userInfo);
@@ -59,14 +60,22 @@ const sendInvoiceEmail = onCall(
 
       console.log('Sending email to:', recipientEmail);
 
+      // Generate email HTML with optional payment link
+      const emailHTML = generateInvoiceEmailHTML(invoice, message, userInfo, paymentLinkUrl);
+
+      // Customize subject if payment link is included
+      const subject = paymentLinkUrl 
+        ? `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Electrician Pro X'} - Pay Online`
+        : `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Electrician Pro X'}`;
+
       // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
         from: `${userInfo.businessName || 'Electrician Pro X'} <invoices@proxtrades.com>`,
         replyTo: userInfo.email, // Client replies go to the user!
         to: recipientEmail,
         bcc: userInfo.email, // BCC the sender so they get a copy
-        subject: `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Electrician Pro X'}`,
-        html: generateInvoiceEmailHTML(invoice, message, userInfo),
+        subject: subject,
+        html: emailHTML,
         attachments: [
           {
             filename: `Invoice-${invoice.invoiceNumber || 'draft'}.pdf`,
@@ -81,7 +90,9 @@ const sendInvoiceEmail = onCall(
       return {
         success: true,
         messageId: emailData.id,
-        message: 'Invoice sent successfully!'
+        message: paymentLinkUrl 
+          ? 'Invoice sent with payment link!' 
+          : 'Invoice sent successfully!'
       };
 
     } catch (error) {

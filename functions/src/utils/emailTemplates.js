@@ -7,7 +7,8 @@
 /**
  * Generate HTML email content for invoice
  */
-function generateInvoiceEmailHTML(invoice, customMessage, userInfo) {
+function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkUrl = null) {
+
   return `
     <!DOCTYPE html>
     <html>
@@ -53,6 +54,34 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo) {
                       <td align="right" style="color: #3b82f6; font-size: 18px; font-weight: 700; border-top: 1px solid #e5e7eb;">$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}</td>
                     </tr>
                   </table>
+
+                  ${paymentLinkUrl ? `
+                  <table width="100%" cellpadding="0" cellspacing="0" style="margin: 25px 0;">
+                    <tr>
+                      <td align="center">
+                        <a href="${paymentLinkUrl}" 
+                           style="display: inline-block; 
+                                  background-color: #10b981; 
+                                  color: #ffffff; 
+                                  padding: 16px 40px; 
+                                  font-size: 16px; 
+                                  font-weight: 700; 
+                                  text-decoration: none; 
+                                  border-radius: 8px;
+                                  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);">
+                          💳 Pay Now - $${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="padding-top: 12px;">
+                        <p style="color: #6b7280; margin: 0; font-size: 12px;">
+                          Secure payment powered by Stripe
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                  ` : ''}
                   
                   <p style="color: #6b7280; margin: 20px 0 0; font-size: 13px;">
                     The invoice is attached as a PDF. If you have any questions, please don't hesitate to reach out.
