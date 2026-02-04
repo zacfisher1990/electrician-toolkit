@@ -20,7 +20,8 @@
     "firebase-functions": "^6.6.0",
     "jspdf": "^3.0.3",
     "pdfkit": "^0.17.2",
-    "resend": "^6.4.2"
+    "resend": "^6.4.2",
+    "stripe": "^20.3.0"
   },
   "devDependencies": {
     "eslint": "^8.15.0",

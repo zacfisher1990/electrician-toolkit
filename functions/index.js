@@ -9,7 +9,7 @@
  * 
  * Installation:
  * 1. cd functions
- * 2. npm install resend pdfkit
+ * 2. npm install resend pdfkit stripe
  * 3. Set config: firebase functions:config:set resend.api_key="your_key_here"
  * 4. For local: Add RESEND_API_KEY to functions/.env
  * 5. Deploy: firebase deploy --only functions
@@ -26,6 +26,15 @@ const { generateMaterials } = require('./src/functions/generateMaterials');
 const { generateEstimate } = require('./src/functions/generateEstimate');
 const { scanReceipt } = require('./src/functions/scanReceipt');
 
+// Import Stripe functions
+const { 
+  createStripeConnectLink, 
+  checkStripeAccountStatus,
+  createInvoicePaymentLink,
+  stripeWebhook,
+  createStripeDashboardLink
+} = require('./src/functions/stripe');
+
 // Export all functions
 exports.sendInvoiceEmail = sendInvoiceEmail;
 exports.sendEstimateEmail = sendEstimateEmail;
@@ -37,3 +46,10 @@ exports.sendWelcomeEmail = sendWelcomeEmail;
 exports.generateMaterials = generateMaterials;
 exports.generateEstimate = generateEstimate;
 exports.scanReceipt = scanReceipt;
+
+// Export Stripe functions
+exports.createStripeConnectLink = createStripeConnectLink;
+exports.checkStripeAccountStatus = checkStripeAccountStatus;
+exports.createInvoicePaymentLink = createInvoicePaymentLink;
+exports.stripeWebhook = stripeWebhook;
+exports.createStripeDashboardLink = createStripeDashboardLink;
