@@ -6,9 +6,12 @@
 
 /**
  * Generate HTML email content for invoice
+ * @param {Object} invoice - Invoice data
+ * @param {string} customMessage - Optional custom message
+ * @param {Object} userInfo - Contractor's business info
+ * @param {string} [paymentLinkUrl] - Optional Stripe payment link URL
  */
-function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkUrl = null) {
-
+function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkUrl) {
   return `
     <!DOCTYPE html>
     <html>
@@ -56,31 +59,15 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkU
                   </table>
 
                   ${paymentLinkUrl ? `
-                  <table width="100%" cellpadding="0" cellspacing="0" style="margin: 25px 0;">
-                    <tr>
-                      <td align="center">
-                        <a href="${paymentLinkUrl}" 
-                           style="display: inline-block; 
-                                  background-color: #10b981; 
-                                  color: #ffffff; 
-                                  padding: 16px 40px; 
-                                  font-size: 16px; 
-                                  font-weight: 700; 
-                                  text-decoration: none; 
-                                  border-radius: 8px;
-                                  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);">
-                          💳 Pay Now - $${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center" style="padding-top: 12px;">
-                        <p style="color: #6b7280; margin: 0; font-size: 12px;">
-                          Secure payment powered by Stripe
-                        </p>
-                      </td>
-                    </tr>
-                  </table>
+                  <!-- Pay Now Button -->
+                  <div style="text-align: center; margin: 30px 0 20px;">
+                    <a href="${paymentLinkUrl}" style="display: inline-block; background-color: #10b981; color: #ffffff; padding: 16px 40px; font-size: 18px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);">
+                      💳 Pay Now
+                    </a>
+                  </div>
+                  <p style="color: #9ca3af; margin: 0 0 20px; font-size: 12px; text-align: center;">
+                    Secure payment powered by Stripe. All major credit and debit cards accepted.
+                  </p>
                   ` : ''}
                   
                   <p style="color: #6b7280; margin: 20px 0 0; font-size: 13px;">
