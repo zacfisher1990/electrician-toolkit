@@ -10,8 +10,9 @@
  * @param {string} customMessage - Optional custom message
  * @param {Object} userInfo - Contractor's business info
  * @param {string} [paymentLinkUrl] - Optional Stripe payment link URL
+ * @param {Array} [paymentMethods] - Optional array of {name, url} payment methods from profile
  */
-function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkUrl) {
+function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkUrl, paymentMethods) {
   return `
     <!DOCTYPE html>
     <html>
@@ -26,7 +27,7 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkU
           <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
               <tr>
-                <td style="background-color: #3b82f6; padding: 30px; text-align: center;">
+                <td style="background-color: #292929; padding: 30px; text-align: center; border-bottom: 4px solid #F7C600;">
                   ${userInfo.companyLogo ? `
                     <img src="${userInfo.companyLogo}" alt="${userInfo.businessName || 'Company Logo'}" style="max-width: 120px; max-height: 120px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px;" />
                   ` : ''}
@@ -54,20 +55,39 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkU
                     </tr>
                     <tr style="background-color: #f9fafb;">
                       <td style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb;">Amount Due:</td>
-                      <td align="right" style="color: #3b82f6; font-size: 18px; font-weight: 700; border-top: 1px solid #e5e7eb;">$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}</td>
+                      <td align="right" style="color: #F7C600; font-size: 18px; font-weight: 700; border-top: 1px solid #e5e7eb;">$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}</td>
                     </tr>
                   </table>
 
                   ${paymentLinkUrl ? `
                   <!-- Pay Now Button -->
                   <div style="text-align: center; margin: 30px 0 20px;">
-                    <a href="${paymentLinkUrl}" style="display: inline-block; background-color: #10b981; color: #ffffff; padding: 16px 40px; font-size: 18px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);">
+                    <a href="${paymentLinkUrl}" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 16px 40px; font-size: 18px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 2px 8px rgba(247, 198, 0, 0.4);">
                       💳 Pay Now
                     </a>
                   </div>
                   <p style="color: #9ca3af; margin: 0 0 20px; font-size: 12px; text-align: center;">
                     Secure payment powered by Stripe. All major credit and debit cards accepted.
                   </p>
+                  ` : ''}
+
+                  ${paymentMethods && paymentMethods.length > 0 ? `
+                  <!-- Other Payment Methods -->
+                  <div style="margin: 20px 0; padding: 20px; background-color: #fef9c3; border: 1px solid #F7C600; border-radius: 8px;">
+                    <p style="color: #92400e; margin: 0 0 12px; font-size: 14px; font-weight: 600;">
+                      💰 Payment Methods
+                    </p>
+                    ${paymentMethods.map(method => {
+                      const isLink = method.url.startsWith('http');
+                      const isEmail = method.url.includes('@');
+                      const href = isLink ? method.url : isEmail ? `mailto:${method.url}` : `tel:${method.url.replace(/[^0-9+]/g, '')}`;
+                      return `
+                    <a href="${href}" style="display: block; background-color: #ffffff; color: #111827; padding: 12px 16px; margin-bottom: 8px; font-size: 14px; text-decoration: none; border-radius: 6px; border: 1px solid #d1d5db;">
+                      <strong>${method.name}</strong>
+                      <span style="color: #D4AA00; font-size: 13px; display: block; margin-top: 2px;">${method.url}</span>
+                    </a>`;
+                    }).join('')}
+                  </div>
                   ` : ''}
                   
                   <p style="color: #6b7280; margin: 20px 0 0; font-size: 13px;">
@@ -115,7 +135,7 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
           <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
               <tr>
-                <td style="background-color: #10b981; padding: 30px; text-align: center;">
+                <td style="background-color: #292929; padding: 30px; text-align: center; border-bottom: 4px solid #F7C600;">
                   ${userInfo.companyLogo ? `
                     <img src="${userInfo.companyLogo}" alt="${userInfo.businessName || 'Company Logo'}" style="max-width: 120px; max-height: 120px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px;" />
                   ` : ''}
@@ -147,7 +167,7 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
                     </tr>
                     <tr style="background-color: #f9fafb;">
                       <td style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb;">Total:</td>
-                      <td align="right" style="color: #10b981; font-size: 18px; font-weight: 700; border-top: 1px solid #e5e7eb;">$${parseFloat(estimate.total || 0).toFixed(2)}</td>
+                      <td align="right" style="color: #F7C600; font-size: 18px; font-weight: 700; border-top: 1px solid #e5e7eb;">$${parseFloat(estimate.total || 0).toFixed(2)}</td>
                     </tr>
                   </table>
                   
@@ -196,8 +216,8 @@ function generateVerificationEmailHTML(email, verificationLink) {
           <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
               <tr>
-                <td style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 30px; text-align: center;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
+                <td style="background-color: #292929; padding: 40px 30px; text-align: center; border-bottom: 4px solid #F7C600;">
+                  <h1 style="margin: 0; color: #F7C600; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
                 </td>
               </tr>
               
@@ -212,14 +232,14 @@ function generateVerificationEmailHTML(email, verificationLink) {
                   </p>
 
                   <div style="text-align: center; margin: 30px 0;">
-                    <a href="${verificationLink}" style="display: inline-block; background-color: #3b82f6; color: #ffffff; padding: 14px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px;">
+                    <a href="${verificationLink}" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 14px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px;">
                       Verify Email
                     </a>
                   </div>
 
                   <p style="margin: 20px 0 0 0; color: #9ca3af; font-size: 12px; text-align: center;">
                     If the button doesn't work, copy and paste this link:<br>
-                    <span style="color: #3b82f6; word-break: break-all;">${verificationLink}</span>
+                    <span style="color: #D4AA00; word-break: break-all;">${verificationLink}</span>
                   </p>
                 </td>
               </tr>
@@ -258,8 +278,8 @@ function generateVerificationReminderHTML(email) {
           <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
               <tr>
-                <td style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 30px; text-align: center;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
+                <td style="background-color: #292929; padding: 40px 30px; text-align: center; border-bottom: 4px solid #F7C600;">
+                  <h1 style="margin: 0; color: #F7C600; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
                 </td>
               </tr>
               
@@ -273,8 +293,8 @@ function generateVerificationReminderHTML(email) {
                     We've sent a new verification email to <strong>${email}</strong>.
                   </p>
 
-                  <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
-                    <p style="margin: 0; color: #1e40af; font-size: 14px; line-height: 1.6;">
+                  <div style="background-color: #fef9c3; border-left: 4px solid #F7C600; padding: 16px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
                       <strong>📧 Check your inbox</strong><br>
                       Click the verification link in the email we just sent you.
                     </p>
@@ -324,8 +344,8 @@ function generateWelcomeHTML(email) {
                 
                 <!-- Header -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 30px; text-align: center;">
-                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
+                  <td style="background-color: #292929; padding: 40px 30px; text-align: center; border-bottom: 4px solid #F7C600;">
+                    <h1 style="margin: 0; color: #F7C600; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
                     <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">Built by an electrician, for electricians</p>
                   </td>
                 </tr>
@@ -412,7 +432,7 @@ function generateWelcomeHTML(email) {
                 <!-- CTA Button -->
                 <tr>
                   <td style="padding: 0 30px 30px; text-align: center;">
-                    <a href="https://apps.apple.com/app/electrician-pro-x/id6740127498" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; padding: 16px 40px; font-size: 18px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);">
+                    <a href="https://apps.apple.com/app/electrician-pro-x/id6740127498" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 16px 40px; font-size: 18px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(247, 198, 0, 0.4);">
                       Open the App →
                     </a>
                   </td>
@@ -420,7 +440,7 @@ function generateWelcomeHTML(email) {
 
                 <!-- Footer -->
                 <tr>
-                  <td style="background-color: #1f2937; padding: 30px; text-align: center;">
+                  <td style="background-color: #292929; padding: 30px; text-align: center;">
                     <p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 14px;">
                       © ${new Date().getFullYear()} Electrician Pro X. All rights reserved.
                     </p>
@@ -456,8 +476,8 @@ function generateAccountDeletionHTML(userEmail, userName) {
               <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                 
                 <tr>
-                  <td style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 30px; text-align: center;">
-                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
+                  <td style="background-color: #292929; padding: 40px 30px; text-align: center; border-bottom: 4px solid #F7C600;">
+                    <h1 style="margin: 0; color: #F7C600; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
                   </td>
                 </tr>
                 
@@ -486,8 +506,8 @@ function generateAccountDeletionHTML(userEmail, userName) {
                       </ul>
                     </div>
 
-                    <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
-                      <p style="margin: 0; color: #1e40af; font-size: 14px; line-height: 1.6;">
+                    <div style="background-color: #fef9c3; border-left: 4px solid #F7C600; padding: 16px; border-radius: 8px; margin: 20px 0;">
+                      <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
                         <strong>💡 Changed your mind?</strong><br>
                         You can create a new account anytime at electrician-toolkit.com. However, your previous data cannot be recovered.
                       </p>
@@ -564,8 +584,8 @@ function generateJobInvitationEmailHTML(data) {
                 
                 <!-- Header -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 40px 30px; text-align: center;">
-                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
+                  <td style="background-color: #292929; padding: 40px 30px; text-align: center; border-bottom: 4px solid #F7C600;">
+                    <h1 style="margin: 0; color: #F7C600; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
                     <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">Job Invitation</p>
                   </td>
                 </tr>
@@ -635,14 +655,14 @@ function generateJobInvitationEmailHTML(data) {
                       <p style="margin: 0 0 15px 0; color: #6b7280; font-size: 14px;">
                         Log in to your Electrician Pro X account to accept or decline this invitation:
                       </p>
-                      <a href="https://electrician-toolkit.vercel.app" style="display: inline-block; background-color: #3b82f6; color: #ffffff; padding: 14px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px;">
+                      <a href="https://electrician-toolkit.vercel.app" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 14px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px;">
                         View Invitation
                       </a>
                     </div>
 
                     <!-- Don't have account notice -->
-                    <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
-                      <p style="margin: 0; color: #1e40af; font-size: 14px; line-height: 1.6;">
+                    <div style="background-color: #fef9c3; border-left: 4px solid #F7C600; padding: 16px; border-radius: 8px; margin: 20px 0;">
+                      <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
                         <strong>📱 Don't have an account yet?</strong><br>
                         Create a free Electrician Pro X account using this email address (${inviteeEmail}) to accept this invitation.
                       </p>
@@ -719,8 +739,8 @@ function generateInvitationAcceptedEmailHTML(data) {
                 
                 <!-- Header -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
-                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
+                  <td style="background-color: #292929; padding: 40px 30px; text-align: center; border-bottom: 4px solid #F7C600;">
+                    <h1 style="margin: 0; color: #F7C600; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
                     <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">Team Update</p>
                   </td>
                 </tr>
@@ -776,8 +796,8 @@ function generateInvitationAcceptedEmailHTML(data) {
                     </div>
 
                     <!-- Info Notice -->
-                    <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
-                      <p style="margin: 0; color: #1e40af; font-size: 14px; line-height: 1.6;">
+                    <div style="background-color: #fef9c3; border-left: 4px solid #F7C600; padding: 16px; border-radius: 8px; margin: 20px 0;">
+                      <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
                         <strong>📊 Team member permissions:</strong><br>
                         • Can view job details and clock in/out<br>
                         • Cannot see costs, estimates, or invoices<br>
@@ -786,7 +806,7 @@ function generateInvitationAcceptedEmailHTML(data) {
                     </div>
 
                     <div style="text-align: center; margin: 30px 0;">
-                      <a href="https://electrician-toolkit.vercel.app" style="display: inline-block; background-color: #10b981; color: #ffffff; padding: 14px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px;">
+                      <a href="https://electrician-toolkit.vercel.app" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 14px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px;">
                         View Job Details
                       </a>
                     </div>

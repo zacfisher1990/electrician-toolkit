@@ -39,7 +39,7 @@ const sendInvoiceEmail = onCall(
       );
     }
 
-    const { invoice, recipientEmail, message, userInfo, paymentLinkUrl } = request.data;
+    const { invoice, recipientEmail, message, userInfo, paymentLinkUrl, paymentMethods } = request.data;
 
     if (!invoice || !recipientEmail) {
       throw new HttpsError(
@@ -51,6 +51,7 @@ const sendInvoiceEmail = onCall(
     try {
       console.log('Generating PDF for invoice:', invoice.invoiceNumber);
       console.log('Payment link included:', !!paymentLinkUrl);
+      console.log('Payment methods included:', (paymentMethods || []).length);
       
       // Generate PDF
       const pdfBuffer = await generateInvoicePDFBuffer(invoice, userInfo);
@@ -72,7 +73,7 @@ const sendInvoiceEmail = onCall(
         to: recipientEmail,
         bcc: userInfo.email, // BCC the sender so they get a copy
         subject,
-        html: generateInvoiceEmailHTML(invoice, message, userInfo, paymentLinkUrl),
+        html: generateInvoiceEmailHTML(invoice, message, userInfo, paymentLinkUrl, paymentMethods),
         attachments: [
           {
             filename: `Invoice-${invoice.invoiceNumber || 'draft'}.pdf`,
