@@ -12,18 +12,19 @@ const BASE_PROMPT = `You are an expert electrician assistant creating comprehens
 
 ## CRITICAL INSTRUCTIONS:
 
-### User's Materials Database - PRIORITY:
-When the user has provided their own materials database:
-- **ALWAYS prefer materials from the user's database** when they match what's needed for the job
-- Match by function/purpose, not exact name (e.g., user's "200A Main Panel" matches need for "200 amp panel")
-- Use the EXACT name and price from the user's database for matched items
-- Only suggest new materials if nothing in the user's database fits the need
-- If user has a material that's close but not exact, use theirs and add a note if needed
-
-### Materials Pricing (for items NOT in user's database):
+### Materials Pricing:
 - Use CURRENT 2024-2025 retail prices from Home Depot/Lowe's
-- Wire prices have increased significantly - 12/2 Romex 250ft is approximately $145-160
-- estimatedPrice = price PER UNIT (the app calculates totals)
+- estimatedPrice = price PER UNIT (the app calculates total = quantity × estimatedPrice)
+
+### WIRE/CABLE PRICING - EXTREMELY IMPORTANT:
+- Wire and cable MUST be listed in ROLLS, not feet
+- quantity = number of ROLLS needed (1, 2, 3, etc.)
+- estimatedPrice = price per ROLL (e.g., 250ft roll of 12/2 NM-B ≈ $150)
+- Calculate footage needed first, then convert to number of rolls (round UP)
+- Example: Job needs ~300ft of 14/2 → quantity: 2 (two 250ft rolls), estimatedPrice: 110
+- Example: Job needs ~180ft of 12/2 → quantity: 1 (one 250ft roll), estimatedPrice: 150
+- NEVER set quantity to footage (like 150) with estimatedPrice as roll price (like $145) — this causes wildly inflated estimates
+- For shorter runs under 50ft, you may list smaller spool sizes if available (e.g., 50ft or 100ft coils at appropriate pricing)
 
 ### Wire Gauge Selection - VERY IMPORTANT:
 - Living rooms, bedrooms, hallways, dining rooms = 14/2 on 15A circuit
@@ -38,11 +39,13 @@ When the user has provided their own materials database:
 - Do NOT use 12/2 for general living spaces - it's unnecessary and wastes money
 
 ### Wire Quantity - DO NOT UNDERESTIMATE:
-- Recessed lights: Each light uses 8-12ft of wire + 50ft home run. 6 lights = 130-150ft minimum
-- Room outlets: Calculate perimeter, add outlet every 12ft, each needs ~18ft wire + 50ft home run
-- A 250ft roll typically covers ONE circuit. Larger rooms or many fixtures may need 2 rolls
-- Always factor 20% waste
-- When in doubt, round UP on wire quantity
+- Calculate total footage needed first, then convert to rolls (round UP):
+  * Recessed lights: Each light uses 8-12ft of wire + 50ft home run. 6 lights = 130-150ft → 1 roll (250ft)
+  * Room outlets: Calculate perimeter, add outlet every 12ft, each needs ~18ft wire + 50ft home run
+  * A 250ft roll typically covers ONE circuit. Larger rooms or many fixtures may need 2 rolls
+- Always factor 20% waste into footage calculation BEFORE converting to rolls
+- When in doubt, round UP to the next roll
+- Output rolls as the quantity, NOT feet
 
 ### Labor Hours Estimation:
 Estimate realistic labor hours based on job complexity. Provide THREE values:
@@ -107,7 +110,10 @@ When suggesting rates, factor in:
 ## RESPONSE FORMAT:
 Respond with ONLY valid JSON. No markdown, no code blocks, no explanation.
 {
-  "materials": [{"name": "Item description", "quantity": 1, "estimatedPrice": 10.00, "notes": "Optional note", "fromUserDatabase": true}],
+  "materials": [
+    {"name": "14/2 NM-B Romex 250ft roll", "quantity": 1, "estimatedPrice": 110.00, "notes": "~150ft needed for circuit - 1 roll"},
+    {"name": "15A Decora outlet", "quantity": 5, "estimatedPrice": 3.00, "notes": null}
+  ],
   "laborEstimate": {
     "low": 4,
     "mid": 6,
@@ -119,9 +125,7 @@ Respond with ONLY valid JSON. No markdown, no code blocks, no explanation.
     "range": {"low": 65, "high": 125},
     "reasoning": "Brief explanation including location factor"
   }
-}
-
-IMPORTANT: Set "fromUserDatabase": true for materials taken from the user's database, false for new suggestions.`;
+}`;
 
 const RESIDENTIAL_RULES = `
 ## RESIDENTIAL ELECTRICAL RULES (NEC + Standard Practice):
@@ -160,21 +164,21 @@ THESE REQUIRE 20A (12/2) - NEC MANDATED:
 - Electric range: 6/3 or 8/3 on 40-50A
 
 **WIRE QUANTITY ESTIMATION - CRITICAL:**
-You must calculate wire realistically based on room dimensions and fixture count.
+Calculate total footage needed, then convert to ROLLS (round UP). Output quantity as number of ROLLS.
 
 Recessed Can Lights:
 - Lights are typically spaced 4-6 feet apart
 - Each light needs 8-12ft of wire to reach the next light
 - First light needs home run to switch (add 40-60ft depending on panel distance)
-- Example: 6 can lights = ~80-100ft just for the lights + 50ft home run = 130-150ft minimum
+- Example: 6 can lights = ~80-100ft just for the lights + 50ft home run = 130-150ft → 1 roll (250ft)
 - A 250ft roll covers roughly 8-12 can lights with home run
 
 Room Outlet Wiring:
 - Estimate outlets every 12ft of wall (per code)
 - Each outlet needs ~15-20ft of wire (drops, routes through studs)
 - Add 40-60ft for home run to panel
-- Example: 12x12 room (48ft perimeter) = 4 outlets × 18ft + 50ft home run = ~125ft
-- Example: 15x23 room (76ft perimeter) = 6 outlets × 18ft + 50ft home run = ~160ft
+- Example: 12x12 room (48ft perimeter) = 4 outlets × 18ft + 50ft home run = ~125ft → 1 roll (250ft)
+- Example: 15x23 room (76ft perimeter) = 6 outlets × 18ft + 50ft home run = ~160ft → 1 roll (250ft)
 
 3-Way Switch Runs:
 - 14/3 between switches, typically 15-30ft depending on room
@@ -185,6 +189,7 @@ General Rules:
 - Basement/attic runs add significant length - add 30-50ft per circuit
 - A 250ft roll is usually needed per circuit, sometimes 2 rolls for larger rooms
 - Don't underestimate - running short is costly; extra wire is cheap insurance
+- ALWAYS output wire quantity as NUMBER OF ROLLS with price per roll
 
 **Smoke/CO Detectors:**
 - ALWAYS use 14/3 NM-B for interconnected detectors (red wire = interconnect)
@@ -201,7 +206,7 @@ General Rules:
 - Use 14/3 between 3-way switches (12/3 only if on 20A circuit)
 - 4-way switches go in the middle, also need 14/3 or 14/4
 
-**CURRENT PRICING REFERENCE (Home Depot 2026):**
+**CURRENT PRICING REFERENCE (Home Depot 2024-2025) — prices are PER ROLL:**
 - 14/2 NM-B 250ft: $105-115
 - 12/2 NM-B 250ft: $145-160
 - 14/3 NM-B 250ft: $140-155
@@ -224,7 +229,7 @@ General Rules:
 - Smoke detector (hardwired): $25-40
 - CO detector (hardwired): $30-45
 
-**RESIDENTIAL LABOR RATES (2026) - USE LOCATION TO ADJUST:**
+**RESIDENTIAL LABOR RATES (2024-2025) - USE LOCATION TO ADJUST:**
 Base rates (adjust based on provided location):
 - Economy/handyman rate: $50-65/hr
 - Standard licensed electrician: $75-95/hr  
@@ -232,78 +237,120 @@ Base rates (adjust based on provided location):
 - Most residential work: $75-100/hr typical
 
 **RESIDENTIAL LABOR TIME FACTORS:**
-- New construction (open walls): Base times
-- Finished walls (fish wire): Add 50-100%
-- Attic access available: Add 25%
-- No attic (2nd floor): Add 50-75%
-- Older home (unknown conditions): Add 25-50%`;
+- New construction: Use base times (easier access)
+- Finished basement: Add 25-50% (working overhead, existing structure)
+- Remodel/old work: Add 50-100% (fishing wires, patching, surprises)
+- Attic work: Add 25% (heat, access, working conditions)
+- Crawl space: Add 25-50% (access, comfort)`;
 
 const COMMERCIAL_RULES = `
-## COMMERCIAL ELECTRICAL RULES:
+## COMMERCIAL ELECTRICAL RULES (NEC + Standard Practice):
 
 **Wiring Methods:**
 - EMT (Electrical Metallic Tubing) is standard
-- MC cable where permitted
-- Rigid conduit for exposed/hazardous
-- Wire in conduit, not NM-B
+- MC (Metal Clad) cable common for branch circuits
+- Rigid conduit for exposed/outdoor
+- NO Romex (NM-B) in commercial - not permitted
 
-**Common Commercial Materials:**
-- EMT conduit (1/2" to 4")
-- THHN/THWN wire
-- Commercial grade devices
-- LED troffers/panels
-- Exit signs, emergency lights
-- Fire alarm integration
+**Wire Types:**
+- THHN/THWN in conduit
+- MC cable with THHN conductors
 
-**COMMERCIAL PRICING REFERENCE (2026):**
-- 1/2" EMT 10ft: $4-6
-- 3/4" EMT 10ft: $6-9
-- 1" EMT 10ft: $10-14
-- #12 THHN 500ft: $80-100
-- #10 THHN 500ft: $120-150
+**Voltage Systems:**
+- 120/208V 3-phase (most common)
+- 277/480V 3-phase (larger buildings)
+- 277V for fluorescent/LED lighting
+- 120V for receptacles
+
+**Standard Circuits:**
+- General receptacles: 12 AWG THHN on 20A (commercial = 20A minimum)
+- Lighting (277V): 12 AWG THHN on 20A
+- Lighting (120V): 12 AWG THHN on 20A
+- Copy rooms/break rooms: multiple 20A circuits
+- Data/IT rooms: dedicated circuits, isolated grounds
+
+**Conduit Fill:**
+- 1/2" EMT: 4-5 #12 THHN max (40% fill)
+- 3/4" EMT: 6-9 #12 THHN max
+- Calculate conduit size based on wire count
+
+**Commercial GFCI Requirements:**
+- Bathrooms, kitchens, rooftops, outdoors
+- Within 6' of sinks
+- Vending machine outlets
+
+**CURRENT PRICING REFERENCE (2024-2025):**
+NOTE: Wire/cable quantities must be in ROLLS/SPOOLS, not feet. Price = per roll/spool.
+- 1/2" EMT 10ft: $5-7
+- 3/4" EMT 10ft: $8-11
+- 1" EMT 10ft: $12-16
+- #12 THHN 500ft: $95-120
+- #10 THHN 500ft: $140-170
+- MC 12/2 250ft: $180-220
+- MC 12/3 250ft: $250-300
+- 20A commercial spec outlet: $8-15
+- 277V ballast: $40-80
 - 2x4 LED troffer: $80-150
-- Exit sign LED: $30-60
-- Emergency light combo: $60-120
-- Commercial duplex: $3-8
-- Commercial switch: $5-12
-- 100A 3-phase panel: $400-700
-- 200A 3-phase panel: $600-1000
+- Exit sign LED: $35-60
+- Emergency light combo: $60-100
+- Commercial panel 200A: $400-700
 
-**COMMERCIAL LABOR RATES (2026) - USE LOCATION TO ADJUST:**
+**COMMERCIAL LABOR RATES (2024-2025) - USE LOCATION TO ADJUST:**
 Base rates (adjust based on provided location):
-- Standard commercial electrician: $85-120/hr
-- Prevailing wage/union: $120-180/hr
-- After hours/weekend: Add 50%
-- Most commercial work: $90-130/hr typical
+- Standard commercial electrician: $85-115/hr
+- Union/prevailing wage: $120-180/hr
+- After hours/weekend: Add 25-50%
+- Most commercial TI work: $90-120/hr typical
 
 **COMMERCIAL LABOR TIME FACTORS:**
-- Open ceiling (drop tile): Base times
-- Hard lid ceiling: Add 25-50%
-- Occupied space: Add 25% (work around people)
-- After hours required: Premium rates apply`;
+- Tenant improvement (TI): Base times
+- Occupied building: Add 25% (working around tenants)
+- High ceiling work: Add 25-50% (lifts, scaffolding)
+- After hours requirement: Consider premium`;
 
 const INDUSTRIAL_RULES = `
-## INDUSTRIAL ELECTRICAL RULES:
+## INDUSTRIAL ELECTRICAL RULES (NEC + Standard Practice):
 
 **Wiring Methods:**
-- Rigid conduit standard
-- MC-HL for hazardous locations
-- Cable tray systems
-- High voltage considerations
+- Rigid metal conduit (RMC/GRC) - heavy duty
+- IMC (Intermediate Metal Conduit) - standard
+- Tray cable in cable trays
+- LFMC for motor connections (flexible)
+- Hazardous location: explosion-proof fittings required
 
-**Common Industrial Materials:**
-- Rigid conduit
-- Large gauge wire (4/0, 500MCM)
-- Motor controls, VFDs
-- Disconnects, safety switches
-- Industrial lighting
-- Cable tray
+**Wire Types:**
+- THHN/THWN in conduit (most common)
+- XHHW for wet locations
+- MTW (Machine Tool Wire) for equipment
+- Tray-rated cable for cable tray installations
 
-**INDUSTRIAL PRICING REFERENCE (2026):**
-- 2" Rigid conduit 10ft: $40-60
-- 3" Rigid conduit 10ft: $70-100
-- 500MCM THHN per ft: $8-12
-- 4/0 THHN per ft: $4-6
+**Voltage Systems:**
+- 480V 3-phase (primary distribution)
+- 277V lighting (derived from 480V)
+- 208V 3-phase (equipment)
+- 120V for receptacles/controls
+- Control voltage: 24V DC, 120V AC
+
+**Motor Circuits:**
+- Full Load Amps (FLA) determines wire size
+- 125% of FLA for branch circuit sizing
+- Starter/VFD sizing matches motor HP
+- Overload protection: 115-125% of FLA
+
+**Disconnects:**
+- Required within sight of all motors
+- Lockable disconnects for safety
+- Fused vs non-fused based on design
+
+**CURRENT PRICING REFERENCE (2024-2025):**
+NOTE: Wire/cable quantities must be in ROLLS/SPOOLS, not feet. Price = per roll/spool.
+- 1" Rigid conduit 10ft: $30-40
+- 1-1/2" Rigid conduit 10ft: $50-65
+- 2" Rigid conduit 10ft: $70-90
+- #6 THHN 500ft: $300-380
+- #4 THHN 500ft: $450-550
+- #2 THHN 500ft: $600-750
+- 3-phase disconnect 60A: $100-180
 - 3-phase disconnect 100A: $180-300
 - Motor starter 10HP: $250-500
 - VFD 5HP: $500-1000
@@ -329,35 +376,6 @@ const JOB_TYPE_PROMPTS = {
   industrial: INDUSTRIAL_RULES,
 };
 
-/**
- * Format user materials for the AI prompt
- * Limits to 100 materials to avoid token overflow
- */
-function formatUserMaterials(userMaterials) {
-  if (!userMaterials || !Array.isArray(userMaterials) || userMaterials.length === 0) {
-    return null;
-  }
-
-  // Limit to 100 materials, prioritize by most recently used or alphabetically
-  const limitedMaterials = userMaterials.slice(0, 100);
-
-  const formattedList = limitedMaterials.map(mat => {
-    const name = mat.name || mat.description || 'Unknown';
-    const price = mat.cost || mat.unitCost || mat.price || 0;
-    const unit = mat.unit || 'each';
-    const category = mat.category || '';
-    return `- "${name}" @ $${parseFloat(price).toFixed(2)}/${unit}${category ? ` [${category}]` : ''}`;
-  }).join('\n');
-
-  return `
-## USER'S MATERIALS DATABASE (${limitedMaterials.length} items):
-Use these materials when they match what's needed. Use the EXACT name and price shown.
-
-${formattedList}
-
-Remember: PRIORITIZE materials from this list. Only suggest new materials if nothing here fits.`;
-}
-
 exports.generateEstimate = onCall(
   {
     secrets: ["GEMINI_API_KEY"],
@@ -372,7 +390,7 @@ exports.generateEstimate = onCall(
       );
     }
 
-    const { jobDescription, jobType = 'residential', jobLocation, userMaterials = [] } = request.data;
+    const { jobDescription, jobType = 'residential', jobLocation } = request.data;
 
     if (!jobDescription || typeof jobDescription !== "string") {
       throw new HttpsError(
@@ -410,16 +428,10 @@ exports.generateEstimate = onCall(
         ? `\n\nJob Location: ${jobLocation.trim()}\n(Use this location to provide accurate regional labor rate estimates. Factor in local cost of living and market rates for this specific area.)`
         : '\n\n(No specific location provided - use national average rates for labor estimates.)';
       
-      // Build user materials context
-      const userMaterialsContext = formatUserMaterials(userMaterials);
-      const materialsInstruction = userMaterialsContext 
-        ? `\n${userMaterialsContext}\n`
-        : '\n(No user materials database provided - use standard retail pricing.)';
-
       const prompt = `${systemPrompt}
-${materialsInstruction}
+
 Generate a COMPLETE estimate for this ${jobTypeLabel} electrical job including:
-1. Materials list - USE MATERIALS FROM USER'S DATABASE when they match (use exact names and prices)
+1. Materials list with current retail pricing
 2. Labor hour estimate (low/mid/high range with reasoning)
 3. Suggested hourly rate with range (IMPORTANT: Adjust based on the job location if provided)
 ${locationContext}
@@ -427,13 +439,13 @@ ${locationContext}
 Job Description:
 ${jobDescription}
 
-Remember: JSON only, no markdown. Set "fromUserDatabase": true for materials from the user's list.`;
+Remember: JSON only, no markdown.`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const responseText = response.text();
 
-      console.log(`[generateEstimate][${selectedJobType}][${jobLocation || 'no-location'}][userMaterials: ${userMaterials?.length || 0}] Raw AI response length:`, responseText.length);
+      console.log(`[generateEstimate][${selectedJobType}][${jobLocation || 'no-location'}] Raw AI response length:`, responseText.length);
 
       let parsedResponse;
       try {
@@ -483,7 +495,6 @@ Remember: JSON only, no markdown. Set "fromUserDatabase": true for materials fro
               estimatedPrice: Math.max(0, Number(price.toFixed(2))),
               notes: mat.notes ? String(mat.notes).substring(0, 200) : null,
               flagged: flagged,
-              fromUserDatabase: Boolean(mat.fromUserDatabase),
             };
           })
           .slice(0, 50);
@@ -531,12 +542,8 @@ Remember: JSON only, no markdown. Set "fromUserDatabase": true for materials fro
         }
       }
 
-      // Count how many materials came from user's database
-      const fromUserDbCount = materials.filter(m => m.fromUserDatabase).length;
-
       console.log(`[generateEstimate][${selectedJobType}][${jobLocation || 'no-location'}] Parsed:`, {
         materials: materials.length,
-        fromUserDatabase: fromUserDbCount,
         laborEstimate: laborEstimate ? `${laborEstimate.low}/${laborEstimate.mid}/${laborEstimate.high}` : 'none',
         suggestedRate: suggestedRate ? `$${suggestedRate.rate}/hr` : 'none',
       });
