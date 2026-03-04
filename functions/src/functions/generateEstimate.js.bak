@@ -14,17 +14,8 @@ const BASE_PROMPT = `You are an expert electrician assistant creating comprehens
 
 ### Materials Pricing:
 - Use CURRENT 2024-2025 retail prices from Home Depot/Lowe's
-- estimatedPrice = price PER UNIT (the app calculates total = quantity × estimatedPrice)
-
-### WIRE/CABLE PRICING - EXTREMELY IMPORTANT:
-- Wire and cable MUST be listed in ROLLS, not feet
-- quantity = number of ROLLS needed (1, 2, 3, etc.)
-- estimatedPrice = price per ROLL (e.g., 250ft roll of 12/2 NM-B ≈ $150)
-- Calculate footage needed first, then convert to number of rolls (round UP)
-- Example: Job needs ~300ft of 14/2 → quantity: 2 (two 250ft rolls), estimatedPrice: 110
-- Example: Job needs ~180ft of 12/2 → quantity: 1 (one 250ft roll), estimatedPrice: 150
-- NEVER set quantity to footage (like 150) with estimatedPrice as roll price (like $145) — this causes wildly inflated estimates
-- For shorter runs under 50ft, you may list smaller spool sizes if available (e.g., 50ft or 100ft coils at appropriate pricing)
+- Wire prices have increased significantly - 12/2 Romex 250ft is approximately $145-160
+- estimatedPrice = price PER UNIT (the app calculates totals)
 
 ### Wire Gauge Selection - VERY IMPORTANT:
 - Living rooms, bedrooms, hallways, dining rooms = 14/2 on 15A circuit
@@ -39,13 +30,11 @@ const BASE_PROMPT = `You are an expert electrician assistant creating comprehens
 - Do NOT use 12/2 for general living spaces - it's unnecessary and wastes money
 
 ### Wire Quantity - DO NOT UNDERESTIMATE:
-- Calculate total footage needed first, then convert to rolls (round UP):
-  * Recessed lights: Each light uses 8-12ft of wire + 50ft home run. 6 lights = 130-150ft → 1 roll (250ft)
-  * Room outlets: Calculate perimeter, add outlet every 12ft, each needs ~18ft wire + 50ft home run
-  * A 250ft roll typically covers ONE circuit. Larger rooms or many fixtures may need 2 rolls
-- Always factor 20% waste into footage calculation BEFORE converting to rolls
-- When in doubt, round UP to the next roll
-- Output rolls as the quantity, NOT feet
+- Recessed lights: Each light uses 8-12ft of wire + 50ft home run. 6 lights = 130-150ft minimum
+- Room outlets: Calculate perimeter, add outlet every 12ft, each needs ~18ft wire + 50ft home run
+- A 250ft roll typically covers ONE circuit. Larger rooms or many fixtures may need 2 rolls
+- Always factor 20% waste
+- When in doubt, round UP on wire quantity
 
 ### Labor Hours Estimation:
 Estimate realistic labor hours based on job complexity. Provide THREE values:
@@ -110,10 +99,7 @@ When suggesting rates, factor in:
 ## RESPONSE FORMAT:
 Respond with ONLY valid JSON. No markdown, no code blocks, no explanation.
 {
-  "materials": [
-    {"name": "14/2 NM-B Romex 250ft roll", "quantity": 1, "estimatedPrice": 110.00, "notes": "~150ft needed for circuit - 1 roll"},
-    {"name": "15A Decora outlet", "quantity": 5, "estimatedPrice": 3.00, "notes": null}
-  ],
+  "materials": [{"name": "Item description", "quantity": 1, "estimatedPrice": 10.00, "notes": "Optional note"}],
   "laborEstimate": {
     "low": 4,
     "mid": 6,
@@ -164,21 +150,21 @@ THESE REQUIRE 20A (12/2) - NEC MANDATED:
 - Electric range: 6/3 or 8/3 on 40-50A
 
 **WIRE QUANTITY ESTIMATION - CRITICAL:**
-Calculate total footage needed, then convert to ROLLS (round UP). Output quantity as number of ROLLS.
+You must calculate wire realistically based on room dimensions and fixture count.
 
 Recessed Can Lights:
 - Lights are typically spaced 4-6 feet apart
 - Each light needs 8-12ft of wire to reach the next light
 - First light needs home run to switch (add 40-60ft depending on panel distance)
-- Example: 6 can lights = ~80-100ft just for the lights + 50ft home run = 130-150ft → 1 roll (250ft)
+- Example: 6 can lights = ~80-100ft just for the lights + 50ft home run = 130-150ft minimum
 - A 250ft roll covers roughly 8-12 can lights with home run
 
 Room Outlet Wiring:
 - Estimate outlets every 12ft of wall (per code)
 - Each outlet needs ~15-20ft of wire (drops, routes through studs)
 - Add 40-60ft for home run to panel
-- Example: 12x12 room (48ft perimeter) = 4 outlets × 18ft + 50ft home run = ~125ft → 1 roll (250ft)
-- Example: 15x23 room (76ft perimeter) = 6 outlets × 18ft + 50ft home run = ~160ft → 1 roll (250ft)
+- Example: 12x12 room (48ft perimeter) = 4 outlets × 18ft + 50ft home run = ~125ft
+- Example: 15x23 room (76ft perimeter) = 6 outlets × 18ft + 50ft home run = ~160ft
 
 3-Way Switch Runs:
 - 14/3 between switches, typically 15-30ft depending on room
@@ -189,7 +175,6 @@ General Rules:
 - Basement/attic runs add significant length - add 30-50ft per circuit
 - A 250ft roll is usually needed per circuit, sometimes 2 rolls for larger rooms
 - Don't underestimate - running short is costly; extra wire is cheap insurance
-- ALWAYS output wire quantity as NUMBER OF ROLLS with price per roll
 
 **Smoke/CO Detectors:**
 - ALWAYS use 14/3 NM-B for interconnected detectors (red wire = interconnect)
@@ -206,7 +191,7 @@ General Rules:
 - Use 14/3 between 3-way switches (12/3 only if on 20A circuit)
 - 4-way switches go in the middle, also need 14/3 or 14/4
 
-**CURRENT PRICING REFERENCE (Home Depot 2024-2025) — prices are PER ROLL:**
+**CURRENT PRICING REFERENCE (Home Depot 2024-2025):**
 - 14/2 NM-B 250ft: $105-115
 - 12/2 NM-B 250ft: $145-160
 - 14/3 NM-B 250ft: $140-155
@@ -280,7 +265,6 @@ const COMMERCIAL_RULES = `
 - Vending machine outlets
 
 **CURRENT PRICING REFERENCE (2024-2025):**
-NOTE: Wire/cable quantities must be in ROLLS/SPOOLS, not feet. Price = per roll/spool.
 - 1/2" EMT 10ft: $5-7
 - 3/4" EMT 10ft: $8-11
 - 1" EMT 10ft: $12-16
@@ -343,7 +327,6 @@ const INDUSTRIAL_RULES = `
 - Fused vs non-fused based on design
 
 **CURRENT PRICING REFERENCE (2024-2025):**
-NOTE: Wire/cable quantities must be in ROLLS/SPOOLS, not feet. Price = per roll/spool.
 - 1" Rigid conduit 10ft: $30-40
 - 1-1/2" Rigid conduit 10ft: $50-65
 - 2" Rigid conduit 10ft: $70-90
