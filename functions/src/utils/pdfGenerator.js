@@ -300,6 +300,22 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
     }
   }
 
+  // Fetch photo buffers
+  const photoData = [];
+  if (estimate.photos && estimate.photos.length > 0) {
+    for (const photo of estimate.photos) {
+      const url = typeof photo === 'string' ? photo : photo?.url || photo?.uri || photo?.downloadURL || null;
+      if (url) {
+        try {
+          const buffer = await fetchImageBuffer(url);
+          if (buffer) photoData.push({ buffer, note: typeof photo === 'object' ? photo.note || '' : '' });
+        } catch (e) {
+          console.error('Error fetching photo:', e);
+        }
+      }
+    }
+  }
+
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
@@ -604,6 +620,66 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
            .font('Helvetica')
            .fillColor(lightGray)
            .text(estimate.terms || userInfo.estimateTerms, leftMargin, yPos, { width: contentWidth });
+      }
+
+      // Photos section
+      if (photoData.length > 0) {
+        yPos += 40;
+
+        if (yPos > doc.page.height - 150) {
+          doc.addPage();
+          yPos = 50;
+        }
+
+        doc.fontSize(11)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('Site Photos', leftMargin, yPos);
+
+        yPos += 20;
+
+        const photoSize = (contentWidth - 10) / 2; // 2 columns, 10px gap
+        let colIndex = 0;
+
+        for (const photo of photoData) {
+          if (yPos > doc.page.height - photoSize - 80) {
+            doc.addPage();
+            yPos = 50;
+            colIndex = 0;
+          }
+
+          const xPos = colIndex === 0 ? leftMargin : leftMargin + photoSize + 10;
+
+          try {
+            doc.image(photo.buffer, xPos, yPos, {
+              width: photoSize,
+              height: photoSize,
+              fit: [photoSize, photoSize],
+              align: 'center',
+              valign: 'center'
+            });
+          } catch (e) {
+            console.error('Error rendering photo in PDF:', e);
+          }
+
+          if (photo.note) {
+            doc.fontSize(8)
+               .font('Helvetica')
+               .fillColor(lightGray)
+               .text(photo.note, xPos, yPos + photoSize + 4, { width: photoSize });
+          }
+
+          colIndex++;
+          if (colIndex >= 2) {
+            colIndex = 0;
+            yPos += photoSize + (photo.note ? 28 : 14);
+          }
+        }
+
+        // Advance if last row had only one photo
+        if (colIndex === 1) {
+          yPos += photoSize + 14;
+        }
       }
 
       // Footer
