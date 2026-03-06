@@ -79,8 +79,8 @@ exports.createStripeConnectLink = onCall(
       // Create account link for onboarding
       const accountLink = await stripe.accountLinks.create({
         account: accountId,
-        refresh_url: `https://electrician.proxtrades.com/stripe-refresh?userId=${userId}`,
-        return_url: `https://electrician.proxtrades.com/stripe-return?userId=${userId}`,
+        refresh_url: `https://electrician.proxtrades.com`,
+        return_url: `https://electrician.proxtrades.com`,
         type: 'account_onboarding',
       });
 
@@ -234,8 +234,8 @@ exports.createInvoicePaymentLink = onCall(
           invoiceId: invoiceId,
           contractorUserId: userId
         },
-        success_url: `https://electrician.proxtrades.com/payment-success?invoice=${invoiceId}`,
-        cancel_url: `https://electrician.proxtrades.com/payment-cancelled?invoice=${invoiceId}`,
+        success_url: `https://electrician.proxtrades.com`,
+        cancel_url: `https://electrician.proxtrades.com`,
         customer_email: invoice.clientEmail || undefined,
       });
 
