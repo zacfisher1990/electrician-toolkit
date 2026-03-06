@@ -172,9 +172,8 @@ exports.createInvoicePaymentLink = onCall(
     const stripe = require('stripe')(stripeSecretKey.value());
 
     try {
-      // Get the invoice
-      const invoiceDoc = await db.collection('users').doc(userId)
-        .collection('invoices').doc(invoiceId).get();
+      // Get the invoice from top-level invoices collection
+      const invoiceDoc = await db.collection('invoices').doc(invoiceId).get();
       
       if (!invoiceDoc.exists) {
         throw new HttpsError('not-found', 'Invoice not found');
@@ -239,14 +238,13 @@ exports.createInvoicePaymentLink = onCall(
         customer_email: invoice.clientEmail || undefined,
       });
 
-      // Save payment link to invoice
-      await db.collection('users').doc(userId)
-        .collection('invoices').doc(invoiceId).update({
-          paymentLinkUrl: session.url,
-          paymentLinkId: session.id,
-          paymentLinkCreatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          paymentStatus: 'pending'
-        });
+      // Save payment link to invoice (top-level invoices collection)
+      await db.collection('invoices').doc(invoiceId).update({
+        paymentLinkUrl: session.url,
+        paymentLinkId: session.id,
+        paymentLinkCreatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        paymentStatus: 'pending'
+      });
 
       return {
         success: true,
@@ -300,14 +298,14 @@ exports.stripeWebhook = onRequest(
         
         if (invoiceId && contractorUserId) {
           try {
-            await db.collection('users').doc(contractorUserId)
-              .collection('invoices').doc(invoiceId).update({
-                paymentStatus: 'paid',
-                paidAt: admin.firestore.FieldValue.serverTimestamp(),
-                paidAmount: session.amount_total / 100,
-                stripePaymentIntentId: session.payment_intent,
-                stripeCustomerEmail: session.customer_email
-              });
+            // Update invoice in top-level invoices collection
+            await db.collection('invoices').doc(invoiceId).update({
+              paymentStatus: 'paid',
+              paidAt: admin.firestore.FieldValue.serverTimestamp(),
+              paidAmount: session.amount_total / 100,
+              stripePaymentIntentId: session.payment_intent,
+              stripeCustomerEmail: session.customer_email
+            });
             
             console.log(`Invoice ${invoiceId} marked as paid`);
           } catch (error) {
@@ -323,10 +321,10 @@ exports.stripeWebhook = onRequest(
         const contractorUserId = session.metadata?.contractorUserId;
         
         if (invoiceId && contractorUserId) {
-          await db.collection('users').doc(contractorUserId)
-            .collection('invoices').doc(invoiceId).update({
-              paymentStatus: 'expired'
-            });
+          // Update invoice in top-level invoices collection
+          await db.collection('invoices').doc(invoiceId).update({
+            paymentStatus: 'expired'
+          });
         }
         break;
       }
