@@ -363,18 +363,6 @@ function generateWelcomeHTML(email) {
                   </td>
                 </tr>
 
-                <!-- App Screenshots -->
-                <tr>
-                  <td style="padding: 0 30px 20px; text-align: center;">
-                    <img src="https://proxtrades.com/images/email/jobs-screenshot.png" alt="Job Management" style="max-width: 100%; border-radius: 8px;" />
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 0 30px 30px; text-align: center;">
-                    <img src="https://proxtrades.com/images/email/estimates-invoices-screenshot.png" alt="Estimates & Invoices" style="max-width: 100%; border-radius: 8px;" />
-                  </td>
-                </tr>
-
                 <!-- Free Features -->
                 <tr>
                   <td style="padding: 0 30px 30px;">
@@ -426,14 +414,12 @@ function generateWelcomeHTML(email) {
                   </td>
                 </tr>
 
-                <!-- CTA Buttons -->
+                <!-- Support Link -->
                 <tr>
                   <td style="padding: 0 30px 30px; text-align: center;">
-                    <a href="https://apps.apple.com/app/electrician-pro-x/id6740127498" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 16px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(247, 198, 0, 0.4); margin: 8px;">
-                      Download on the App Store
-                    </a>
-                    <a href="https://play.google.com/store/apps/details?id=com.proxtrades.electricianprox" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 16px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(247, 198, 0, 0.4); margin: 8px;">
-                      Get it on Google Play
+                    <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">Have questions or need help getting started?</p>
+                    <a href="mailto:support@proxtrades.com" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 14px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(247, 198, 0, 0.4);">
+                      Contact Support
                     </a>
                   </td>
                 </tr>

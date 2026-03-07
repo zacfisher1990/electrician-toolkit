@@ -43,11 +43,11 @@ const sendWelcomeEmail = onCall(
 
     if (type === 'verification-reminder') {
       // Reminder email when user requests resend
-      subject = '⚡ Verify Your Email - Electrician Pro X';
+      subject = 'Verify Your Email - Electrician Pro X';
       html = generateVerificationReminderHTML(email);
     } else {
       // Welcome email
-      subject = '🎉 Welcome to Electrician Pro X!';
+      subject = 'Welcome to Electrician Pro X';
       html = generateWelcomeHTML(email);
     }
 
@@ -55,7 +55,7 @@ const sendWelcomeEmail = onCall(
       console.log('Sending welcome/reminder email to:', email);
 
       const emailData = await resend.emails.send({
-        from: 'Electrician Pro X <welcome@proxtrades.com>',
+        from: 'ProXTrades <welcome@proxtrades.com>',
         to: email,
         subject: subject,
         html: html
