@@ -367,7 +367,7 @@ function generateWelcomeHTML(email) {
                 <tr>
                   <td style="padding: 0 0 30px 0;">
                     <p style="margin: 0; font-size: 15px; color: #374151; line-height: 1.7;">
-                      If you run into any issues or have questions, reply to this email or reach out at <a href="mailto:support@proxtrades.com" style="color: #111827;">support@proxtrades.com</a>.
+                      If you run into any issues or have questions reach out at <a href="mailto:support@proxtrades.com" style="color: #111827;">support@proxtrades.com</a>.
                     </p>
                   </td>
                 </tr>
