@@ -31,7 +31,7 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkU
                   ${userInfo.companyLogo ? `
                     <img src="${userInfo.companyLogo}" alt="${userInfo.businessName || 'Company Logo'}" style="max-width: 120px; max-height: 120px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px;" />
                   ` : ''}
-                  <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || userInfo.name || userInfo.displayName || 'Electrician Pro X'}</h1>
+                  <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Pro X'}</h1>
                   <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px;">${userInfo.email || ''}</p>
                 </td>
               </tr>
@@ -139,7 +139,7 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
                   ${userInfo.companyLogo ? `
                     <img src="${userInfo.companyLogo}" alt="${userInfo.businessName || 'Company Logo'}" style="max-width: 120px; max-height: 120px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px;" />
                   ` : ''}
-                  <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || userInfo.name || userInfo.displayName || 'Electrician Pro X'}</h1>
+                  <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Pro X'}</h1>
                   <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px;">${userInfo.email || ''}</p>
                 </td>
               </tr>
@@ -345,7 +345,7 @@ function generateWelcomeHTML(email) {
                 <!-- Header -->
                 <tr>
                   <td style="background-color: #292929; padding: 40px 30px; text-align: center; border-bottom: 4px solid #F7C600;">
-                    <h1 style="margin: 0; color: #F7C600; font-size: 28px; font-weight: 700;">⚡ Electrician Pro X</h1>
+                    <h1 style="margin: 0; color: #F7C600; font-size: 28px; font-weight: 700;">Electrician Pro X</h1>
                     <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">Built by an electrician, for electricians</p>
                   </td>
                 </tr>
@@ -383,11 +383,11 @@ function generateWelcomeHTML(email) {
                         ✅ Free Forever
                       </h3>
                       <ul style="margin: 0; padding-left: 20px; color: #15803d; font-size: 14px; line-height: 1.8;">
-                        <li>20+ NEC compliant electrical calculators</li>
+                        <li>30+ NEC compliant electrical calculators</li>
                         <li>NEC reference tables</li>
-                        <li>Log up to 3 jobs per month</li>
-                        <li>Create up to 3 estimates per month</li>
-                        <li>Create up to 3 invoices per month</li>
+                        <li>Log up to 3 jobs</li>
+                        <li>Create up to 3 estimates</li>
+                        <li>Create up to 3 invoices</li>
                         <li>Track job hours</li>
                         <li>Track work hours and revenue</li>
                         <li>Receive job invitations & invite others to jobs</li>
@@ -412,28 +412,28 @@ function generateWelcomeHTML(email) {
                         <li><strong>Unlimited invoices</strong></li>
                       </ul>
                       <div style="text-align: center; border-top: 1px solid #f59e0b; padding-top: 20px;">
-                        <p style="margin: 0 0 5px 0; color: #92400e; font-size: 14px;">
-                          <strong>Lifetime Access</strong>
+                        <p style="margin: 0 0 5px 0; color: #92400e; font-size: 20px; font-weight: 600;">
+                          $12.99<span style="font-size: 14px; font-weight: 500;">/month</span>
                         </p>
-                        <p style="margin: 0 0 15px 0; color: #92400e; font-size: 28px; font-weight: 700;">
-                          $119.99 <span style="font-size: 14px; font-weight: 500;">one-time</span>
-                        </p>
-                        <p style="margin: 0 0 5px 0; color: #a16207; font-size: 13px;">
+                        <p style="margin: 8px 0 5px 0; color: #a16207; font-size: 13px;">
                           — or —
                         </p>
-                        <p style="margin: 0; color: #92400e; font-size: 20px; font-weight: 600;">
-                          $9.99<span style="font-size: 14px; font-weight: 500;">/month</span>
+                        <p style="margin: 0; color: #92400e; font-size: 28px; font-weight: 700;">
+                          $99.99 <span style="font-size: 14px; font-weight: 500;">/year</span>
                         </p>
                       </div>
                     </div>
                   </td>
                 </tr>
 
-                <!-- CTA Button -->
+                <!-- CTA Buttons -->
                 <tr>
                   <td style="padding: 0 30px 30px; text-align: center;">
-                    <a href="https://apps.apple.com/app/electrician-pro-x/id6740127498" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 16px 40px; font-size: 18px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(247, 198, 0, 0.4);">
-                      Open the App →
+                    <a href="https://apps.apple.com/app/electrician-pro-x/id6740127498" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 16px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(247, 198, 0, 0.4); margin: 8px;">
+                      Download on the App Store
+                    </a>
+                    <a href="https://play.google.com/store/apps/details?id=com.proxtrades.electricianprox" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 16px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(247, 198, 0, 0.4); margin: 8px;">
+                      Get it on Google Play
                     </a>
                   </td>
                 </tr>
