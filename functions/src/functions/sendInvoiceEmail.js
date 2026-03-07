@@ -63,12 +63,12 @@ const sendInvoiceEmail = onCall(
 
       // Customize subject if payment link is included
       const subject = paymentLinkUrl
-        ? `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Electrician Pro X'} - Pay Online`
-        : `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || 'Electrician Pro X'}`;
+        ? `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || userInfo.name || userInfo.displayName || 'Electrician Pro X'} - Pay Online`
+        : `Invoice #${invoice.invoiceNumber || 'N/A'} from ${userInfo.businessName || userInfo.name || userInfo.displayName || 'Electrician Pro X'}`;
 
       // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
-        from: `${userInfo.businessName || 'Electrician Pro X'} <invoices@proxtrades.com>`,
+        from: `${userInfo.businessName || userInfo.name || userInfo.displayName || 'Electrician Pro X'} <invoices@proxtrades.com>`,
         replyTo: userInfo.email, // Client replies go to the user!
         to: recipientEmail,
         bcc: userInfo.email, // BCC the sender so they get a copy
