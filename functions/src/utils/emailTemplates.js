@@ -336,105 +336,50 @@ function generateWelcomeHTML(email) {
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
       </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; padding: 40px 20px;">
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #ffffff;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
           <tr>
             <td align="center">
-              <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                
-                <!-- Header -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px;">
+
                 <tr>
-                  <td style="background-color: #292929; padding: 40px 30px; text-align: center; border-bottom: 4px solid #F7C600;">
-                    <h1 style="margin: 0; color: #F7C600; font-size: 28px; font-weight: 700;">Electrician Pro X</h1>
-                    <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">Built by an electrician, for electricians</p>
+                  <td style="padding: 0 0 30px 0;">
+                    <p style="margin: 0; font-size: 16px; font-weight: 700; color: #111827;">Electrician Pro X</p>
                   </td>
                 </tr>
-                
-                <!-- Welcome Message -->
+
                 <tr>
-                  <td style="padding: 40px 30px 20px;">
-                    <h2 style="margin: 0 0 15px 0; color: #111827; font-size: 24px; font-weight: 600;">
-                      Welcome to the team! 🎉
-                    </h2>
-                    
-                    <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 16px; line-height: 1.6;">
-                      You just got access to the only app that combines <strong>NEC code calculators</strong> with full <strong>business management</strong> — no more juggling spreadsheets, paper estimates, and five different apps.
+                  <td style="padding: 0 0 20px 0;">
+                    <p style="margin: 0; font-size: 16px; color: #111827; line-height: 1.6;">
+                      Your account has been created and you're all set.
                     </p>
                   </td>
                 </tr>
 
-                <!-- Free Features -->
                 <tr>
-                  <td style="padding: 0 30px 30px;">
-                    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 24px;">
-                      <h3 style="margin: 0 0 15px 0; color: #166534; font-size: 18px; font-weight: 600;">
-                        ✅ Free Forever
-                      </h3>
-                      <ul style="margin: 0; padding-left: 20px; color: #15803d; font-size: 14px; line-height: 1.8;">
-                        <li>30+ NEC compliant electrical calculators</li>
-                        <li>NEC reference tables</li>
-                        <li>Log up to 3 jobs</li>
-                        <li>Create up to 3 estimates</li>
-                        <li>Create up to 3 invoices</li>
-                        <li>Track job hours</li>
-                        <li>Track work hours and revenue</li>
-                        <li>Receive job invitations & invite others to jobs</li>
-                      </ul>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- Pro Features -->
-                <tr>
-                  <td style="padding: 0 30px 30px;">
-                    <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 12px; padding: 24px;">
-                      <h3 style="margin: 0 0 5px 0; color: #92400e; font-size: 18px; font-weight: 600;">
-                        ⭐ Upgrade to Pro
-                      </h3>
-                      <p style="margin: 0 0 15px 0; color: #a16207; font-size: 14px;">
-                        For electricians who mean business
-                      </p>
-                      <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #92400e; font-size: 14px; line-height: 1.8;">
-                        <li><strong>Unlimited job logging</strong></li>
-                        <li><strong>Unlimited estimates</strong></li>
-                        <li><strong>Unlimited invoices</strong></li>
-                      </ul>
-                      <div style="text-align: center; border-top: 1px solid #f59e0b; padding-top: 20px;">
-                        <p style="margin: 0 0 5px 0; color: #92400e; font-size: 20px; font-weight: 600;">
-                          $12.99<span style="font-size: 14px; font-weight: 500;">/month</span>
-                        </p>
-                        <p style="margin: 8px 0 5px 0; color: #a16207; font-size: 13px;">
-                          — or —
-                        </p>
-                        <p style="margin: 0; color: #92400e; font-size: 28px; font-weight: 700;">
-                          $99.99 <span style="font-size: 14px; font-weight: 500;">/year</span>
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- Support Link -->
-                <tr>
-                  <td style="padding: 0 30px 30px; text-align: center;">
-                    <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">Have questions or need help getting started?</p>
-                    <a href="mailto:support@proxtrades.com" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 14px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(247, 198, 0, 0.4);">
-                      Contact Support
-                    </a>
-                  </td>
-                </tr>
-
-                <!-- Footer -->
-                <tr>
-                  <td style="background-color: #292929; padding: 30px; text-align: center;">
-                    <p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 14px;">
-                      © ${new Date().getFullYear()} Electrician Pro X. All rights reserved.
-                    </p>
-                    <p style="margin: 0; color: #6b7280; font-size: 12px;">
-                      Questions? Reply to this email or contact support@proxtrades.com
+                  <td style="padding: 0 0 20px 0;">
+                    <p style="margin: 0; font-size: 15px; color: #374151; line-height: 1.7;">
+                      The app includes 30+ NEC calculators, job logging, estimates, invoices, and time tracking. The NEC calculators are always free. Jobs, estimates, and invoices are free up to 3 of each.
                     </p>
                   </td>
                 </tr>
+
+                <tr>
+                  <td style="padding: 0 0 30px 0;">
+                    <p style="margin: 0; font-size: 15px; color: #374151; line-height: 1.7;">
+                      If you run into any issues or have questions, reply to this email or reach out at <a href="mailto:support@proxtrades.com" style="color: #111827;">support@proxtrades.com</a>.
+                    </p>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding: 0 0 40px 0; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 20px 0 0 0; font-size: 13px; color: #9ca3af;">
+                      Electrician Pro X &mdash; support@proxtrades.com
+                    </p>
+                  </td>
+                </tr>
+
               </table>
             </td>
           </tr>
