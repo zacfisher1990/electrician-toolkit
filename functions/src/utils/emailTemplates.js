@@ -178,6 +178,13 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo, actionUrls
                   </div>
                   ` : ''}
 
+                  ${estimate.includeContract && estimate.contractText ? `
+                  <div style="margin: 20px 0; padding: 16px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;">
+                    <p style="color: #6b7280; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 8px;">Contract / Disclaimer</p>
+                    <p style="color: #6b7280; font-size: 12px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${estimate.contractText}</p>
+                  </div>
+                  ` : ''}
+
                   ${actionUrls ? `
                   <!-- Client Action Buttons -->
                   <div style="margin: 30px 0; padding: 24px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">

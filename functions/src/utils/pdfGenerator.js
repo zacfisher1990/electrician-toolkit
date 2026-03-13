@@ -698,6 +698,35 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
            .text(estimate.terms || userInfo.estimateTerms, leftMargin, yPos, { width: contentWidth });
       }
 
+      // Contract / Disclaimer
+      if (estimate.includeContract && estimate.contractText) {
+        yPos += 40;
+
+        if (yPos > doc.page.height - 120) {
+          doc.addPage();
+          yPos = 50;
+        }
+
+        // Bordered box for the contract
+        const contractTextHeight = doc.heightOfString(estimate.contractText, { width: contentWidth - 24, fontSize: 8 });
+        const boxHeight = contractTextHeight + 40;
+
+        doc.rect(leftMargin, yPos, contentWidth, boxHeight)
+           .fillAndStroke('#f9fafb', borderGray);
+
+        doc.fontSize(9)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('Contract / Disclaimer', leftMargin + 12, yPos + 12);
+
+        doc.fontSize(8)
+           .font('Helvetica')
+           .fillColor(lightGray)
+           .text(estimate.contractText, leftMargin + 12, yPos + 28, { width: contentWidth - 24 });
+
+        yPos += boxHeight + 10;
+      }
+
       // Photos section
       if (photoData.length > 0) {
         yPos += 40;
