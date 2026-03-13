@@ -702,29 +702,23 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
       if (estimate.includeContract && estimate.contractText) {
         yPos += 40;
 
-        if (yPos > doc.page.height - 120) {
+        if (yPos > doc.page.height - 100) {
           doc.addPage();
           yPos = 50;
         }
 
-        // Bordered box for the contract
-        const contractTextHeight = doc.heightOfString(estimate.contractText, { width: contentWidth - 24, fontSize: 8 });
-        const boxHeight = contractTextHeight + 40;
-
-        doc.rect(leftMargin, yPos, contentWidth, boxHeight)
-           .fillAndStroke('#f9fafb', borderGray);
-
-        doc.fontSize(9)
+        doc.fontSize(10)
            .font('Helvetica-Bold')
            .fillColor(darkGray)
-           .text('Contract / Disclaimer', leftMargin + 12, yPos + 12);
+           .text('Contract / Disclaimer:', leftMargin, yPos);
 
+        yPos += 15;
         doc.fontSize(8)
            .font('Helvetica')
            .fillColor(lightGray)
-           .text(estimate.contractText, leftMargin + 12, yPos + 28, { width: contentWidth - 24 });
+           .text(estimate.contractText, leftMargin, yPos, { width: contentWidth });
 
-        yPos += boxHeight + 10;
+        yPos += doc.heightOfString(estimate.contractText, { width: contentWidth }) + 10;
       }
 
       // Photos section
