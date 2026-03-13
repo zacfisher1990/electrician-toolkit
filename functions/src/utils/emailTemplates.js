@@ -171,6 +171,13 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
                     </tr>
                   </table>
                   
+                  ${estimate.notes ? `
+                  <div style="margin: 20px 0; padding: 16px; background-color: #f9fafb; border-left: 3px solid #e5e7eb; border-radius: 4px;">
+                    <p style="color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 6px;">Notes</p>
+                    <p style="color: #374151; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${estimate.notes}</p>
+                  </div>
+                  ` : ''}
+
                   <p style="color: #6b7280; margin: 20px 0 0; font-size: 13px;">
                     The estimate is attached as a PDF. This estimate is valid for 30 days. If you have any questions, please don't hesitate to reach out.
                   </p>
