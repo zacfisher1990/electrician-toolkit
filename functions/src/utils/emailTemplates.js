@@ -120,7 +120,7 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkU
 /**
  * Generate HTML email content for estimate
  */
-function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
+function generateEstimateEmailHTML(estimate, customMessage, userInfo, actionUrls = null) {
   return `
     <!DOCTYPE html>
     <html>
@@ -175,6 +175,35 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo) {
                   <div style="margin: 20px 0; padding: 16px; background-color: #f9fafb; border-left: 3px solid #e5e7eb; border-radius: 4px;">
                     <p style="color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 6px;">Notes</p>
                     <p style="color: #374151; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${estimate.notes}</p>
+                  </div>
+                  ` : ''}
+
+                  ${actionUrls ? `
+                  <!-- Client Action Buttons -->
+                  <div style="margin: 30px 0; padding: 24px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+                    <p style="color: #111827; font-size: 15px; font-weight: 600; margin: 0 0 6px;">Ready to move forward?</p>
+                    <p style="color: #6b7280; font-size: 13px; margin: 0 0 20px;">Review the attached PDF and let us know how you'd like to proceed.</p>
+                    
+                    <!-- Accept -->
+                    <div style="margin-bottom: 10px;">
+                      <a href="${actionUrls.accept}" style="display: block; background-color: #16a34a; color: #ffffff; padding: 14px 20px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px; text-align: center;">
+                        ✅ Accept Estimate
+                      </a>
+                    </div>
+
+                    <!-- Request Changes -->
+                    <div style="margin-bottom: 10px;">
+                      <a href="${actionUrls.requestChanges}" style="display: block; background-color: #F7C600; color: #000000; padding: 14px 20px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px; text-align: center;">
+                        🔄 Request Changes
+                      </a>
+                    </div>
+
+                    <!-- Reject -->
+                    <div>
+                      <a href="${actionUrls.reject}" style="display: block; background-color: #ffffff; color: #dc2626; padding: 14px 20px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px; text-align: center; border: 1px solid #dc2626;">
+                        ✗ Decline Estimate
+                      </a>
+                    </div>
                   </div>
                   ` : ''}
 

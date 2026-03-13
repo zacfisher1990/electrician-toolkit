@@ -25,6 +25,7 @@ const { sendWelcomeEmail } = require('./src/functions/sendWelcomeEmail');
 const { generateMaterials } = require('./src/functions/generateMaterials');
 const { generateEstimate } = require('./src/functions/generateEstimate');
 const { scanReceipt } = require('./src/functions/scanReceipt');
+const { handleEstimateResponse } = require('./src/functions/handleEstimateResponse');
 
 // Import Stripe functions
 const { 
@@ -46,6 +47,7 @@ exports.sendWelcomeEmail = sendWelcomeEmail;
 exports.generateMaterials = generateMaterials;
 exports.generateEstimate = generateEstimate;
 exports.scanReceipt = scanReceipt;
+exports.handleEstimateResponse = handleEstimateResponse;
 
 // Export Stripe functions
 exports.createStripeConnectLink = createStripeConnectLink;
