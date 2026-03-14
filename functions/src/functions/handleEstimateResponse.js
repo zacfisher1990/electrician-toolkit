@@ -17,6 +17,7 @@ const { getMessaging } = require('firebase-admin/messaging');
 const { Resend } = require('resend');
 
 const resendApiKey = defineString('RESEND_API_KEY');
+const functionsBaseUrl = defineString('FUNCTIONS_BASE_URL');
 
 // Map action param → human-readable label and Firestore status value
 const ACTION_MAP = {
@@ -49,6 +50,16 @@ const ACTION_MAP = {
     contractorSubject: '🔄 Client Requested Changes',
     contractorBody: (estimate, clientName) =>
       `${clientName || 'Your client'} has requested changes to estimate <strong>${estimate.estimateNumber || estimate.name}</strong> for <strong>$${parseFloat(estimate.total || 0).toFixed(2)}</strong>. Please follow up with a revised estimate.`,
+  },
+  acceptNoDeposit: {
+    status: 'Deposit Pending',
+    label: 'accepted (will arrange deposit for)',
+    emoji: '📋',
+    color: '#d97706',
+    clientMessage: 'Your contractor has been notified. They will be in touch to arrange the deposit and schedule the work.',
+    contractorSubject: '📋 Estimate Accepted — Deposit Pending',
+    contractorBody: (estimate, clientName) =>
+      `${clientName || 'Your client'} has accepted estimate <strong>${estimate.estimateNumber || estimate.name}</strong> but chose to arrange the deposit of <strong>$${parseFloat(estimate.depositAmount || 0).toFixed(2)}</strong> separately. Follow up to collect payment.`,
   },
 };
 
@@ -102,6 +113,89 @@ function buildResponsePage(title, message, color, emoji) {
         <div class="emoji">${emoji}</div>
         <h1>${title}</h1>
         <p>${message}</p>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+/**
+ * Deposit payment page — shown when client accepts but a deposit is required.
+ * Matches the dark branded style of buildResponsePage.
+ */
+function buildDepositPage(estimate, depositAmount, depositLabel, checkoutUrl, skipUrl) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Deposit Required — Electrician Pro X</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: #111827;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+        }
+        .card {
+          background: #1f2937;
+          border-radius: 16px;
+          padding: 40px 32px;
+          max-width: 440px;
+          width: 100%;
+          text-align: center;
+          border-top: 4px solid #F7C600;
+        }
+        .brand { color: #F7C600; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+        .emoji { font-size: 48px; margin-bottom: 16px; }
+        h1 { color: #ffffff; font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+        p { color: #9ca3af; font-size: 14px; line-height: 1.6; margin-bottom: 6px; }
+        .amount-box {
+          background: #111827;
+          border: 1px solid #374151;
+          border-radius: 10px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .amount-label { color: #6b7280; font-size: 13px; margin-bottom: 6px; }
+        .amount-value { color: #F7C600; font-size: 36px; font-weight: 800; }
+        .btn {
+          display: block;
+          width: 100%;
+          padding: 16px;
+          border-radius: 10px;
+          font-size: 16px;
+          font-weight: 700;
+          text-align: center;
+          text-decoration: none;
+          margin-top: 12px;
+          cursor: pointer;
+        }
+        .btn-primary { background: #F7C600; color: #000000; }
+        .btn-secondary { background: transparent; color: #6b7280; border: 1px solid #374151; font-size: 14px; padding: 12px; margin-top: 16px; }
+        hr { border: none; border-top: 1px solid #374151; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="brand">⚡ Electrician Pro X</div>
+        <div class="emoji">🔒</div>
+        <h1>One more step</h1>
+        <p>You've agreed to <strong style="color:#fff;">${estimate.name || 'this estimate'}</strong>.</p>
+        <p>A deposit is required to confirm your project.</p>
+        <div class="amount-box">
+          <div class="amount-label">${depositLabel} deposit due now</div>
+          <div class="amount-value">$${depositAmount.toFixed(2)}</div>
+        </div>
+        <a href="${checkoutUrl}" class="btn btn-primary">💳 Pay Deposit Now</a>
+        <hr />
+        <p>Prefer to pay by check or arrange payment separately?</p>
+        <a href="${skipUrl}" class="btn btn-secondary">I'll arrange payment with my contractor</a>
       </div>
     </body>
     </html>
@@ -166,7 +260,7 @@ const handleEstimateResponse = onRequest(
       }
 
       // --- Idempotency: already responded ---
-      const alreadyResponded = ['Accepted', 'Rejected', 'Changes Requested'].includes(estimate.status);
+      const alreadyResponded = ['Accepted', 'Rejected', 'Changes Requested', 'Deposit Pending'].includes(estimate.status);
       if (alreadyResponded) {
         res.send(buildResponsePage(
           'Already Responded',
@@ -175,6 +269,20 @@ const handleEstimateResponse = onRequest(
           'ℹ️'
         ));
         return;
+      }
+
+      // --- Deposit intercept: if accepting and deposit is required, show payment page ---
+      if (action === 'accept' && estimate.requireDeposit && estimate.depositAmount > 0) {
+        const depositAmount = estimate.depositAmount;
+        const depositLabel = estimate.depositType === 'percent'
+          ? `${estimate.depositValue}%`
+          : 'Fixed';
+        const baseUrl = functionsBaseUrl.value();
+        const checkoutUrl = `${baseUrl}/createDepositCheckout?estimateId=${estimateId}&token=${token}&userId=${userId}`;
+        const skipUrl = `${baseUrl}/handleEstimateResponse?estimateId=${estimateId}&action=acceptNoDeposit&token=${token}&userId=${userId}`;
+        res.send(buildDepositPage(estimate, depositAmount, depositLabel, checkoutUrl, skipUrl));
+        return;
+        // Token is NOT consumed here — still needed for acceptNoDeposit or checkout
       }
 
       // --- Update Firestore ---

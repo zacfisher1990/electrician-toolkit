@@ -26,6 +26,8 @@ const { generateMaterials } = require('./src/functions/generateMaterials');
 const { generateEstimate } = require('./src/functions/generateEstimate');
 const { scanReceipt } = require('./src/functions/scanReceipt');
 const { handleEstimateResponse } = require('./src/functions/handleEstimateResponse');
+const { createDepositCheckout } = require('./src/functions/createDepositCheckout');
+const { handleDepositSuccess } = require('./src/functions/handleDepositSuccess');
 
 // Import Stripe functions
 const { 
@@ -48,6 +50,8 @@ exports.generateMaterials = generateMaterials;
 exports.generateEstimate = generateEstimate;
 exports.scanReceipt = scanReceipt;
 exports.handleEstimateResponse = handleEstimateResponse;
+exports.createDepositCheckout = createDepositCheckout;
+exports.handleDepositSuccess = handleDepositSuccess;
 
 // Export Stripe functions
 exports.createStripeConnectLink = createStripeConnectLink;

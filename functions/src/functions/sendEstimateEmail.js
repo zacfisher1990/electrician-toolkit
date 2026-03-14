@@ -79,6 +79,11 @@ const sendEstimateEmail = onCall(
         lastSentTo: recipientEmail,
         lastSentMethod: 'email',
         sentCount: FieldValue.increment(1),
+        // Persist deposit fields so the response handler can read them from Firestore
+        requireDeposit: estimate.requireDeposit || false,
+        depositType: estimate.depositType || null,
+        depositValue: estimate.depositValue || null,
+        depositAmount: estimate.depositAmount || null,
         updatedAt: FieldValue.serverTimestamp(),
       });
 
