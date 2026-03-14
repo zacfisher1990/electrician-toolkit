@@ -87,6 +87,28 @@ function successHTML() {
 </html>`;
 }
 
+// Generate next invoice number server-side by querying existing invoices
+async function getNextInvoiceNumber(db, userId) {
+  try {
+    const snapshot = await db.collection('invoices')
+      .where('userId', '==', userId)
+      .get();
+
+    const numbers = snapshot.docs
+      .map(d => {
+        const match = d.data().invoiceNumber?.match(/INV-(\d+)/);
+        return match ? parseInt(match[1]) : 0;
+      })
+      .filter(n => n > 0);
+
+    const next = numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
+    return `INV-${String(next).padStart(3, '0')}`;
+  } catch (err) {
+    console.error('Error generating invoice number:', err);
+    return `INV-${String(Date.now()).slice(-4)}`;
+  }
+}
+
 const handleDepositSuccess = onRequest(
   { cors: false, secrets: ['STRIPE_SECRET_KEY'] },
   async (req, res) => {
@@ -159,11 +181,12 @@ const handleDepositSuccess = onRequest(
 
       // --- Auto-create invoice with deposit pre-applied ---
       try {
+        const invoiceNumber = await getNextInvoiceNumber(db, userId);
         const invoiceBase = buildInvoiceFromEstimate(estimate);
         const invoiceData = {
           ...invoiceBase,
+          invoiceNumber,
           estimateId,
-          // Record the deposit as the first payment
           payments: [
             {
               amount: amountPaid,
