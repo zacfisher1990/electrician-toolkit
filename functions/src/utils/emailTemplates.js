@@ -185,6 +185,19 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo, actionUrls
                   </div>
                   ` : ''}
 
+                  ${estimate.requireDeposit && estimate.depositAmount > 0 ? `
+                  <!-- Deposit Notice -->
+                  <div style="margin: 20px 0; padding: 20px; background-color: #fef9c3; border: 1px solid #F7C600; border-radius: 8px;">
+                    <p style="color: #92400e; font-size: 14px; font-weight: 700; margin: 0 0 6px;">💰 Deposit Required</p>
+                    <p style="color: #92400e; font-size: 13px; margin: 0 0 12px; line-height: 1.5;">
+                      A deposit of <strong>$${parseFloat(estimate.depositAmount).toFixed(2)}</strong>${estimate.depositType === 'percent' ? ` (${estimate.depositValue}% of total)` : ''} is required before work begins.
+                    </p>
+                    <p style="color: #78350f; font-size: 12px; margin: 0;">
+                      When you click "Accept Estimate" below, you'll be prompted to pay the deposit securely online — or you can choose to arrange payment separately with your contractor.
+                    </p>
+                  </div>
+                  ` : ''}
+
                   ${actionUrls ? `
                   <!-- Client Action Buttons -->
                   <div style="margin: 30px 0; padding: 24px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
