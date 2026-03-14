@@ -54,8 +54,12 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkU
                       <td align="right" style="color: #111827; font-size: 14px; font-weight: 600; border-top: 1px solid #e5e7eb;">${invoice.dueDate || 'Upon Receipt'}</td>
                     </tr>
                     <tr style="background-color: #f9fafb;">
-                      <td style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb;">Amount Due:</td>
-                      <td align="right" style="color: #F7C600; font-size: 18px; font-weight: 700; border-top: 1px solid #e5e7eb;">$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}</td>
+                      <td style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb;">${invoice.status === 'Partial' && invoice.balance != null ? 'Deposit Paid:' : ''}</td>
+                      <td align="right" style="color: #10b981; font-size: 14px; font-weight: 600; border-top: 1px solid #e5e7eb;">${invoice.status === 'Partial' && invoice.amountPaid > 0 ? `-$${parseFloat(invoice.amountPaid).toFixed(2)}` : ''}</td>
+                    </tr>
+                    <tr style="background-color: #f9fafb;">
+                      <td style="color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb;">${invoice.status === 'Partial' && invoice.balance != null ? 'Balance Due:' : 'Amount Due:'}</td>
+                      <td align="right" style="color: #F7C600; font-size: 18px; font-weight: 700; border-top: 1px solid #e5e7eb;">$${invoice.status === 'Partial' && invoice.balance != null ? parseFloat(invoice.balance).toFixed(2) : parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}</td>
                     </tr>
                   </table>
 
