@@ -643,11 +643,16 @@ function generateJobInvitationEmailHTML(data) {
 
                     <!-- CTA -->
                     <div style="text-align: center; margin: 30px 0;">
-                      <p style="margin: 0 0 15px 0; color: #6b7280; font-size: 14px;">
-                        Log in to your Electrician Pro X account to accept or decline this invitation:
+                      <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 14px;">
+                        Open the Electrician Pro X app to accept or decline this invitation:
                       </p>
-                      <a href="https://electrician-toolkit.vercel.app" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 14px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px;">
-                        View Invitation
+                      <!-- iOS App Store -->
+                      <a href="https://apps.apple.com/app/electrician-pro-x/id6755925920" style="display: inline-block; background-color: #000000; color: #ffffff; padding: 14px 28px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px; margin: 6px;">
+                        🍎 Download on the App Store
+                      </a>
+                      <!-- Google Play -->
+                      <a href="https://play.google.com/store/apps/details?id=com.proxtrades.epx" style="display: inline-block; background-color: #01875f; color: #ffffff; padding: 14px 28px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px; margin: 6px;">
+                        ▶ Get it on Google Play
                       </a>
                     </div>
 
@@ -797,8 +802,16 @@ function generateInvitationAcceptedEmailHTML(data) {
                     </div>
 
                     <div style="text-align: center; margin: 30px 0;">
-                      <a href="https://electrician-toolkit.vercel.app" style="display: inline-block; background-color: #F7C600; color: #000000; padding: 14px 32px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px;">
-                        View Job Details
+                      <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 14px;">
+                        Open the app to view the updated job details:
+                      </p>
+                      <!-- iOS App Store -->
+                      <a href="https://apps.apple.com/app/electrician-pro-x/id6755925920" style="display: inline-block; background-color: #000000; color: #ffffff; padding: 14px 28px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px; margin: 6px;">
+                        🍎 Download on the App Store
+                      </a>
+                      <!-- Google Play -->
+                      <a href="https://play.google.com/store/apps/details?id=com.proxtrades.epx" style="display: inline-block; background-color: #01875f; color: #ffffff; padding: 14px 28px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px; margin: 6px;">
+                        ▶ Get it on Google Play
                       </a>
                     </div>
                   </td>
