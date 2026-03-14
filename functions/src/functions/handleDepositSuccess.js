@@ -9,12 +9,12 @@
  */
 
 const { onRequest } = require('firebase-functions/v2/https');
-const { defineString } = require('firebase-functions/params');
+const { defineString, defineSecret } = require('firebase-functions/params');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { Resend } = require('resend');
 const Stripe = require('stripe');
 
-const stripeSecretKey = defineString('STRIPE_SECRET_KEY');
+const stripeSecretKey = defineSecret('STRIPE_SECRET_KEY');
 const resendApiKey = defineString('RESEND_API_KEY');
 
 // Inline helper — mirrors what createInvoiceFromEstimate does on the client side
@@ -88,7 +88,7 @@ function successHTML() {
 }
 
 const handleDepositSuccess = onRequest(
-  { cors: false },
+  { cors: false, secrets: ['STRIPE_SECRET_KEY'] },
   async (req, res) => {
     const { estimateId, userId, session_id } = req.query;
 

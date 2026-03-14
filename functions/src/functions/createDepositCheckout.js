@@ -6,15 +6,15 @@
  */
 
 const { onRequest } = require('firebase-functions/v2/https');
-const { defineString } = require('firebase-functions/params');
+const { defineString, defineSecret } = require('firebase-functions/params');
 const { getFirestore } = require('firebase-admin/firestore');
 const Stripe = require('stripe');
 
-const stripeSecretKey = defineString('STRIPE_SECRET_KEY');
+const stripeSecretKey = defineSecret('STRIPE_SECRET_KEY');
 const functionsBaseUrl = defineString('FUNCTIONS_BASE_URL');
 
 const createDepositCheckout = onRequest(
-  { cors: false },
+  { cors: false, secrets: ['STRIPE_SECRET_KEY'] },
   async (req, res) => {
     const { estimateId, token, userId } = req.query;
 
