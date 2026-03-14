@@ -64,6 +64,70 @@ const ACTION_MAP = {
 };
 
 /**
+ * Builds invoice data from an estimate — mirrors createInvoiceFromEstimate.js on the client.
+ * Used server-side so invoice creation happens even when client accepts via email.
+ */
+function buildInvoiceFromEstimate(estimate) {
+  const lineItems = [];
+
+  if (estimate.laborHours && estimate.laborRate) {
+    lineItems.push({
+      description: `Labor: ${estimate.laborHours} hours @ $${estimate.laborRate}/hr`,
+      quantity: 1,
+      rate: parseFloat(estimate.laborHours) * parseFloat(estimate.laborRate),
+    });
+  }
+
+  (estimate.materials || []).forEach(m => {
+    lineItems.push({
+      description: m.name,
+      quantity: parseFloat(m.quantity) || 1,
+      rate: parseFloat(m.cost) || 0,
+    });
+  });
+
+  (estimate.additionalItems || []).forEach(item => {
+    lineItems.push({
+      description: item.description,
+      quantity: 1,
+      rate: parseFloat(item.amount) || 0,
+    });
+  });
+
+  // Fallback: no line items but estimate has a total
+  if (lineItems.length === 0 && (estimate.total || estimate.estimatedCost)) {
+    lineItems.push({
+      description: estimate.name || 'Labor & Materials',
+      quantity: 1,
+      rate: parseFloat(estimate.total || estimate.estimatedCost) || 0,
+    });
+  }
+
+  const total = lineItems.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
+
+  const today = new Date();
+  const dueDate = new Date(today);
+  dueDate.setDate(dueDate.getDate() + 30);
+
+  return {
+    client: estimate.clientName || '',
+    clientEmail: estimate.clientEmail || '',
+    date: today.toISOString().split('T')[0],
+    dueDate: dueDate.toISOString().split('T')[0],
+    paymentTerms: 'Net 30',
+    lineItems,
+    notes: `Invoice for estimate: ${estimate.estimateNumber || estimate.name || estimate.id}`,
+    status: 'Pending',
+    jobId: estimate.jobId || null,
+    estimateId: estimate.id,
+    estimateNumber: estimate.estimateNumber || null,
+    amount: total,
+    subtotal: total,
+    total,
+  };
+}
+
+/**
  * Returns a simple branded HTML page shown to the client after they click a button
  */
 function buildResponsePage(title, message, color, emoji) {
@@ -293,6 +357,25 @@ const handleEstimateResponse = onRequest(
         // Invalidate the token so the link can't be reused
         responseToken: FieldValue.delete(),
       });
+
+      // --- Auto-create invoice when client accepts (no deposit required) ---
+      if (action === 'accept') {
+        try {
+          const invoiceData = buildInvoiceFromEstimate(estimate);
+          if (invoiceData.lineItems.length > 0) {
+            await db.collection('invoices').add({
+              ...invoiceData,
+              userId,
+              createdAt: FieldValue.serverTimestamp(),
+              updatedAt: FieldValue.serverTimestamp(),
+            });
+            console.log('✅ Invoice auto-created from client-accepted estimate:', estimateId);
+          }
+        } catch (invoiceErr) {
+          // Non-fatal — status update already succeeded
+          console.error('⚠️ Invoice creation failed after client accept:', invoiceErr);
+        }
+      }
 
       // --- Fetch contractor user doc for email + FCM token ---
       const userSnap = await db.collection('users').doc(userId).get();

@@ -174,7 +174,7 @@ const handleDepositSuccess = onRequest(
           ],
           amountPaid: amountPaid,
           balance: Math.max(0, (parseFloat(estimate.total) || 0) - amountPaid),
-          status: amountPaid >= (parseFloat(estimate.total) || 0) ? 'Paid' : 'Partially Paid',
+          status: amountPaid >= (parseFloat(estimate.total) || 0) ? 'Paid' : 'Partial',
         };
 
         await db.collection('invoices').add({
