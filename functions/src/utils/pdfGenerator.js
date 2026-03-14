@@ -257,16 +257,60 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       doc.moveTo(leftMargin + contentWidth * 0.6, yPos).lineTo(rightMargin, yPos).lineWidth(2).stroke(darkGray);
       yPos += 15;
 
-      doc.fontSize(12)
-         .font('Helvetica-Bold')
-         .fillColor(darkGray)
-         .text('TOTAL:', leftMargin + contentWidth * 0.6, yPos);
+      const isPartial = invoice.status === 'Partial' && invoice.amountPaid > 0 && invoice.balance != null;
 
-      const totalAmount = `$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`;
-      doc.fontSize(18)
-         .font('Helvetica-Bold')
-         .fillColor(darkGray)
-         .text(totalAmount, leftMargin, yPos - 3, { width: contentWidth, align: 'right' });
+      if (isPartial) {
+        const subtotalAmount = parseFloat(invoice.total || invoice.amount || 0);
+        const depositPaid = parseFloat(invoice.amountPaid || 0);
+        const balanceDue = parseFloat(invoice.balance || 0);
+
+        // Subtotal row
+        doc.fontSize(10)
+           .font('Helvetica')
+           .fillColor(mediumGray)
+           .text('Subtotal:', leftMargin + contentWidth * 0.6, yPos);
+        doc.fontSize(10)
+           .font('Helvetica')
+           .fillColor(darkGray)
+           .text(`$${subtotalAmount.toFixed(2)}`, leftMargin, yPos, { width: contentWidth, align: 'right' });
+
+        yPos += 20;
+
+        // Deposit received row
+        doc.fontSize(10)
+           .font('Helvetica')
+           .fillColor('#10b981')
+           .text('Deposit Received:', leftMargin + contentWidth * 0.6, yPos);
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .fillColor('#10b981')
+           .text(`-$${depositPaid.toFixed(2)}`, leftMargin, yPos, { width: contentWidth, align: 'right' });
+
+        yPos += 15;
+        doc.moveTo(leftMargin + contentWidth * 0.6, yPos).lineTo(rightMargin, yPos).lineWidth(1).stroke(borderGray);
+        yPos += 10;
+
+        // Balance due row
+        doc.fontSize(12)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('BALANCE DUE:', leftMargin + contentWidth * 0.6, yPos);
+        doc.fontSize(18)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text(`$${balanceDue.toFixed(2)}`, leftMargin, yPos - 3, { width: contentWidth, align: 'right' });
+      } else {
+        doc.fontSize(12)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('TOTAL:', leftMargin + contentWidth * 0.6, yPos);
+
+        const totalAmount = `$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`;
+        doc.fontSize(18)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text(totalAmount, leftMargin, yPos - 3, { width: contentWidth, align: 'right' });
+      }
 
       // Notes
       if (invoice.notes) {

@@ -19,37 +19,55 @@ const resendApiKey = defineString('RESEND_API_KEY');
 
 // Inline helper — mirrors what createInvoiceFromEstimate does on the client side
 function buildInvoiceFromEstimate(estimate) {
+  const lineItems = [];
+
+  if (estimate.laborHours && estimate.laborRate) {
+    lineItems.push({
+      description: `Labor: ${estimate.laborHours} hours @ $${estimate.laborRate}/hr`,
+      quantity: 1,
+      rate: parseFloat(estimate.laborHours) * parseFloat(estimate.laborRate),
+    });
+  }
+
+  (estimate.materials || []).forEach(m => {
+    lineItems.push({
+      description: m.name,
+      quantity: parseFloat(m.quantity) || 1,
+      rate: parseFloat(m.cost) || 0,
+    });
+  });
+
+  (estimate.additionalItems || []).forEach(item => {
+    lineItems.push({
+      description: item.description,
+      quantity: 1,
+      rate: parseFloat(item.amount) || 0,
+    });
+  });
+
+  // Fallback: no line items but estimate has a total
+  if (lineItems.length === 0 && (estimate.total || estimate.estimatedCost)) {
+    lineItems.push({
+      description: estimate.name || 'Labor & Materials',
+      quantity: 1,
+      rate: parseFloat(estimate.total || estimate.estimatedCost) || 0,
+    });
+  }
+
+  const today = new Date();
+  const dueDate = new Date(today);
+  dueDate.setDate(dueDate.getDate() + 30);
+
   return {
-    estimateId: estimate.id,
-    clientId: estimate.clientId || null,
-    clientName: estimate.clientName || '',
+    client: estimate.clientName || estimate.client || '',
     clientEmail: estimate.clientEmail || '',
-    items: [
-      // Labor line
-      ...(estimate.laborHours && estimate.laborRate ? [{
-        description: 'Labor',
-        quantity: parseFloat(estimate.laborHours) || 0,
-        unitPrice: parseFloat(estimate.laborRate) || 0,
-        total: (parseFloat(estimate.laborHours) || 0) * (parseFloat(estimate.laborRate) || 0),
-      }] : []),
-      // Materials
-      ...(estimate.materials || []).map(m => ({
-        description: m.name,
-        quantity: parseFloat(m.quantity) || 1,
-        unitPrice: parseFloat(m.cost) || 0,
-        total: (parseFloat(m.quantity) || 1) * (parseFloat(m.cost) || 0),
-      })),
-      // Additional items
-      ...(estimate.additionalItems || []).map(item => ({
-        description: item.description,
-        quantity: 1,
-        unitPrice: parseFloat(item.amount) || 0,
-        total: parseFloat(item.amount) || 0,
-      })),
-    ],
+    date: today.toISOString().split('T')[0],
+    dueDate: dueDate.toISOString().split('T')[0],
+    paymentTerms: 'Net 30',
+    lineItems,
     notes: estimate.notes || '',
     total: parseFloat(estimate.total) || 0,
-    status: 'Sent',
+    status: 'Partial',
     jobId: estimate.jobId || null,
   };
 }
