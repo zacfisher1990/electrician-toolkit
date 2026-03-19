@@ -202,10 +202,14 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).stroke(borderGray);
       yPos += 20;
 
-      // Line Items
+      // Labor + Line Items
+      const laborHours = parseFloat(invoice.laborHours || 0);
+      const laborRate = parseFloat(invoice.laborRate || 0);
+      const laborTotal = laborHours > 0 && laborRate > 0 ? laborHours * laborRate : 0;
       const items = invoice.lineItems || invoice.items || [];
-      
-      if (items.length > 0) {
+      const hasContent = laborTotal > 0 || items.length > 0;
+
+      if (hasContent) {
         doc.fontSize(11)
            .font('Helvetica-Bold')
            .fillColor(darkGray)
@@ -225,6 +229,20 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
            .text('Amount', leftMargin + contentWidth * 0.85, yPos + 8);
 
         yPos += 25;
+
+        // Labor row (if applicable)
+        if (laborTotal > 0) {
+          doc.fontSize(10)
+             .font('Helvetica')
+             .fillColor(darkGray)
+             .text(`Labor (${laborHours} hrs @ $${laborRate.toFixed(2)}/hr)`, leftMargin + 10, yPos + 5, { width: contentWidth * 0.5 })
+             .text('1', leftMargin + contentWidth * 0.55, yPos + 5)
+             .text(`$${laborTotal.toFixed(2)}`, leftMargin + contentWidth * 0.68, yPos + 5)
+             .text(`$${laborTotal.toFixed(2)}`, leftMargin + contentWidth * 0.85, yPos + 5);
+
+          yPos += 25;
+          doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).stroke(borderGray);
+        }
 
         // Table rows
         items.forEach((item, index) => {
