@@ -5,8 +5,6 @@ const { getFirestore } = require('firebase-admin/firestore');
 const GOOGLE_CLIENT_SECRET = defineSecret('GOOGLE_CLIENT_SECRET');
 const GOOGLE_CLIENT_ID = '878846360709-o1o5l8t1fsmg0chi3bj3lo55h0ktbck2.apps.googleusercontent.com';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const REDIRECT_URI = 'https://electrician.proxtrades.com'; // your web app URL
-
 
 exports.exchangeGoogleCalendarCode = onCall(
   { secrets: [GOOGLE_CLIENT_SECRET] },
@@ -38,11 +36,21 @@ exports.exchangeGoogleCalendarCode = onCall(
       throw new HttpsError('internal', 'Failed to exchange code.');
     }
 
-    // Persist tokens to Firestore
     const db = getFirestore();
-    await db.doc(`users/${request.auth.uid}/integrations/googleCalendar`).set({
+    const integrationRef = db.doc(`users/${request.auth.uid}/integrations/googleCalendar`);
+
+    // Google only returns a refresh_token on the first authorization.
+    // On subsequent connects, preserve the existing one so the connection
+    // survives page refreshes and token expiry.
+    let refreshToken = data.refresh_token || '';
+    if (!refreshToken) {
+      const existing = await integrationRef.get();
+      refreshToken = existing.data()?.refreshToken || '';
+    }
+
+    await integrationRef.set({
       accessToken:  data.access_token,
-      refreshToken: data.refresh_token ?? '',
+      refreshToken: refreshToken,
       connected:    true,
       eventMap:     {},
       connectedAt:  new Date().toISOString(),
