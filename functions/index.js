@@ -29,6 +29,8 @@ const { handleEstimateResponse } = require('./src/functions/handleEstimateRespon
 const { createDepositCheckout } = require('./src/functions/createDepositCheckout');
 const { handleDepositSuccess } = require('./src/functions/handleDepositSuccess');
 const { refreshGoogleCalendarToken } = require('./src/functions/refreshGoogleCalendarToken');
+const { exchangeGoogleCalendarCode } = require('./src/functions/exchangeGoogleCalendarCode');
+
 
 
 // Import Stripe functions
@@ -55,6 +57,9 @@ exports.handleEstimateResponse = handleEstimateResponse;
 exports.createDepositCheckout = createDepositCheckout;
 exports.handleDepositSuccess = handleDepositSuccess;
 exports.refreshGoogleCalendarToken = refreshGoogleCalendarToken;
+exports.exchangeGoogleCalendarCode = exchangeGoogleCalendarCode;
+
+
 
 
 // Export Stripe functions
