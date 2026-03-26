@@ -133,17 +133,17 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       // Header section - Logo and Company Info
       if (logoBuffer) {
         try {
-          doc.image(logoBuffer, leftMargin, yPos, { height: 60, fit: [120, 60] });
+          doc.image(logoBuffer, leftMargin, yPos, { height: 80, fit: [160, 80] });
         } catch (e) {
           console.error('Error adding logo to PDF:', e);
         }
       }
 
       // Company info - right aligned
-      doc.fontSize(18)
+      doc.fontSize(22)
          .font('Helvetica-Bold')
          .fillColor(darkGray)
-         .text(userInfo.businessName || 'Your Business Name', leftMargin, yPos, {
+         .text(userInfo.businessName || userInfo.company || 'Your Business Name', leftMargin, yPos, {
            width: contentWidth,
            align: 'right'
          });
@@ -179,7 +179,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
         headerContactY += 15;
       }
 
-      yPos += Math.max(80, headerContactY + 20);
+      yPos += Math.max(100, headerContactY + 20);
 
       // Watermark (drawn behind content)
       const isPaid = invoice.status === 'Paid';
@@ -571,17 +571,17 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
       // Header section - Logo and Company Info
       if (logoBuffer) {
         try {
-          doc.image(logoBuffer, leftMargin, yPos, { height: 60, fit: [120, 60] });
+          doc.image(logoBuffer, leftMargin, yPos, { height: 80, fit: [160, 80] });
         } catch (e) {
           console.error('Error adding logo to PDF:', e);
         }
       }
 
       // Company info - right aligned
-      doc.fontSize(18)
+      doc.fontSize(22)
          .font('Helvetica-Bold')
          .fillColor(darkGray)
-         .text(userInfo.businessName || 'Your Business Name', leftMargin, yPos, {
+         .text(userInfo.businessName || userInfo.company || 'Your Business Name', leftMargin, yPos, {
            width: contentWidth,
            align: 'right'
          });
@@ -617,7 +617,7 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
         estHeaderContactY += 15;
       }
 
-      yPos += Math.max(80, estHeaderContactY + 20);
+      yPos += Math.max(100, estHeaderContactY + 20);
 
       // Watermark (drawn behind content)
       const isAccepted = estimate.status === 'Accepted';
