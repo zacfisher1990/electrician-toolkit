@@ -924,7 +924,7 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
            .text(estimate.terms || userInfo.estimateTerms, leftMargin, yPos, { width: contentWidth });
       }
 
-      // Contract / Disclaimer
+      // Contract / Disclaimer + Signature block
       if (estimate.includeContract && estimate.contractText) {
         yPos += 40;
 
@@ -945,6 +945,53 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
            .text(estimate.contractText, leftMargin, yPos, { width: contentWidth });
 
         yPos += doc.heightOfString(estimate.contractText, { width: contentWidth }) + 10;
+
+        // Signature block — force new page if not enough room (need ~160pt)
+        if (yPos > doc.page.height - 180) {
+          doc.addPage();
+          yPos = 50;
+        }
+
+        yPos += 30;
+
+        // Divider
+        doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).lineWidth(0.5).stroke(borderGray);
+        yPos += 20;
+
+        // Agreement line
+        doc.fontSize(9)
+           .font('Helvetica-Oblique')
+           .fillColor(mediumGray)
+           .text('By signing below, I agree to the terms and conditions outlined above.', leftMargin, yPos, { width: contentWidth });
+
+        yPos += 36;
+
+        // Signature lines — 3 columns: Signature (wide), Printed Name (wide), Date (narrow)
+        const sigGap = 24;
+        const sigWidth = (contentWidth - sigGap * 2) * 0.38;
+        const nameWidth = (contentWidth - sigGap * 2) * 0.38;
+        const dateWidth = contentWidth - sigWidth - nameWidth - sigGap * 2;
+
+        const sigX = leftMargin;
+        const nameX = sigX + sigWidth + sigGap;
+        const dateX = nameX + nameWidth + sigGap;
+
+        // Signature
+        doc.moveTo(sigX, yPos).lineTo(sigX + sigWidth, yPos).lineWidth(0.75).stroke(darkGray);
+        doc.fontSize(8).font('Helvetica').fillColor(lightGray)
+           .text('CLIENT SIGNATURE', sigX, yPos + 6);
+
+        // Printed Name
+        doc.moveTo(nameX, yPos).lineTo(nameX + nameWidth, yPos).lineWidth(0.75).stroke(darkGray);
+        doc.fontSize(8).font('Helvetica').fillColor(lightGray)
+           .text('PRINTED NAME', nameX, yPos + 6);
+
+        // Date
+        doc.moveTo(dateX, yPos).lineTo(dateX + dateWidth, yPos).lineWidth(0.75).stroke(darkGray);
+        doc.fontSize(8).font('Helvetica').fillColor(lightGray)
+           .text('DATE', dateX, yPos + 6);
+
+        yPos += 30;
       }
 
       // Photos section
