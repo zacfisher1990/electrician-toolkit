@@ -406,16 +406,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
         }
       }
 
-      // Footer
-      const footerY = doc.page.height - 50;
-      doc.fontSize(10)
-         .font('Helvetica')
-         .fillColor(lightGray)
-         .text('Thank you for your business!', leftMargin, footerY, { 
-           width: contentWidth, 
-           align: 'center' 
-         });
-
+  
       doc.end();
     } catch (error) {
       reject(error);
@@ -873,15 +864,6 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
         }
       }
 
-      // Footer
-      const footerY = doc.page.height - 50;
-      doc.fontSize(10)
-         .font('Helvetica')
-         .fillColor(lightGray)
-         .text('Thank you for considering our services!', leftMargin, footerY, { 
-           width: contentWidth, 
-           align: 'center' 
-         });
 
       doc.end();
     } catch (error) {
