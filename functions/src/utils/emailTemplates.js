@@ -419,7 +419,7 @@ function generateWelcomeHTML(email) {
                 <tr>
                   <td style="padding: 0 0 20px 0;">
                     <p style="margin: 0; font-size: 15px; color: #374151; line-height: 1.7;">
-                      The app includes 30+ NEC calculators, job logging, estimates, invoices, and time tracking. The NEC calculators are always free. Jobs, estimates, and invoices are free up to 3 of each.
+                      The app includes 20+ NEC calculators, job logging, estimates, invoices, and time tracking. The NEC calculators are always free. Jobs, estimates, and invoices are free up to 3 of each.
                     </p>
                   </td>
                 </tr>
