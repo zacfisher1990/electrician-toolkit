@@ -41,6 +41,44 @@ async function fetchImageBuffer(url) {
 }
 
 /**
+ * Draw a diagonal watermark on the current PDFKit page
+ */
+function drawWatermark(doc, text, color = '#10b981') {
+  const pageWidth = doc.page.width;
+  const pageHeight = doc.page.height;
+  doc.save();
+  doc.translate(pageWidth / 2, pageHeight / 2);
+  doc.rotate(-35);
+  doc.fontSize(90)
+     .font('Helvetica-Bold')
+     .fillColor(color)
+     .fillOpacity(0.08)
+     .text(text, 0, 0, { lineBreak: false, align: 'center' });
+  // Border box around text
+  const tw = doc.widthOfString(text, { fontSize: 90 });
+  doc.rect(-tw / 2 - 20, -55, tw + 40, 100)
+     .lineWidth(8)
+     .strokeColor(color)
+     .strokeOpacity(0.08)
+     .stroke();
+  doc.restore();
+  doc.fillOpacity(1).strokeOpacity(1);
+}
+
+/**
+ * Format a date string safely without timezone shift
+ */
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const str = String(dateStr).split('T')[0];
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const [year, month, day] = str.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+/**
  * Generate PDF buffer for the invoice using PDFKit
  * Design matches the in-app preview with clean white style
  */
@@ -125,7 +163,27 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
         });
       }
 
-      yPos += 80;
+      let headerContactY = 55;
+      if (userInfo.address || userInfo.businessAddress) {
+        doc.text(userInfo.address || userInfo.businessAddress, leftMargin, yPos + headerContactY, {
+          width: contentWidth,
+          align: 'right'
+        });
+        headerContactY += 15;
+      }
+      if (userInfo.licenseNumber) {
+        doc.text(`Lic# ${userInfo.licenseNumber}`, leftMargin, yPos + headerContactY, {
+          width: contentWidth,
+          align: 'right'
+        });
+        headerContactY += 15;
+      }
+
+      yPos += Math.max(80, headerContactY + 20);
+
+      // Watermark (drawn behind content)
+      const isPaid = invoice.status === 'Paid';
+      if (isPaid) drawWatermark(doc, 'PAID');
 
       // Divider
       doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).stroke(borderGray);
@@ -161,16 +219,37 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
          .fillColor(darkGray)
          .text(invoice.name || invoice.jobTitle || 'Invoice', leftMargin, yPos + 12);
 
-      if (invoice.clientName || invoice.client) {
+      if (invoice.clientName || invoice.client || invoice.clientCompany) {
         doc.fontSize(9)
            .font('Helvetica')
            .fillColor(lightGray)
-           .text('CLIENT', leftMargin, yPos + 35);
-        
-        doc.fontSize(11)
-           .font('Helvetica')
-           .fillColor(darkGray)
-           .text(invoice.clientName || invoice.client, leftMargin, yPos + 47);
+           .text('BILL TO', leftMargin, yPos + 35);
+
+        let clientY = yPos + 47;
+        if (invoice.clientCompany) {
+          doc.fontSize(11).font('Helvetica-Bold').fillColor(darkGray)
+             .text(invoice.clientCompany, leftMargin, clientY);
+          clientY += 16;
+        }
+        if (invoice.clientName || invoice.client) {
+          doc.fontSize(11).font('Helvetica').fillColor(darkGray)
+             .text(invoice.clientName || invoice.client, leftMargin, clientY);
+          clientY += 16;
+        }
+        if (invoice.clientEmail) {
+          doc.fontSize(9).font('Helvetica').fillColor(lightGray)
+             .text(invoice.clientEmail, leftMargin, clientY);
+          clientY += 13;
+        }
+        if (invoice.clientPhone) {
+          doc.fontSize(9).font('Helvetica').fillColor(lightGray)
+             .text(invoice.clientPhone, leftMargin, clientY);
+          clientY += 13;
+        }
+        if (invoice.clientAddress) {
+          doc.fontSize(9).font('Helvetica').fillColor(lightGray)
+             .text(invoice.clientAddress, leftMargin, clientY);
+        }
       }
 
       // Right column - Dates
@@ -184,7 +263,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       doc.fontSize(12)
          .font('Helvetica-Bold')
          .fillColor(darkGray)
-         .text(invoice.date || new Date().toLocaleDateString(), rightColX, yPos + 12, { width: colWidth, align: 'right' });
+         .text(invoice.date ? formatDate(invoice.date) : new Date().toLocaleDateString(), rightColX, yPos + 12, { width: colWidth, align: 'right' });
 
       doc.fontSize(9)
          .font('Helvetica')
@@ -194,7 +273,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       doc.fontSize(12)
          .font('Helvetica-Bold')
          .fillColor(darkGray)
-         .text(invoice.dueDate || 'Upon Receipt', rightColX, yPos + 47, { width: colWidth, align: 'right' });
+         .text(invoice.dueDate ? formatDate(invoice.dueDate) : 'Upon Receipt', rightColX, yPos + 47, { width: colWidth, align: 'right' });
 
       yPos += 80;
 
@@ -317,6 +396,29 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
            .font('Helvetica-Bold')
            .fillColor(darkGray)
            .text(`$${balanceDue.toFixed(2)}`, leftMargin, yPos - 3, { width: contentWidth, align: 'right' });
+      } else if (isPaid) {
+        doc.fontSize(12)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('TOTAL:', leftMargin + contentWidth * 0.6, yPos);
+
+        const paidTotalAmount = `$${parseFloat(invoice.total || invoice.amount || 0).toFixed(2)}`;
+        doc.fontSize(18)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text(paidTotalAmount, leftMargin, yPos - 3, { width: contentWidth, align: 'right' });
+
+        yPos += 30;
+        doc.moveTo(leftMargin + contentWidth * 0.6, yPos).lineTo(rightMargin, yPos).lineWidth(2).stroke('#10b981');
+        yPos += 15;
+        doc.fontSize(12)
+           .font('Helvetica-Bold')
+           .fillColor('#10b981')
+           .text('AMOUNT DUE:', leftMargin + contentWidth * 0.6, yPos);
+        doc.fontSize(18)
+           .font('Helvetica-Bold')
+           .fillColor('#10b981')
+           .text('$0.00', leftMargin, yPos - 3, { width: contentWidth, align: 'right' });
       } else {
         doc.fontSize(12)
            .font('Helvetica-Bold')
@@ -499,7 +601,27 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
         });
       }
 
-      yPos += 80;
+      let estHeaderContactY = 55;
+      if (userInfo.address || userInfo.businessAddress) {
+        doc.text(userInfo.address || userInfo.businessAddress, leftMargin, yPos + estHeaderContactY, {
+          width: contentWidth,
+          align: 'right'
+        });
+        estHeaderContactY += 15;
+      }
+      if (userInfo.licenseNumber) {
+        doc.text(`Lic# ${userInfo.licenseNumber}`, leftMargin, yPos + estHeaderContactY, {
+          width: contentWidth,
+          align: 'right'
+        });
+        estHeaderContactY += 15;
+      }
+
+      yPos += Math.max(80, estHeaderContactY + 20);
+
+      // Watermark (drawn behind content)
+      const isAccepted = estimate.status === 'Accepted';
+      if (isAccepted) drawWatermark(doc, 'ACCEPTED');
 
       // Divider
       doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).stroke(borderGray);
@@ -548,16 +670,37 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
          .text(estimate.name || 'Untitled Estimate', leftMargin, yPos + 12);
 
       // Client info if available
-      if (estimate.clientName) {
+      if (estimate.clientName || estimate.clientCompany) {
         doc.fontSize(9)
            .font('Helvetica')
            .fillColor(lightGray)
            .text('CLIENT', leftMargin, yPos + 35);
-        
-        doc.fontSize(11)
-           .font('Helvetica')
-           .fillColor(darkGray)
-           .text(estimate.clientName, leftMargin, yPos + 47);
+
+        let estClientY = yPos + 47;
+        if (estimate.clientCompany) {
+          doc.fontSize(11).font('Helvetica-Bold').fillColor(darkGray)
+             .text(estimate.clientCompany, leftMargin, estClientY);
+          estClientY += 16;
+        }
+        if (estimate.clientName) {
+          doc.fontSize(11).font('Helvetica').fillColor(darkGray)
+             .text(estimate.clientName, leftMargin, estClientY);
+          estClientY += 16;
+        }
+        if (estimate.clientEmail) {
+          doc.fontSize(9).font('Helvetica').fillColor(lightGray)
+             .text(estimate.clientEmail, leftMargin, estClientY);
+          estClientY += 13;
+        }
+        if (estimate.clientPhone) {
+          doc.fontSize(9).font('Helvetica').fillColor(lightGray)
+             .text(estimate.clientPhone, leftMargin, estClientY);
+          estClientY += 13;
+        }
+        if (estimate.clientAddress) {
+          doc.fontSize(9).font('Helvetica').fillColor(lightGray)
+             .text(estimate.clientAddress, leftMargin, estClientY);
+        }
       }
 
       // Right column - Dates
@@ -571,7 +714,7 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
       doc.fontSize(12)
          .font('Helvetica-Bold')
          .fillColor(darkGray)
-         .text(estimateDate.toLocaleDateString(), rightColX, yPos + 12, { width: colWidth, align: 'right' });
+         .text(formatDate(estimateDate.toISOString().split('T')[0]), rightColX, yPos + 12, { width: colWidth, align: 'right' });
 
       doc.fontSize(9)
          .font('Helvetica')
@@ -581,7 +724,7 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
       doc.fontSize(12)
          .font('Helvetica-Bold')
          .fillColor(darkGray)
-         .text(validDate.toLocaleDateString(), rightColX, yPos + 47, { width: colWidth, align: 'right' });
+         .text(formatDate(validDate.toISOString().split('T')[0]), rightColX, yPos + 47, { width: colWidth, align: 'right' });
 
       yPos += 80;
 
