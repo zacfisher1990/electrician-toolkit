@@ -208,10 +208,10 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo, actionUrls
                     <p style="color: #111827; font-size: 15px; font-weight: 600; margin: 0 0 6px;">Ready to move forward?</p>
                     <p style="color: #6b7280; font-size: 13px; margin: 0 0 20px;">Review the attached PDF and let us know how you'd like to proceed.</p>
                     
-                    <!-- Accept -->
+                    <!-- Accept / Sign -->
                     <div style="margin-bottom: 10px;">
                       <a href="${actionUrls.accept}" style="display: block; background-color: #16a34a; color: #ffffff; padding: 14px 20px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px; text-align: center;">
-                        ✅ Accept Estimate
+                        ${actionUrls.hasContract ? '✍️ Review & Sign Estimate' : '✅ Accept Estimate'}
                       </a>
                     </div>
 

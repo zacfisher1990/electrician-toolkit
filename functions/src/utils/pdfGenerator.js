@@ -994,6 +994,32 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
         yPos += 30;
       }
 
+      // If already e-signed, show the recorded signature instead of blank lines
+      if (estimate.signatureName) {
+        if (yPos > doc.page.height - 120) {
+          doc.addPage();
+          yPos = 50;
+        }
+
+        yPos += 20;
+        doc.rect(leftMargin, yPos, contentWidth, 64).fill('#f0fdf4');
+        doc.rect(leftMargin, yPos, contentWidth, 64).lineWidth(0.5).stroke('#bbf7d0');
+
+        doc.fontSize(8).font('Helvetica-Bold').fillColor('#166534')
+           .text('ELECTRONICALLY SIGNED', leftMargin + 14, yPos + 12);
+
+        doc.fontSize(12).font('Helvetica-Bold').fillColor(darkGray)
+           .text(estimate.signatureName, leftMargin + 14, yPos + 26);
+
+        const sigDateStr = estimate.signatureTimestampISO
+          ? new Date(estimate.signatureTimestampISO).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })
+          : 'Date on record';
+        doc.fontSize(9).font('Helvetica').fillColor(lightGray)
+           .text(sigDateStr, leftMargin + 14, yPos + 44);
+
+        yPos += 80;
+      }
+
       // Photos section
       if (photoData.length > 0) {
         yPos += 40;

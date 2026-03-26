@@ -30,6 +30,8 @@ const { createDepositCheckout } = require('./src/functions/createDepositCheckout
 const { handleDepositSuccess } = require('./src/functions/handleDepositSuccess');
 const { refreshGoogleCalendarToken } = require('./src/functions/refreshGoogleCalendarToken');
 const { exchangeGoogleCalendarCode } = require('./src/functions/exchangeGoogleCalendarCode');
+const { handleEstimateSignature } = require('./handleEstimateSignature');
+
 
 
 
@@ -68,3 +70,4 @@ exports.checkStripeAccountStatus = checkStripeAccountStatus;
 exports.createInvoicePaymentLink = createInvoicePaymentLink;
 exports.stripeWebhook = stripeWebhook;
 exports.createStripeDashboardLink = createStripeDashboardLink;
+exports.handleEstimateSignature = handleEstimateSignature;

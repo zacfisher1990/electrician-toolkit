@@ -64,10 +64,17 @@ const sendEstimateEmail = onCall(
       const makeUrl = (action) =>
         `${baseUrl}/handleEstimateResponse?estimateId=${estimate.id}&action=${action}&token=${responseToken}&userId=${request.auth.uid}`;
 
+      // If estimate includes a contract, route Accept to the e-signature page
+      // so the client must type their name before the estimate is marked Accepted.
+      const acceptUrl = (estimate.includeContract && estimate.contractText)
+        ? `${baseUrl}/handleEstimateSignature?estimateId=${estimate.id}&token=${responseToken}&userId=${request.auth.uid}`
+        : makeUrl('accept');
+
       const actionUrls = {
-        accept: makeUrl('accept'),
+        accept: acceptUrl,
         reject: makeUrl('reject'),
         requestChanges: makeUrl('requestChanges'),
+        hasContract: !!(estimate.includeContract && estimate.contractText),
       };
 
       // --- Save token + update status to "Sent" in Firestore ---
