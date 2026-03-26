@@ -13,6 +13,94 @@
 const { onRequest } = require('firebase-functions/v2/https');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 
+// ─── Invoice helpers (mirrors invoicesService.js logic, Admin SDK) ────────────
+
+async function getNextInvoiceNumber(db, userId) {
+  const snap = await db.collection('invoices')
+    .where('userId', '==', userId)
+    .get();
+
+  if (snap.empty) return 'INV-001';
+
+  const numbers = snap.docs
+    .map(d => {
+      const match = d.data().invoiceNumber?.match(/INV-(\d+)/);
+      return match ? parseInt(match[1]) : 0;
+    })
+    .filter(n => n > 0);
+
+  if (numbers.length === 0) return 'INV-001';
+  const next = Math.max(...numbers) + 1;
+  return `INV-${String(next).padStart(3, '0')}`;
+}
+
+async function createInvoiceFromEstimate(db, estimate, userId) {
+  const lineItems = [];
+
+  if (estimate.laborHours && estimate.laborRate) {
+    lineItems.push({
+      description: `Labor: ${estimate.laborHours}h @ $${estimate.laborRate}/hr`,
+      quantity: 1,
+      rate: estimate.laborHours * estimate.laborRate,
+    });
+  }
+
+  (estimate.materials || []).forEach(mat => {
+    lineItems.push({
+      description: mat.name,
+      quantity: mat.quantity || 1,
+      rate: parseFloat(mat.cost) || 0,
+    });
+  });
+
+  (estimate.additionalItems || []).forEach(item => {
+    lineItems.push({
+      description: item.description,
+      quantity: 1,
+      rate: parseFloat(item.amount) || 0,
+    });
+  });
+
+  const total = lineItems.reduce((sum, item) =>
+    sum + ((parseFloat(item.quantity) || 0) * (parseFloat(item.rate) || 0)), 0);
+
+  const today = new Date();
+  const dueDate = new Date(today);
+  dueDate.setDate(dueDate.getDate() + 30);
+
+  const invoiceNumber = await getNextInvoiceNumber(db, userId);
+
+  const invoiceData = {
+    userId,
+    invoiceNumber,
+    client: estimate.clientName || '',
+    clientId: estimate.clientId || null,
+    clientEmail: estimate.clientEmail || '',
+    clientPhone: estimate.clientPhone || '',
+    clientAddress: estimate.clientAddress || '',
+    clientCompany: estimate.clientCompany || '',
+    date: today.toISOString().split('T')[0],
+    dueDate: dueDate.toISOString().split('T')[0],
+    paymentTerms: 'Net 30',
+    lineItems,
+    notes: `Created from estimate: ${estimate.estimateNumber || estimate.name || ''}`,
+    status: 'Pending',
+    jobId: estimate.jobId || null,
+    estimateId: estimate.id || null,
+    estimateNumber: estimate.estimateNumber || null,
+    amount: total,
+    subtotal: total,
+    total,
+    photos: [],
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+  };
+
+  const docRef = await db.collection('invoices').add(invoiceData);
+  console.log(`Auto-created invoice ${invoiceNumber} for estimate ${estimate.id}`);
+  return { invoiceId: docRef.id, invoiceNumber };
+}
+
 const handleEstimateSignature = onRequest({ cors: true }, async (req, res) => {
   const db = getFirestore();
 
@@ -65,11 +153,33 @@ const handleEstimateSignature = onRequest({ cors: true }, async (req, res) => {
         updatedAt: FieldValue.serverTimestamp(),
       });
 
+      // Auto-create invoice (mirrors the client-side logic in Estimates.jsx)
+      let invoiceNumber = null;
+      try {
+        const existingInvoice = await db.collection('invoices')
+          .where('estimateId', '==', estimateId)
+          .limit(1)
+          .get();
+
+        if (existingInvoice.empty) {
+          const estimateForInvoice = { ...estimate, id: estimateId };
+          const result = await createInvoiceFromEstimate(db, estimateForInvoice, userId);
+          invoiceNumber = result.invoiceNumber;
+        } else {
+          invoiceNumber = existingInvoice.docs[0].data().invoiceNumber;
+          console.log(`Invoice already exists for estimate ${estimateId}: ${invoiceNumber}`);
+        }
+      } catch (invoiceErr) {
+        // Non-fatal — signature and acceptance are already saved
+        console.error('Auto-invoice creation failed:', invoiceErr);
+      }
+
       return res.status(200).json({
         success: true,
         message: 'Estimate accepted and signature recorded.',
         signatureName: signatureName.trim(),
         signatureTimestamp,
+        invoiceNumber,
       });
     } catch (err) {
       console.error('handleEstimateSignature POST error:', err);
