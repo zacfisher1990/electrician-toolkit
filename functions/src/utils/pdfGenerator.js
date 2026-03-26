@@ -718,6 +718,36 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
          .fillColor(darkGray)
          .text(totalAmount, leftMargin, yPos - 3, { width: contentWidth, align: 'right' });
 
+      // Deposit section
+      if (estimate.requireDeposit && estimate.depositAmount) {
+        yPos += 35;
+
+        const depositLabel = estimate.depositType === 'percent'
+          ? `${estimate.depositValue}% deposit required at acceptance`
+          : `$${parseFloat(estimate.depositValue).toFixed(2)} deposit required at acceptance`;
+
+        // Amber highlight box
+        doc.rect(leftMargin + contentWidth * 0.4, yPos, contentWidth * 0.6, 30)
+           .fill('#fffbeb');
+
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .fillColor('#92400e')
+           .text('Deposit Required:', leftMargin + contentWidth * 0.42, yPos + 9);
+
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .fillColor('#92400e')
+           .text(`$${parseFloat(estimate.depositAmount).toFixed(2)}`, leftMargin, yPos + 9, { width: contentWidth - 10, align: 'right' });
+
+        yPos += 35;
+
+        doc.fontSize(8)
+           .font('Helvetica')
+           .fillColor('#b45309')
+           .text(depositLabel, leftMargin, yPos, { width: contentWidth, align: 'right' });
+      }
+
       // Notes
       if (estimate.notes) {
         yPos += 50;
