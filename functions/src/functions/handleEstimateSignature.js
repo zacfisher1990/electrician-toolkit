@@ -11,7 +11,12 @@
  */
 
 const { onRequest } = require('firebase-functions/v2/https');
+const { defineString } = require('firebase-functions/params');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getMessaging } = require('firebase-admin/messaging');
+const { Resend } = require('resend');
+
+const resendApiKey = defineString('RESEND_API_KEY');
 
 // ─── Invoice helpers (mirrors invoicesService.js logic, Admin SDK) ────────────
 
@@ -60,6 +65,15 @@ async function createInvoiceFromEstimate(db, estimate, userId) {
       rate: parseFloat(item.amount) || 0,
     });
   });
+
+  // Fallback: no line items but estimate has a total
+  if (lineItems.length === 0 && (estimate.total || estimate.estimatedCost)) {
+    lineItems.push({
+      description: estimate.name || 'Labor & Materials',
+      quantity: 1,
+      rate: parseFloat(estimate.total || estimate.estimatedCost) || 0,
+    });
+  }
 
   const total = lineItems.reduce((sum, item) =>
     sum + ((parseFloat(item.quantity) || 0) * (parseFloat(item.rate) || 0)), 0);
@@ -172,6 +186,109 @@ const handleEstimateSignature = onRequest({ cors: true }, async (req, res) => {
       } catch (invoiceErr) {
         // Non-fatal — signature and acceptance are already saved
         console.error('Auto-invoice creation failed:', invoiceErr);
+      }
+
+      // --- Fetch contractor user doc for email + FCM token ---
+      const userSnap = await db.collection('users').doc(userId).get();
+      const contractor = userSnap.exists ? userSnap.data() : {};
+      const contractorEmail = contractor.email || null;
+      const fcmToken = contractor.fcmToken || null;
+      const clientName = estimate.clientName || 'Your client';
+      const estimateLabel = estimate.estimateNumber || estimate.name || 'Estimate';
+
+      // --- Send contractor notification email ---
+      if (contractorEmail) {
+        try {
+          const resend = new Resend(resendApiKey.value());
+          await resend.emails.send({
+            from: 'Electrician Pro X <notifications@proxtrades.com>',
+            to: contractorEmail,
+            subject: `✅ Estimate Signed & Accepted — ${estimateLabel}`,
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              </head>
+              <body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f9fafb;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:40px 20px;">
+                  <tr><td align="center">
+                    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                      <tr>
+                        <td style="background:#292929;padding:30px;text-align:center;border-bottom:4px solid #F7C600;">
+                          <h1 style="color:#F7C600;margin:0;font-size:22px;">⚡ Electrician Pro X</h1>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:40px 30px;">
+                          <h2 style="color:#111827;margin:0 0 16px;font-size:20px;">✅ Estimate Signed &amp; Accepted</h2>
+                          <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
+                            Great news! <strong>${clientName}</strong> has signed and accepted estimate <strong>${estimateLabel}</strong> for <strong>$${parseFloat(estimate.total || 0).toFixed(2)}</strong>.
+                          </p>
+                          <table width="100%" cellpadding="12" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:6px;">
+                            <tr style="background:#f9fafb;">
+                              <td style="color:#6b7280;font-size:14px;">Estimate:</td>
+                              <td align="right" style="color:#111827;font-size:14px;font-weight:600;">${estimateLabel}</td>
+                            </tr>
+                            <tr>
+                              <td style="color:#6b7280;font-size:14px;border-top:1px solid #e5e7eb;">Client:</td>
+                              <td align="right" style="color:#111827;font-size:14px;font-weight:600;border-top:1px solid #e5e7eb;">${clientName}</td>
+                            </tr>
+                            <tr style="background:#f9fafb;">
+                              <td style="color:#6b7280;font-size:14px;border-top:1px solid #e5e7eb;">Signed by:</td>
+                              <td align="right" style="color:#111827;font-size:14px;font-weight:600;border-top:1px solid #e5e7eb;">${signatureName.trim()}</td>
+                            </tr>
+                            <tr>
+                              <td style="color:#6b7280;font-size:14px;border-top:1px solid #e5e7eb;">Total:</td>
+                              <td align="right" style="color:#F7C600;font-size:18px;font-weight:700;border-top:1px solid #e5e7eb;">$${parseFloat(estimate.total || 0).toFixed(2)}</td>
+                            </tr>
+                            ${invoiceNumber ? `
+                            <tr style="background:#f9fafb;">
+                              <td style="color:#6b7280;font-size:14px;border-top:1px solid #e5e7eb;">Invoice Created:</td>
+                              <td align="right" style="color:#16a34a;font-size:14px;font-weight:600;border-top:1px solid #e5e7eb;">${invoiceNumber}</td>
+                            </tr>
+                            ` : ''}
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="background:#f9fafb;padding:20px 30px;text-align:center;border-top:1px solid #e5e7eb;">
+                          <p style="color:#9ca3af;margin:0;font-size:12px;">Open Electrician Pro X to view and manage this estimate.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td></tr>
+                </table>
+              </body>
+              </html>
+            `,
+          });
+          console.log('Contractor notification email sent to:', contractorEmail);
+        } catch (emailErr) {
+          console.error('Failed to send contractor notification email:', emailErr);
+        }
+      }
+
+      // --- Send push notification via FCM ---
+      if (fcmToken) {
+        try {
+          await getMessaging().send({
+            token: fcmToken,
+            notification: {
+              title: '✅ Estimate Signed & Accepted',
+              body: `${clientName} has signed and accepted ${estimateLabel}.`,
+            },
+            data: {
+              type: 'estimate_response',
+              estimateId,
+              status: 'Accepted',
+            },
+          });
+          console.log('Push notification sent');
+        } catch (fcmErr) {
+          console.error('Failed to send push notification:', fcmErr);
+        }
       }
 
       return res.status(200).json({
