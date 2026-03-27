@@ -54,7 +54,7 @@ const sendInvoiceEmail = onCall(
       console.log('Payment methods included:', (paymentMethods || []).length);
       
       // Generate PDF
-      const pdfBuffer = await generateInvoicePDFBuffer(invoice, userInfo);
+      const pdfBuffer = await generateInvoicePDFBuffer(invoice, userInfo, paymentMethods || [], paymentLinkUrl || '');
 
       // Convert buffer to base64
       const pdfBase64 = pdfBuffer.toString('base64');

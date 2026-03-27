@@ -82,7 +82,7 @@ function formatDate(dateStr) {
  * Generate PDF buffer for the invoice using PDFKit
  * Design matches the in-app preview with clean white style
  */
-async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
+async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods = [], paymentLinkUrl = '') {
   // Fetch logo if available
   let logoBuffer = null;
   if (userInfo.companyLogo) {
@@ -90,6 +90,19 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
       logoBuffer = await fetchImageBuffer(userInfo.companyLogo);
     } catch (error) {
       console.error('Error fetching logo:', error);
+    }
+  }
+
+  // Fetch Stripe QR code buffer if payment link provided and invoice isn't paid
+  let qrBuffer = null;
+  const stripeUrl = paymentLinkUrl || invoice.paymentLinkUrl || '';
+  if (stripeUrl && invoice.status !== 'Paid') {
+    try {
+      const encodedUrl = encodeURIComponent(stripeUrl);
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodedUrl}&margin=6&color=1f2937`;
+      qrBuffer = await fetchImageBuffer(qrUrl);
+    } catch (error) {
+      console.error('Error fetching QR code:', error);
     }
   }
 
@@ -508,7 +521,103 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}) {
         }
       }
 
-  
+      // ── Payment Methods Section ──────────────────────────────────────────
+      const methods = Array.isArray(paymentMethods) ? paymentMethods : [];
+      if (methods.length > 0) {
+        yPos += 40;
+
+        if (yPos > doc.page.height - 120) {
+          doc.addPage();
+          yPos = 50;
+        }
+
+        doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).stroke(borderGray);
+        yPos += 16;
+
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('HOW TO PAY', leftMargin, yPos);
+
+        yPos += 16;
+
+        const colW = (contentWidth - 10) / 2;
+        let pmColIndex = 0;
+
+        methods.forEach((method) => {
+          if (yPos > doc.page.height - 80) {
+            doc.addPage();
+            yPos = 50;
+            pmColIndex = 0;
+          }
+
+          const pmX = pmColIndex === 0 ? leftMargin : leftMargin + colW + 10;
+
+          // Card background
+          doc.rect(pmX, yPos, colW, 42).fill(bgGray);
+
+          doc.fontSize(10)
+             .font('Helvetica-Bold')
+             .fillColor(darkGray)
+             .text(method.name || '', pmX + 10, yPos + 8, { width: colW - 20 });
+
+          doc.fontSize(8)
+             .font('Helvetica')
+             .fillColor(lightGray)
+             .text(method.url || '', pmX + 10, yPos + 22, { width: colW - 20, ellipsis: true });
+
+          pmColIndex++;
+          if (pmColIndex >= 2) {
+            pmColIndex = 0;
+            yPos += 52;
+          }
+        });
+
+        // Advance if last row had only one card
+        if (pmColIndex === 1) yPos += 52;
+      }
+
+      // ── Stripe QR Code Section ───────────────────────────────────────────
+      if (qrBuffer && !isPaid) {
+        yPos += 30;
+
+        if (yPos > doc.page.height - 140) {
+          doc.addPage();
+          yPos = 50;
+        }
+
+        doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).stroke(borderGray);
+        yPos += 16;
+
+        const qrSize = 90;
+
+        try {
+          doc.image(qrBuffer, leftMargin, yPos, { width: qrSize, height: qrSize });
+        } catch (e) {
+          console.error('Error rendering QR code in PDF:', e);
+        }
+
+        const qrTextX = leftMargin + qrSize + 16;
+        const qrTextWidth = contentWidth - qrSize - 16;
+
+        doc.fontSize(12)
+           .font('Helvetica-Bold')
+           .fillColor(darkGray)
+           .text('Pay Online', qrTextX, yPos + 4, { width: qrTextWidth });
+
+        doc.fontSize(9)
+           .font('Helvetica')
+           .fillColor(lightGray)
+           .text('Scan the QR code with your phone camera to pay securely by card.', qrTextX, yPos + 22, { width: qrTextWidth });
+
+        doc.fontSize(8)
+           .font('Helvetica')
+           .fillColor('#6366f1')
+           .text(stripeUrl, qrTextX, yPos + 50, { width: qrTextWidth, ellipsis: true });
+
+        yPos += qrSize + 10;
+      }
+
       doc.end();
     } catch (error) {
       reject(error);
