@@ -12,31 +12,34 @@ exports.notifyJobOwnerOnClockInOut = onDocumentWritten(
     const before = event.data.before.exists() ? (event.data.before.data() || {}) : {};
     const after  = event.data.after.data() || {};
 
-    const beforeSessions = before.workSessions || [];
-    const afterSessions  = after.workSessions  || [];
+    // ── Detect clock-in: a new entry appeared in activeInviteeSessions ──
+    const beforeInviteeSessions = before.activeInviteeSessions || [];
+    const afterInviteeSessions  = after.activeInviteeSessions  || [];
 
-    // ── Detect clock-in / clock-out ──
-    const wasClockedIn = before.clockedIn === true;
-    const nowClockedIn = after.clockedIn  === true;
-    const clockedBy    = after.currentSessionClockedBy || null;
+    const newEntry = afterInviteeSessions.find(s =>
+      !beforeInviteeSessions.some(b => b.uid === s.uid && b.startTime === s.startTime)
+    );
 
-    const isClockIn  = !wasClockedIn && nowClockedIn && clockedBy;
-    const isClockOut = wasClockedIn && !nowClockedIn;
+    // ── Detect clock-out: an entry disappeared from activeInviteeSessions ──
+    const removedEntry = beforeInviteeSessions.find(s =>
+      !afterInviteeSessions.some(a => a.uid === s.uid && a.startTime === s.startTime)
+    );
+
+    const isClockIn  = !!newEntry;
+    const isClockOut = !!removedEntry && !newEntry;
 
     if (!isClockIn && !isClockOut) return null;
 
-    let workerInfo      = null;
+    let workerInfo      = isClockIn ? newEntry : removedEntry;
     let clockOutSession = null;
 
-    if (isClockIn) {
-      workerInfo = clockedBy;
-    } else {
-      clockOutSession = [...afterSessions]
-        .reverse()
-        .find(s => s.clockedBy && !beforeSessions.some(
-          b => b.startTime === s.startTime && b.endTime === s.endTime
-        ));
-      workerInfo = clockOutSession?.clockedBy || null;
+    if (isClockOut) {
+      const afterWorkSessions  = after.workSessions  || [];
+      const beforeWorkSessions = before.workSessions || [];
+      clockOutSession = afterWorkSessions.find(s =>
+        s.clockedBy?.uid === removedEntry.uid &&
+        !beforeWorkSessions.some(b => b.startTime === s.startTime)
+      );
     }
 
     if (!workerInfo) return null;
