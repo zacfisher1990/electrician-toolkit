@@ -536,7 +536,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
           '';
         if (detail) return detail;
 
-        // URL field — only show if it doesn't look like a raw http link (those go in QR section)
+        // Non-http value (e.g. Zelle email/phone stored directly in url field)
         if (method.url && !method.url.startsWith('http')) return method.url;
 
         // Type-based fallback labels
@@ -544,6 +544,22 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
         if (type === 'cash')  return 'Cash accepted';
         if (type === 'check') return `Make checks payable to ${userInfo.businessName || userInfo.name || 'contractor'}`;
         if (type === 'zelle') return method.email || method.phone || '';
+
+        // For http payment links (Venmo, PayPal, Cash App, Square, etc.)
+        // extract a clean handle from the URL path rather than showing the raw URL.
+        // e.g. https://venmo.com/u/zcfshr  → venmo.com/u/zcfshr  (strip https://)
+        //      https://paypal.me/zcfshr    → paypal.me/zcfshr
+        //      https://cash.app/$zcfshr    → cash.app/$zcfshr
+        if (method.url) {
+          try {
+            const u = new URL(method.url);
+            // Show host + path without the protocol, trimming trailing slash
+            return (u.hostname + u.pathname).replace(/\/+$/, '');
+          } catch (_) {
+            return method.url;
+          }
+        }
+
         return '';
       }
 
