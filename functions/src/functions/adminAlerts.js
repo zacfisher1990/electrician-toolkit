@@ -10,7 +10,7 @@ exports.notifyJobOwnerOnClockInOut = onDocumentWritten(
 
 
     // Skip deletes
-    if (!event.data.after.exists()) return null;
+    if (!event.data.after.exists) return null;
 
     const before = event.data.before.exists() ? (event.data.before.data() || {}) : {};
     const after  = event.data.after.data() || {};
