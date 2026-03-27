@@ -31,6 +31,7 @@ const { handleDepositSuccess } = require('./src/functions/handleDepositSuccess')
 const { refreshGoogleCalendarToken } = require('./src/functions/refreshGoogleCalendarToken');
 const { exchangeGoogleCalendarCode } = require('./src/functions/exchangeGoogleCalendarCode');
 const { handleEstimateSignature } = require('./src/functions/handleEstimateSignature');
+const { notifyJobOwnerOnClockInOut } = require('./src/functions/adminAlerts');
 
 
 
@@ -60,6 +61,7 @@ exports.createDepositCheckout = createDepositCheckout;
 exports.handleDepositSuccess = handleDepositSuccess;
 exports.refreshGoogleCalendarToken = refreshGoogleCalendarToken;
 exports.exchangeGoogleCalendarCode = exchangeGoogleCalendarCode;
+exports.notifyJobOwnerOnClockInOut = notifyJobOwnerOnClockInOut;
 
 
 
