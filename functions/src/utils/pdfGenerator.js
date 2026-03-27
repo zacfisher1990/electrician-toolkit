@@ -655,17 +655,17 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
           doc.fontSize(13)
              .font('Helvetica-Bold')
              .fillColor(darkGray)
-             .text('Pay Securely Online', qrTextX, yPos + 12, { width: qrTextWidth });
+             .text('Pay Securely Online', qrTextX, yPos + 14, { width: qrTextWidth });
 
           doc.fontSize(9)
              .font('Helvetica')
              .fillColor(mediumGray)
-             .text('Scan the QR code with your phone camera\nto pay by credit or debit card.', qrTextX, yPos + 32, { width: qrTextWidth });
+             .text('Scan the QR code with your phone\ncamera to pay by credit or debit card.', qrTextX, yPos + 36, { width: qrTextWidth });
 
-          doc.fontSize(8)
+          doc.fontSize(9)
              .font('Helvetica-Bold')
              .fillColor('#4f46e5')
-             .text(stripeUrl, qrTextX, yPos + 72, { width: qrTextWidth, ellipsis: true });
+             .text('\u27a4  Pay Here', qrTextX, yPos + 76, { width: qrTextWidth });
 
           yPos += sectionH + 20;
         } else {
@@ -680,10 +680,10 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
              .fillColor(darkGray)
              .text('Pay Securely Online', leftMargin + 14, yPos + 8, { width: contentWidth - 20 });
 
-          doc.fontSize(8)
+          doc.fontSize(9)
              .font('Helvetica-Bold')
              .fillColor('#4f46e5')
-             .text(stripeUrl, leftMargin + 14, yPos + 26, { width: contentWidth - 20, ellipsis: true });
+             .text('Visit the payment link in your invoice email to pay online.', leftMargin + 14, yPos + 26, { width: contentWidth - 20 });
 
           yPos += linkBoxH + 10;
         }
