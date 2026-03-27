@@ -522,8 +522,40 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
       }
 
       // ── Payment Methods Section ──────────────────────────────────────────
-      const methods = Array.isArray(paymentMethods) ? paymentMethods : [];
-      if (methods.length > 0) {
+      // Helper: extract a human-readable detail line from a payment method object.
+      // Handles both simple {name, url} and richer {type, handle, info, details, username} shapes.
+      function pmDetail(method) {
+        // Explicit detail fields first
+        const detail =
+          method.handle ||
+          method.username ||
+          method.info ||
+          method.details ||
+          method.accountInfo ||
+          method.phone ||
+          '';
+        if (detail) return detail;
+
+        // URL field — only show if it doesn't look like a raw http link (those go in QR section)
+        if (method.url && !method.url.startsWith('http')) return method.url;
+
+        // Type-based fallback labels
+        const type = (method.type || '').toLowerCase();
+        if (type === 'cash')  return 'Cash accepted';
+        if (type === 'check') return `Make checks payable to ${userInfo.businessName || userInfo.name || 'contractor'}`;
+        if (type === 'zelle') return method.email || method.phone || '';
+        return '';
+      }
+
+      // Separate Stripe from other methods — Stripe gets its own QR/link section below
+      const hasStripeSection = !isPaid && !!stripeUrl;
+      const allMethods   = Array.isArray(paymentMethods) ? paymentMethods : [];
+      const otherMethods = allMethods.filter(m => {
+        const t = (m.type || m.name || '').toLowerCase();
+        return !t.includes('stripe') && !t.includes('card');
+      });
+
+      if (otherMethods.length > 0) {
         yPos += 40;
 
         if (yPos > doc.page.height - 120) {
@@ -531,21 +563,24 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
           yPos = 50;
         }
 
-        doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).stroke(borderGray);
-        yPos += 16;
+        doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).lineWidth(0.5).stroke(borderGray);
+        yPos += 18;
 
-        doc.fontSize(10)
+        doc.fontSize(9)
            .font('Helvetica-Bold')
-           .fillColor(darkGray)
-           .text('HOW TO PAY', leftMargin, yPos);
+           .fillColor(lightGray)
+           .text('PAYMENT OPTIONS', leftMargin, yPos);
 
-        yPos += 16;
+        yPos += 14;
 
         const colW = (contentWidth - 10) / 2;
         let pmColIndex = 0;
 
-        methods.forEach((method) => {
-          if (yPos > doc.page.height - 80) {
+        otherMethods.forEach((method) => {
+          const detail = pmDetail(method);
+          const cardH = detail ? 52 : 36;
+
+          if (yPos > doc.page.height - cardH - 20) {
             doc.addPage();
             yPos = 50;
             pmColIndex = 0;
@@ -553,69 +588,105 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
 
           const pmX = pmColIndex === 0 ? leftMargin : leftMargin + colW + 10;
 
-          // Card background
-          doc.rect(pmX, yPos, colW, 42).fill(bgGray);
+          // Card background with left accent bar
+          doc.rect(pmX, yPos, colW, cardH).fill(bgGray);
+          doc.rect(pmX, yPos, 3, cardH).fill('#10b981'); // green accent
 
           doc.fontSize(10)
              .font('Helvetica-Bold')
              .fillColor(darkGray)
-             .text(method.name || '', pmX + 10, yPos + 8, { width: colW - 20 });
+             .text(method.name || method.type || '', pmX + 12, yPos + (detail ? 9 : 13), { width: colW - 22 });
 
-          doc.fontSize(8)
-             .font('Helvetica')
-             .fillColor(lightGray)
-             .text(method.url || '', pmX + 10, yPos + 22, { width: colW - 20, ellipsis: true });
+          if (detail) {
+            doc.fontSize(8)
+               .font('Helvetica')
+               .fillColor(mediumGray)
+               .text(detail, pmX + 12, yPos + 27, { width: colW - 22, ellipsis: true });
+          }
 
           pmColIndex++;
           if (pmColIndex >= 2) {
             pmColIndex = 0;
-            yPos += 52;
+            yPos += cardH + 8;
           }
         });
 
         // Advance if last row had only one card
-        if (pmColIndex === 1) yPos += 52;
+        if (pmColIndex === 1) yPos += (pmDetail(otherMethods[otherMethods.length - 1]) ? 52 : 36) + 8;
       }
 
-      // ── Stripe QR Code Section ───────────────────────────────────────────
-      if (qrBuffer && !isPaid) {
+      // ── Stripe / Pay Online Section ──────────────────────────────────────
+      if (hasStripeSection) {
         yPos += 30;
 
-        if (yPos > doc.page.height - 140) {
+        if (yPos > doc.page.height - 150) {
           doc.addPage();
           yPos = 50;
         }
 
-        doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).stroke(borderGray);
-        yPos += 16;
-
-        const qrSize = 90;
-
-        try {
-          doc.image(qrBuffer, leftMargin, yPos, { width: qrSize, height: qrSize });
-        } catch (e) {
-          console.error('Error rendering QR code in PDF:', e);
-        }
-
-        const qrTextX = leftMargin + qrSize + 16;
-        const qrTextWidth = contentWidth - qrSize - 16;
-
-        doc.fontSize(12)
-           .font('Helvetica-Bold')
-           .fillColor(darkGray)
-           .text('Pay Online', qrTextX, yPos + 4, { width: qrTextWidth });
+        doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).lineWidth(0.5).stroke(borderGray);
+        yPos += 18;
 
         doc.fontSize(9)
-           .font('Helvetica')
+           .font('Helvetica-Bold')
            .fillColor(lightGray)
-           .text('Scan the QR code with your phone camera to pay securely by card.', qrTextX, yPos + 22, { width: qrTextWidth });
+           .text('PAY BY CARD', leftMargin, yPos);
 
-        doc.fontSize(8)
-           .font('Helvetica')
-           .fillColor('#6366f1')
-           .text(stripeUrl, qrTextX, yPos + 50, { width: qrTextWidth, ellipsis: true });
+        yPos += 14;
 
-        yPos += qrSize + 10;
+        if (qrBuffer) {
+          // ── QR + text layout ────────────────────────────────────────────
+          const qrSize = 100;
+          const sectionH = qrSize + 10;
+
+          // Light background panel
+          doc.rect(leftMargin, yPos, contentWidth, sectionH + 10).fill('#f0fdf4');
+          doc.rect(leftMargin, yPos, 3, sectionH + 10).fill('#10b981');
+
+          try {
+            doc.image(qrBuffer, leftMargin + 14, yPos + 8, { width: qrSize, height: qrSize });
+          } catch (e) {
+            console.error('Error rendering QR code in PDF:', e);
+          }
+
+          const qrTextX = leftMargin + qrSize + 28;
+          const qrTextWidth = contentWidth - qrSize - 32;
+
+          doc.fontSize(13)
+             .font('Helvetica-Bold')
+             .fillColor(darkGray)
+             .text('Pay Securely Online', qrTextX, yPos + 12, { width: qrTextWidth });
+
+          doc.fontSize(9)
+             .font('Helvetica')
+             .fillColor(mediumGray)
+             .text('Scan the QR code with your phone camera\nto pay by credit or debit card.', qrTextX, yPos + 32, { width: qrTextWidth });
+
+          doc.fontSize(8)
+             .font('Helvetica-Bold')
+             .fillColor('#4f46e5')
+             .text(stripeUrl, qrTextX, yPos + 72, { width: qrTextWidth, ellipsis: true });
+
+          yPos += sectionH + 20;
+        } else {
+          // ── URL-only fallback (QR fetch failed) ─────────────────────────
+          const linkBoxH = 46;
+
+          doc.rect(leftMargin, yPos, contentWidth, linkBoxH).fill('#f0fdf4');
+          doc.rect(leftMargin, yPos, 3, linkBoxH).fill('#10b981');
+
+          doc.fontSize(10)
+             .font('Helvetica-Bold')
+             .fillColor(darkGray)
+             .text('Pay Securely Online', leftMargin + 14, yPos + 8, { width: contentWidth - 20 });
+
+          doc.fontSize(8)
+             .font('Helvetica-Bold')
+             .fillColor('#4f46e5')
+             .text(stripeUrl, leftMargin + 14, yPos + 26, { width: contentWidth - 20, ellipsis: true });
+
+          yPos += linkBoxH + 10;
+        }
       }
 
       doc.end();
