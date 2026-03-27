@@ -6,6 +6,9 @@ exports.notifyJobOwnerOnClockInOut = onDocumentWritten(
   async (event) => {
     const { ownerId, jobId } = event.params;
 
+        console.log(`[ClockNotify] Triggered — ownerId: ${ownerId}, jobId: ${jobId}`);
+
+
     // Skip deletes
     if (!event.data.after.exists()) return null;
 
@@ -16,6 +19,11 @@ exports.notifyJobOwnerOnClockInOut = onDocumentWritten(
     const beforeInviteeSessions = before.activeInviteeSessions || [];
     const afterInviteeSessions  = after.activeInviteeSessions  || [];
 
+    console.log(`[ClockNotify] beforeInviteeSessions: ${JSON.stringify(beforeInviteeSessions)}`);
+    console.log(`[ClockNotify] afterInviteeSessions: ${JSON.stringify(afterInviteeSessions)}`);
+
+
+
     const newEntry = afterInviteeSessions.find(s =>
       !beforeInviteeSessions.some(b => b.uid === s.uid && b.startTime === s.startTime)
     );
@@ -25,10 +33,18 @@ exports.notifyJobOwnerOnClockInOut = onDocumentWritten(
       !afterInviteeSessions.some(a => a.uid === s.uid && a.startTime === s.startTime)
     );
 
+    console.log(`[ClockNotify] newEntry: ${JSON.stringify(newEntry)}`);
+    console.log(`[ClockNotify] removedEntry: ${JSON.stringify(removedEntry)}`);
+
+
+
     const isClockIn  = !!newEntry;
     const isClockOut = !!removedEntry && !newEntry;
 
-    if (!isClockIn && !isClockOut) return null;
+    if (!isClockIn && !isClockOut) {
+      console.log('[ClockNotify] No clock-in or clock-out detected — skipping');
+      return null;
+    }
 
     let workerInfo      = isClockIn ? newEntry : removedEntry;
     let clockOutSession = null;
