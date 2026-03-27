@@ -298,16 +298,27 @@ exports.stripeWebhook = onRequest(
         
         if (invoiceId && contractorUserId) {
           try {
-            // Update invoice in top-level invoices collection
+            const paidAmount = session.amount_total / 100;
+
+            // Read current invoice to handle Partial → Paid transition correctly
+            const invoiceSnap = await db.collection('invoices').doc(invoiceId).get();
+            const invoiceData = invoiceSnap.exists ? invoiceSnap.data() : {};
+            const invoiceTotal = parseFloat(invoiceData.total || invoiceData.amount || 0);
+
+            // Update invoice — set both `status` (app display field) AND
+            // `paymentStatus` (legacy field) so nothing is missed.
             await db.collection('invoices').doc(invoiceId).update({
-              paymentStatus: 'paid',
+              status: 'Paid',               // ← what the app reads for display
+              paymentStatus: 'paid',        // ← legacy field kept for compatibility
+              amountPaid: invoiceTotal,     // full amount paid
+              balance: 0,                   // nothing remaining
               paidAt: admin.firestore.FieldValue.serverTimestamp(),
-              paidAmount: session.amount_total / 100,
+              paidAmount: paidAmount,
               stripePaymentIntentId: session.payment_intent,
               stripeCustomerEmail: session.customer_email
             });
             
-            console.log(`Invoice ${invoiceId} marked as paid`);
+            console.log(`Invoice ${invoiceId} marked as Paid via Stripe ($${paidAmount})`);
           } catch (error) {
             console.error('Error updating invoice:', error);
           }
