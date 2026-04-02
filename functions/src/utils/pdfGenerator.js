@@ -1028,6 +1028,11 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
 
       // Additional Items section
       if (estimate.additionalItems && estimate.additionalItems.length > 0) {
+        if (yPos > doc.page.height - 150) {
+          doc.addPage();
+          yPos = 50;
+        }
+
         doc.fontSize(11)
            .font('Helvetica-Bold')
            .fillColor(darkGray)
@@ -1051,6 +1056,9 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
              .text(`$${parseFloat(item.amount || 0).toFixed(2)}`, leftMargin, yPos, { width: contentWidth - 10, align: 'right' });
 
           yPos += 25;
+
+          // Row divider
+          doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).stroke(borderGray);
         });
 
         yPos += 10;
@@ -1104,11 +1112,11 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
 
       // Notes
       if (estimate.notes) {
-        yPos += 50;
-        
-        if (yPos > doc.page.height - 100) {
+        if (yPos > doc.page.height - 150) {
           doc.addPage();
           yPos = 50;
+        } else {
+          yPos += 50;
         }
 
         doc.fontSize(10)
@@ -1125,11 +1133,11 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
 
       // Terms
       if (estimate.terms || userInfo.estimateTerms) {
-        yPos += 40;
-        
-        if (yPos > doc.page.height - 100) {
+        if (yPos > doc.page.height - 150) {
           doc.addPage();
           yPos = 50;
+        } else {
+          yPos += 40;
         }
 
         doc.fontSize(10)
