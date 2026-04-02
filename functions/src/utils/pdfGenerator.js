@@ -299,7 +299,8 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
       const laborRate = parseFloat(invoice.laborRate || 0);
       const laborTotal = laborHours > 0 && laborRate > 0 ? laborHours * laborRate : 0;
       const items = invoice.lineItems || invoice.items || [];
-      const hasContent = laborTotal > 0 || items.length > 0;
+      const additionalItems = invoice.additionalItems || [];
+      const hasContent = laborTotal > 0 || items.length > 0 || additionalItems.length > 0;
 
       if (hasContent) {
         doc.fontSize(11)
@@ -355,6 +356,29 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
 
           yPos += 25;
           
+          // Row divider
+          doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).stroke(borderGray);
+        });
+
+        // Additional items rows
+        additionalItems.forEach((item) => {
+          if (yPos > doc.page.height - 150) {
+            doc.addPage();
+            yPos = 50;
+          }
+
+          const amount = parseFloat(item.amount) || 0;
+
+          doc.fontSize(10)
+             .font('Helvetica')
+             .fillColor(darkGray)
+             .text(item.description || 'Item', leftMargin + 10, yPos + 5, { width: contentWidth * 0.5 })
+             .text('1', leftMargin + contentWidth * 0.55, yPos + 5)
+             .text(`$${amount.toFixed(2)}`, leftMargin + contentWidth * 0.68, yPos + 5)
+             .text(`$${amount.toFixed(2)}`, leftMargin + contentWidth * 0.85, yPos + 5);
+
+          yPos += 25;
+
           // Row divider
           doc.moveTo(leftMargin, yPos).lineTo(rightMargin, yPos).stroke(borderGray);
         });
