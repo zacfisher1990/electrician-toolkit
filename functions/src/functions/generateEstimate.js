@@ -1,9 +1,69 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const admin = require("firebase-admin");
+
+// Initialize admin SDK (safe to call multiple times)
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+const adminDb = admin.firestore();
 
 const getGeminiClient = () => {
   return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 };
+
+/**
+ * Fetches the user's saved materials from Firestore.
+ * Assumes subcollection: users/{uid}/materials
+ * Fields: name (or description), price (or cost/unitPrice), unit (optional)
+ */
+async function fetchUserMaterials(uid) {
+  try {
+    const snapshot = await adminDb
+      .collection("users")
+      .doc(uid)
+      .collection("materials")
+      .limit(200) // Cap to keep prompt size reasonable
+      .get();
+
+    if (snapshot.empty) return [];
+
+    return snapshot.docs.map((doc) => {
+      const d = doc.data();
+      // Defensive field resolution
+      const name = d.name || d.description || d.title || null;
+      const price =
+        d.price ?? d.cost ?? d.unitPrice ?? d.unitCost ?? null;
+      const unit = d.unit || d.uom || null;
+
+      if (!name || price == null) return null;
+
+      return {
+        name: String(name).trim(),
+        price: Number(price),
+        unit: unit ? String(unit).trim() : null,
+      };
+    }).filter(Boolean);
+  } catch (err) {
+    // Non-fatal — if we can't fetch materials, fall back to AI estimates
+    console.warn("[generateEstimate] Failed to fetch user materials:", err.message);
+    return [];
+  }
+}
+
+/**
+ * Formats the materials catalog into a prompt-friendly string.
+ */
+function formatMaterialsCatalog(materials) {
+  if (!materials.length) return null;
+
+  const lines = materials.map((m) => {
+    const unitLabel = m.unit ? ` (per ${m.unit})` : "";
+    return `  - ${m.name}${unitLabel}: $${m.price.toFixed(2)}`;
+  });
+
+  return lines.join("\n");
+}
 
 const BASE_PROMPT = `You are an expert electrician assistant creating comprehensive job estimates. You have extensive knowledge of:
 - Current material pricing from Home Depot, Lowe's, and electrical supply houses
@@ -13,7 +73,7 @@ const BASE_PROMPT = `You are an expert electrician assistant creating comprehens
 ## CRITICAL INSTRUCTIONS:
 
 ### Materials Pricing:
-- Use CURRENT 2024-2025 retail prices from Home Depot/Lowe's
+- Use CURRENT 2025-2026 retail prices from Home Depot/Lowe's
 - estimatedPrice = price PER UNIT (the app calculates total = quantity × estimatedPrice)
 
 ### WIRE/CABLE PRICING - EXTREMELY IMPORTANT:
@@ -111,7 +171,7 @@ When suggesting rates, factor in:
 Respond with ONLY valid JSON. No markdown, no code blocks, no explanation.
 {
   "materials": [
-    {"name": "14/2 NM-B Romex 250ft roll", "quantity": 1, "estimatedPrice": 110.00, "notes": "~150ft needed for circuit - 1 roll"},
+    {"name": "14/2 NM-B Romex 250ft roll", "quantity": 1, "estimatedPrice": 110.00, "notes": "~150ft needed for circuit - 1 roll", "source": "database"},
     {"name": "15A Decora outlet", "quantity": 5, "estimatedPrice": 3.00, "notes": null}
   ],
   "laborEstimate": {
@@ -206,30 +266,30 @@ General Rules:
 - Use 14/3 between 3-way switches (12/3 only if on 20A circuit)
 - 4-way switches go in the middle, also need 14/3 or 14/4
 
-**CURRENT PRICING REFERENCE (Home Depot 2024-2025) — prices are PER ROLL:**
-- 14/2 NM-B 250ft: $105-115
-- 12/2 NM-B 250ft: $145-160
-- 14/3 NM-B 250ft: $140-155
-- 12/3 NM-B 250ft: $200-220
-- 10/2 NM-B 125ft: $130-145
-- 10/3 NM-B 125ft: $175-190
-- 6/3 NM-B 125ft: $280-320
-- 15A breaker: $5-8
-- 20A breaker: $6-9
-- 15A AFCI breaker: $40-50
-- 20A AFCI breaker: $42-52
-- 15A GFCI outlet: $18-24
-- 20A GFCI outlet: $22-28
-- Standard duplex outlet: $0.80-2
-- Decora outlet: $2-4
-- Single pole switch: $1-3
-- 3-way switch: $3-6
-- 4-way switch: $12-18
-- 4" LED recessed light: $8-15 each
-- Smoke detector (hardwired): $25-40
-- CO detector (hardwired): $30-45
+**CURRENT PRICING REFERENCE (Home Depot 2025-2026) — prices are PER ROLL:**
+- 14/2 NM-B 250ft: $110-120
+- 12/2 NM-B 250ft: $160-170
+- 14/3 NM-B 250ft: $160-172
+- 12/3 NM-B 250ft: $215-230
+- 10/2 NM-B 250ft: $300-320
+- 10/3 NM-B 250ft: $390-415
+- 6/3 NM-B 125ft: $310-360
+- 15A standard breaker: $7-9
+- 20A standard breaker: $8-11
+- 15A AFCI/GFCI dual-function breaker: $60-68
+- 20A AFCI/GFCI dual-function breaker: $63-77
+- 15A GFCI outlet: $20-28
+- 20A GFCI outlet: $24-32
+- Standard duplex outlet (15A TR): $2-4
+- Decora outlet (15A TR): $4-7
+- Single pole switch: $3-5
+- 3-way switch: $5-8
+- 4-way switch: $14-22
+- 4" or 6" LED recessed light (integrated): $12-22 each
+- Smoke detector (hardwired): $30-48
+- CO detector (hardwired): $38-55
 
-**RESIDENTIAL LABOR RATES (2024-2025) - USE LOCATION TO ADJUST:**
+**RESIDENTIAL LABOR RATES (2025-2026) - USE LOCATION TO ADJUST:**
 Base rates (adjust based on provided location):
 - Economy/handyman rate: $50-65/hr
 - Standard licensed electrician: $75-95/hr  
@@ -279,23 +339,22 @@ const COMMERCIAL_RULES = `
 - Within 6' of sinks
 - Vending machine outlets
 
-**CURRENT PRICING REFERENCE (2024-2025):**
+**CURRENT PRICING REFERENCE (2025-2026):**
 NOTE: Wire/cable quantities must be in ROLLS/SPOOLS, not feet. Price = per roll/spool.
-- 1/2" EMT 10ft: $5-7
-- 3/4" EMT 10ft: $8-11
-- 1" EMT 10ft: $12-16
-- #12 THHN 500ft: $95-120
-- #10 THHN 500ft: $140-170
-- MC 12/2 250ft: $180-220
-- MC 12/3 250ft: $250-300
-- 20A commercial spec outlet: $8-15
-- 277V ballast: $40-80
-- 2x4 LED troffer: $80-150
-- Exit sign LED: $35-60
-- Emergency light combo: $60-100
-- Commercial panel 200A: $400-700
+- 1/2" EMT 10ft: $6-9
+- 3/4" EMT 10ft: $9-13
+- 1" EMT 10ft: $14-19
+- #12 THHN 500ft: $115-145
+- #10 THHN 500ft: $165-200
+- MC 12/2 250ft: $255-275
+- MC 12/3 250ft: $320-370
+- 20A commercial spec outlet (TR): $10-18
+- 2x4 LED troffer: $90-170
+- Exit sign LED: $40-70
+- Emergency light combo: $70-115
+- Commercial panel 200A: $450-800
 
-**COMMERCIAL LABOR RATES (2024-2025) - USE LOCATION TO ADJUST:**
+**COMMERCIAL LABOR RATES (2025-2026) - USE LOCATION TO ADJUST:**
 Base rates (adjust based on provided location):
 - Standard commercial electrician: $85-115/hr
 - Union/prevailing wage: $120-180/hr
@@ -342,22 +401,22 @@ const INDUSTRIAL_RULES = `
 - Lockable disconnects for safety
 - Fused vs non-fused based on design
 
-**CURRENT PRICING REFERENCE (2024-2025):**
+**CURRENT PRICING REFERENCE (2025-2026):**
 NOTE: Wire/cable quantities must be in ROLLS/SPOOLS, not feet. Price = per roll/spool.
-- 1" Rigid conduit 10ft: $30-40
-- 1-1/2" Rigid conduit 10ft: $50-65
-- 2" Rigid conduit 10ft: $70-90
-- #6 THHN 500ft: $300-380
-- #4 THHN 500ft: $450-550
-- #2 THHN 500ft: $600-750
-- 3-phase disconnect 60A: $100-180
-- 3-phase disconnect 100A: $180-300
-- Motor starter 10HP: $250-500
-- VFD 5HP: $500-1000
-- 400A panel 3-phase: $1000-1800
-- LED high bay 150W: $120-200
+- 1" Rigid conduit 10ft: $35-48
+- 1-1/2" Rigid conduit 10ft: $58-75
+- 2" Rigid conduit 10ft: $80-105
+- #6 THHN 500ft: $360-450
+- #4 THHN 500ft: $520-640
+- #2 THHN 500ft: $700-875
+- 3-phase disconnect 60A: $115-200
+- 3-phase disconnect 100A: $200-340
+- Motor starter 10HP: $280-560
+- VFD 5HP: $550-1100
+- 400A panel 3-phase: $1100-2000
+- LED high bay 150W: $135-225
 
-**INDUSTRIAL LABOR RATES (2024-2025) - USE LOCATION TO ADJUST:**
+**INDUSTRIAL LABOR RATES (2025-2026) - USE LOCATION TO ADJUST:**
 Base rates (adjust based on provided location):
 - Standard industrial electrician: $95-130/hr
 - Prevailing wage/union: $140-200/hr
@@ -391,6 +450,7 @@ exports.generateEstimate = onCall(
     }
 
     const { jobDescription, jobType = 'residential', jobLocation } = request.data;
+    const uid = request.auth.uid;
 
     if (!jobDescription || typeof jobDescription !== "string") {
       throw new HttpsError(
@@ -408,7 +468,14 @@ exports.generateEstimate = onCall(
 
     const validJobTypes = ['residential', 'commercial', 'industrial'];
     const selectedJobType = validJobTypes.includes(jobType) ? jobType : 'residential';
-    
+
+    // Fetch user's saved materials (non-blocking — empty array on failure)
+    const userMaterials = await fetchUserMaterials(uid);
+    const hasDatabaseMaterials = userMaterials.length > 0;
+    const catalogString = hasDatabaseMaterials ? formatMaterialsCatalog(userMaterials) : null;
+
+    console.log(`[generateEstimate][${selectedJobType}][${uid}] User materials found: ${userMaterials.length}`);
+
     const systemPrompt = BASE_PROMPT + JOB_TYPE_PROMPTS[selectedJobType];
 
     try {
@@ -423,15 +490,31 @@ exports.generateEstimate = onCall(
 
       const jobTypeLabel = selectedJobType.charAt(0).toUpperCase() + selectedJobType.slice(1);
       
-      // Build location context for the prompt
       const locationContext = jobLocation && jobLocation.trim() 
         ? `\n\nJob Location: ${jobLocation.trim()}\n(Use this location to provide accurate regional labor rate estimates. Factor in local cost of living and market rates for this specific area.)`
         : '\n\n(No specific location provided - use national average rates for labor estimates.)';
-      
-      const prompt = `${systemPrompt}
+
+      // Build the database catalog section if the user has saved materials
+      const databaseSection = catalogString
+        ? `
+
+## USER'S MATERIAL DATABASE — HIGHEST PRIORITY PRICING:
+The user has saved their own material prices. When any material below is needed for this job, you MUST use the exact price listed — do NOT use market estimates for these items.
+Add "source": "database" to the JSON for any line item that uses a price from this list.
+For materials NOT in this list, estimate using current market prices and omit the "source" field.
+
+${catalogString}
+
+Important matching notes:
+- Match by common name even if wording differs (e.g., "Romex 12/2" matches "12/2 NM-B Wire")
+- If a database item covers a needed material, always prefer it over market pricing
+- Wire rolls in the database are priced per roll — apply the same roll-quantity logic as usual`
+        : '';
+
+      const prompt = `${systemPrompt}${databaseSection}
 
 Generate a COMPLETE estimate for this ${jobTypeLabel} electrical job including:
-1. Materials list with current retail pricing
+1. Materials list with pricing (use database prices where available, market prices otherwise)
 2. Labor hour estimate (low/mid/high range with reasoning)
 3. Suggested hourly rate with range (IMPORTANT: Adjust based on the job location if provided)
 ${locationContext}
@@ -439,7 +522,7 @@ ${locationContext}
 Job Description:
 ${jobDescription}
 
-Remember: JSON only, no markdown.`;
+Remember: JSON only, no markdown. Add "source": "database" on any material priced from the user's database.`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
@@ -488,6 +571,7 @@ Remember: JSON only, no markdown.`;
           .map((mat) => {
             let price = Number(mat.estimatedPrice) || 0;
             let flagged = price > flagThreshold;
+            const fromDatabase = mat.source === "database";
             
             return {
               name: String(mat.name).substring(0, 200),
@@ -495,6 +579,8 @@ Remember: JSON only, no markdown.`;
               estimatedPrice: Math.max(0, Number(price.toFixed(2))),
               notes: mat.notes ? String(mat.notes).substring(0, 200) : null,
               flagged: flagged,
+              // Pass database source flag through to the client
+              ...(fromDatabase && { source: "database" }),
             };
           })
           .slice(0, 50);
@@ -511,7 +597,6 @@ Remember: JSON only, no markdown.`;
           reasoning: le.reasoning ? String(le.reasoning).substring(0, 300) : null,
         };
         
-        // Ensure low < mid < high
         if (laborEstimate.low >= laborEstimate.mid) {
           laborEstimate.low = laborEstimate.mid * 0.7;
         }
@@ -533,7 +618,6 @@ Remember: JSON only, no markdown.`;
           reasoning: sr.reasoning ? String(sr.reasoning).substring(0, 200) : null,
         };
         
-        // Ensure rate is within range
         if (suggestedRate.rate < suggestedRate.range.low) {
           suggestedRate.rate = suggestedRate.range.low;
         }
@@ -542,8 +626,11 @@ Remember: JSON only, no markdown.`;
         }
       }
 
+      const dbItemCount = materials.filter((m) => m.source === "database").length;
+
       console.log(`[generateEstimate][${selectedJobType}][${jobLocation || 'no-location'}] Parsed:`, {
         materials: materials.length,
+        databasePricedItems: dbItemCount,
         laborEstimate: laborEstimate ? `${laborEstimate.low}/${laborEstimate.mid}/${laborEstimate.high}` : 'none',
         suggestedRate: suggestedRate ? `$${suggestedRate.rate}/hr` : 'none',
       });
@@ -551,7 +638,10 @@ Remember: JSON only, no markdown.`;
       return { 
         materials, 
         laborEstimate, 
-        suggestedRate 
+        suggestedRate,
+        // Let the client know database pricing was used
+        hasDatabasePricing: dbItemCount > 0,
+        databaseItemCount: dbItemCount,
       };
     } catch (error) {
       console.error("AI Estimate Generation Error:", error);
