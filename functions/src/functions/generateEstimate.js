@@ -167,12 +167,38 @@ When suggesting rates, factor in:
 3. Local market rates for licensed electricians
 4. Job type (commercial/industrial typically pays more)
 
+## MATERIAL CATEGORIES:
+Every material MUST include a "category" field using EXACTLY one of these values (case-sensitive):
+- "Wire & Cable"      → NM-B Romex, THHN, MC cable, UF cable, speaker/low-voltage wire
+- "Boxes & Covers"    → electrical boxes, mud rings, extension rings, cover plates, weatherproof covers
+- "Breakers & Panels" → circuit breakers (standard, AFCI, GFCI, dual-function), load centers, sub-panels, disconnects
+- "Devices & Switches"→ single-pole switches, 3-way switches, 4-way switches, dimmers, fan controls, timers
+- "Receptacles"       → duplex outlets, GFCI outlets, 20A outlets, USB outlets, dryer/range receptacles
+- "Fixtures & Lighting"→ recessed lights, LED fixtures, smoke detectors, CO detectors, ceiling fans, exit signs, emergency lights
+- "Conduit & Fittings"→ EMT conduit, rigid conduit, flex conduit, couplings, connectors, straps, LB bodies, weatherheads
+- "Connectors & Lugs" → wire nuts, push-in connectors, butt splices, lugs, terminals, tape
+- "Hardware"          → screws, anchors, staples, cable ties, nail plates, mud rings, straps, mounting hardware
+- "Tools & Equipment" → tools, test equipment, ladders, drill bits (only include if billable to job)
+- "Safety & PPE"      → gloves, safety glasses, arc flash PPE (only include if billable to job)
+- "Other"             → anything that doesn't fit the above
+
+Every material MUST also include a "unitType" field using EXACTLY one of these values:
+- "roll"   → wire and cable sold by the roll (NM-B, THHN spools, MC cable)
+- "each"   → individual items (outlets, switches, breakers, boxes, lights, detectors)
+- "ft"     → conduit or wire sold by the foot
+- "box"    → wire nuts, staples, anchors sold in boxes
+- "pack"   → multi-packs of outlets, switches, or other devices
+- "pair"   → items sold in pairs
+- "set"    → items sold as a set
+- "lb"     → items sold by weight
+- "gallon" → liquids (penetrating oil, pulling lubricant)
+
 ## RESPONSE FORMAT:
 Respond with ONLY valid JSON. No markdown, no code blocks, no explanation.
 {
   "materials": [
-    {"name": "14/2 NM-B Romex 250ft roll", "quantity": 1, "estimatedPrice": 110.00, "notes": "~150ft needed for circuit - 1 roll", "source": "database"},
-    {"name": "15A Decora outlet", "quantity": 5, "estimatedPrice": 3.00, "notes": null}
+    {"name": "14/2 NM-B Romex 250ft roll", "quantity": 1, "estimatedPrice": 110.00, "notes": "~150ft needed for circuit - 1 roll", "category": "Wire & Cable", "unitType": "roll", "source": "database"},
+    {"name": "15A Decora outlet", "quantity": 5, "estimatedPrice": 3.00, "notes": null, "category": "Receptacles", "unitType": "each"}
   ],
   "laborEstimate": {
     "low": 4,
@@ -573,12 +599,31 @@ Remember: JSON only, no markdown. Add "source": "database" on any material price
             let flagged = price > flagThreshold;
             const fromDatabase = mat.source === "database";
             
+            // Validate category against known values; fall back to Other
+            const VALID_CATEGORIES = [
+              'Wire & Cable', 'Boxes & Covers', 'Breakers & Panels',
+              'Devices & Switches', 'Receptacles', 'Fixtures & Lighting',
+              'Conduit & Fittings', 'Connectors & Lugs', 'Hardware',
+              'Tools & Equipment', 'Safety & PPE', 'Other',
+            ];
+            const VALID_UNIT_TYPES = [
+              'each', 'ft', 'box', 'roll', 'pack', 'pair', 'set', 'lb', 'gallon',
+            ];
+            const category = VALID_CATEGORIES.includes(mat.category)
+              ? mat.category
+              : 'Other';
+            const unitType = VALID_UNIT_TYPES.includes(mat.unitType)
+              ? mat.unitType
+              : 'each';
+
             return {
               name: String(mat.name).substring(0, 200),
               quantity: Math.max(1, Math.round(Number(mat.quantity) || 1)),
               estimatedPrice: Math.max(0, Number(price.toFixed(2))),
               notes: mat.notes ? String(mat.notes).substring(0, 200) : null,
               flagged: flagged,
+              category,
+              unitType,
               // Pass database source flag through to the client
               ...(fromDatabase && { source: "database" }),
             };
