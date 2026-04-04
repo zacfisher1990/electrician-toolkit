@@ -31,9 +31,12 @@ function drawWatermark(doc, text, color = '#10b981') {
   doc.save();
   doc.translate(pageWidth / 2, pageHeight / 2);
   doc.rotate(-35);
-  doc.fontSize(90).font('Helvetica-Bold').fillColor(color).fillOpacity(0.08)
-     .text(text, 0, 0, { lineBreak: false, align: 'center' });
-  const tw = doc.widthOfString(text, { fontSize: 90 });
+  // Set font before measuring so widthOfString is accurate
+  doc.fontSize(90).font('Helvetica-Bold');
+  const tw = doc.widthOfString(text);
+  // Manually center with -tw/2 — align:'center' is unreliable in transformed space
+  doc.fillColor(color).fillOpacity(0.08)
+     .text(text, -tw / 2, -45, { lineBreak: false });
   doc.rect(-tw / 2 - 20, -55, tw + 40, 100).lineWidth(8).strokeColor(color).strokeOpacity(0.08).stroke();
   doc.restore();
   doc.fillOpacity(1).strokeOpacity(1);
