@@ -28,9 +28,6 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkU
             <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
               <tr>
                 <td style="background-color: #292929; padding: 30px; text-align: center; border-bottom: 4px solid #F7C600;">
-                  ${userInfo.companyLogo ? `
-                    <img src="${userInfo.companyLogo}" alt="${userInfo.businessName || 'Company Logo'}" style="max-width: 120px; max-height: 120px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px;" />
-                  ` : ''}
                   <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Pro X'}</h1>
                   <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px;">${userInfo.email || ''}</p>
                 </td>
@@ -140,9 +137,6 @@ function generateEstimateEmailHTML(estimate, customMessage, userInfo, actionUrls
             <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
               <tr>
                 <td style="background-color: #292929; padding: 30px; text-align: center; border-bottom: 4px solid #F7C600;">
-                  ${userInfo.companyLogo ? `
-                    <img src="${userInfo.companyLogo}" alt="${userInfo.businessName || 'Company Logo'}" style="max-width: 120px; max-height: 120px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px;" />
-                  ` : ''}
                   <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${userInfo.businessName || 'Electrician Pro X'}</h1>
                   <p style="color: #ffffff; margin: 10px 0 0; font-size: 14px;">${userInfo.email || ''}</p>
                 </td>
