@@ -32,6 +32,7 @@ const { refreshGoogleCalendarToken } = require('./src/functions/refreshGoogleCal
 const { exchangeGoogleCalendarCode } = require('./src/functions/exchangeGoogleCalendarCode');
 const { handleEstimateSignature } = require('./src/functions/handleEstimateSignature');
 const { notifyJobOwnerOnClockInOut } = require('./src/functions/adminAlerts');
+const { dailyUserExport } = require('./src/functions/dailyUserExport');
 
 
 
@@ -62,6 +63,8 @@ exports.handleDepositSuccess = handleDepositSuccess;
 exports.refreshGoogleCalendarToken = refreshGoogleCalendarToken;
 exports.exchangeGoogleCalendarCode = exchangeGoogleCalendarCode;
 exports.notifyJobOwnerOnClockInOut = notifyJobOwnerOnClockInOut;
+exports.dailyUserExport = dailyUserExport;
+
 
 
 
