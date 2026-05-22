@@ -111,7 +111,7 @@ function drawPageHeader(doc, logoBuffer, userInfo, leftMargin, rightMargin, cont
   ].filter(Boolean);
 
   contactLines.forEach(line => {
-    doc.fontSize(9).font('Helvetica').fillColor(lightGray)
+    doc.fontSize(9).font('Helvetica').fillColor(darkGray)
        .text(String(line), leftMargin, leftY, { width: leftSideW, lineBreak: false });
     leftY += 13;
   });
