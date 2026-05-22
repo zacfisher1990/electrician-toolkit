@@ -5,28 +5,31 @@ const getGeminiClient = () => {
   return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 };
 
-const RECEIPT_PROMPT = `You are a receipt scanner for an electrician's invoicing app. Analyze this receipt image and extract all line items.
+const RECEIPT_PROMPT = `You are a receipt scanner for an electrician's invoicing app. Analyze this receipt image and extract all line items plus the grand total actually paid.
 
 ## INSTRUCTIONS:
 1. Extract each item name and its price
 2. If quantity > 1, calculate the per-unit price (price ÷ quantity)
-3. Ignore tax lines, subtotals, and totals - only extract actual purchased items
+3. Ignore tax lines, subtotals - only extract actual purchased items in the items array
 4. For electrical supplies, use clear descriptions (e.g., "1/2" EMT Conduit" not just product codes)
+5. Extract the GRAND TOTAL (final amount paid including tax) from the receipt
 
 ## RESPONSE FORMAT:
 Return ONLY valid JSON with no markdown, no code blocks, no explanation:
 {
+  "grandTotal": 177.33,
   "items": [
     { "description": "Item name", "quantity": 1, "rate": 12.99 }
   ]
 }
 
 ## RULES:
+- grandTotal: The final amount paid on the receipt INCLUDING tax. If not visible, sum the items and add any tax shown.
 - description: Clear item name from receipt
 - quantity: Number purchased (default 1 if unclear)
 - rate: Price PER ITEM (not line total)
-- If receipt is unreadable, return: {"items": [], "error": "Could not read receipt"}
-- Do NOT include tax, subtotal, or total as line items
+- If receipt is unreadable, return: {"grandTotal": 0, "items": [], "error": "Could not read receipt"}
+- Do NOT include tax, subtotal, or total as line items in the items array
 - Maximum 50 items`;
 
 exports.scanReceipt = onCall(
@@ -71,12 +74,11 @@ exports.scanReceipt = onCall(
       const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash",
         generationConfig: {
-          temperature: 0.1, // Low temperature for more consistent extraction
+          temperature: 0.1,
           maxOutputTokens: 4000,
         },
       });
 
-      // Create the multimodal content with image
       const result = await model.generateContent([
         RECEIPT_PROMPT,
         {
@@ -131,6 +133,7 @@ exports.scanReceipt = onCall(
           success: false,
           error: parsedResponse.error,
           lineItems: [],
+          grandTotal: 0,
         };
       }
 
@@ -144,16 +147,20 @@ exports.scanReceipt = onCall(
             quantity: Math.max(1, Number(item.quantity) || 1),
             rate: Math.max(0, Number(Number(item.rate).toFixed(2))),
           }))
-          .slice(0, 50); // Max 50 items
+          .slice(0, 50);
       }
 
-      console.log("[scanReceipt] Parsed items:", items.length);
+      // Extract and validate grand total
+      const grandTotal = Math.max(0, Number(Number(parsedResponse.grandTotal || 0).toFixed(2)));
+
+      console.log("[scanReceipt] Parsed items:", items.length, "grandTotal:", grandTotal);
 
       if (items.length === 0) {
         return {
           success: false,
           error: "No items found in receipt. Please try a clearer photo.",
           lineItems: [],
+          grandTotal: 0,
         };
       }
 
@@ -161,6 +168,7 @@ exports.scanReceipt = onCall(
         success: true,
         lineItems: items,
         itemCount: items.length,
+        grandTotal,
       };
     } catch (error) {
       console.error("[scanReceipt] Error:", error);
