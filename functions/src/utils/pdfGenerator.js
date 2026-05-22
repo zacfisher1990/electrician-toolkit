@@ -54,6 +54,13 @@ function drawWatermark(doc, text, color = '#10b981') {
 
 // ─── Date helper ──────────────────────────────────────────────────────────────
 
+function formatPhone(phone) {
+  if (!phone) return '';
+  const digits = String(phone).replace(/\D/g, '');
+  if (digits.length === 10) return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  return String(phone);
+}
+
 function formatDate(dateStr) {
   if (!dateStr) return '';
   const str = String(dateStr).split('T')[0];
@@ -286,7 +293,7 @@ function drawMetaCol(doc, labelText, valueText, subLines, x, y, width) {
   }
 
   (subLines || []).filter(Boolean).forEach(line => {
-    doc.fontSize(9).font('Helvetica').fillColor(lightGray)
+    doc.fontSize(9).font('Helvetica').fillColor(darkGray)
        .text(String(line), x, cy, { width, lineBreak: false, ellipsis: true });
     cy += 13;
   });
@@ -437,7 +444,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
       const clientSubLines = [
         clientName && clientCompany ? clientCompany : null,
         invoice.clientAddress,
-        invoice.clientPhone,
+        invoice.clientPhone ? formatPhone(invoice.clientPhone) : null,
         invoice.clientEmail,
       ];
       const col1Bottom = drawMetaCol(doc, 'Bill To', primaryClient, clientSubLines, col1X, metaStartY, col1W - 16);
@@ -717,7 +724,7 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
         hasClient ? [
           clientName && clientCompany ? clientCompany : null,
           estimate.clientAddress,
-          estimate.clientPhone,
+          estimate.clientPhone ? formatPhone(estimate.clientPhone) : null,
           estimate.clientEmail,
         ] : [],
         col1X, metaStartY, col1W - 16);
