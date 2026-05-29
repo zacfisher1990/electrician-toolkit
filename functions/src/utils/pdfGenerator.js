@@ -614,7 +614,7 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
         doc.rect(leftMargin, yPos, contentWidth, discH).lineWidth(0.5).stroke('#fde68a');
         doc.fontSize(9).font('Helvetica').fillColor('#92400e')
            .text(
-             'ⓘ  A 2.9% + $0.30 card processing fee applies when paying by credit or debit card. No fee for cash, check, or other payment methods.',
+             'Note: A 2.9% + $0.30 processing fee applies when paying by credit or debit card.',
              leftMargin + 12, yPos + 14,
              { width: contentWidth - 24, lineBreak: true }
            );
