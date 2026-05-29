@@ -86,13 +86,14 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkU
                       💰 Payment Methods
                     </p>
                     ${paymentMethods.map(method => {
-                      const isLink = method.url.startsWith('http');
-                      const isEmail = method.url.includes('@');
-                      const href = isLink ? method.url : isEmail ? `mailto:${method.url}` : `tel:${method.url.replace(/[^0-9+]/g, '')}`;
+                      const url     = method.url || '';
+                      const isLink  = url.startsWith('http');
+                      const isEmail = url.includes('@');
+                      const href    = isLink ? url : isEmail ? `mailto:${url}` : url ? `tel:${url.replace(/[^0-9+]/g, '')}` : '#';
                       return `
                     <a href="${href}" style="display: block; background-color: #ffffff; color: #111827; padding: 12px 16px; margin-bottom: 8px; font-size: 14px; text-decoration: none; border-radius: 6px; border: 1px solid #d1d5db;">
                       <strong>${method.name}</strong>
-                      <span style="color: #D4AA00; font-size: 13px; display: block; margin-top: 2px;">${method.url}</span>
+                      ${url ? `<span style="color: #D4AA00; font-size: 13px; display: block; margin-top: 2px;">${url}</span>` : ''}
                     </a>`;
                     }).join('')}
                   </div>

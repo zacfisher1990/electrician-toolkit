@@ -162,7 +162,7 @@ exports.createInvoicePaymentLink = onCall(
       throw new HttpsError('unauthenticated', 'Must be logged in');
     }
 
-    const { invoiceId } = request.data;
+    const { invoiceId, passProcessingFee = false } = request.data;
     
     if (!invoiceId) {
       throw new HttpsError('invalid-argument', 'Invoice ID is required');
