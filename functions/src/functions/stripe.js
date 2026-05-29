@@ -162,7 +162,7 @@ exports.createInvoicePaymentLink = onCall(
       throw new HttpsError('unauthenticated', 'Must be logged in');
     }
 
-    const { invoiceId, passProcessingFee } = request.data;
+    const { invoiceId } = request.data;
     
     if (!invoiceId) {
       throw new HttpsError('invalid-argument', 'Invoice ID is required');
@@ -190,8 +190,24 @@ exports.createInvoicePaymentLink = onCall(
       }
 
       // Calculate total in cents
-      const totalCents = Math.round(invoice.total * 100);
-      
+      const invoiceCents = Math.round(invoice.total * 100);
+
+      // When passProcessingFee is on, gross up the checkout amount so the
+      // contractor receives the full invoice total and the client covers the
+      // Stripe fee (2.9% + $0.30).
+      //
+      // Gross-up formula (contractor nets exactly invoiceCents):
+      //   chargedCents = ceil((invoiceCents + 30) / (1 - 0.029))
+      //   feeCents     = chargedCents - invoiceCents
+      //
+      // The application_fee_amount (feeCents) is collected by the platform and
+      // then transferred to the connected account via transfer_data, so the
+      // contractor's payout = chargedCents - feeCents = invoiceCents exactly.
+      const chargedCents = passProcessingFee
+        ? Math.ceil((invoiceCents + 30) / (1 - 0.029))
+        : invoiceCents;
+      const feeCents = passProcessingFee ? chargedCents - invoiceCents : 0;
+
       // Build line items description
       const description = invoice.lineItems
         ?.map(item => `${item.description || item.name}`)
@@ -207,22 +223,20 @@ exports.createInvoicePaymentLink = onCall(
               currency: 'usd',
               product_data: {
                 name: `Invoice #${invoice.invoiceNumber || invoiceId.slice(-6)}`,
-                description: description,
+                description: passProcessingFee
+                  ? `${description} (includes 2.9% + $0.30 card processing fee)`
+                  : description,
               },
-              unit_amount: totalCents,
+              unit_amount: chargedCents,
             },
             quantity: 1,
           },
         ],
         payment_intent_data: {
-          // Route payment to the contractor's connected Stripe account.
-          // When passProcessingFee is true the client covers the Stripe fee
-          // (2.9% + $0.30). application_fee_amount is charged on top of the
-          // session total by Stripe, so the contractor receives the full
-          // invoice amount and the client pays the fee.
-          ...(passProcessingFee && {
-            application_fee_amount: Math.ceil(totalCents * 0.029) + 30,
-          }),
+          // When passProcessingFee is on, application_fee_amount captures the
+          // fee on the platform side; transfer_data then sends the remainder
+          // (= invoiceCents) to the contractor's connected account.
+          ...(passProcessingFee && { application_fee_amount: feeCents }),
           transfer_data: {
             destination: userData.stripeAccountId,
           },
@@ -243,7 +257,6 @@ exports.createInvoicePaymentLink = onCall(
 
       // Save payment link to invoice (top-level invoices collection)
       await db.collection('invoices').doc(invoiceId).update({
-        passProcessingFee: !!passProcessingFee,
         paymentLinkUrl: session.url,
         paymentLinkId: session.id,
         paymentLinkCreatedAt: admin.firestore.FieldValue.serverTimestamp(),
