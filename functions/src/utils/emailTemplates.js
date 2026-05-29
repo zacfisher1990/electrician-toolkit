@@ -70,6 +70,13 @@ function generateInvoiceEmailHTML(invoice, customMessage, userInfo, paymentLinkU
                   <p style="color: #9ca3af; margin: 0 0 20px; font-size: 12px; text-align: center;">
                     Secure payment powered by Stripe. All major credit and debit cards accepted.
                   </p>
+                  ${userInfo.passProcessingFee ? `
+                  <div style="margin: -10px 0 20px; padding: 10px 14px; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 6px;">
+                    <p style="color: #92400e; margin: 0; font-size: 12px; line-height: 1.5;">
+                      &#9432; A <strong>2.9% + $0.30</strong> card processing fee applies when paying by credit or debit card. No fee for cash, check, or other payment methods.
+                    </p>
+                  </div>
+                  ` : ''}
                   ` : ''}
 
                   ${paymentMethods && paymentMethods.length > 0 ? `
