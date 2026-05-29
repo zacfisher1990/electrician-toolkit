@@ -492,8 +492,11 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
       yPos += 10;
 
       if (isPartial) {
-        const totalAmt = parseFloat(invoice.total || invoice.amount || subtotal);
-        yPos = drawTotalsRow(doc, 'Subtotal', `$${totalAmt.toFixed(2)}`, leftMargin, contentWidth, yPos, lightGray, darkGray);
+        if (hasTaxOrDiscount) {
+          yPos = drawTotalsRow(doc, 'Subtotal', `$${subtotal.toFixed(2)}`, leftMargin, contentWidth, yPos, lightGray, darkGray);
+          if (taxAmount > 0) yPos = drawTotalsRow(doc, `Tax${taxRate > 0 ? ` (${taxRate}%)` : ''}`, `$${taxAmount.toFixed(2)}`, leftMargin, contentWidth, yPos, lightGray, darkGray);
+          if (discountAmt > 0) yPos = drawTotalsRow(doc, 'Discount', `-$${discountAmt.toFixed(2)}`, leftMargin, contentWidth, yPos, green, green);
+        }
         yPos = drawTotalsRow(doc, 'Deposit received', `-$${parseFloat(invoice.amountPaid || 0).toFixed(2)}`, leftMargin, contentWidth, yPos, green, green);
         doc.moveTo(totalsStartX, yPos + 2).lineTo(rightMargin, yPos + 2).lineWidth(1).stroke(borderGray);
         yPos += 10;
@@ -744,15 +747,25 @@ async function generateEstimatePDFBuffer(estimate, userInfo = {}) {
       yPos += 16;
 
       // ── Total ─────────────────────────────────────────────────────────────────
-      const computedTotal = lineItems
+      const estSubtotal = lineItems
         .filter(i => i.type === 'item' || !i.type)
         .reduce((s, i) => s + (parseFloat(i.quantity) || 1) * (parseFloat(i.unitPrice != null ? i.unitPrice : i.rate) || 0), 0)
         || parseFloat(estimate.total || 0);
 
+      const estDiscountVal  = parseFloat(estimate.discount || 0);
+      const estDiscountType = estimate.discountType || 'fixed';
+      const estDiscountAmt  = estDiscountType === 'percent' ? estSubtotal * (estDiscountVal / 100) : estDiscountVal;
+      const estTotal        = Math.max(0, estSubtotal - estDiscountAmt);
+
       const totalsStartX = leftMargin + Math.floor(contentWidth * 0.50);
       doc.moveTo(totalsStartX, yPos).lineTo(rightMargin, yPos).lineWidth(2).stroke(darkGray);
       yPos += 10;
-      yPos = drawTotalsRow(doc, 'Total estimate', `$${computedTotal.toFixed(2)}`,
+
+      if (estDiscountAmt > 0) {
+        yPos = drawTotalsRow(doc, 'Subtotal', `$${estSubtotal.toFixed(2)}`, leftMargin, contentWidth, yPos, lightGray, darkGray);
+        yPos = drawTotalsRow(doc, 'Discount', `-$${estDiscountAmt.toFixed(2)}`, leftMargin, contentWidth, yPos, green, green);
+      }
+      yPos = drawTotalsRow(doc, 'Total estimate', `$${estTotal.toFixed(2)}`,
                            leftMargin, contentWidth, yPos, darkGray, green, 14, 'Helvetica-Bold');
       yPos += 8;
 
