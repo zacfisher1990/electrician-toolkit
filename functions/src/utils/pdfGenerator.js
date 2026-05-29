@@ -605,6 +605,22 @@ async function generateInvoicePDFBuffer(invoice, userInfo = {}, paymentMethods =
         yPos += pmBoxH + 16;
       }
 
+      // ── Card processing fee disclosure ──────────────────────────────────────
+      // Shown when passProcessingFee is on AND a Stripe payment link exists.
+      if (userInfo.passProcessingFee && !isPaid && stripeUrl) {
+        if (yPos > doc.page.height - 80) { doc.addPage(); yPos = 50; }
+        const discH = 44;
+        doc.rect(leftMargin, yPos, contentWidth, discH).fill('#fffbeb');
+        doc.rect(leftMargin, yPos, contentWidth, discH).lineWidth(0.5).stroke('#fde68a');
+        doc.fontSize(9).font('Helvetica').fillColor('#92400e')
+           .text(
+             'ⓘ  A 2.9% + $0.30 card processing fee applies when paying by credit or debit card. No fee for cash, check, or other payment methods.',
+             leftMargin + 12, yPos + 14,
+             { width: contentWidth - 24, lineBreak: true }
+           );
+        yPos += discH + 8;
+      }
+
       // ── Stripe QR ────────────────────────────────────────────────────────────
       if (!isPaid && stripeUrl) {
         if (yPos > doc.page.height - 150) { doc.addPage(); yPos = 50; }

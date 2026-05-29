@@ -162,7 +162,7 @@ exports.createInvoicePaymentLink = onCall(
       throw new HttpsError('unauthenticated', 'Must be logged in');
     }
 
-    const { invoiceId } = request.data;
+    const { invoiceId, passProcessingFee } = request.data;
     
     if (!invoiceId) {
       throw new HttpsError('invalid-argument', 'Invoice ID is required');
@@ -215,20 +215,23 @@ exports.createInvoicePaymentLink = onCall(
           },
         ],
         payment_intent_data: {
-          // Send payment directly to contractor's Stripe account
+          // Route payment to the contractor's connected Stripe account.
+          // When passProcessingFee is true the client covers the Stripe fee
+          // (2.9% + $0.30). application_fee_amount is charged on top of the
+          // session total by Stripe, so the contractor receives the full
+          // invoice amount and the client pays the fee.
+          ...(passProcessingFee && {
+            application_fee_amount: Math.ceil(totalCents * 0.029) + 30,
+          }),
           transfer_data: {
             destination: userData.stripeAccountId,
           },
           metadata: {
             invoiceId: invoiceId,
-            contractorUserId: userId
-          }
+            contractorUserId: userId,
+            passProcessingFee: passProcessingFee ? 'true' : 'false',
+          },
         },
-        // Optional: take a platform fee (e.g., 1% or $0.50)
-        // payment_intent_data: {
-        //   application_fee_amount: Math.round(totalCents * 0.01), // 1% fee
-        //   transfer_data: { destination: userData.stripeAccountId },
-        // },
         metadata: {
           invoiceId: invoiceId,
           contractorUserId: userId
@@ -240,6 +243,7 @@ exports.createInvoicePaymentLink = onCall(
 
       // Save payment link to invoice (top-level invoices collection)
       await db.collection('invoices').doc(invoiceId).update({
+        passProcessingFee: !!passProcessingFee,
         paymentLinkUrl: session.url,
         paymentLinkId: session.id,
         paymentLinkCreatedAt: admin.firestore.FieldValue.serverTimestamp(),
