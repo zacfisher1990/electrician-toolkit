@@ -104,8 +104,7 @@ const sendEstimateEmail = onCall(
 
       // --- Send email ---
       const emailData = await resend.emails.send({
-        from: `${userInfo.businessName || userInfo.name || userInfo.displayName || 'Electrician Pro X'} <estimates@proxtrades.com>`,
-        replyTo: userInfo.email,
+        from: `${userInfo.businessName || userInfo.name || userInfo.displayName || 'Electrician Pro X'} <noreply@electricianprox.com>`,
         to: recipientEmail,
         bcc: userInfo.email,
         subject: `Estimate: ${estimate.name || 'Untitled'} from ${userInfo.businessName || userInfo.name || userInfo.displayName || 'Electrician Pro X'}`,

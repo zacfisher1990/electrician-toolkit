@@ -55,7 +55,7 @@ const sendWelcomeEmail = onCall(
       console.log('Sending welcome/reminder email to:', email);
 
       const emailData = await resend.emails.send({
-        from: 'ProXTrades <welcome@proxtrades.com>',
+        from: 'ProXTrades <welcome@electricianprox.com>',
         to: email,
         subject: subject,
         html: html

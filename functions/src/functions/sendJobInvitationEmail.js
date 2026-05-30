@@ -51,7 +51,7 @@ const sendJobInvitationEmail = onDocumentCreated(
       console.log('Sending job invitation email to:', invitationData.invitedEmail);
 
       const { data: emailData, error: emailError } = await resend.emails.send({
-        from: `${inviterBusinessName} <invitations@proxtrades.com>`,
+        from: `${inviterBusinessName} <invitations@electricianprox.com>`,
         replyTo: invitationData.jobOwnerEmail,
         to: invitationData.invitedEmail,
         subject: `⚡ You're Invited to Join a Job - ${invitationData.jobTitle}`,
@@ -137,7 +137,7 @@ const notifyInvitationAccepted = onDocumentUpdated(
       }
 
       await resend.emails.send({
-        from: 'ProXTrades <notifications@proxtrades.com>',
+        from: 'ProXTrades <notifications@electricianprox.com>',
         to: afterData.jobOwnerEmail,
         subject: `✅ ${inviteeName} Accepted Your Job Invitation`,
         html: generateInvitationAcceptedEmailHTML({

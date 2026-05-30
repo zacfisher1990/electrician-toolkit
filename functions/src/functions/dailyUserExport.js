@@ -67,7 +67,7 @@ exports.dailyUserExport = onSchedule(
     );
 
     await resend.emails.send({
-      from: "EPX Reports <support@proxtrades.com>",
+      from: "EPX Reports <support@electricianprox.com>",
       to: "zcfshr@gmail.com",
       subject: `EPX User Report — ${today}`,
       html: `

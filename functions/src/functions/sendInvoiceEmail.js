@@ -68,8 +68,7 @@ const sendInvoiceEmail = onCall(
 
       // Send email via Resend with BCC to sender
       const emailData = await resend.emails.send({
-        from: `${userInfo.businessName || userInfo.name || userInfo.displayName || 'Electrician Pro X'} <invoices@proxtrades.com>`,
-        replyTo: userInfo.email, // Client replies go to the user!
+        from: `${userInfo.businessName || userInfo.name || userInfo.displayName || 'Electrician Pro X'} <noreply@electricianprox.com>`,
         to: recipientEmail,
         bcc: userInfo.email, // BCC the sender so they get a copy
         subject,

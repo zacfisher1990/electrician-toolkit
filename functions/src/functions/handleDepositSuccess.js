@@ -234,7 +234,7 @@ const handleDepositSuccess = onRequest(
       const contractorEmail = userData.email;
       if (contractorEmail) {
         await resend.emails.send({
-          from: 'Electrician Pro X <notifications@proxtrades.com>',
+          from: 'Electrician Pro X <notifications@electricianprox.com>',
           to: contractorEmail,
           subject: `💰 Deposit Received: ${estimate.name || 'Estimate'}`,
           html: `

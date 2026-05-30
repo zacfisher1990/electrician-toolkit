@@ -390,7 +390,7 @@ const handleEstimateResponse = onRequest(
         try {
           const resend = new Resend(resendApiKey.value());
           await resend.emails.send({
-            from: 'Electrician Pro X <notifications@proxtrades.com>',
+            from: 'Electrician Pro X <notifications@electricianprox.com>',
             to: contractorEmail,
             subject: `${actionConfig.contractorSubject} — ${estimate.name || estimate.estimateNumber || 'Estimate'}`,
             html: `

@@ -203,7 +203,7 @@ Professional time tracking for electrical contractors
 
       // Send email via Resend
       const emailData = await resend.emails.send({
-        from: 'Electrician Pro X <timecards@proxtrades.com>',
+        from: 'Electrician Pro X <timecards@electricianprox.com>',
         to: recipientEmail,
         subject: `Weekly Time Card - ${weekRange}`,
         html: htmlContent,

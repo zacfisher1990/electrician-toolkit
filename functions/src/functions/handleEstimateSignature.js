@@ -201,7 +201,7 @@ const handleEstimateSignature = onRequest({ cors: true }, async (req, res) => {
         try {
           const resend = new Resend(resendApiKey.value());
           await resend.emails.send({
-            from: 'Electrician Pro X <notifications@proxtrades.com>',
+            from: 'Electrician Pro X <notifications@electricianprox.com>',
             to: contractorEmail,
             subject: `✅ Estimate Signed & Accepted — ${estimateLabel}`,
             html: `
