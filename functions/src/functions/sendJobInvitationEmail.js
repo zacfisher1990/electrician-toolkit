@@ -239,8 +239,80 @@ const acceptInvitation = onCall(async (request) => {
   };
 });
 
+/**
+ * Callable Function: Reject a job invitation
+ *
+ * Mirrors acceptInvitation — runs with admin privileges so it can update
+ * both the jobInvitations document and the owner's job document without
+ * hitting Firestore security rules.
+ */
+const rejectInvitation = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const { invitationId } = request.data;
+  if (!invitationId) {
+    throw new HttpsError('invalid-argument', 'invitationId is required');
+  }
+
+  const db = admin.firestore();
+  const invitationRef = db.collection('jobInvitations').doc(invitationId);
+  const invitationSnap = await invitationRef.get();
+
+  if (!invitationSnap.exists) {
+    throw new HttpsError('not-found', 'Invitation not found');
+  }
+
+  const invitation = invitationSnap.data();
+  const callerEmail = request.auth.token.email || '';
+
+  // Verify this invitation belongs to the caller
+  if (invitation.invitedEmail.toLowerCase() !== callerEmail.toLowerCase()) {
+    throw new HttpsError('permission-denied', 'This invitation is not for you');
+  }
+
+  if (invitation.status !== 'pending') {
+    throw new HttpsError('failed-precondition', `Invitation is already ${invitation.status}`);
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+
+  // 1. Update invitation status
+  await invitationRef.update({
+    status: 'rejected',
+    rejectedAt: now,
+    rejectedByUid: request.auth.uid,
+  });
+
+  // 2. Update the owner's job document
+  const jobRef = db.doc(`users/${invitation.jobOwnerId}/jobs/${invitation.jobId}`);
+  const jobSnap = await jobRef.get();
+
+  if (jobSnap.exists) {
+    const job = jobSnap.data();
+    const updatedElectricians = (job.invitedElectricians || []).map(inv =>
+      inv.email && inv.email.toLowerCase() === callerEmail.toLowerCase()
+        ? { ...inv, status: 'rejected', rejectedAt: new Date().toISOString() }
+        : inv
+    );
+
+    await jobRef.update({
+      invitedElectricians: updatedElectricians,
+      updatedAt: now,
+    });
+
+    console.log(`✅ rejectInvitation: job ${invitation.jobId} updated for ${callerEmail}`);
+  } else {
+    console.warn(`rejectInvitation: job ${invitation.jobId} not found`);
+  }
+
+  return { success: true };
+});
+
 module.exports = { 
   sendJobInvitationEmail,
   notifyInvitationAccepted,
   acceptInvitation,
+  rejectInvitation,
 };

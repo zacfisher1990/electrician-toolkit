@@ -19,7 +19,7 @@
 const { sendInvoiceEmail } = require('./src/functions/sendInvoiceEmail');
 const { sendEstimateEmail } = require('./src/functions/sendEstimateEmail');
 const { deleteUserAccount } = require('./src/functions/deleteUserAccount');
-const { sendJobInvitationEmail, notifyInvitationAccepted, acceptInvitation } = require('./src/functions/sendJobInvitationEmail');
+const { sendJobInvitationEmail, notifyInvitationAccepted, acceptInvitation, rejectInvitation } = require('./src/functions/sendJobInvitationEmail');
 const { sendTimeCardEmail } = require('./src/functions/sendTimeCardEmail'); 
 const { sendWelcomeEmail } = require('./src/functions/sendWelcomeEmail');
 const { generateMaterials } = require('./src/functions/generateMaterials');
@@ -55,6 +55,7 @@ exports.deleteUserAccount = deleteUserAccount;
 exports.sendJobInvitationEmail = sendJobInvitationEmail; 
 exports.notifyInvitationAccepted = notifyInvitationAccepted;
 exports.acceptInvitation = acceptInvitation;
+exports.rejectInvitation = rejectInvitation;
 exports.sendTimeCardEmail = sendTimeCardEmail; 
 exports.sendWelcomeEmail = sendWelcomeEmail;
 exports.generateMaterials = generateMaterials;
