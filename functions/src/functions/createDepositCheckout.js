@@ -36,7 +36,11 @@ const createDepositCheckout = onRequest(
       const estimate = { id: estimateId, ...estimateSnap.data() };
 
       // --- Verify token is still valid ---
-      if (!estimate.responseToken || estimate.responseToken !== token) {
+      // Accepts responseToken (email flow) or shareToken (web/SMS link flow)
+      const validToken =
+        (estimate.responseToken && estimate.responseToken === token) ||
+        (estimate.shareToken && estimate.shareToken === token);
+      if (!validToken) {
         res.status(403).send('This link has already been used or has expired.');
         return;
       }
