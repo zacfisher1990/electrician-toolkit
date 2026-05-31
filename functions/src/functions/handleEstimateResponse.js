@@ -48,8 +48,8 @@ const ACTION_MAP = {
     color: '#d97706',
     clientMessage: 'Your request for changes has been sent. The contractor will follow up with a revised estimate.',
     contractorSubject: '🔄 Client Requested Changes',
-    contractorBody: (estimate, clientName) =>
-      `${clientName || 'Your client'} has requested changes to estimate <strong>${estimate.estimateNumber || estimate.name}</strong> for <strong>$${parseFloat(estimate.total || 0).toFixed(2)}</strong>. Please follow up with a revised estimate.`,
+    contractorBody: (estimate, clientName, message) =>
+      `${clientName || 'Your client'} has requested changes to estimate <strong>${estimate.estimateNumber || estimate.name}</strong> for <strong>$${parseFloat(estimate.total || 0).toFixed(2)}</strong>. Please follow up with a revised estimate.${message ? `<br><br><strong>Client message:</strong><br><em style="color:#374151;">${message}</em>` : ''}`,
   },
   acceptNoDeposit: {
     status: 'Deposit Pending',
@@ -269,7 +269,7 @@ function buildDepositPage(estimate, depositAmount, depositLabel, checkoutUrl, sk
 const handleEstimateResponse = onRequest(
   { cors: false },
   async (req, res) => {
-    const { estimateId, action, token, userId } = req.query;
+    const { estimateId, action, token, userId, message } = req.query;
 
     // --- Validate required params ---
     if (!estimateId || !action || !token || !userId) {
@@ -413,7 +413,7 @@ const handleEstimateResponse = onRequest(
                         <td style="padding:40px 30px;">
                           <h2 style="color:#111827;margin:0 0 16px;font-size:20px;">${actionConfig.contractorSubject}</h2>
                           <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
-                            ${actionConfig.contractorBody(estimate, clientName)}
+                            ${actionConfig.contractorBody(estimate, clientName, message)}
                           </p>
                           <table width="100%" cellpadding="12" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:6px;">
                             <tr style="background:#f9fafb;">
