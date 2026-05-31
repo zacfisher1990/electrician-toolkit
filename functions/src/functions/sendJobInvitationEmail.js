@@ -4,6 +4,7 @@
  */
 
 const { onDocumentCreated, onDocumentUpdated } = require('firebase-functions/v2/firestore');
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { defineString } = require('firebase-functions/params');
 const { Resend } = require('resend');
 const { admin } = require('../config/firebaseAdmin');
@@ -122,47 +123,14 @@ const notifyInvitationAccepted = onDocumentUpdated(
     const resend = new Resend(apiKey);
 
     try {
-      const db = admin.firestore();
-
-      // ── Update the owner's job document (admin SDK bypasses rules) ──────────
-      // Add invitee UID to sharedWith and mark them accepted in invitedElectricians.
-      // This is done here rather than on the client because the invitee has no
-      // Firestore write permission to the owner's job path.
-      const jobRef = db.doc(`users/${afterData.jobOwnerId}/jobs/${afterData.jobId}`);
-      const jobSnap = await jobRef.get();
-
-      if (jobSnap.exists) {
-        const job = jobSnap.data();
-        const updatedElectricians = (job.invitedElectricians || []).map(inv =>
-          inv.email && inv.email.toLowerCase() === afterData.invitedEmail.toLowerCase()
-            ? {
-                ...inv,
-                status: 'accepted',
-                acceptedAt: new Date().toISOString(),
-                acceptedByUid: afterData.acceptedByUid || '',
-              }
-            : inv
-        );
-
-        await jobRef.update({
-          invitedElectricians: updatedElectricians,
-          sharedWith: admin.firestore.FieldValue.arrayUnion(afterData.acceptedByUid),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        console.log(`✅ Job ${afterData.jobId} updated: sharedWith + invitedElectricians`);
-      } else {
-        console.warn(`notifyInvitationAccepted: job not found ${afterData.jobId}`);
-      }
-
-      // ── Email the job owner ─────────────────────────────────────────────────
       console.log('Sending acceptance notification to job owner:', afterData.jobOwnerEmail);
 
       // Get invitee info (the person who accepted)
+      const db = admin.firestore();
       let inviteeName = afterData.invitedEmail;
       
-      if (afterData.acceptedByUid) {
-        const inviteeDoc = await db.collection('users').doc(afterData.acceptedByUid).get();
+      if (afterData.acceptedUserId) {
+        const inviteeDoc = await db.collection('users').doc(afterData.acceptedUserId).get();
         if (inviteeDoc.exists) {
           const inviteeData = inviteeDoc.data();
           inviteeName = inviteeData.businessName || inviteeData.name || afterData.invitedEmail;
@@ -194,7 +162,85 @@ const notifyInvitationAccepted = onDocumentUpdated(
   }
 );
 
+/**
+ * Callable Function: Accept a job invitation
+ *
+ * Runs with admin privileges so it can update both the jobInvitations document
+ * and the owner's job document without hitting Firestore security rules.
+ * The client calls this instead of writing to Firestore directly.
+ */
+const acceptInvitation = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const { invitationId } = request.data;
+  if (!invitationId) {
+    throw new HttpsError('invalid-argument', 'invitationId is required');
+  }
+
+  const db = admin.firestore();
+  const invitationRef = db.collection('jobInvitations').doc(invitationId);
+  const invitationSnap = await invitationRef.get();
+
+  if (!invitationSnap.exists) {
+    throw new HttpsError('not-found', 'Invitation not found');
+  }
+
+  const invitation = invitationSnap.data();
+  const callerEmail = request.auth.token.email || '';
+
+  // Verify this invitation belongs to the caller
+  if (invitation.invitedEmail.toLowerCase() !== callerEmail.toLowerCase()) {
+    throw new HttpsError('permission-denied', 'This invitation is not for you');
+  }
+
+  if (invitation.status !== 'pending') {
+    throw new HttpsError('failed-precondition', `Invitation is already ${invitation.status}`);
+  }
+
+  const callerUid = request.auth.uid;
+  const now = admin.firestore.FieldValue.serverTimestamp();
+
+  // 1. Update invitation status
+  await invitationRef.update({
+    status: 'accepted',
+    acceptedAt: now,
+    acceptedByUid: callerUid,
+  });
+
+  // 2. Update the owner's job document
+  const jobRef = db.doc(`users/${invitation.jobOwnerId}/jobs/${invitation.jobId}`);
+  const jobSnap = await jobRef.get();
+
+  if (jobSnap.exists) {
+    const job = jobSnap.data();
+    const updatedElectricians = (job.invitedElectricians || []).map(inv =>
+      inv.email && inv.email.toLowerCase() === callerEmail.toLowerCase()
+        ? { ...inv, status: 'accepted', acceptedAt: new Date().toISOString(), acceptedByUid: callerUid }
+        : inv
+    );
+
+    await jobRef.update({
+      invitedElectricians: updatedElectricians,
+      sharedWith: admin.firestore.FieldValue.arrayUnion(callerUid),
+      updatedAt: now,
+    });
+
+    console.log(`✅ acceptInvitation: job ${invitation.jobId} updated for ${callerEmail}`);
+  } else {
+    console.warn(`acceptInvitation: job ${invitation.jobId} not found`);
+  }
+
+  return {
+    jobId: invitation.jobId,
+    jobOwnerId: invitation.jobOwnerId,
+    jobTitle: invitation.jobTitle,
+  };
+});
+
 module.exports = { 
   sendJobInvitationEmail,
-  notifyInvitationAccepted
+  notifyInvitationAccepted,
+  acceptInvitation,
 };
