@@ -34,7 +34,7 @@ const { generateEstimateShareToken } = require('./src/functions/generateEstimate
 const { handleEstimateSignature } = require('./src/functions/handleEstimateSignature');
 const { notifyJobOwnerOnClockInOut } = require('./src/functions/adminAlerts');
 const { dailyUserExport } = require('./src/functions/dailyUserExport');
-const { generateShortLink } = require('./src/functions/generateShortLink');
+
 
 
 
@@ -81,4 +81,5 @@ exports.createStripeDashboardLink = createStripeDashboardLink;
 exports.handleEstimateSignature = handleEstimateSignature;
 exports.generateInvoiceShareToken = generateInvoiceShareToken;
 exports.generateEstimateShareToken = generateEstimateShareToken;
-exports.generateShortLink = generateShortLink;
+
+
