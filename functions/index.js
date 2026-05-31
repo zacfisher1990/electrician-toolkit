@@ -35,7 +35,7 @@ const { generateEstimateShareToken } = require('./src/functions/generateEstimate
 const { handleEstimateSignature } = require('./src/functions/handleEstimateSignature');
 const { notifyJobOwnerOnClockInOut } = require('./src/functions/adminAlerts');
 const { dailyUserExport } = require('./src/functions/dailyUserExport');
-const { generateShortLink } = require('./src/generateShortLink');
+const { generateShortLink } = require('./src/functions/generateShortLink');
 
 
 

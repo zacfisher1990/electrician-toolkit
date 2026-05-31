@@ -1,4 +1,4 @@
-// functions/src/generateShortLink.js
+// functions/src/functions/generateShortLink.js
 
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { getFirestore } = require('firebase-admin/firestore');
@@ -15,7 +15,6 @@ exports.generateShortLink = onCall(async (request) => {
 
   const fullUrl = `https://electricianprox.com/invoice/${invoiceId}?token=${token}`;
 
-  // Check if a short link already exists for this invoice+token
   const existing = await db.collection('shortLinks')
     .where('invoiceId', '==', invoiceId)
     .where('token', '==', token)
@@ -27,7 +26,6 @@ exports.generateShortLink = onCall(async (request) => {
     return { shortUrl: `https://electricianprox.com/i/${code}` };
   }
 
-  // Generate a unique code
   let code;
   let attempts = 0;
   while (attempts < 10) {
