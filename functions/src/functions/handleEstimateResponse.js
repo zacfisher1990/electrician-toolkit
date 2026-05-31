@@ -313,7 +313,11 @@ const handleEstimateResponse = onRequest(
       const estimate = { id: estimateSnap.id, ...estimateSnap.data() };
 
       // --- Validate the token ---
-      if (!estimate.responseToken || estimate.responseToken !== token) {
+      // Accepts either responseToken (email flow) or shareToken (web/SMS link flow)
+      const validToken =
+        (estimate.responseToken && estimate.responseToken === token) ||
+        (estimate.shareToken && estimate.shareToken === token);
+      if (!validToken) {
         res.status(403).send(buildResponsePage(
           'Link Expired or Invalid',
           'This link is no longer valid. A new link will be included if the estimate is resent.',
