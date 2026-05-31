@@ -122,14 +122,47 @@ const notifyInvitationAccepted = onDocumentUpdated(
     const resend = new Resend(apiKey);
 
     try {
+      const db = admin.firestore();
+
+      // ── Update the owner's job document (admin SDK bypasses rules) ──────────
+      // Add invitee UID to sharedWith and mark them accepted in invitedElectricians.
+      // This is done here rather than on the client because the invitee has no
+      // Firestore write permission to the owner's job path.
+      const jobRef = db.doc(`users/${afterData.jobOwnerId}/jobs/${afterData.jobId}`);
+      const jobSnap = await jobRef.get();
+
+      if (jobSnap.exists) {
+        const job = jobSnap.data();
+        const updatedElectricians = (job.invitedElectricians || []).map(inv =>
+          inv.email && inv.email.toLowerCase() === afterData.invitedEmail.toLowerCase()
+            ? {
+                ...inv,
+                status: 'accepted',
+                acceptedAt: new Date().toISOString(),
+                acceptedByUid: afterData.acceptedByUid || '',
+              }
+            : inv
+        );
+
+        await jobRef.update({
+          invitedElectricians: updatedElectricians,
+          sharedWith: admin.firestore.FieldValue.arrayUnion(afterData.acceptedByUid),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        console.log(`✅ Job ${afterData.jobId} updated: sharedWith + invitedElectricians`);
+      } else {
+        console.warn(`notifyInvitationAccepted: job not found ${afterData.jobId}`);
+      }
+
+      // ── Email the job owner ─────────────────────────────────────────────────
       console.log('Sending acceptance notification to job owner:', afterData.jobOwnerEmail);
 
       // Get invitee info (the person who accepted)
-      const db = admin.firestore();
       let inviteeName = afterData.invitedEmail;
       
-      if (afterData.acceptedUserId) {
-        const inviteeDoc = await db.collection('users').doc(afterData.acceptedUserId).get();
+      if (afterData.acceptedByUid) {
+        const inviteeDoc = await db.collection('users').doc(afterData.acceptedByUid).get();
         if (inviteeDoc.exists) {
           const inviteeData = inviteeDoc.data();
           inviteeName = inviteeData.businessName || inviteeData.name || afterData.invitedEmail;
